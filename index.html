@@ -9,11 +9,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
     <style>
         body {
             font-family: 'Open Sans', sans-serif;
             font-weight: 300;
             font-size: 11pt;
+            text-align: justify;
         }
 
         h1, h2, h3, h4, h5, h6 {
@@ -24,46 +28,62 @@
         nav {
             border-bottom: 1px solid black;
         }
+
+        .content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1em;
+        }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Mijail Littin</h1>
-    </header>
-    
-    <nav>
-        <a href="#section1">Section 1</a>
-        <a href="#section2">Section 2</a>
-        <a href="#Research">Research</a>
-    </nav>
+    <div class="content">
+        <header>
+            <h1>Mijail Littin</h1>
+        </header>
 
-    <main>
-        <section id="section1">
-            <h2>Section 1</h2>
-            <p>This is the first section of your website.</p>
-        </section>
+        <nav>
+            <a href="#Research">Research</a>
+            <a href="#Teaching">Teaching</a>
+            <a href="#Misc">Miscellaneous</a>
+        </nav>
+
+        <main>
+            <section id="#Research">
+                <h2>Research</h2>
+                <p> <i> Conference papers</i></p>
+                <ol reversed>
+                    <li>
+                        <a href = 'research/coupling/coupling.html'>
+                            <b> Littin, M. </b>, Yon, J., Lefevre, G., Fuentes, A., & Mazur, M. (2023, April). Coupling Extinction and Angular Static Light Scattering measurements for the characterization (2D) of soot nanoparticles in a flame. In <i> European Combustion Meeting (ECM) 2023. </i>
+                        </a>
+                    </li>
+                    <li>
+                        <a href = 'research/coalescence/coalescence.html'>
+                        <b> Littin, M. </b>, Demarco, R., Escudero, F., Lefevre, G., Yon, J., Mazur, M., & Fuentes, A. (2023, April). Effects of soot coalescence process on a non-premixed Jet A-1 coflow flame using a sectional particle dynamics model. In <i> European Combustion Meeting (ECM) 2023. </i> 
+                        </a>
+                    </li>
+                    <li> Lefevre, G., <b> Littin, M. </b>, Mazur, M., & Yon, J. (2023, April). Development of a multi-wavelength optical cavity embeddable on a UAV for the characterization of soot particles in smoke plumes during industrial fires. In <i> European Combustion Meeting (ECM) 2023. </i> </li>
+                    <li> Yon, J., Lefevre, G., Fuentes, A., <b> Littin, M. </b>, & Mazur, M. (2023, March). Couplage de mesures d'extinction et de diffusion angulaire de la lumière pour la caractérisation (2D de nanoparticules de suie dans une flamme. In <i>Congrès Français sur les Aérosols (CFA). </i> </li>
+                    <li>Weiss, M., Demarco, R., <b>Littin, M.</b>, Escudero, F., Liu, F. (2022, August). Evaluation of extended reaction mechanisms in soot modeling in a vaporized gasoline laminar coflow diffusion flame. In <i>Mediterranean Combustion Symposium (MCS) 12.</li>
+                    <li>Pinto, P., <b>Littin, M.</b>, Rivera, J.I., Severino, G., Cruz, J.J., Fuentes, A. (2022, August). A simpler tractable contour technique to model thermal radiation from buoyant diffusion flames. In <i>Mediterranean Combustion Symposium (MCS) 12.</i></li>
+                </ol>
+            </section>
+
+            <section id="Teaching">
+                <h2>Teaching</h2>
+                <p>This is the teaching section of your website.</p>
+            </section>
+        </main>
         
-        <section id="section2">
-            <h2>Section 2</h2>
-            <p>This is the second section of your website.</p>
-        </section>
+        <p>This is an inline math expression: \(E=mc^2\).</p>
+        <p>This is a displayed math expression:</p>
+        $$\int_a^b f(x) dx \tag{1}$$
 
-        <section id="#Research">
-            <h2>Research</h2>
-            <p> <i> Conference papers</i></p>
-            <ol reversed>
-                <li><b> Littin, M. </b>, Yon, J., Lefevre, G., Fuentes, A., & Mazur, M. (2023, April). Coupling Extinction and Angular Static Light Scattering measurements for the characterization (2D) of soot nanoparticles in a flame. In <i> European Combustion Meeting (ECM) 2023. </i></li>
-                <li><b> Littin, M. </b>, Demarco, R., Escudero, F., Lefevre, G., Yon, J., Mazur, M., & Fuentes, A. (2023, April). Effects of soot coalescence process on a non-premixed Jet A-1 coflow flame using a sectional particle dynamics model. In <i> European Combustion Meeting (ECM) 2023. </i> </li>
-                <li> Lefevre, G., <b> Littin, M. </b>, Mazur, M., & Yon, J. (2023, April). Development of a multi-wavelength optical cavity embeddable on a UAV for the characterization of soot particles in smoke plumes during industrial fires. In <i> European Combustion Meeting (ECM) 2023. </i> </li>
-                <li> Yon, J., Lefevre, G., Fuentes, A., <b> Littin, M. </b>, & Mazur, M. (2023, March). Couplage de mesures d'extinction et de diffusion angulaire de la lumière pour la caractérisation (2D de nanoparticules de suie dans une flamme. In <i>Congrès Français sur les Aérosols (CFA). </i> </li>
-                <li>Weiss, M., Demarco, R., <b>Littin, M.</b>, Escudero, F., Liu, F. (2022, August). Evaluation of extended reaction mechanisms in soot modeling in a vaporized gasoline laminar coflow diffusion flame. In <i>Mediterranean Combustion Symposium (MCS) 12.</li>
-                <li>Pinto, P., <b>Littin, M.</b>, Rivera, J.I., Severino, G., Cruz, J.J., Fuentes, A. (2022, August). A simpler tractable contour technique to model thermal radiation from buoyant diffusion flames. In <i>Mediterranean Combustion Symposium (MCS) 12.</i></li>
-            </ol>
-        </section>
-    </main>
-
-    <footer>
-        <p>Copyright © 2023 Mijail Littin</p>
-    </footer>
+        <footer>
+            <p>Copyright © 2023 Mijail Littin</p>
+        </footer>
+    </div>
 </body>
 </html>
+
