@@ -15,7 +15,7 @@
             font-weight: 300;
             font-size: 11pt;
             text-align: justify;
-            max-width: 900px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 0 1em;
         }
@@ -23,6 +23,9 @@
         h1, h2, h3, h4, h5, h6 {
             font-family: 'Open Sans', sans-serif;
             font-weight: 500;
+        }
+        a:visited {
+            color: inherit;  /* This will retain the link color after being clicked */
         }
     </style>
 </head>
@@ -35,10 +38,11 @@
     <p>A simple coalescence model is implemented in the CoFlame code to simulate a non-premixed CH4/Jet A-1 coflow sooting flame. Through a comparative analysis, this study aims to examine the effects of coalescence on soot production based on inception and surface growth via PAH adsorption and the hydrogen abstraction carbon addition (HACA) model. This approach modifies the surface growth dynamics of soot particles, affecting the surface area/volume ratio, decreasing the HACA mechanism and increasing PAH adsorption. The results show a decrease in the number of primary particles, observed all along the flame region. The coalescent model requires further improvements to evaluate the number of particles per aggregate. However, a better agreement with experimental data is observed than the default model, especially in the formation zone, where the coalescent model captures the magnitude and trend of the primary particle diameter.</p>
 
     <h2>Findings</h2>
-    <p>You can include a section on findings or results here.</p>
+    <p>
+    A simple coalescence model applicable to sectional soot particle simulations was introduced in order to study the effects on soot production/oxidation mechanisms, soot volume fraction, number and diameter of primary particles, and the particles per aggregate in a CH<sub>4</sub>/Jet A-1 coflow non-premixed flame. The implementation of the model allowed the soot particles in the first seven sections (d<sub>p</sub> &lt; 5.13 nm) to coalesce with particles from other sections. Consequently, the dynamics of soot particle surface growth were affected, enhancing soot growth via PAH adsorption and weakening growth via the HACA mechanism. From the comparison with the available experimental data, it is clear that the inclusion of coalescence is necessary to improve the prediction of particle size and number. However, further studies are needed to accurately reproduce the trend of particle number per aggregate, especially in the oxidation zone.
+    </p>
 
-    <iframe src="coalescence_plot.html" width="100%" height="800"></iframe>
-
+    <iframe src="coalescence_plot.html" width="100%" height="800" scrolling="no"></iframe>
 
     <a href="javascript:history.back()" >Back to main page</a>
 </body>
