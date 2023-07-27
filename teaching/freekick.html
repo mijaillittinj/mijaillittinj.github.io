@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" type="text/css" href="../css/style.css">
+</head>
+
+<body>
+  <h1>Football free kick</h1>
+  <input type="number" id="v0" placeholder="Initial velocity (m/s)">
+  <input type="number" id="cd" placeholder="Drag coefficient">
+  <input type="number" id="angle" placeholder="Angle (degrees)">
+  <button onclick="updatePlot()">Update Plot</button>
+  <div id='plot'></div>
+
+  <script>
+    function updatePlot() {
+      var v0 = parseFloat(document.getElementById('v0').value);
+      var cd = parseFloat(document.getElementById('cd').value);
+      var angle = parseFloat(document.getElementById('angle').value) * Math.PI / 180;
+
+      var D = 23 / 100;
+      var m = 0.43;
+      var rho = 1.2;
+      var g = 9.81;
+      var N = 1000;
+      var dt = 0.1;
+
+      var x = new Array(N).fill(0);
+      var y = new Array(N).fill(0);
+      var vx = new Array(N).fill(0);
+      var vy = new Array(N).fill(0);
+      var x_no_drag = new Array(N).fill(0);
+      var y_no_drag = new Array(N).fill(0);
+      var vx_no_drag = new Array(N).fill(0);
+      var vy_no_drag = new Array(N).fill(0);
+
+      vx[0] = v0 * Math.cos(angle);
+      vy[0] = v0 * Math.sin(angle);
+      vx_no_drag[0] = v0 * Math.cos(angle);
+      vy_no_drag[0] = v0 * Math.sin(angle);
+
+      var i = 0;
+      while (y[i] >= 0 && i < N - 1) {
+        vx[i + 1] = vx[i] - cd * Math.PI * D ** 2 * rho * vx[i] * dt / (4 * m);
+        vy[i + 1] = vy[i] - g * dt - cd * Math.PI * D ** 2 * rho * vy[i] * dt / (4 * m);
+        x[i + 1] = x[i] + vx[i + 1] * dt;
+        y[i + 1] = y[i] + vy[i + 1] * dt;
+
+        vx_no_drag[i + 1] = vx_no_drag[i];
+        vy_no_drag[i + 1] = vy_no_drag[i] - g * dt;
+        x_no_drag[i + 1] = x_no_drag[i] + vx_no_drag[i + 1] * dt;
+        y_no_drag[i + 1] = y_no_drag[i] + vy_no_drag[i + 1] * dt;
+
+        i++;
+      }
+
+      // Trim arrays to length i
+      x.length = i;
+      y.length = i;
+      x_no_drag.length = i;
+      y_no_drag.length = i;
+
+      var data = [{
+        x: x,
+        y: y,
+        mode: 'lines',
+        name: 'With Drag'
+      }, {
+        x: x_no_drag,
+        y: y_no_drag,
+        mode: 'lines',
+        name: 'Without Drag'
+      }];
+
+      var layout = {
+        xaxis: {
+          title: 'x (m)'
+        },
+        yaxis: {
+          title: 'y (m)'
+        },
+        title: 'Free Kick'
+      };
+
+      Plotly.newPlot('plot', data, layout);
+    }
+  </script>
+</body>
+
+</html>

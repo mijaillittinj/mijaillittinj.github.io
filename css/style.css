@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500&display=swap');
+
+body {
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 300;
+    font-size: 11pt;
+    text-align: justify;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 1em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 500;
+}
+
+nav {
+    border-bottom: 1px solid black;
+}
+
+.content {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 1em;
+}
+
+a:visited {
+    color: inherit;  /* This will retain the link color after being clicked */
+}
