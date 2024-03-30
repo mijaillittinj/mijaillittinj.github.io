@@ -6,28 +6,106 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" type="text/css" href="../css/style.css">
+  <style>
+    .input-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .input-row>label {
+      flex: 1;
+    }
+
+    .input-row>input,
+    .input-row>select {
+      flex: 1;
+      margin-left: 10px;
+    }
+
+    #drag-row {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    #drag-row>div {
+      flex: 1;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    #drag-row>div>select,
+    #drag-row>div>div>input {
+      margin-left: 10px;
+    }
+  </style>
 </head>
 
 <body>
-  <h1>Football free kick</h1>
-  <input type="number" id="v0" placeholder="Initial velocity (m/s)">
-  <input type="number" id="cd" placeholder="Drag coefficient">
-  <input type="number" id="angle" placeholder="Angle (degrees)">
+  <div class="input-row">
+    <label for="v0">Initial Velocity</label>
+    <input type="number" id="v0" placeholder="m/s">
+  </div>
+  <div id="drag-row">
+    <div>
+      <label for="drag_option">Drag Option</label>
+      <select id="drag_option" onchange="toggleCdInput()">
+        <option value="constant">Constant Cd</option>
+        <option value="variable">Variable Cd</option>
+      </select>
+    </div>
+    <div id="cd-input" style="display: none;">
+      <label for="cd">Cd Value</label>
+      <input type="number" id="cd" placeholder="Drag coefficient">
+    </div>
+  </div>
+  <div class="input-row">
+    <label for="angle">Angle</label>
+    <input type="number" id="angle" placeholder="degrees">
+  </div>
   <button onclick="updatePlot()">Update Plot</button>
   <div id='plot'></div>
 
   <script>
+    // Function to show or hide the Cd input field
+    function toggleCdInput() {
+      var drag_option = document.getElementById('drag_option').value;
+      if (drag_option == 'constant') {
+        document.getElementById('cd-input').style.display = 'flex';
+      } else {
+        document.getElementById('cd-input').style.display = 'none';
+      }
+    }
+
+    // Call the function once to set the initial state
+    toggleCdInput();
+    // Arrays of Cd and v values
+    var Cd_values = [0.289, 0.169, 0.154, 0.171, 0.164, 0.173, 0.177, 0.178, 0.177, 0.180, 0.181, 0.176, 0.176];
+    var v_values = [12.962, 13.992, 15.038, 17.029, 19.177, 20.342, 21.261, 23.285, 26.138, 27.181, 28.162, 29.114, 30.280];
+
+    // Linear interpolation function
+    function interpolate(x_values, y_values, x) {
+      for (var i = 0; i < x_values.length - 1; i++) {
+        if (x >= x_values[i] && x < x_values[i + 1]) {
+          var ratio = (x - x_values[i]) / (x_values[i + 1] - x_values[i]);
+          return y_values[i] + ratio * (y_values[i + 1] - y_values[i]);
+        }
+      }
+      return y_values[y_values.length - 1];
+    }
+
     function updatePlot() {
       var v0 = parseFloat(document.getElementById('v0').value);
       var cd = parseFloat(document.getElementById('cd').value);
       var angle = parseFloat(document.getElementById('angle').value) * Math.PI / 180;
+      var drag_option = document.getElementById('drag_option').value;
 
       var D = 23 / 100;
       var m = 0.43;
       var rho = 1.2;
       var g = 9.81;
       var N = 1000;
-      var dt = 0.1;
+      var dt = 0.01;
 
       var x = new Array(N).fill(0);
       var y = new Array(N).fill(0);
@@ -45,6 +123,11 @@
 
       var i = 0;
       while (y[i] >= 0 && i < N - 1) {
+        var v = Math.sqrt(vx[i] * vx[i] + vy[i] * vy[i]);
+        if (drag_option == "variable") {
+          cd = interpolate(v_values, Cd_values, v);
+        }
+
         vx[i + 1] = vx[i] - cd * Math.PI * D ** 2 * rho * vx[i] * dt / (4 * m);
         vy[i + 1] = vy[i] - g * dt - cd * Math.PI * D ** 2 * rho * vy[i] * dt / (4 * m);
         x[i + 1] = x[i] + vx[i + 1] * dt;
