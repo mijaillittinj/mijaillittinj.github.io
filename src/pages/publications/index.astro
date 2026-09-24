@@ -1,0 +1,129 @@
+---
+import Base from '../../layouts/Base.astro';
+import PubItem from '../../components/ui/PubItem.astro';
+import { visiblePublications, theses, autoSyncDate, themeLabels, domainLabels, type ThemeId, type DomainId } from '../../data/publications';
+import { url } from '../../i18n/utils';
+
+const pubs = [...visiblePublications].sort((a, b) => b.year - a.year);
+const years = [...new Set(pubs.map((p) => p.year))].sort((a, b) => b - a);
+const nPub = pubs.filter((p) => p.status === 'published' || p.status === 'in-press').length;
+const nAcc = pubs.filter((p) => p.status === 'accepted').length;
+const nFirst = pubs.filter((p) => p.firstAuthor).length;
+const nML = pubs.filter((p) => p.ml).length;
+const themeIds = Object.keys(themeLabels) as ThemeId[];
+const domainIds = Object.keys(domainLabels) as DomainId[];
+---
+<Base title="Publications" description="Peer-reviewed publications of Mijail Littin on inverse problems, physics-informed neural networks, optical diagnostics and thermal radiation, with DOIs, open-access links and BibTeX.">
+  <header class="page-head frame">
+    <p class="eyebrow">Publications</p>
+    <h1>Papers, with the methods first</h1>
+    <p class="lede abstract">{nPub} journal articles published or in press and {nAcc} accepted, {nFirst} as first author and {nML} based on neural networks or machine learning. Filter by research question or application domain. Every entry links to the version of record; full text is linked only when the publisher licence allows it.</p>
+  </header>
+
+  <section class="frame section--tight filters no-print" aria-label="Filters" data-filters hidden>
+    <div class="filters__row">
+      <label class="label" for="f-theme">Question</label>
+      <select id="f-theme" data-f="theme">
+        <option value="">All questions</option>
+        {themeIds.map((t) => <option value={t}>{themeLabels[t].en}</option>)}
+      </select>
+      <label class="label" for="f-domain">Domain</label>
+      <select id="f-domain" data-f="domain">
+        <option value="">All domains</option>
+        {domainIds.map((d) => <option value={d}>{domainLabels[d]}</option>)}
+      </select>
+      <label class="check"><input type="checkbox" data-f="first" /> First author</label>
+      <label class="check"><input type="checkbox" data-f="ml" /> Neural / ML</label>
+      <span class="meta" data-count aria-live="polite"></span>
+    </div>
+  </section>
+
+  <section class="frame">
+    {years.map((y) => (
+      <div class="row year" data-year-group={y}>
+        <h2 class="row__label nonum year__h">{y}</h2>
+        <div>
+          {pubs.filter((p) => p.year === y).map((p) => (
+            <div data-pub data-themes={p.themes.join(' ')} data-domains={p.domains.join(' ')} data-first={p.firstAuthor ? '1' : ''} data-ml={p.ml ? '1' : ''}>
+              <PubItem pub={p} />
+            </div>
+          ))}
+        </div>
+      </div>
+    ))}
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="row__label nonum">Theses</h2>
+      <div>
+        {theses.map((t) => (
+          <article class="pub">
+            <h3 class="thesis__t">{t.title}</h3>
+            <p class="meta">{t.kind}, {t.institution}, {t.year}. {t.note}</p>
+            <ul class="links"><li><a href={`https://doi.org/${t.doi}`}>DOI</a></li>{t.kind === 'PhD thesis' && <li><a href="https://theses.fr/2025NORMIR38">theses.fr</a></li>}</ul>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="row__label nonum">Notes</h2>
+      <div class="prose meta">
+        <p>This list is updated automatically from the <a href="https://orcid.org/0000-0002-5577-5060">ORCID</a> record and Crossref (last change detected on {autoSyncDate}); newly found papers appear before their summary is written. Conference contributions are listed in the <a href={url('/cv/')}>CV</a>. Manuscripts under review are not listed here until they are accepted. Author lists follow the published versions. Summaries on this page are written for this site and are not the publishers’ abstracts.</p>
+        <p>Profiles: <a href="https://orcid.org/0000-0002-5577-5060">ORCID 0000-0002-5577-5060</a> · <a href="https://www.scopus.com/authid/detail.uri?authorId=58550141200">Scopus 58550141200</a>.</p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const box = document.querySelector<HTMLElement>('[data-filters]')!;
+  box.hidden = false;
+  const theme = box.querySelector<HTMLSelectElement>('[data-f="theme"]')!;
+  const domain = box.querySelector<HTMLSelectElement>('[data-f="domain"]')!;
+  const first = box.querySelector<HTMLInputElement>('[data-f="first"]')!;
+  const ml = box.querySelector<HTMLInputElement>('[data-f="ml"]')!;
+  const count = box.querySelector<HTMLElement>('[data-count]')!;
+  const params = new URLSearchParams(location.search);
+  if (params.get('theme')) theme.value = params.get('theme')!;
+  if (params.get('domain')) domain.value = params.get('domain')!;
+  if (params.get('first')) first.checked = true;
+  if (params.get('ml')) ml.checked = true;
+  const apply = () => {
+    let n = 0;
+    document.querySelectorAll<HTMLElement>('[data-pub]').forEach((el) => {
+      const ok = (!theme.value || el.dataset.themes!.split(' ').includes(theme.value))
+        && (!domain.value || el.dataset.domains!.split(' ').includes(domain.value))
+        && (!first.checked || el.dataset.first === '1')
+        && (!ml.checked || el.dataset.ml === '1');
+      el.hidden = !ok;
+      if (ok) n++;
+    });
+    document.querySelectorAll<HTMLElement>('[data-year-group]').forEach((g) => {
+      g.hidden = !g.querySelector('[data-pub]:not([hidden])');
+    });
+    count.textContent = `${n} shown`;
+    const q = new URLSearchParams();
+    if (theme.value) q.set('theme', theme.value);
+    if (domain.value) q.set('domain', domain.value);
+    if (first.checked) q.set('first', '1');
+    if (ml.checked) q.set('ml', '1');
+    history.replaceState(null, '', q.toString() ? `?${q}` : location.pathname);
+  };
+  [theme, domain, first, ml].forEach((c) => c.addEventListener('change', apply));
+  apply();
+</script>
+
+<style>
+  .filters { border-bottom: 0.5px solid var(--ink-3); }
+  .filters__row { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-4); align-items: center; font-family: var(--font-sans); font-size: var(--step--1); }
+  .check { display: inline-flex; gap: 0.4rem; align-items: center; }
+  .year { padding-block: var(--s-5); }
+  .year__h { font-size: var(--step-1) !important; }
+  .year > div > div:first-child :global(.pub) { border-top: 0; padding-top: 0; }
+  .thesis__t { font-size: var(--step-0); font-weight: 600; line-height: 1.35; }
+  @media (max-width: 40rem) { .filters { position: static; } }
+</style>

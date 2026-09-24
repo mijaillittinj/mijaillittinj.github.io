@@ -1,0 +1,57 @@
+---
+/**
+ * A short derivation shown step by step. Each step has LaTeX and a plain-language note.
+ * Without JavaScript all steps are visible; with JS the reader reveals them in order.
+ */
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
+interface Step { tex: string; note: string }
+interface Props { steps: Step[]; title?: string }
+const { steps, title } = Astro.props;
+const rendered = steps.map((s) => ({ ...s, html: katex.renderToString(s.tex, { displayMode: true, throwOnError: false, output: 'htmlAndMathml', strict: 'ignore' }) }));
+---
+<div class="deriv" data-deriv>
+  {title && <p class="panel-title">{title}</p>}
+  <ol>
+    {rendered.map((s, i) => (
+      <li data-step={i}>
+        <div class="deriv__eq" set:html={s.html} />
+        <p class="deriv__note">{s.note}</p>
+      </li>
+    ))}
+  </ol>
+  <div class="deriv__ctrl no-print">
+    <button type="button" class="btn" data-next>Next step</button>
+    <button type="button" class="btn" data-all>Show all</button>
+    <span class="meta" data-count></span>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-deriv]').forEach((root) => {
+    const items = [...root.querySelectorAll<HTMLElement>('li[data-step]')];
+        const count = root.querySelector<HTMLElement>('[data-count]')!;
+    let shown = 1;
+    const update = () => {
+      items.forEach((li, i) => li.classList.toggle('is-hidden', i >= shown));
+      count.textContent = `${Math.min(shown, items.length)} / ${items.length}`;
+      root.querySelector<HTMLButtonElement>('[data-next]')!.disabled = shown >= items.length;
+    };
+    root.querySelector('[data-next]')!.addEventListener('click', () => { shown++; update(); });
+    root.querySelector('[data-all]')!.addEventListener('click', () => { shown = items.length; update(); });
+    update();
+  });
+</script>
+
+<style>
+  .deriv { margin-block: var(--s-6); }
+  ol { list-style: none; padding: 0; counter-reset: step; }
+  li { counter-increment: step; display: grid; grid-template-columns: 2rem 1fr; gap: 0 var(--s-3); padding-block: var(--s-3); border-top: 1px solid var(--rule); transition: opacity 0.25s; }
+  li::before { content: counter(step); grid-row: span 2; font-family: var(--font-sans); font-size: var(--step--1); color: var(--ink-3); padding-top: 0.6em; }
+  li.is-hidden { display: none; }
+  .deriv__eq { overflow-x: auto; }
+  .deriv__eq :global(.katex-display) { margin: 0.2em 0; text-align: left; }
+  .deriv__note { font-size: var(--step--1); font-family: var(--font-sans); color: var(--ink-2); }
+  :global(html:not(.js)) .deriv__ctrl { display: none !important; }
+  .deriv__ctrl { display: flex; gap: var(--s-3); align-items: center; margin-top: var(--s-3); }
+</style>

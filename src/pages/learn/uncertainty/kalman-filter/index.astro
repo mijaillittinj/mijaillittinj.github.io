@@ -1,0 +1,37 @@
+---
+import LearnModule from '../../../../layouts/LearnModule.astro';
+import Equation from '../../../../components/viz/Equation.astro';
+import KalmanExplorer from '../../../../components/viz/KalmanExplorer.astro';
+import { url } from '../../../../i18n/utils';
+---
+<LearnModule slug="uncertainty/kalman-filter" description="Track a drone from noisy GPS fixes with a Kalman filter: prediction and update steps, covariance ellipse, measurement and process noise, and the balance between model and data.">
+  <div class="prose">
+    <h2>Two imperfect sources of information</h2>
+    <p>A drone reports its position by GPS once per second, with errors of a few metres. We also know something about how drones move: they do not jump, and their velocity changes gradually. The Kalman filter combines the two, a <em>model</em> and the <em>data</em>, and weighs each by how much it can be trusted.</p>
+    <p>The state is position and velocity, <em>s</em> = (<em>x</em>, <em>y</em>, <em>v<sub>x</sub></em>, <em>v<sub>y</sub></em>). The model says the velocity is roughly constant, up to random accelerations of intensity <em>q</em>; the GPS measures the position with noise of standard deviation <em>r</em>:</p>
+    <Equation tex={String.raw`s_{k} = F s_{k-1} + w_k,\quad w_k \sim \mathcal N(0, Q(q)), \qquad z_k = H s_k + v_k,\quad v_k \sim \mathcal N(0, r^2 I).`} />
+    <h2>Predict, then correct</h2>
+    <p>Each time step has two stages. The <strong>prediction</strong> moves the estimate forward with the model and inflates its covariance <em>P</em>, because the model is imperfect. The <strong>update</strong> compares the prediction with the new GPS fix and moves part of the way towards it:</p>
+    <Equation tex={String.raw`\hat s_k^- = F \hat s_{k-1}, \quad P_k^- = F P_{k-1} F^{\mathsf T} + Q; \qquad K_k = P_k^- H^{\mathsf T}\big(H P_k^- H^{\mathsf T} + r^2 I\big)^{-1},`} />
+    <Equation tex={String.raw`\hat s_k = \hat s_k^- + K_k\,\big(z_k - H \hat s_k^-\big), \qquad P_k = (I - K_k H)\, P_k^- .`} />
+    <p>The <strong>Kalman gain</strong> <em>K</em> decides how far to move: close to 1 when the prediction is uncertain compared with the measurement, close to 0 when the measurement is the noisier of the two. For a linear model with Gaussian noise, this is the best possible estimate in the mean-square sense.</p>
+  </div>
+
+  <KalmanExplorer />
+
+  <div class="try">
+    <h3>Exercises</h3>
+    <ol>
+      <li>Press Play with the defaults. Compare the RMS error of the raw GPS fixes with that of the filter. Where along the path is the filter least accurate?</li>
+      <li>Lower the process noise to log₁₀ q = −5. The filter now believes the drone flies in straight lines. What happens at the turns? This is a model that trusts itself too much.</li>
+      <li>Raise it to +1. The estimate now jumps with every fix: the filter trusts the data almost completely, and the gain in the readout approaches 100 %.</li>
+      <li>Find the value of <em>q</em> that minimises the error, then double the GPS noise. Does the best <em>q</em> change? How does the size of the ellipse relate to the actual error?</li>
+      <li>The ellipse shrinks quickly after the first few fixes and then stays about the same size. Why does it not keep shrinking forever?</li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>Where it is used</h2>
+    <p>Kalman filters run in navigation systems, aircraft, phones and industrial controllers. The same pattern, a forward model plus data weighted by their uncertainties, is the core of data assimilation in weather forecasting and of the <a href={url('/learn/uncertainty/bayesian-mcmc/')}>Bayesian inference module</a>: the filter is Bayes’ theorem applied recursively, one measurement at a time, when everything is linear and Gaussian. The balance between trusting the model and trusting the data is the same trade-off as the regularisation parameter in the <a href={url('/learn/inverse-problems/svd-noise-amplification/')}>SVD module</a>.</p>
+  </div>
+</LearnModule>

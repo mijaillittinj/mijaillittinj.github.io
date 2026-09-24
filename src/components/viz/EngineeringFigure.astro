@@ -1,0 +1,100 @@
+---
+/**
+ * Homepage Figure 1: forward and inverse problems across engineering.
+ * One tab per field; each tab is a self-contained component in src/components/apps/
+ * that initialises lazily when it receives the `eng:show` event (see the tab contract
+ * in docs/ARCHITECTURE_DECISIONS.md).
+ */
+import MechanicalTab from '../apps/MechanicalTab.astro';
+import ChemicalTab from '../apps/ChemicalTab.astro';
+import CivilTab from '../apps/CivilTab.astro';
+import IndustrialTab from '../apps/IndustrialTab.astro';
+import MiningTab from '../apps/MiningTab.astro';
+import ElectricalTab from '../apps/ElectricalTab.astro';
+import ComputingTab from '../apps/ComputingTab.astro';
+import FinanceTab from '../apps/FinanceTab.astro';
+interface Props { lang?: 'en' | 'es' }
+const { lang = 'en' } = Astro.props;
+const es = lang === 'es';
+const tabs = es
+  ? [['mechanical', 'Mecánica y energía', 'tomografía de llamas'], ['chemical', 'Química', 'cinética de reacciones'], ['civil', 'Civil', 'localización de sismos'], ['electrical', 'Eléctrica', 'medidores inteligentes'], ['industrial', 'Industrial', 'rutas de reparto'], ['finance', 'Finanzas', 'valoración de opciones'], ['mining', 'Minas', 'exploración gravimétrica'], ['computing', 'Computación', 'restauración de imágenes']]
+  : [['mechanical', 'Mechanical & energy', 'flame tomography'], ['chemical', 'Chemical', 'reaction kinetics'], ['civil', 'Civil', 'locating earthquakes'], ['electrical', 'Electrical', 'smart meters'], ['industrial', 'Industrial', 'delivery routing'], ['finance', 'Finance', 'option pricing'], ['mining', 'Mining', 'gravity exploration'], ['computing', 'Computing', 'image deblurring']];
+const T = es
+  ? { label: 'Área de la ingeniería', fig: 'Figura 1.', cap: 'Problemas directos e inversos en la ingeniería. El problema directo predice lo que se mide a partir de las causas; el inverso infiere las causas, que no se ven, a partir de mediciones indirectas y ruidosas. Elija un área: todos los cálculos se hacen en su navegador. La pestaña de mecánica y energía usa una simulación CoFlame de una llama real; las demás son ejemplos sintéticos.' }
+  : { label: 'Engineering field', fig: 'Figure 1.', cap: 'Forward and inverse problems across engineering. A forward problem predicts what is measured from its causes; an inverse problem infers hidden causes from indirect, noisy measurements. Choose a field: every computation runs in your browser. The mechanical and energy tab uses a CoFlame simulation of a real laboratory flame; the others are synthetic examples.' };
+---
+<figure class="eng wideblock" data-eng>
+  <div class="eng__tabs" role="tablist" aria-label={T.label}>
+    {tabs.map(([id, name, what], i) => (
+      <button type="button" role="tab" id={`eng-tab-${id}-${lang}`} aria-controls={`eng-panel-${id}-${lang}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1} data-eng-btn={id}>
+        <span class="eng__name">{name}</span><span class="eng__what">{what}</span>
+      </button>
+    ))}
+  </div>
+  <div class="eng__panels">
+    <div role="tabpanel" id={`eng-panel-mechanical-${lang}`} aria-labelledby={`eng-tab-mechanical-${lang}`} data-eng-panel="mechanical"><MechanicalTab lang={lang} hidden={false} /></div>
+    <div role="tabpanel" id={`eng-panel-chemical-${lang}`} aria-labelledby={`eng-tab-chemical-${lang}`} data-eng-panel="chemical" hidden><ChemicalTab lang={lang} hidden /></div>
+    <div role="tabpanel" id={`eng-panel-civil-${lang}`} aria-labelledby={`eng-tab-civil-${lang}`} data-eng-panel="civil" hidden><CivilTab lang={lang} hidden /></div>
+    <div role="tabpanel" id={`eng-panel-electrical-${lang}`} aria-labelledby={`eng-tab-electrical-${lang}`} data-eng-panel="electrical" hidden><ElectricalTab lang={lang} hidden /></div>
+    <div role="tabpanel" id={`eng-panel-industrial-${lang}`} aria-labelledby={`eng-tab-industrial-${lang}`} data-eng-panel="industrial" hidden><IndustrialTab lang={lang} hidden /></div>
+    <div role="tabpanel" id={`eng-panel-finance-${lang}`} aria-labelledby={`eng-tab-finance-${lang}`} data-eng-panel="finance" hidden><FinanceTab lang={lang} hidden /></div>
+    <div role="tabpanel" id={`eng-panel-mining-${lang}`} aria-labelledby={`eng-tab-mining-${lang}`} data-eng-panel="mining" hidden><MiningTab lang={lang} hidden /></div>
+    <div role="tabpanel" id={`eng-panel-computing-${lang}`} aria-labelledby={`eng-tab-computing-${lang}`} data-eng-panel="computing" hidden><ComputingTab lang={lang} hidden /></div>
+  </div>
+  <figcaption><span class="fig-num">{T.fig}</span>{T.cap}</figcaption>
+</figure>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-eng]').forEach((fig) => {
+    const btns = [...fig.querySelectorAll<HTMLButtonElement>('[data-eng-btn]')];
+    const panels = [...fig.querySelectorAll<HTMLElement>('[data-eng-panel]')];
+    // Tabs initialise on `eng:show`; the tab root is hidden together with its panel.
+    const tabRoot = (p: HTMLElement) => p.querySelector<HTMLElement>('[data-eng-tab]');
+    panels.forEach((p) => { const r = tabRoot(p); if (r) r.hidden = p.hidden; });
+    const select = (id: string, focus = false) => {
+      btns.forEach((b) => {
+        const on = b.dataset.engBtn === id;
+        b.setAttribute('aria-selected', String(on));
+        b.tabIndex = on ? 0 : -1;
+        if (on && focus) b.focus();
+      });
+      panels.forEach((p) => {
+        const on = p.dataset.engPanel === id;
+        p.hidden = !on;
+        const r = tabRoot(p);
+        if (r) { r.hidden = !on; if (on) r.dispatchEvent(new CustomEvent('eng:show')); }
+      });
+      try { history.replaceState(null, '', `#${id}`); } catch {}
+    };
+    btns.forEach((b, i) => {
+      b.addEventListener('click', () => select(b.dataset.engBtn!));
+      b.addEventListener('keydown', (e) => {
+        const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+        if (d) { e.preventDefault(); select(btns[(i + d + btns.length) % btns.length].dataset.engBtn!, true); }
+      });
+    });
+    const fromHash = location.hash.slice(1);
+    if (btns.some((b) => b.dataset.engBtn === fromHash)) select(fromHash);
+  });
+</script>
+
+<style>
+  .eng { margin-block: var(--s-4) var(--s-2); }
+  .eng__tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.1rem 1.4rem; border-bottom: 0.5px solid var(--ink-3); padding-bottom: var(--s-2); margin-bottom: var(--s-4); }
+  .eng__tabs button { border: 0; background: none; padding: 0.2rem 0; display: grid; justify-items: center; line-height: 1.2; color: var(--accent); cursor: pointer; }
+  @media (min-width: 34.01rem) { .eng__tabs { display: grid; grid-template-columns: repeat(4, auto); justify-content: center; gap: 0.35rem 2.2rem; } }
+  .eng__name { font-size: var(--step-0); }
+  .eng__what { font-size: var(--step--2); font-style: italic; color: var(--ink-3); }
+  .eng__tabs button:hover .eng__name { text-decoration: underline; }
+  .eng__tabs button[aria-selected='true'] { color: var(--ink); }
+  .eng__tabs button[aria-selected='true'] .eng__name { text-decoration: underline; text-decoration-thickness: 0.08em; text-underline-offset: 0.22em; }
+  .eng__panels { max-width: 42rem; margin-inline: auto; }
+  .eng :global(.eng-fi) { text-align: center; font-size: var(--step--1); max-width: 36rem; margin: 0 auto var(--s-4); }
+  .eng :global(.eng-fi em) { font-variant: small-caps; font-style: normal; font-family: var(--font-caps); text-transform: lowercase; font-size: 1.05em; }
+  .eng :global(.eng-cap) { font-size: var(--step--1); color: var(--ink-2); margin-top: var(--s-3); text-align: justify; hyphens: auto; }
+  @media (max-width: 34rem) {
+    .eng__tabs { gap: 0.1rem 0.9rem; }
+    .eng__what { display: none; }
+    .eng :global(.eng-cap) { text-align: left; }
+  }
+</style>

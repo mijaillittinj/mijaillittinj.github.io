@@ -1,0 +1,14 @@
+---
+/** Base slide. Put speaker notes in <Notes> (slot "notes"). */
+interface Props { title?: string; kicker?: string; plain?: boolean; class?: string; center?: boolean }
+const { title, kicker, plain = false, class: cls, center = false } = Astro.props;
+---
+<section class:list={['slide', cls, { 'slide--plain': plain, 'slide--center': center }]} data-title={title}>
+  {kicker && <p class="kicker">{kicker}</p>}
+  {title && <h2>{title}</h2>}
+  <div class="body"><slot /></div>
+  <aside class="notes"><slot name="notes" /></aside>
+</section>
+<style>
+  .slide--center .body { align-items: center; text-align: center; }
+</style>

@@ -1,0 +1,80 @@
+/* Design tokens: a LaTeX article on screen. See DESIGN_SYSTEM.md. */
+:root {
+  /* Typefaces: Computer Modern throughout (text matches the mathematics) */
+  --font-serif: 'CMU Serif', 'Latin Modern Roman', 'Computer Modern Serif', Georgia, serif;
+  --font-sans: var(--font-serif);           /* no sans-serif: labels use small caps instead */
+  --font-caps: 'LM Caps', 'CMU Serif', Georgia, serif; /* true small capitals */
+  --font-mono: 'CMU Typewriter', 'Latin Modern Mono', ui-monospace, Menlo, monospace;
+
+  /* Type scale, close to LaTeX \small … \LARGE at a 11pt-like body */
+  --step--2: 0.8rem;
+  --step--1: 0.9rem;
+  --step-0: clamp(1.08rem, 1.03rem + 0.2vw, 1.19rem);
+  --step-1: 1.25rem;
+  --step-2: 1.44rem;
+  --step-3: 1.6rem;
+  --step-4: clamp(1.9rem, 1.6rem + 1.2vw, 2.45rem);
+  --step-5: clamp(2.2rem, 1.8rem + 1.8vw, 3rem);
+
+  /* Spacing (4px base) */
+  --s-1: 0.25rem; --s-2: 0.5rem; --s-3: 0.75rem; --s-4: 1rem; --s-5: 1.5rem;
+  --s-6: 2rem; --s-7: 3rem; --s-8: 4rem; --s-9: 6rem; --s-10: 8rem;
+
+  /* Layout: one text column; figures and labs may break out to --wide-block */
+  --measure: 40rem;
+  --wide: 42rem;
+  --wide-block: 58rem;
+  --gutter: clamp(1rem, 0.5rem + 2.5vw, 2rem);
+  --margin-col: 0;
+  --radius: 0;
+
+  /* Neutral palette: white paper, black ink */
+  --paper: #fefefe;
+  --paper-2: #f6f6f4;
+  --paper-3: #ecebe7;
+  --ink: #111111;
+  --ink-2: #333333;
+  --ink-3: #5c5c5c;
+  --rule: #d6d6d2;
+  --rule-strong: #9a9a96;
+
+  /* Links (hyperref-like dark blue) */
+  --accent: #1c3f94;
+  --accent-ink: #122c6b;
+  --accent-soft: #eef1f8;
+
+  /* Scientific semantics: used only inside figures and plots */
+  --c-data: #b4531a;
+  --c-physics: #1c3f94;
+  --c-learned: #6a4a9c;
+  --c-truth: #17785a;
+  --c-warn: #a3261f;
+  --c-band: rgb(106 74 156 / 0.16);
+
+  --focus: #1c3f94;
+  --selection: #d9e0f0;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --paper: #16171a; --paper-2: #1d1f23; --paper-3: #27292e;
+    --ink: #e9e7e2; --ink-2: #c9c7c1; --ink-3: #9d9b95;
+    --rule: #34363b; --rule-strong: #5a5c61;
+    --accent: #9db8ec; --accent-ink: #bfd0f4; --accent-soft: #1f2a3f;
+    --c-data: #e39a64; --c-physics: #9db8ec; --c-learned: #b9a2e6; --c-truth: #62c7a2; --c-warn: #f07a70;
+    --c-band: rgb(185 162 230 / 0.2);
+    --focus: #9db8ec; --selection: #2b3d5c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --paper: #16171a; --paper-2: #1d1f23; --paper-3: #27292e;
+  --ink: #e9e7e2; --ink-2: #c9c7c1; --ink-3: #9d9b95;
+  --rule: #34363b; --rule-strong: #5a5c61;
+  --accent: #9db8ec; --accent-ink: #bfd0f4; --accent-soft: #1f2a3f;
+  --c-data: #e39a64; --c-physics: #9db8ec; --c-learned: #b9a2e6; --c-truth: #62c7a2; --c-warn: #f07a70;
+  --c-band: rgb(185 162 230 / 0.2);
+  --focus: #9db8ec; --selection: #2b3d5c;
+  color-scheme: dark;
+}

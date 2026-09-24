@@ -1,0 +1,521 @@
+---
+/**
+ * Civil engineering tab: locating an earthquake from P-wave arrival times.
+ * Forward: place the epicentre and watch the wavefront reach the stations.
+ * Inverse: a hidden earthquake (unknown place and origin time) is located from noisy
+ * arrivals; the misfit map and a 95 % region show how station geometry controls the
+ * uncertainty. Synthetic, homogeneous medium (src/lib/eng/quake.ts).
+ */
+import Equation from '../viz/Equation.astro';
+interface Props { lang?: 'en' | 'es'; hidden?: boolean }
+const { lang = 'en', hidden = false } = Astro.props;
+const es = lang === 'es';
+const T = es
+  ? {
+      fwd: 'Directo', inv: 'Inverso',
+      fi: [': dado el epicentro y la velocidad de las ondas, calcular cuándo llega la onda P a cada estación. ', ': a partir de los tiempos de llegada, con ruido, encontrar dónde y cuándo ocurrió el sismo.'],
+      mode: 'Modo', mFwd: 'directo: ubicar el sismo', mInv: 'inverso: localizar un sismo oculto',
+      layout: 'Estaciones', lSpread: 'repartidas', lLine: 'en línea', lCluster: 'agrupadas',
+      noise: 'Ruido en los tiempos de llegada', replay: 'repetir las ondas', newq: 'nuevo sismo', reveal: 'revelar', hide: 'ocultar',
+      arrivals: 'Tiempos de llegada', map: 'Mapa de 200 km × 200 km con estaciones sismológicas',
+      hint: 'Arrastre las estaciones (triángulos)', hintFwd: ' o el epicentro (estrella); también puede hacer clic en el mapa.', hintInv: '; el mapa de desajuste se recalcula al instante.',
+      legEst: 'estimación', legReg: 'región del 95 %', legTrue: 'verdadero',
+      method: 'Método', mCls: 'búsqueda del desajuste (clásico)', mPinn: 'PINN',
+      train: 'entrenar la PINN', stop: 'detener', legPinn: 'PINN', legIso: 'isócronas de la PINN', legCls: 'clásico',
+      lossLabel: 'La PINN minimiza',
+      pinnCap: ' Versión PINN: el tiempo de viaje es una red de coordenadas τ_θ(x, y) (en forma factorizada, con la fuente puntual incluida), y el epicentro y la hora de origen son parámetros entrenables; la ecuación eikonal de propagación de ondas está en la función de pérdida. En un medio homogéneo llega a la misma respuesta que la búsqueda clásica; su interés es que la misma formulación sirve en medios heterogéneos, donde no hay una fórmula cerrada para el tiempo de viaje.',
+      cap: 'Localizar un sismo es un problema inverso clásico: cada estación solo informa un tiempo, y el lugar y la hora de origen se deducen minimizando el desajuste entre los tiempos medidos y los que predice el modelo directo. La geometría de la red lo decide todo: con estaciones que rodean la fuente la región de incertidumbre es pequeña; con estaciones en línea se alarga y aparece una solución espejo igual de buena; con estaciones agrupadas la distancia queda mal determinada. Ejemplo sintético con un medio homogéneo (v = 6 km/s).',
+    }
+  : {
+      fwd: 'Forward', inv: 'Inverse',
+      fi: [': given the epicentre and the wave speed, compute when the P wave reaches each station. ', ': from noisy arrival times, find where and when the earthquake happened.'],
+      mode: 'Mode', mFwd: 'forward: place the earthquake', mInv: 'inverse: locate a hidden one',
+      layout: 'Stations', lSpread: 'spread out', lLine: 'in a line', lCluster: 'clustered',
+      noise: 'Noise on arrival times', replay: 'replay the waves', newq: 'new earthquake', reveal: 'reveal', hide: 'hide',
+      arrivals: 'Arrival times', map: 'Map of 200 km × 200 km with seismic stations',
+      hint: 'Drag the stations (triangles)', hintFwd: ' or the epicentre (star); you can also click on the map.', hintInv: '; the misfit map is recomputed at once.',
+      legEst: 'estimate', legReg: '95 % region', legTrue: 'true',
+      method: 'Method', mCls: 'misfit search (classical)', mPinn: 'PINN',
+      train: 'train the PINN', stop: 'stop', legPinn: 'PINN', legIso: 'PINN isochrones', legCls: 'classical',
+      lossLabel: 'The PINN minimises',
+      pinnCap: ' PINN version: the travel time is a coordinate network τ_θ(x, y) (in factored form, with the point source built in), and the epicentre and origin time are trainable parameters; the eikonal equation of wave propagation is in the loss. In a homogeneous medium it reaches the same answer as the classical search; its value is that the same formulation works in heterogeneous media, where no closed-form travel time exists.',
+      cap: 'Locating an earthquake is a classic inverse problem: each station reports only a time, and the place and origin time are found by minimising the misfit between measured times and those predicted by the forward model. The network geometry decides everything: stations that surround the source give a small uncertainty region; stations in a line stretch it and produce an equally good mirror solution; clustered stations leave the distance poorly determined. Synthetic example in a homogeneous medium (v = 6 km/s).',
+    };
+const client = { lang, legEst: T.legEst, legReg: T.legReg, legTrue: T.legTrue, reveal: T.reveal, hide: T.hide, hint: T.hint, hintFwd: T.hintFwd, hintInv: T.hintInv, train: T.train, stop: T.stop, legPinn: T.legPinn, legIso: T.legIso, legCls: T.legCls };
+---
+<div class="eng-tab q" data-eng-tab="civil" hidden={hidden} data-q-text={JSON.stringify(client)}>
+  <p class="eng-fi"><em>{T.fwd}</em>{T.fi[0]}<em>{T.inv}</em>{T.fi[1]}</p>
+
+  <div class="q__top">
+    <div class="seg" role="group" aria-label={T.mode}>
+      <button type="button" data-q-mode="fwd" aria-pressed="true">{T.mFwd}</button>
+      <button type="button" data-q-mode="inv" aria-pressed="false">{T.mInv}</button>
+    </div>
+  </div>
+
+  <div class="q__grid">
+    <div class="q__mapwrap">
+      <canvas class="q__canvas" data-q-canvas role="img" aria-label={T.map}></canvas>
+      <p class="q__hint meta" data-q-hint></p>
+    </div>
+    <div class="q__side">
+      <p class="q__h">{T.arrivals}</p>
+      <ol class="q__list" data-q-list></ol>
+    </div>
+  </div>
+
+  <div class="q__controls">
+    <div class="control">
+      <span class="control__head">{T.layout}</span>
+      <div class="seg" role="group" aria-label={T.layout}>
+        <button type="button" data-q-layout="spread" aria-pressed="true">{T.lSpread}</button>
+        <button type="button" data-q-layout="line" aria-pressed="false">{T.lLine}</button>
+        <button type="button" data-q-layout="cluster" aria-pressed="false">{T.lCluster}</button>
+      </div>
+    </div>
+    <div class="control" data-q-only="inv" hidden>
+      <div class="control__head"><label for={`q-noise-${lang}`}>{T.noise}</label><output data-q-nout>0.15 s</output></div>
+      <input id={`q-noise-${lang}`} data-q-noise type="range" min="0" max="0.5" step="0.01" value="0.15" />
+    </div>
+    <div class="control" data-q-only="inv" hidden>
+      <span class="control__head">{T.method}</span>
+      <div class="seg" role="group" aria-label={T.method}>
+        <button type="button" data-q-method="cls" aria-pressed="true">{T.mCls}</button>
+        <button type="button" data-q-method="pinn" aria-pressed="false">{T.mPinn}</button>
+      </div>
+    </div>
+    <p class="q__btns">
+      <button type="button" class="btn" data-q-replay data-q-only="fwd">{T.replay}</button>
+      <button type="button" class="btn" data-q-train data-q-only="inv" hidden>{T.train}</button>
+      <button type="button" class="btn" data-q-new data-q-only="inv" hidden>{T.newq}</button>
+      <button type="button" class="btn" data-q-reveal data-q-only="inv" hidden>{T.reveal}</button>
+    </p>
+  </div>
+
+  <div class="eng-eqs">
+    <Equation tex={String.raw`t_i = t_0 + \frac{\lVert \mathbf{x}_i - \mathbf{x}_s \rVert}{v}`} />
+    <Equation tex={String.raw`(\hat{\mathbf{x}}_s, \hat t_0) = \arg\min \sum_i \big(t_i^{\mathrm{obs}} - t_i\big)^2`} />
+  </div>
+  <p class="meta q__loss" data-q-pinnonly hidden>{T.lossLabel} <Equation display={false} tex={String.raw`\mathcal{L} = \frac{1}{N}\sum_i \big(t_0 + \tau_\theta(\mathbf{x}_i) - t_i^{\mathrm{obs}}\big)^2/\sigma^2 + \frac{\lambda}{M}\sum_k \big(v^2 \lVert \nabla \tau_\theta(\mathbf{x}_k) \rVert^2 - 1\big)^2`} /></p>
+  <p class="lab__readout" data-q-read aria-live="polite"></p>
+  <p class="eng-cap">{T.cap}{T.pinnCap}</p>
+</div>
+
+<script>
+  import { arrivalTimes, misfitMap, confidenceLevel, regionArea, contourSegments, hiddenQuake, V_P, type Pt, type MisfitMap } from '../../lib/eng/quake';
+  import { cssVar } from '../../lib/plot';
+  import { initQuakeNet, collocation, makeQuakeTrainer, travelTimeGrid, type QuakeNet } from '../../lib/eng/pinn-quake';
+
+  const L = 200;
+  const LAYOUTS: Record<string, Pt[]> = {
+    spread: [{ x: 30, y: 40 }, { x: 170, y: 30 }, { x: 100, y: 172 }, { x: 36, y: 150 }, { x: 165, y: 140 }, { x: 105, y: 88 }],
+    line: [22, 52, 82, 112, 142, 172].map((x) => ({ x, y: 100 })),
+    cluster: [{ x: 20, y: 22 }, { x: 52, y: 26 }, { x: 30, y: 56 }, { x: 60, y: 50 }, { x: 14, y: 42 }, { x: 44, y: 10 }],
+  };
+
+  const hex = (c: string): [number, number, number] => {
+    const m = c.trim().match(/^#([0-9a-f]{6})$/i);
+    if (m) { const v = parseInt(m[1], 16); return [v >> 16, (v >> 8) & 255, v & 255]; }
+    const r = c.match(/\d+(\.\d+)?/g);
+    return r ? [+r[0], +r[1], +r[2]] : [128, 128, 128];
+  };
+
+  function init(root: HTMLElement) {
+    const text = JSON.parse(root.dataset.qText!);
+    const es = text.lang === 'es';
+    const canvas = root.querySelector<HTMLCanvasElement>('[data-q-canvas]')!;
+    const ctx = canvas.getContext('2d')!;
+    const list = root.querySelector<HTMLOListElement>('[data-q-list]')!;
+    const read = root.querySelector<HTMLElement>('[data-q-read]')!;
+    const hint = root.querySelector<HTMLElement>('[data-q-hint]')!;
+    const noiseIn = root.querySelector<HTMLInputElement>('[data-q-noise]')!;
+    const nout = root.querySelector<HTMLOutputElement>('[data-q-nout]')!;
+    const revealBtn = root.querySelector<HTMLButtonElement>('[data-q-reveal]')!;
+    const heat = document.createElement('canvas');
+    const fmt1 = (v: number) => (es ? v.toFixed(1).replace('.', ',') : v.toFixed(1));
+    const fmt2 = (v: number) => (es ? v.toFixed(2).replace('.', ',') : v.toFixed(2));
+
+    let mode: 'fwd' | 'inv' = 'fwd';
+    let stations: Pt[] = LAYOUTS.spread.map((p) => ({ ...p }));
+    let src: Pt = { x: 118, y: 96 };
+    let tAnim = 0, animating = false, raf = 0, dragging: { kind: 'st' | 'src'; i: number } | null = null;
+    let quakeSeed = 3, quake = hiddenQuake(quakeSeed), revealed = false;
+    let map: MisfitMap | null = null, level = 0, obs: number[] = [];
+    let W = 300, pad = 30;
+    // PINN state
+    const trainBtn = root.querySelector<HTMLButtonElement>('[data-q-train]')!;
+    const COL = collocation(200, L, 5), STEPS = 1500, PER_FRAME = 15, ISO = 30;
+    let method: 'cls' | 'pinn' = 'cls';
+    let net: QuakeNet | null = null, trainer: ReturnType<typeof makeQuakeTrainer> | null = null;
+    let pinnRes = { data: NaN, eik: NaN }, path: Pt[] = [], iso: Float32Array | null = null, trainedOnce = false, training = false, praf = 0;
+
+    const col = () => ({
+      ink: cssVar('--ink'), ink3: cssVar('--ink-3'), rule: cssVar('--rule'), paper: cssVar('--paper'),
+      data: cssVar('--c-data'), phys: cssVar('--c-physics'), learned: cssVar('--c-learned'), truth: cssVar('--c-truth'), warn: cssVar('--c-warn'),
+      font: cssVar('--font-serif') || 'serif',
+    });
+    const X = (x: number) => pad + (x / L) * (W - pad - 8);
+    const Y = (y: number) => W - pad - (y / L) * (W - pad - 8);
+    const invX = (px: number) => ((px - pad) / (W - pad - 8)) * L;
+    const invY = (py: number) => ((W - pad - py) / (W - pad - 8)) * L;
+
+    const resize = () => {
+      const w = Math.round(canvas.clientWidth);
+      if (!w) return false;
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = w; pad = w < 340 ? 26 : 32;
+      canvas.width = Math.round(w * dpr); canvas.height = Math.round(w * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return true;
+    };
+
+    const computeInverse = (n = 100) => {
+      const sig = +noiseIn.value;
+      obs = arrivalTimes(stations, quake.src, quake.t0).map((t, i) => t + sig * quake.draws[i]);
+      map = misfitMap(stations, obs, n, L);
+      level = confidenceLevel(map.min, sig);
+      // heat map: paper (large misfit) to model blue (small misfit), log scale
+      const c = col();
+      const a = hex(c.paper), b = hex(c.phys);
+      heat.width = n; heat.height = n;
+      const hctx = heat.getContext('2d')!;
+      const img = hctx.createImageData(n, n);
+      let lo = Infinity, hi = -Infinity;
+      const lg = new Float32Array(n * n);
+      for (let k = 0; k < n * n; k++) { lg[k] = Math.log10(map.data[k] + 1e-4); lo = Math.min(lo, lg[k]); hi = Math.max(hi, lg[k]); }
+      const span = Math.min(hi - lo, 3) || 1; // three decades of misfit above the minimum
+      for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+        const t = 1 - (lg[j * n + i] - lo) / span;
+        const s = Math.pow(Math.max(0, Math.min(1, t)), 1.3) * 0.9;
+        const p = ((n - 1 - j) * n + i) * 4;
+        for (let q = 0; q < 3; q++) img.data[p + q] = Math.round(a[q] + (b[q] - a[q]) * s);
+        img.data[p + 3] = 255;
+      }
+      hctx.putImageData(img, 0, 0);
+    };
+
+    const star = (x: number, y: number, r: number, fill: string, stroke: string) => {
+      ctx.beginPath();
+      for (let k = 0; k < 10; k++) {
+        const a = -Math.PI / 2 + (k * Math.PI) / 5, rr = k % 2 ? r * 0.45 : r;
+        ctx.lineTo(x + rr * Math.cos(a), y + rr * Math.sin(a));
+      }
+      ctx.closePath(); ctx.fillStyle = fill; ctx.fill(); ctx.strokeStyle = stroke; ctx.lineWidth = 0.8; ctx.stroke();
+    };
+
+    const draw = () => {
+      const c = col();
+      ctx.clearRect(0, 0, W, W);
+      ctx.fillStyle = c.paper; ctx.fillRect(0, 0, W, W);
+      const x0 = X(0), y0 = Y(L), side = X(L) - X(0);
+      if (mode === 'inv' && map && method === 'cls') {
+        ctx.imageSmoothingEnabled = true;
+        ctx.drawImage(heat, x0, y0, side, side);
+      }
+      // ticks and frame
+      ctx.font = `11px ${c.font}`; ctx.fillStyle = c.ink; ctx.strokeStyle = c.ink; ctx.lineWidth = 0.7;
+      for (let v = 0; v <= L; v += 50) {
+        ctx.beginPath(); ctx.moveTo(X(v), Y(0)); ctx.lineTo(X(v), Y(0) - 4); ctx.moveTo(X(0), Y(v)); ctx.lineTo(X(0) + 4, Y(v)); ctx.stroke();
+        ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillText(String(v), X(v), Y(0) + 4);
+        ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillText(String(v), X(0) - 4, Y(v));
+      }
+      ctx.strokeRect(x0, y0, side, side);
+      ctx.font = `italic 11px ${c.font}`; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+      ctx.fillText('km', X(L), Y(0) + pad - 2);
+
+      ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, side, side); ctx.clip();
+      const pxPerKm = side / L;
+      let times: number[];
+      if (mode === 'fwd') {
+        times = arrivalTimes(stations, src);
+        if (dragging) {
+          ctx.setLineDash([3, 4]); ctx.strokeStyle = c.rule; ctx.lineWidth = 1;
+          for (let t = 5; t < 60; t += 5) { ctx.beginPath(); ctx.arc(X(src.x), Y(src.y), t * V_P * pxPerKm, 0, 2 * Math.PI); ctx.stroke(); }
+          ctx.setLineDash([]);
+        } else if (tAnim > 0) {
+          for (const [lag, alpha] of [[0, 1], [1.2, 0.35], [2.4, 0.15]] as const) {
+            const r = (tAnim - lag) * V_P * pxPerKm;
+            if (r <= 0) continue;
+            ctx.globalAlpha = alpha; ctx.strokeStyle = c.phys; ctx.lineWidth = lag ? 1 : 1.6;
+            ctx.beginPath(); ctx.arc(X(src.x), Y(src.y), r, 0, 2 * Math.PI); ctx.stroke();
+          }
+          ctx.globalAlpha = 1;
+        }
+      } else if (method === 'pinn') {
+        times = obs;
+        const h = L / ISO;
+        if (iso && net) {
+          ctx.strokeStyle = c.learned; ctx.globalAlpha = 0.45; ctx.lineWidth = 0.8; ctx.beginPath();
+          for (let lv = 5; lv < 45; lv += 5) {
+            for (const [a1, b1, a2, b2] of contourSegments(iso, ISO, lv)) { ctx.moveTo(X((a1 + 0.5) * h), Y((b1 + 0.5) * h)); ctx.lineTo(X((a2 + 0.5) * h), Y((b2 + 0.5) * h)); }
+          }
+          ctx.stroke(); ctx.globalAlpha = 1;
+        }
+        if (path.length > 1) {
+          ctx.setLineDash([2, 3]); ctx.strokeStyle = c.learned; ctx.lineWidth = 1; ctx.beginPath();
+          path.forEach((p, k) => (k ? ctx.lineTo(X(p.x), Y(p.y)) : ctx.moveTo(X(p.x), Y(p.y)))); ctx.stroke(); ctx.setLineDash([]);
+        }
+        if (map) { // classical estimate, grey, for comparison
+          const cx = X(map.best.x), cy = Y(map.best.y);
+          ctx.strokeStyle = c.ink3; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(cx - 5, cy - 5); ctx.lineTo(cx + 5, cy + 5); ctx.moveTo(cx + 5, cy - 5); ctx.lineTo(cx - 5, cy + 5); ctx.stroke();
+        }
+        if (net) {
+          const bx = X(net.xs), by = Y(net.ys);
+          ctx.strokeStyle = c.learned; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.moveTo(bx - 6, by - 6); ctx.lineTo(bx + 6, by + 6); ctx.moveTo(bx + 6, by - 6); ctx.lineTo(bx - 6, by + 6); ctx.stroke();
+          if (revealed) {
+            ctx.setLineDash([2, 3]); ctx.strokeStyle = c.ink3; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(X(quake.src.x), Y(quake.src.y)); ctx.stroke(); ctx.setLineDash([]);
+          }
+        }
+      } else {
+        times = obs;
+        if (map) {
+          const h = L / map.n;
+          ctx.strokeStyle = c.learned; ctx.lineWidth = 1.5; ctx.beginPath();
+          for (const [a1, b1, a2, b2] of contourSegments(map.data, map.n, level)) {
+            ctx.moveTo(X((a1 + 0.5) * h), Y((b1 + 0.5) * h)); ctx.lineTo(X((a2 + 0.5) * h), Y((b2 + 0.5) * h));
+          }
+          ctx.stroke();
+          const bx = X(map.best.x), by = Y(map.best.y);
+          ctx.strokeStyle = c.learned; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.moveTo(bx - 6, by - 6); ctx.lineTo(bx + 6, by + 6); ctx.moveTo(bx + 6, by - 6); ctx.lineTo(bx - 6, by + 6); ctx.stroke();
+          if (revealed) {
+            ctx.setLineDash([2, 3]); ctx.strokeStyle = c.ink3; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(X(quake.src.x), Y(quake.src.y)); ctx.stroke(); ctx.setLineDash([]);
+          }
+        }
+      }
+      ctx.restore();
+
+      // stations
+      const tNow = mode === 'fwd' ? (dragging ? Infinity : tAnim) : Infinity;
+      stations.forEach((s, i) => {
+        const x = X(s.x), y = Y(s.y), r = W < 340 ? 7 : 8;
+        const reached = tNow >= times[i];
+        ctx.beginPath(); ctx.moveTo(x, y - r); ctx.lineTo(x + r * 0.9, y + r * 0.6); ctx.lineTo(x - r * 0.9, y + r * 0.6); ctx.closePath();
+        ctx.fillStyle = reached ? c.data : c.paper; ctx.fill(); ctx.strokeStyle = c.ink; ctx.lineWidth = 1; ctx.stroke();
+        ctx.fillStyle = c.ink; ctx.font = `11px ${c.font}`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+        const lx = s.x > L - 25 ? x - r - 16 : x + r + 2;
+        ctx.fillText(`S${i + 1}`, lx, y);
+      });
+      if (mode === 'fwd') star(X(src.x), Y(src.y), 9, c.warn, c.paper);
+      if (mode === 'inv' && revealed) star(X(quake.src.x), Y(quake.src.y), 9, c.truth, c.paper);
+
+      // legend (inverse)
+      if (mode === 'inv') {
+        ctx.font = `11px ${c.font}`; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+        let ly = y0 + 12; const lx = x0 + 8;
+        ctx.strokeStyle = c.learned; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(lx, ly - 4); ctx.lineTo(lx + 8, ly + 4); ctx.moveTo(lx + 8, ly - 4); ctx.lineTo(lx, ly + 4); ctx.stroke();
+        ctx.fillStyle = c.ink; ctx.fillText(method === 'pinn' ? text.legPinn : text.legEst, lx + 14, ly);
+        if (method === 'pinn') {
+          ly += 15; ctx.globalAlpha = 0.6; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx + 9, ly); ctx.stroke(); ctx.globalAlpha = 1; ctx.fillText(text.legIso, lx + 14, ly);
+          ly += 15; ctx.strokeStyle = c.ink3; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(lx, ly - 4); ctx.lineTo(lx + 8, ly + 4); ctx.moveTo(lx + 8, ly - 4); ctx.lineTo(lx, ly + 4); ctx.stroke(); ctx.fillText(text.legCls, lx + 14, ly);
+        } else {
+          ly += 15; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx + 9, ly); ctx.stroke(); ctx.fillText(text.legReg, lx + 14, ly);
+        }
+        if (revealed) { ly += 15; star(lx + 4, ly, 5, c.truth, c.paper); ctx.fillStyle = c.ink; ctx.fillText(text.legTrue, lx + 14, ly); }
+      }
+
+      // arrival list
+      const tmax = Math.max(...times, 1);
+      list.replaceChildren(...times.map((t, i) => {
+        const li = document.createElement('li');
+        const reached = tNow >= t;
+        li.innerHTML = `<span class="q__st">S${i + 1}</span><span class="q__bar"><span style="width:${((t / (tmax * 1.05)) * 100).toFixed(1)}%" class="${reached ? 'on' : ''}"></span></span><span class="q__t">${fmt1(t)} s</span>`;
+        return li;
+      }));
+
+      // readout
+      if (mode === 'fwd') {
+        const order = times.map((t, i) => [t, i] as const).sort((a, b) => a[0] - b[0]);
+        const [ta, a] = order[0], [tb, b] = order[order.length - 1];
+        read.textContent = es
+          ? `Epicentro en (${Math.round(src.x)}, ${Math.round(src.y)}) km. Primera estación alcanzada: S${a + 1}, a los ${fmt1(ta)} s; última: S${b + 1}, a los ${fmt1(tb)} s.`
+          : `Epicentre at (${Math.round(src.x)}, ${Math.round(src.y)}) km. First station reached: S${a + 1}, after ${fmt1(ta)} s; last: S${b + 1}, after ${fmt1(tb)} s.`;
+      } else if (method === 'pinn') {
+        if (!net) {
+          read.textContent = es ? 'Pulse «entrenar la PINN»: la red parte del centro del mapa, con una corrección nula.' : 'Press “train the PINN”: the network starts from the centre of the map, with a zero correction.';
+        } else {
+          const it = trainer?.iter ?? 0;
+          let s = es
+            ? `PINN · iteración ${it} · desajuste de datos ${pinnRes.data.toExponential(1)} · residuo eikonal ${pinnRes.eik.toExponential(1)} · epicentro (${Math.round(net.xs)}, ${Math.round(net.ys)}) km, hora de origen ${fmt1(net.t0)} s`
+            : `PINN · iteration ${it} · data misfit ${pinnRes.data.toExponential(1)} · eikonal residual ${pinnRes.eik.toExponential(1)} · epicentre (${Math.round(net.xs)}, ${Math.round(net.ys)}) km, origin time ${fmt1(net.t0)} s`;
+          if (map) s += es ? ` · a ${fmt1(Math.hypot(net.xs - map.best.x, net.ys - map.best.y))} km de la estimación clásica` : ` · ${fmt1(Math.hypot(net.xs - map.best.x, net.ys - map.best.y))} km from the classical estimate`;
+          if (revealed) s += es ? ` · error respecto del verdadero ${fmt1(Math.hypot(net.xs - quake.src.x, net.ys - quake.src.y))} km` : ` · error against the truth ${fmt1(Math.hypot(net.xs - quake.src.x, net.ys - quake.src.y))} km`;
+          read.textContent = s;
+        }
+      } else if (map) {
+        const rms = Math.sqrt(map.min / stations.length);
+        const area = regionArea(map, level);
+        let s = es
+          ? `Epicentro estimado (${Math.round(map.best.x)}, ${Math.round(map.best.y)}) km, hora de origen ${fmt1(map.t0)} s · residuo RMS ${fmt2(rms)} s · región del 95 % ≈ ${Math.round(area)} km²`
+          : `Estimated epicentre (${Math.round(map.best.x)}, ${Math.round(map.best.y)}) km, origin time ${fmt1(map.t0)} s · residual RMS ${fmt2(rms)} s · 95 % region ≈ ${Math.round(area)} km²`;
+        if (revealed) {
+          const e = Math.hypot(map.best.x - quake.src.x, map.best.y - quake.src.y);
+          s += es
+            ? ` · epicentro verdadero (${Math.round(quake.src.x)}, ${Math.round(quake.src.y)}) km, error ${fmt1(e)} km`
+            : ` · true epicentre (${Math.round(quake.src.x)}, ${Math.round(quake.src.y)}) km, error ${fmt1(e)} km`;
+        }
+        read.textContent = s;
+      }
+    };
+
+    const visible = () => !root.hidden && root.offsetParent !== null;
+    let last = 0;
+    const tick = (now: number) => {
+      if (!animating || !visible()) { animating = false; return; }
+      const dt = last ? Math.min(0.05, (now - last) / 1000) : 0;
+      last = now;
+      tAnim += dt * 8; // 8 simulated seconds per real second
+      const tEnd = Math.max(...arrivalTimes(stations, src)) + 3;
+      if (tAnim >= tEnd) { tAnim = tEnd; animating = false; }
+      draw();
+      if (animating) raf = requestAnimationFrame(tick);
+    };
+    const play = () => { cancelAnimationFrame(raf); tAnim = 0.01; last = 0; animating = true; raf = requestAnimationFrame(tick); };
+
+    const stopPinn = () => { training = false; cancelAnimationFrame(praf); trainBtn.textContent = text.train; };
+    const pinnLoop = () => {
+      if (!training || !trainer || !net) return;
+      if (!visible()) { stopPinn(); return; }
+      for (let k = 0; k < PER_FRAME && trainer.iter < STEPS; k++) pinnRes = trainer.step();
+      path.push({ x: net.xs, y: net.ys });
+      if (trainer.iter % 45 === 0 || trainer.iter >= STEPS) iso = travelTimeGrid(net, ISO, L);
+      draw();
+      if (trainer.iter >= STEPS) { stopPinn(); return; }
+      praf = requestAnimationFrame(pinnLoop);
+    };
+    const trainPinn = () => {
+      stopPinn();
+      if (!obs.length) computeInverse();
+      const start = { x: 103, y: 105 };
+      const t0 = obs.reduce((acc, t, i) => acc + t - Math.hypot(stations[i].x - start.x, stations[i].y - start.y) / V_P, 0) / obs.length;
+      net = initQuakeNet(24, 1, start, t0);
+      trainer = makeQuakeTrainer(net, { stations, times: obs, col: COL, L }, STEPS);
+      path = [{ ...start }]; iso = travelTimeGrid(net, ISO, L);
+      training = true; trainedOnce = true; trainBtn.textContent = text.stop;
+      praf = requestAnimationFrame(pinnLoop);
+    };
+    let retrain = 0;
+    const pinnInvalidate = () => {
+      stopPinn(); net = null; trainer = null; path = []; iso = null;
+      if (method === 'pinn' && mode === 'inv' && trainedOnce) { clearTimeout(retrain); retrain = window.setTimeout(trainPinn, 250); }
+    };
+    const setMethod = (m: 'cls' | 'pinn') => {
+      method = m;
+      root.querySelectorAll<HTMLButtonElement>('[data-q-method]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.qMethod === m)));
+      syncVisibility();
+      if (m === 'cls') stopPinn();
+      draw();
+    };
+    const syncVisibility = () => {
+      trainBtn.hidden = !(mode === 'inv' && method === 'pinn');
+      root.querySelectorAll<HTMLElement>('[data-q-pinnonly]').forEach((e) => (e.hidden = !(mode === 'inv' && method === 'pinn')));
+    };
+
+    const setMode = (m: 'fwd' | 'inv') => {
+      mode = m;
+      root.querySelectorAll<HTMLButtonElement>('[data-q-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.qMode === m)));
+      root.querySelectorAll<HTMLElement>('[data-q-only]').forEach((e) => (e.hidden = e.dataset.qOnly !== m));
+      stopPinn();
+      syncVisibility();
+      hint.textContent = text.hint + (m === 'fwd' ? text.hintFwd : text.hintInv);
+      cancelAnimationFrame(raf); animating = false;
+      if (m === 'inv') computeInverse(); else play();
+      draw();
+    };
+
+    const layout = (name: string) => {
+      stations = LAYOUTS[name].map((p) => ({ ...p }));
+      root.querySelectorAll<HTMLButtonElement>('[data-q-layout]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.qLayout === name)));
+      pinnInvalidate();
+      if (mode === 'inv') { computeInverse(); draw(); } else play();
+    };
+
+    // pointer interaction
+    const pos = (e: PointerEvent) => { const b = canvas.getBoundingClientRect(); return { px: e.clientX - b.left, py: e.clientY - b.top }; };
+    const clampKm = (v: number) => Math.max(2, Math.min(L - 2, v));
+    canvas.addEventListener('pointerdown', (e) => {
+      const { px, py } = pos(e);
+      const hitR = e.pointerType === 'touch' ? 20 : 13;
+      let best = -1, bd = hitR;
+      stations.forEach((s, i) => { const dd = Math.hypot(X(s.x) - px, Y(s.y) - py); if (dd < bd) { bd = dd; best = i; } });
+      if (best >= 0) dragging = { kind: 'st', i: best };
+      else if (mode === 'fwd') { dragging = { kind: 'src', i: 0 }; src = { x: clampKm(invX(px)), y: clampKm(invY(py)) }; }
+      else return;
+      cancelAnimationFrame(raf); animating = false;
+      canvas.setPointerCapture(e.pointerId);
+      draw();
+    });
+    canvas.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const { px, py } = pos(e);
+      const p = { x: clampKm(invX(px)), y: clampKm(invY(py)) };
+      if (dragging.kind === 'st') stations[dragging.i] = p; else src = p;
+      if (mode === 'inv') computeInverse(60);
+      draw();
+    });
+    const end = () => {
+      if (!dragging) return;
+      dragging = null;
+      if (mode === 'inv') { pinnInvalidate(); computeInverse(); draw(); } else play();
+    };
+    canvas.addEventListener('pointerup', end);
+    canvas.addEventListener('pointercancel', end);
+
+    root.querySelectorAll<HTMLButtonElement>('[data-q-mode]').forEach((b) => b.addEventListener('click', () => setMode(b.dataset.qMode as 'fwd' | 'inv')));
+    root.querySelectorAll<HTMLButtonElement>('[data-q-layout]').forEach((b) => b.addEventListener('click', () => layout(b.dataset.qLayout!)));
+    root.querySelector('[data-q-replay]')!.addEventListener('click', play);
+    root.querySelectorAll<HTMLButtonElement>('[data-q-method]').forEach((b) => b.addEventListener('click', () => setMethod(b.dataset.qMethod as 'cls' | 'pinn')));
+    trainBtn.addEventListener('click', () => (training ? stopPinn() : trainPinn()));
+    root.querySelector('[data-q-new]')!.addEventListener('click', () => {
+      quake = hiddenQuake(++quakeSeed); revealed = false; revealBtn.textContent = text.reveal;
+      pinnInvalidate(); computeInverse(); draw();
+    });
+    revealBtn.addEventListener('click', () => { revealed = !revealed; revealBtn.textContent = revealed ? text.hide : text.reveal; draw(); });
+    noiseIn.addEventListener('input', () => {
+      nout.textContent = `${es ? (+noiseIn.value).toFixed(2).replace('.', ',') : (+noiseIn.value).toFixed(2)} s`;
+      pinnInvalidate(); computeInverse(); draw();
+    });
+    window.addEventListener('themechange', () => { if (mode === 'inv') computeInverse(); draw(); });
+    new ResizeObserver(() => { if (resize()) draw(); }).observe(canvas);
+    root.addEventListener('eng:show', () => { if (resize()) { if (mode === 'fwd') play(); else draw(); } });
+
+    resize();
+    setMode('fwd');
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-eng-tab="civil"]').forEach((root) => {
+    let done = false;
+    const start = () => { if (!done) { done = true; init(root); } };
+    root.addEventListener('eng:show', start, { once: true });
+    if (!root.hidden) start();
+  });
+</script>
+
+<style>
+  .q__top { display: flex; justify-content: center; margin-bottom: var(--s-3); font-size: var(--step--1); }
+  .q__grid { display: grid; gap: var(--s-4); grid-template-columns: minmax(0, 1fr) minmax(0, 11rem); align-items: start; max-width: 40rem; margin-inline: auto; }
+  .q__canvas { width: 100%; aspect-ratio: 1; display: block; touch-action: none; cursor: crosshair; }
+  .q__hint { margin-top: var(--s-1); font-style: italic; font-size: var(--step--2); text-align: center; }
+  .q__h { font-size: var(--step--1); font-style: italic; margin-bottom: var(--s-2); }
+  .q__list { list-style: none; padding: 0; margin: 0; font-size: var(--step--1); display: grid; gap: 0.35rem; }
+  .q__list :global(li) { display: grid; grid-template-columns: 1.8em 1fr 3.4em; gap: 0.4em; align-items: center; }
+  .q__list :global(.q__bar) { height: 0.5em; border-bottom: 0.5px solid var(--rule-strong); position: relative; }
+  .q__list :global(.q__bar span) { position: absolute; left: 0; bottom: 0; height: 100%; background: var(--rule); }
+  .q__list :global(.q__bar span.on) { background: var(--c-data); }
+  .q__list :global(.q__t) { font-family: var(--font-mono); font-size: 0.9em; text-align: right; }
+  .q__controls { max-width: 40rem; margin: var(--s-4) auto 0; display: grid; gap: var(--s-3); grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); align-items: end; }
+  .q__btns { font-size: var(--step--1); display: flex; flex-wrap: wrap; gap: 0.3em 1em; }
+  .q__btns [hidden], .q__controls [hidden] { display: none; }
+  .q__loss { text-align: center; font-size: var(--step--1); margin-top: var(--s-2); max-width: 100%; overflow-x: auto; }
+  .q__loss[hidden] { display: none; }
+  .eng-eqs { display: flex; flex-wrap: wrap; justify-content: center; column-gap: var(--s-6); margin-block: var(--s-3); }
+  .eng-eqs :global(.eq) { justify-content: center; margin-block: var(--s-2); }
+  @media (max-width: 40rem) {
+    .q__grid { grid-template-columns: 1fr; }
+    .q__list { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--s-4); }
+  }
+</style>

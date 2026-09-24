@@ -1,0 +1,41 @@
+---
+import LearnModule from '../../../../layouts/LearnModule.astro';
+import Equation from '../../../../components/viz/Equation.astro';
+import PinnExplorer from '../../../../components/viz/PinnExplorer.astro';
+import { url } from '../../../../i18n/utils';
+---
+<LearnModule slug="machine-learning/physics-informed-learning" description="Train a small neural network in the browser on sparse, noisy sensor data, with and without a physical law in the loss, and infer a hidden parameter of a cooling fin.">
+  <div class="prose">
+    <h2>A fin, five thermometers and a question</h2>
+    <p>A metal fin sticks out of a hot wall and loses heat to the surrounding air. Its temperature (scaled so that 1 is the wall and 0 is the air) obeys a simple balance between conduction along the fin and convection to the air:</p>
+    <Equation tex={String.raw`\theta''(x) - m^2\, \theta(x) = 0, \qquad \theta(0) = 1,\quad \theta'(1) = 0 .`} />
+    <p>The number <em>m</em> combines the convection coefficient, the conductivity and the geometry. In practice it is not known precisely, and it is exactly what an engineer would like to measure. Suppose only four thermocouples are available, all on the part of the fin closest to the wall. Can we reconstruct the temperature everywhere, and can we estimate <em>m</em>?</p>
+
+    <h2>Two ways to learn from the same data</h2>
+    <p>Both models below are the same small neural network, <em>θ<sub>NN</sub>(x) = Σ a<sub>j</sub> tanh(w<sub>j</sub>x + b<sub>j</sub>) + c</em>, with 16 hidden units, starting from the same random weights. They differ only in what they are asked to minimise.</p>
+    <p>The <strong>data-only</strong> model fits the sensors and nothing else:</p>
+    <Equation tex={String.raw`\mathcal{L}_{data} = \frac{1}{N}\sum_{i=1}^{N} \big(\theta_{NN}(x_i) - \theta_i^{meas}\big)^2 .`} />
+    <p>The <strong>physics-informed</strong> model adds the residual of the equation at 40 collocation points spread over the whole fin, plus the boundary conditions. If <em>m</em> is unknown it becomes one more trainable parameter:</p>
+    <Equation tex={String.raw`\mathcal{L} = \mathcal{L}_{data} + \lambda\Big[\frac{1}{M}\sum_{k=1}^{M}\big(\theta_{NN}''(x_k) - m^2\theta_{NN}(x_k)\big)^2 + \big(\theta_{NN}(0)-1\big)^2 + \theta_{NN}'(1)^2\Big].`} />
+    <p>The derivatives of the network with respect to <em>x</em> are computed exactly, and so are the gradients with respect to the weights. Training uses Adam.</p>
+  </div>
+
+  <PinnExplorer />
+
+  <div class="try">
+    <h3>Exercises</h3>
+    <ol>
+      <li>Train with the default settings. Where do the two models agree, and where do they differ? Why can the data-only model not know what happens beyond the last sensor?</li>
+      <li>Set the physics weight close to 0.01. How does the physics-informed model behave? And at 5?</li>
+      <li>Reduce the sensors to 2 or 3. Does the inferred <em>m</em> still converge? Now raise the noise to σ = 0.05. Which model degrades more gracefully?</li>
+      <li>Uncheck “Infer m”: the model now uses the true <em>m</em>. Compare the errors. How much of the benefit comes from knowing the equation, and how much from knowing its parameter?</li>
+      <li>Spread the sensors over the whole fin (cover = 1). Is the physics still worth adding?</li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>What this shows, and what it does not</h2>
+    <p>With few, clustered sensors, fitting data alone is an underdetermined problem: many functions pass near five points. The physical law removes most of them and lets the model extrapolate. Because the law contains <em>m</em>, fitting data and physics together also turns the network into an instrument for measuring <em>m</em>. This is an inverse problem in the same sense as the <a href={url('/learn/inverse-problems/abel-transform/')}>Abel module</a>, with the equation playing the role of the regulariser.</p>
+    <p>The example is deliberately small. The equation is linear, its exact solution is known, and a classical least-squares fit of <em>m</em> would also work. The value of physics-informed networks shows up when the physics is nonlinear, the unknowns are whole fields rather than one number, and several kinds of measurements must be combined. That is the situation in the research case study on <a href={url('/publications/carbon-2026/')}>multi-diagnostic optical inversion</a>. The result also depends on the weight λ, which is a modelling choice and deserves the same scrutiny as any other.</p>
+  </div>
+</LearnModule>

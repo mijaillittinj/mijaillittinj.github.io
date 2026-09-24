@@ -1,0 +1,17 @@
+---
+// /cv/ opens the PDF in the browser's viewer. The printable source of the PDF is /cv/print/
+// (see scripts/make-cv-pdf.sh).
+import { url } from '../../i18n/utils';
+const pdf = url('/cv/Mijail_Littin_CV.pdf');
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <meta http-equiv="refresh" content={`0; url=${pdf}`} />
+    <link rel="canonical" href={pdf} />
+    <title>Curriculum vitae — Mijail Littin</title>
+  </head>
+  <body><p><a href={pdf}>Curriculum vitae (PDF)</a></p></body>
+</html>

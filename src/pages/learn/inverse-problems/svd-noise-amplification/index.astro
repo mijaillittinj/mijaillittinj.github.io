@@ -1,0 +1,39 @@
+---
+import LearnModule from '../../../../layouts/LearnModule.astro';
+import Equation from '../../../../components/viz/Equation.astro';
+import SvdExplorer from '../../../../components/viz/SvdExplorer.astro';
+import { url } from '../../../../i18n/utils';
+---
+<LearnModule slug="inverse-problems/svd-noise-amplification" description="Interactive singular value decomposition of a blur operator: Picard plot, truncated SVD, Tikhonov filtering and the L-curve, showing why inversion amplifies noise and how regularisation filters it.">
+  <div class="prose">
+    <h2>Blurring is easy, deblurring is not</h2>
+    <p>A camera out of focus, a thermometer with a slow response or heat spreading through a wall all act as a <strong>blur</strong>: each measurement is a weighted average of the unknown signal around it. On a grid this is a matrix product, <em>g = A f + ε</em>. Computing <em>g</em> from <em>f</em> is stable. Going back is where the trouble starts, and the singular value decomposition shows exactly why.</p>
+    <Equation tex={String.raw`A = U \Sigma V^{\mathsf T} = \sum_{i=1}^{n} \sigma_i\, u_i v_i^{\mathsf T}, \qquad \sigma_1 \ge \sigma_2 \ge \dots \ge \sigma_n \ge 0 .`} />
+    <p>The right singular vectors <em>v<sub>i</sub></em> are patterns in the signal (smooth for small <em>i</em>, oscillating for large <em>i</em>); the operator multiplies each one by <em>σ<sub>i</sub></em> and maps it to the pattern <em>u<sub>i</sub></em> in the data. A blur damps oscillating patterns strongly, so the singular values fall off by many orders of magnitude.</p>
+    <h2>The naive inverse divides by tiny numbers</h2>
+    <p>Inverting the decomposition gives the solution as a sum over the same patterns:</p>
+    <Equation tex={String.raw`f^{\dagger} = \sum_{i=1}^{n} \frac{u_i^{\mathsf T} g}{\sigma_i}\, v_i = f + \sum_{i=1}^{n} \frac{u_i^{\mathsf T} \varepsilon}{\sigma_i}\, v_i .`} />
+    <p>The noise term <em>u<sub>i</sub><sup>T</sup>ε</em> has roughly the same size for every <em>i</em>, but it is divided by <em>σ<sub>i</sub></em>. For the last components that means multiplying noise by 10<sup>10</sup> or more. The <strong>Picard plot</strong> shows the competition: as long as the data coefficients |<em>u<sub>i</sub><sup>T</sup>g</em>| decay faster than the singular values, the signal can be recovered; where they level off at the noise floor, the ratio explodes.</p>
+  </div>
+
+  <SvdExplorer />
+
+  <div class="try">
+    <h3>Exercises</h3>
+    <ol>
+      <li>Set the noise to 10⁻⁸ and slide <em>k</em> from 1 to 64. Where do the data coefficients (amber) stop following the singular values and flatten out? Compare that index with the value of <em>k</em> that gives the smallest error.</li>
+      <li>Raise the noise to 10⁻². How many components can you now keep? Why does more noise mean a smoother (less detailed) reconstruction?</li>
+      <li>Increase the blur width. The singular values fall faster. What does that do to the sharp edges of the box and to the narrow bump?</li>
+      <li>Switch to Tikhonov and move λ. Watch the violet point travel along the L-curve. Which part of the curve corresponds to over-smoothing, and which to noise amplification? Is the corner a good choice?</li>
+      <li>Tikhonov does not cut components off; it damps them smoothly with the filter factor below. Compare it with truncation at <em>k</em> such that σ<sub>k</sub> ≈ λ.</li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>Regularisation is filtering</h2>
+    <p>Both methods keep the well-determined components and suppress the rest. Truncated SVD uses a sharp cut; Tikhonov, which minimises ‖<em>Af − g</em>‖² + λ²‖<em>f</em>‖², uses smooth filter factors:</p>
+    <Equation tex={String.raw`f_\lambda = \sum_{i=1}^{n} \varphi_i\, \frac{u_i^{\mathsf T} g}{\sigma_i}\, v_i, \qquad \varphi_i^{\mathrm{TSVD}} = \begin{cases} 1 & i \le k \\ 0 & i > k \end{cases}, \qquad \varphi_i^{\mathrm{Tik}} = \frac{\sigma_i^2}{\sigma_i^2 + \lambda^2} .`} />
+    <p>The <strong>L-curve</strong> plots the size of the solution against the size of the residual for every λ. Too little regularisation gives a huge, oscillating solution that fits the noise (the vertical branch); too much gives a small, over-smoothed solution that does not fit the data (the horizontal branch). The corner is a common, if not infallible, compromise. Another rule, the discrepancy principle, picks λ so that the residual equals the expected noise level, printed in the readout.</p>
+    <p>The same analysis explains the <a href={url('/learn/inverse-problems/abel-transform/')}>Abel transform module</a>, where the operator is a projection instead of a blur, and it is the reason why physics-informed networks need a well-posed loss (see <a href={url('/learn/machine-learning/physics-informed-learning/')}>the physics-informed learning module</a>).</p>
+  </div>
+</LearnModule>

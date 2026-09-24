@@ -1,0 +1,23 @@
+---
+interface Props { title: string; subtitle?: string; author: string; affiliation?: string; date?: string; paper?: string }
+const { title, subtitle, author, affiliation, date, paper } = Astro.props;
+---
+<section class="slide slide--plain slide--title" data-title={title}>
+  <div class="t">
+    {subtitle && <p class="kicker">{subtitle}</p>}
+    <h1>{title}</h1>
+    <p class="who"><strong>{author}</strong>{affiliation && <><br /><span>{affiliation}</span></>}</p>
+    {(date || paper) && <p class="when">{[paper, date].filter(Boolean).join(' · ')}</p>}
+  </div>
+  <div class="art"><slot /></div>
+  <aside class="notes"><slot name="notes" /></aside>
+</section>
+<style>
+  .slide--title { flex-direction: row; align-items: center; gap: 64px; padding: 96px; }
+  .t { flex: 1.15; }
+  .art { flex: 1; align-self: stretch; display: flex; align-items: center; }
+  h1 { font-size: 66px; line-height: 1.12; font-weight: 400; }
+  .who { margin-top: 48px; font-size: 28px; line-height: 1.4; }
+  .who span { color: var(--ink-2); font-size: 22px; }
+  .when { margin-top: 20px; font-size: 22px; color: var(--ink-3); font-style: italic; }
+</style>

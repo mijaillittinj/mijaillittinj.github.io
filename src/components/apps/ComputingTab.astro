@@ -1,0 +1,287 @@
+---
+/**
+ * Computing tab: image deblurring (computational imaging).
+ * Forward: a sharp image is blurred by a known point-spread function and noise is added.
+ * Inverse: recover it by Fourier deconvolution (inverse filter, Tikhonov/Wiener) or by
+ * Richardson–Lucy iterations (src/lib/eng/deblur.ts). The image is drawn in the browser.
+ */
+import Equation from '../viz/Equation.astro';
+interface Props { lang?: 'en' | 'es'; hidden?: boolean }
+const { lang = 'en', hidden = false } = Astro.props;
+const es = lang === 'es';
+const T = es
+  ? {
+      fwd: 'Directo', inv: 'Inverso',
+      fi: [': una imagen nítida se desenfoca con una función de dispersión conocida (una cámara que se mueve) y se le agrega ruido. ', ': recuperar la imagen nítida a partir de la foto borrosa.'],
+      pObs: '(a) Foto borrosa y ruidosa', pRec: '(b) Reconstrucción', pTrue: '(c) Imagen original', hidden: 'oculta',
+      pPsf: 'núcleo h', pSpec: '|H| (escala log)',
+      len: 'Largo del movimiento', ang: 'Ángulo', noise: 'Ruido', method: 'Método',
+      mInv: 'filtro inverso', mTik: 'Tikhonov (Wiener)', mRl: 'Richardson–Lucy', mPinn: 'PINN',
+      train: 'entrenar la PINN', stop: 'detener', lossLabel: 'La PINN minimiza',
+      rdPinn: 'La red solo ve la foto borrosa a través del modelo de desenfoque; su representación suave actúa como prior.', rdPinnIdle: 'Pulse «entrenar la PINN»: una red de coordenadas f_θ(x, y) de filtros sinusoidales (64 en x y 64 en y) se ajusta a la foto borrosa a través del núcleo h.', rdTikRef: 'Tikhonov con el λ actual',
+      pinnCap: ' Versión PINN: la imagen nítida es una red de coordenadas f_θ(x, y) (filtros sinusoidales multiplicados entre sí, inicializados como características de Fourier aleatorias, con salida sigmoide en [0, 1]) entrenada solo a través del modelo físico de la cámara, ‖h ∗ f_θ − g‖². La red nunca ve la imagen original: su representación de banda limitada es el prior. En este ejemplo suele superar a Tikhonov en PSNR, porque la salida sigmoide favorece imágenes casi en blanco y negro como este texto; con otras escenas esa ventaja puede desaparecer.',
+      lam: 'Regularización log₁₀ λ', run: 'iterar', reveal: 'revelar la original', hide: 'ocultar la original',
+      rdBlur: 'foto borrosa', rdRec: 'reconstrucción', rdIt: 'iteración',
+      rdInv: 'El filtro inverso divide por |H|, que casi se anula en algunas frecuencias (las franjas oscuras del espectro): el ruido se amplifica sin control.',
+      rdTik: 'λ sacrifica resolución a cambio de estabilidad: muy pequeño y reaparece el ruido, muy grande y la imagen queda borrosa.',
+      rdRl: 'Richardson–Lucy mantiene la imagen no negativa; iterar demasiado también termina amplificando el ruido.',
+      cap: 'Deconvolución de imágenes: cada píxel de la foto borrosa mezcla muchos píxeles de la escena. En el dominio de Fourier la convolución es un producto, G = H F, así que invertirla parece una simple división; pero H casi se anula en algunas frecuencias y dividir por ellas amplifica el ruido. La regularización (Tikhonov, o detener a tiempo un método iterativo) intercambia resolución por estabilidad: la misma matemática de la tomografía y de los otros ejemplos. La PSNR mide la similitud con la original (más es mejor). Imagen sintética generada en su navegador.',
+    }
+  : {
+      fwd: 'Forward', inv: 'Inverse',
+      fi: [': a sharp image is blurred by a known point-spread function (a camera that moves) and noise is added. ', ': recover the sharp image from the blurred photo.'],
+      pObs: '(a) Blurred, noisy photo', pRec: '(b) Reconstruction', pTrue: '(c) Original image', hidden: 'hidden',
+      pPsf: 'kernel h', pSpec: '|H| (log scale)',
+      len: 'Motion length', ang: 'Angle', noise: 'Noise', method: 'Method',
+      mInv: 'inverse filter', mTik: 'Tikhonov (Wiener)', mRl: 'Richardson–Lucy', mPinn: 'PINN',
+      train: 'train the PINN', stop: 'stop', lossLabel: 'The PINN minimises',
+      rdPinn: 'The network sees the blurred photo only through the blur model; its smooth representation acts as the prior.', rdPinnIdle: 'Press “train the PINN”: a coordinate network f_θ(x, y) of sinusoidal filters (64 in x and 64 in y) is fitted to the blurred photo through the kernel h.', rdTikRef: 'Tikhonov at the current λ',
+      pinnCap: ' PINN version: the sharp image is a coordinate network f_θ(x, y) (multiplied sinusoidal filters initialised as random Fourier features, with a sigmoid output in [0, 1]) trained only through the physical model of the camera, ‖h ∗ f_θ − g‖². The network never sees the original image: its band-limited representation is the prior. In this example it usually beats Tikhonov in PSNR, because the sigmoid output favours nearly black-and-white images such as this text; with other scenes that advantage can disappear.',
+      lam: 'Regularisation log₁₀ λ', run: 'iterate', reveal: 'reveal the original', hide: 'hide the original',
+      rdBlur: 'blurred photo', rdRec: 'reconstruction', rdIt: 'iteration',
+      rdInv: 'The inverse filter divides by |H|, which nearly vanishes at some frequencies (the dark bands of the spectrum): the noise is amplified without control.',
+      rdTik: 'λ trades resolution for stability: too small and the noise comes back, too large and the image stays blurred.',
+      rdRl: 'Richardson–Lucy keeps the image non-negative; iterating too long also ends up amplifying the noise.',
+      cap: 'Image deconvolution: every pixel of the blurred photo mixes many pixels of the scene. In the Fourier domain convolution is a product, G = H F, so undoing it looks like a simple division; but H nearly vanishes at some frequencies and dividing by them amplifies the noise. Regularisation (Tikhonov, or stopping an iterative method in time) trades resolution for stability: the same mathematics as tomography and the other examples. PSNR measures the similarity to the original (higher is better). Synthetic image generated in your browser.',
+    };
+const client = { lang, T };
+---
+<div class="eng-tab cp" data-eng-tab="computing" hidden={hidden} data-cp-text={JSON.stringify(client)}>
+  <p class="eng-fi"><em>{T.fwd}</em>{T.fi[0]}<em>{T.inv}</em>{T.fi[1]}</p>
+
+  <div class="cp__panels">
+    <figure class="cp__p"><p class="panel-title">{T.pObs}</p><canvas data-cp-obs width="128" height="128" aria-hidden="true"></canvas></figure>
+    <figure class="cp__p"><p class="panel-title">{T.pRec}</p><canvas data-cp-rec width="128" height="128" aria-hidden="true"></canvas></figure>
+    <figure class="cp__p"><p class="panel-title">{T.pTrue}</p><div class="cp__truth"><canvas data-cp-true width="128" height="128" aria-hidden="true"></canvas><span class="cp__veil" data-cp-veil>?<small>{T.hidden}</small></span></div></figure>
+  </div>
+  <div class="cp__small">
+    <figure><canvas data-cp-psf width="33" height="33" aria-hidden="true"></canvas><figcaption>{T.pPsf}</figcaption></figure>
+    <figure><canvas data-cp-spec width="128" height="128" aria-hidden="true"></canvas><figcaption>{T.pSpec}</figcaption></figure>
+  </div>
+
+  <div class="cp__controls">
+    <div class="control">
+      <div class="control__head"><label for={`cp-len-${lang}`}>{T.len}</label><output data-cp-lout>15 px</output></div>
+      <input id={`cp-len-${lang}`} data-cp-len type="range" min="0" max="30" step="1" value="15" />
+    </div>
+    <div class="control">
+      <div class="control__head"><label for={`cp-ang-${lang}`}>{T.ang}</label><output data-cp-aout>20°</output></div>
+      <input id={`cp-ang-${lang}`} data-cp-ang type="range" min="0" max="180" step="5" value="20" />
+    </div>
+    <div class="control">
+      <div class="control__head"><label for={`cp-noise-${lang}`}>{T.noise}</label><output data-cp-nout>1.0 %</output></div>
+      <input id={`cp-noise-${lang}`} data-cp-noise type="range" min="0" max="5" step="0.1" value="1" />
+    </div>
+    <div class="control cp__method">
+      <span class="control__head">{T.method}</span>
+      <div class="seg" role="group" aria-label={T.method}>
+        <button type="button" data-cp-m="inv" aria-pressed="false">{T.mInv}</button>
+        <button type="button" data-cp-m="tik" aria-pressed="true">{T.mTik}</button>
+        <button type="button" data-cp-m="rl" aria-pressed="false">{T.mRl}</button>
+        <button type="button" data-cp-m="pinn" aria-pressed="false">{T.mPinn}</button>
+      </div>
+    </div>
+    <div class="control" data-cp-only="tik">
+      <div class="control__head"><label for={`cp-lam-${lang}`}>{T.lam}</label><output data-cp-lamout>−3.0</output></div>
+      <input id={`cp-lam-${lang}`} data-cp-lam type="range" min="-6" max="0" step="0.1" value="-3" />
+    </div>
+    <p class="cp__btns">
+      <button type="button" class="btn" data-cp-run data-cp-only="rl" hidden>{T.run}</button>
+      <button type="button" class="btn" data-cp-train data-cp-only="pinn" hidden>{T.train}</button>
+      <button type="button" class="btn" data-cp-reveal>{T.reveal}</button>
+    </p>
+  </div>
+
+  <div class="eng-eqs">
+    <Equation tex={String.raw`g = h * f + \varepsilon \;\;\Longleftrightarrow\;\; G = H\,F + E`} />
+    <Equation tex={String.raw`\hat F = \frac{\overline{H}\,G}{|H|^2 + \lambda}`} />
+  </div>
+  <p class="meta cp__loss" data-cp-only="pinn" hidden>{T.lossLabel} <Equation display={false} tex={String.raw`\mathcal{L}(\theta) = \tfrac{1}{N^2}\lVert h * f_\theta - g \rVert^2 + \mu \lVert A \rVert^2`} /></p>
+  <p class="lab__readout" data-cp-read aria-live="polite"></p>
+  <p class="eng-cap">{T.cap}{T.pinnCap}</p>
+</div>
+
+<script>
+  import { motionPsf, blur, tikhonov, richardsonLucyStep, psnr, fft2, type Spec } from '../../lib/eng/deblur';
+  import { initImageNet, makeImageTrainer } from '../../lib/eng/pinn-image';
+
+  const N = 128, RL_MAX = 120, RL_PER_FRAME = 3, PINN_STEPS = 500, FRAME_MS = 8;
+
+  /** The sharp scene: text, bars and a checker block, drawn once in the browser. */
+  function scene(): Float64Array {
+    const c = document.createElement('canvas');
+    c.width = N; c.height = N;
+    const x = c.getContext('2d')!;
+    x.fillStyle = '#fff'; x.fillRect(0, 0, N, N);
+    x.fillStyle = '#000'; x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.font = 'bold 30px Georgia, "Times New Roman", serif';
+    x.fillText('UTFSM', N / 2, 26);
+    x.font = 'italic 17px Georgia, "Times New Roman", serif';
+    x.fillText('g = h ∗ f + ε', N / 2, 54);
+    for (let i = 0; i < 9; i++) x.fillRect(12 + i * 6, 74, 3, 40);
+    for (let j = 0; j < 5; j++) for (let i = 0; i < 5; i++) if ((i + j) % 2 === 0) x.fillRect(74 + i * 8, 74 + j * 8, 8, 8);
+    const d = x.getImageData(0, 0, N, N).data, f = new Float64Array(N * N);
+    for (let i = 0; i < N * N; i++) f[i] = d[4 * i] / 255;
+    return f;
+  }
+
+  function paint(cv: HTMLCanvasElement, img: ArrayLike<number>, n = N, lo = 0, hi = 1) {
+    const x = cv.getContext('2d')!, im = x.createImageData(n, n);
+    for (let i = 0; i < n * n; i++) {
+      const v = Math.round(255 * Math.max(0, Math.min(1, (img[i] - lo) / (hi - lo || 1))));
+      im.data[4 * i] = im.data[4 * i + 1] = im.data[4 * i + 2] = v; im.data[4 * i + 3] = 255;
+    }
+    x.putImageData(im, 0, 0);
+  }
+
+  function init(root: HTMLElement) {
+    const { lang, T } = JSON.parse(root.dataset.cpText!);
+    const nf = (v: number, d = 1) => (lang === 'es' ? v.toFixed(d).replace('.', ',') : v.toFixed(d)).replace('-', '−');
+    const q = <E extends Element>(s: string) => root.querySelector<E>(s)!;
+    const cObs = q<HTMLCanvasElement>('[data-cp-obs]'), cRec = q<HTMLCanvasElement>('[data-cp-rec]'), cTrue = q<HTMLCanvasElement>('[data-cp-true]');
+    const cPsf = q<HTMLCanvasElement>('[data-cp-psf]'), cSpec = q<HTMLCanvasElement>('[data-cp-spec]');
+    const lenIn = q<HTMLInputElement>('[data-cp-len]'), angIn = q<HTMLInputElement>('[data-cp-ang]'), noiseIn = q<HTMLInputElement>('[data-cp-noise]'), lamIn = q<HTMLInputElement>('[data-cp-lam]');
+    const read = q<HTMLElement>('[data-cp-read]'), veil = q<HTMLElement>('[data-cp-veil]');
+    const runBtn = q<HTMLButtonElement>('[data-cp-run]'), revealBtn = q<HTMLButtonElement>('[data-cp-reveal]');
+
+    const f = scene();
+    paint(cTrue, f);
+    let method: 'inv' | 'tik' | 'rl' | 'pinn' = 'tik', revealed = false;
+    const trainBtn = q<HTMLButtonElement>('[data-cp-train]');
+    let trainer: ReturnType<typeof makeImageTrainer> | null = null, praf = 0, training = false, trainedOnce = false, lastF: Float64Array | null = null, lastData = NaN, tikRef = NaN;
+    let h: Float64Array = new Float64Array(0), H: Spec | null = null, g: Float64Array = new Float64Array(0), rl: Float64Array | null = null, it = 0, raf = 0;
+
+    const forward = () => {
+      h = motionPsf(N, +lenIn.value, +angIn.value, +lenIn.value === 0 ? 1.2 : 0);
+      H = fft2(N, h);
+      g = blur(N, f, h, +noiseIn.value / 100, 7);
+      q('[data-cp-lout]').textContent = `${lenIn.value} px`;
+      q('[data-cp-aout]').textContent = `${angIn.value}°`;
+      q('[data-cp-nout]').textContent = `${nf(+noiseIn.value)} %`;
+      paint(cObs, g);
+      // kernel (centred crop) and log |H| (centred spectrum)
+      const k = 33, crop = new Float64Array(k * k);
+      let hmax = 0;
+      for (let y = 0; y < k; y++) for (let x = 0; x < k; x++) {
+        const v = h[((y - 16 + N) % N) * N + ((x - 16 + N) % N)];
+        crop[y * k + x] = v; hmax = Math.max(hmax, v);
+      }
+      paint(cPsf, crop.map((v) => 1 - v / (hmax || 1)), k);
+      const s = new Float64Array(N * N);
+      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+        const i = ((y + N / 2) % N) * N + ((x + N / 2) % N);
+        s[y * N + x] = Math.log10(Math.hypot(H.re[i], H.im[i]) + 1e-4);
+      }
+      paint(cSpec, s, N, -4, 0);
+    };
+
+    const report = (rec: ArrayLike<number>, extra = '') => {
+      const note = method === 'inv' ? T.rdInv : method === 'tik' ? T.rdTik : method === 'rl' ? T.rdRl : T.rdPinn;
+      read.textContent = `PSNR: ${T.rdBlur} ${nf(psnr(g, f))} dB · ${T.rdRec} ${nf(psnr(rec, f))} dB${extra}. ${note}`;
+    };
+
+    const stopRl = () => { cancelAnimationFrame(raf); raf = 0; };
+    const rlLoop = () => {
+      if (!rl || !H || root.hidden) { raf = 0; return; }
+      for (let k = 0; k < RL_PER_FRAME && it < RL_MAX; k++, it++) richardsonLucyStep(H, g, rl);
+      paint(cRec, rl);
+      report(rl, ` · ${T.rdIt} ${it}`);
+      raf = it < RL_MAX ? requestAnimationFrame(rlLoop) : 0;
+    };
+    const startRl = () => { stopRl(); rl = Float64Array.from(g, (v) => Math.max(v, 0)); it = 0; raf = requestAnimationFrame(rlLoop); };
+
+    const stopPinn = () => { training = false; cancelAnimationFrame(praf); praf = 0; trainBtn.textContent = T.train; };
+    const pinnReport = () => {
+      if (!trainer || !lastF) { read.textContent = T.rdPinnIdle; return; }
+      if (Number.isNaN(tikRef)) tikRef = psnr(tikhonov(N, g, h, 10 ** +lamIn.value), f);
+      report(lastF, ` · ${T.rdIt} ${trainer.iter} · ${T.rdTikRef}: ${nf(tikRef)} dB`);
+    };
+    const pinnLoop = () => {
+      if (!training || !trainer || root.hidden) { stopPinn(); return; }
+      const t0 = performance.now();
+      do { const r = trainer.step(); lastF = r.f; lastData = r.data; } while (performance.now() - t0 < FRAME_MS && trainer.iter < PINN_STEPS);
+      paint(cRec, lastF!);
+      pinnReport();
+      if (trainer.iter >= PINN_STEPS) { stopPinn(); return; }
+      praf = requestAnimationFrame(pinnLoop);
+    };
+    const trainPinn = () => {
+      stopPinn();
+      const net = initImageNet(64, 3, 16);
+      trainer = makeImageTrainer(net, H!, g, 0.02, 0.01);
+      lastF = null; training = true; trainedOnce = true; trainBtn.textContent = T.stop;
+      praf = requestAnimationFrame(pinnLoop);
+    };
+    void lastData;
+
+    const inverse = () => {
+      stopRl();
+      stopPinn();
+      tikRef = NaN;
+      root.querySelectorAll<HTMLElement>('[data-cp-only]').forEach((e) => (e.hidden = e.dataset.cpOnly !== method));
+      q('[data-cp-lamout]').textContent = nf(+lamIn.value);
+      if (method === 'rl') { startRl(); return; }
+      if (method === 'pinn') {
+        trainer = null; lastF = null;
+        paint(cRec, g);
+        pinnReport();
+        if (trainedOnce) trainPinn();
+        return;
+      }
+      const rec = tikhonov(N, g, h, method === 'inv' ? 0 : 10 ** +lamIn.value);
+      paint(cRec, rec);
+      report(rec);
+    };
+
+    const all = () => { forward(); inverse(); };
+    [lenIn, angIn, noiseIn].forEach((el) => el.addEventListener('input', () => allDebounced()));
+    lamIn.addEventListener('input', () => { tikRef = NaN; if (method === 'pinn') pinnReport(); else inverse(); });
+    root.querySelectorAll<HTMLButtonElement>('[data-cp-m]').forEach((b) => b.addEventListener('click', () => {
+      method = b.dataset.cpM as typeof method;
+      root.querySelectorAll('[data-cp-m]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      inverse();
+    }));
+    runBtn.addEventListener('click', startRl);
+    trainBtn.addEventListener('click', () => (training ? stopPinn() : trainPinn()));
+    revealBtn.addEventListener('click', () => {
+      revealed = !revealed;
+      veil.hidden = revealed;
+      revealBtn.textContent = revealed ? T.hide : T.reveal;
+    });
+    root.addEventListener('eng:show', () => { if (method === 'rl' && it < RL_MAX && !raf) raf = requestAnimationFrame(rlLoop); });
+    let debounce = 0;
+    const allDebounced = () => { if (method !== 'pinn') { all(); return; } forward(); clearTimeout(debounce); debounce = window.setTimeout(inverse, 250); };
+    all();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-eng-tab="computing"]').forEach((root) => {
+    let done = false;
+    const start = () => { if (done) return; done = true; init(root); };
+    root.addEventListener('eng:show', start, { once: true });
+    if (!root.hidden) start();
+  });
+</script>
+
+<style>
+  .cp__panels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-3); max-width: 40rem; margin-inline: auto; align-items: end; }
+  .cp__p { margin: 0; }
+  .cp canvas { display: block; width: 100%; height: auto; image-rendering: pixelated; outline: 0.5px solid var(--ink-3); }
+  .cp__truth { position: relative; }
+  .cp__veil { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; background: var(--paper-2, var(--paper)); outline: 0.5px solid var(--ink-3); font-size: 2.2rem; color: var(--ink-3); line-height: 1; }
+  .cp__veil small { display: block; font-size: var(--step--2); font-style: italic; margin-top: 0.3rem; }
+  .cp__veil[hidden] { display: none; }
+  .cp__small { display: flex; justify-content: center; gap: var(--s-5); margin-top: var(--s-3); }
+  .cp__small figure { margin: 0; width: 4.5rem; }
+  .cp__small figcaption { font-size: var(--step--2); text-align: center; font-style: italic; color: var(--ink-2); margin-top: 0.2rem; }
+  .cp__controls { max-width: 40rem; margin: var(--s-4) auto 0; display: grid; gap: var(--s-3); grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); align-items: end; }
+  .cp__method { grid-column: span 2; }
+  .cp__btns { font-size: var(--step--1); display: flex; flex-wrap: wrap; gap: 0.3em 1em; }
+  .cp__controls [hidden], .cp__loss[hidden] { display: none; }
+  .cp__loss { text-align: center; font-size: var(--step--1); margin-top: var(--s-2); overflow-x: auto; }
+  .eng-eqs { display: flex; flex-wrap: wrap; justify-content: center; column-gap: var(--s-6); margin-block: var(--s-3); }
+  .eng-eqs :global(.eq) { justify-content: center; margin-block: var(--s-2); max-width: 100%; min-width: 0; }
+  @media (max-width: 34rem) {
+    .cp__panels { gap: var(--s-2); }
+    .cp__method { grid-column: auto; }
+  }
+</style>

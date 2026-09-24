@@ -1,0 +1,41 @@
+---
+/** One central equation with optional annotated terms revealed as fragments. */
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
+interface Term { label: string; text: string; cls?: string }
+interface Props { title?: string; kicker?: string; tex: string; terms?: Term[] }
+const { title, kicker, tex, terms = [] } = Astro.props;
+const html = katex.renderToString(tex, { displayMode: true, throwOnError: false, output: 'htmlAndMathml', strict: 'ignore' });
+---
+<section class="slide" data-title={title}>
+  {kicker && <p class="kicker">{kicker}</p>}
+  {title && <h2>{title}</h2>}
+  <div class="body">
+    <div class="eqbig" set:html={html} />
+    {terms.length > 0 && (
+      <dl class="terms">
+        {terms.map((t, i) => (<div data-fragment={i + 1}><dt class={t.cls}>{t.label}</dt><dd>{t.text}</dd></div>))}
+      </dl>
+    )}
+    <slot />
+  </div>
+  <aside class="notes"><slot name="notes" /></aside>
+</section>
+<script>
+  // Shrink an equation that is wider than the slide body (1600 px design canvas).
+  const fit = () => document.querySelectorAll<HTMLElement>('.eqbig').forEach((el) => {
+    el.style.fontSize = '';
+    let size = 50;
+    while (el.scrollWidth > el.clientWidth + 1 && size > 24) { size -= 2; el.style.fontSize = `${size}px`; }
+  });
+  document.fonts?.ready.then(fit);
+  fit();
+</script>
+
+<style>
+  .eqbig { font-size: 50px; overflow: hidden; }
+  .eqbig :global(.katex-display) { margin: 0; }
+  .terms { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px 48px; margin-top: 56px; font-size: 26px; }
+  .terms dt { font-weight: 700; font-size: 26px; border-top: 1.5px solid currentColor; padding-top: 8px; }
+  .terms dd { margin: 6px 0 0; color: var(--ink-2); line-height: 1.4; }
+</style>

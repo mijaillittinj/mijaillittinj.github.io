@@ -1,0 +1,362 @@
+---
+/**
+ * Mining engineering tab: gravity exploration of a buried ore body (2D horizontal
+ * cylinder). Forward: drag the body and see the anomaly. Inverse: fit (x₀, z₀, λ) to
+ * a noisy survey by Levenberg–Marquardt, then reveal the true body. Synthetic data.
+ * Maths in src/lib/eng/gravity.ts.
+ */
+import Equation from '../viz/Equation.astro';
+interface Props { lang?: 'en' | 'es'; hidden?: boolean }
+const { lang = 'en', hidden = false } = Astro.props;
+const es = lang === 'es';
+const T = es
+  ? {
+      fwd: 'Directo', fwdText: 'a partir de la posición, la profundidad y la masa de un cuerpo mineralizado, calcular la anomalía de gravedad que mide un gravímetro en superficie.',
+      inv: 'Inverso', invText: 'a partir de una prospección ruidosa en superficie, estimar dónde está el cuerpo, a qué profundidad y cuánta masa tiene.',
+      fig: 'Perfil gravimétrico y sección del subsuelo', hint: 'arrastre el cuerpo violeta para moverlo',
+      R: 'Radio del cuerpo', drho: 'Contraste de densidad', noise: 'Ruido del gravímetro',
+      inv2: 'invertir', reveal: 'mostrar el cuerpo verdadero', hide: 'ocultar el cuerpo verdadero', newS: 'nueva prospección', stop: 'detener',
+      method: 'Método', classic: 'ajuste paramétrico', train: 'entrenar la PINN', dw: 'Ponderación en profundidad', lossLabel: 'La PINN minimiza',
+      pinn: { it: 'iteración', mis: 'desajuste RMS', cm: 'centro de masa', mass: 'masa por metro', idle: 'Pulse «entrenar la PINN»: la red propone una densidad en cada celda de la sección.', surf: 'Sin ponderación en profundidad, el modelo más pequeño que explica los datos queda cerca de la superficie.', deep: 'La ponderación en profundidad compensa el decaimiento del núcleo con la profundidad.' },
+      pinnCap: 'PINN: una red de coordenadas propone el contraste de densidad Δρ(x, z) en toda la sección; la integral de gravedad sobre las celdas está dentro de la pérdida, junto con una penalización pequeña. La gravedad sola no fija la profundidad: sin ponderación en profundidad la masa se concentra cerca de la superficie; con ella, baja hacia la profundidad correcta.',
+      g: 'Δg (mGal)', depth: 'profundidad (m)', x: 'x (m)',
+      rd: { trial: 'Cuerpo de prueba', depth: 'profundidad', mass: 'λ', mis: 'desajuste RMS', noise: 'ruido', truth: 'Cuerpo verdadero', note: 'La gravedad fija λ = πR²Δρ, pero no R y Δρ por separado.' },
+      cap: 'El ancho de la anomalía fija la profundidad (la semianchura a media altura es igual a z₀) y el producto de amplitud y profundidad fija la masa: los cuerpos profundos dan señales más débiles y anchas. Aun así, la gravedad por sí sola no es única: para formas generales, una cáscara y una masa puntual pueden producir el mismo campo, y aquí solo se determina la masa por metro, no el radio y la densidad por separado. Por eso importan la información previa y otras mediciones. Ejemplo sintético (aproximación 2D).',
+    }
+  : {
+      fwd: 'Forward', fwdText: 'from the position, depth and mass of an ore body, compute the gravity anomaly that a gravimeter records at the surface.',
+      inv: 'Inverse', invText: 'from a noisy surface survey, estimate where the body is, how deep it lies and how much mass it has.',
+      fig: 'Gravity profile and subsurface section', hint: 'drag the violet body to move it',
+      R: 'Body radius', drho: 'Density contrast', noise: 'Gravimeter noise',
+      inv2: 'invert', reveal: 'reveal the true body', hide: 'hide the true body', newS: 'new survey', stop: 'stop',
+      method: 'Method', classic: 'parametric fit', train: 'train the PINN', dw: 'Depth weighting', lossLabel: 'The PINN minimises',
+      pinn: { it: 'iteration', mis: 'RMS misfit', cm: 'centre of mass', mass: 'mass per metre', idle: 'Press “train the PINN”: the network proposes a density in every cell of the section.', surf: 'Without depth weighting, the smallest model that explains the data sits near the surface.', deep: 'Depth weighting compensates for the decay of the kernel with depth.' },
+      pinnCap: 'PINN: a coordinate network proposes the density contrast Δρ(x, z) over the whole section; the gravity integral over the cells sits inside the loss, together with a small penalty. Gravity alone does not fix depth: without depth weighting the mass gathers near the surface; with it, the mass moves down to the right depth.',
+      g: 'Δg (mGal)', depth: 'depth (m)', x: 'x (m)',
+      rd: { trial: 'Trial body', depth: 'depth', mass: 'λ', mis: 'RMS misfit', noise: 'noise', truth: 'True body', note: 'Gravity fixes λ = πR²Δρ, but not R and Δρ separately.' },
+      cap: 'The width of the anomaly sets the depth (the half-width at half-maximum equals z₀), and amplitude times depth sets the mass: deeper bodies give weaker, broader signals. Gravity alone is still not unique: for general shapes, a shell and a point mass can produce the same field, and here only the mass per metre is determined, not the radius and density separately. That is why priors and other measurements matter. Synthetic example (2D approximation).',
+    };
+---
+<div class="eng-tab mi" data-eng-tab="mining" data-mi-text={JSON.stringify(T)} hidden={hidden}>
+  <p class="eng-fi"><em>{T.fwd}</em>: {T.fwdText} <em>{T.inv}</em>: {T.invText}</p>
+
+  <div class="mi__fig">
+    <p class="panel-title">{T.fig}</p>
+    <canvas class="mi__canvas" data-mi-canvas role="img" aria-label={T.fig}></canvas>
+    <p class="mi__hint" data-mi-classicui>{T.hint}</p>
+  </div>
+
+  <div class="mi__controls">
+    <div class="control" data-mi-classicui>
+      <div class="control__head"><label for={`mi-r-${lang}`}>{T.R}</label><output data-mi-or>—</output></div>
+      <input id={`mi-r-${lang}`} data-mi-r type="range" min="5" max="120" step="1" value="30" />
+    </div>
+    <div class="control" data-mi-classicui>
+      <div class="control__head"><label for={`mi-d-${lang}`}>{T.drho}</label><output data-mi-od>—</output></div>
+      <input id={`mi-d-${lang}`} data-mi-d type="range" min="500" max="1500" step="50" value="1000" />
+    </div>
+    <div class="control">
+      <div class="control__head"><label for={`mi-n-${lang}`}>{T.noise}</label><output data-mi-on>—</output></div>
+      <input id={`mi-n-${lang}`} data-mi-n type="range" min="0" max="0.1" step="0.005" value="0.02" />
+    </div>
+  </div>
+  <div class="mi__method">
+    <span class="control__head">{T.method}</span>
+    <div class="seg" role="group" aria-label={T.method}><button type="button" data-mi-m="classic" aria-pressed="true">{T.classic}</button><button type="button" data-mi-m="pinn" aria-pressed="false">PINN</button></div>
+    <label class="meta" data-mi-pinnui hidden><input type="checkbox" data-mi-dw checked /> {T.dw}</label>
+  </div>
+  <p class="mi__btns"><button type="button" class="btn" data-mi-inv>{T.inv2}</button><button type="button" class="btn" data-mi-train hidden>{T.train}</button> <button type="button" class="btn" data-mi-rev>{T.reveal}</button> <button type="button" class="btn" data-mi-new>{T.newS}</button></p>
+
+  <div class="mi__eqs"><Equation tex={String.raw`\Delta g(x) = \frac{2G\lambda\, z_0}{(x-x_0)^2 + z_0^2},`} /><Equation tex={String.raw`\lambda = \pi R^2 \Delta\rho`} /></div>
+  <p class="meta mi__loss" data-mi-pinnui hidden>{T.lossLabel} <Equation display={false} tex={String.raw`\mathcal{L}(\theta) = \frac{\lVert G\,\Delta\rho_\theta - d \rVert^2}{\lVert d \rVert^2} + \alpha\,\overline{\big(w(z)\,\Delta\rho_\theta/\rho_s\big)^2}`} /></p>
+  <p class="lab__readout" data-mi-read aria-live="polite"></p>
+  <p class="eng-cap">{T.cap} {T.pinnCap}</p>
+</div>
+
+<script>
+  import { cssVar, niceTicks, fmt } from '../../lib/plot';
+  import { anomaly, makeSurvey, fitLM, lambdaOf, radiusOf, rmsMisfit, type Body, type Survey } from '../../lib/eng/gravity';
+  import { makeGrid, kernel, initGravNet, gravLossGrad, gravAdam, depthWeights, centroid, type GravNet } from '../../lib/eng/pinn-gravity';
+  const P_H = 24, P_STEPS = 3000, P_LR = 0.02, P_ALPHA = 1, P_BETA = 2, FRAME_MS = 7, NXD = 101;
+
+  const XH = 500, ZMAX = 350;
+
+  function init(root: HTMLElement) {
+    const T = JSON.parse(root.dataset.miText!);
+    const q = <E extends Element>(s: string) => root.querySelector<E>(s)!;
+    const canvas = q<HTMLCanvasElement>('[data-mi-canvas]');
+    const rIn = q<HTMLInputElement>('[data-mi-r]'), dIn = q<HTMLInputElement>('[data-mi-d]'), nIn = q<HTMLInputElement>('[data-mi-n]');
+    const oR = q<HTMLOutputElement>('[data-mi-or]'), oD = q<HTMLOutputElement>('[data-mi-od]'), oN = q<HTMLOutputElement>('[data-mi-on]');
+    const invBtn = q<HTMLButtonElement>('[data-mi-inv]'), revBtn = q<HTMLButtonElement>('[data-mi-rev]'), newBtn = q<HTMLButtonElement>('[data-mi-new]');
+    const read = q<HTMLElement>('[data-mi-read]');
+
+    let seed = 5;
+    let truth: Body & { R: number; drho: number } = { x0: 0, z0: 0, m: 0, R: 0, drho: 0 };
+    let trial: Body = { x0: -300, z0: 80, m: lambdaOf(30, 1000) };
+    let survey: Survey;
+    let revealed = false, raf = 0;
+    let method: 'classic' | 'pinn' = 'classic';
+    const grid = makeGrid(40, 20, XH, ZMAX);
+    const xd = Array.from({ length: NXD }, (_, i) => -XH + (2 * XH * i) / (NXD - 1));
+    const Kd = kernel(grid, xd);
+    let K: Float64Array = new Float64Array(0);
+    let net: GravNet | null = null, rho: Float64Array | null = null, pIter = 0, pRms = NaN, praf = 0;
+    const trainBtn = q<HTMLButtonElement>('[data-mi-train]'), dwBox = q<HTMLInputElement>('[data-mi-dw]');
+    const predicted = (xs: 'dense' | 'stations') => {
+      if (!rho) return [];
+      const M = xs === 'dense' ? Kd : K, n = xs === 'dense' ? NXD : survey.x.length, m = rho.length;
+      return Array.from({ length: n }, (_, s) => { let g = 0; for (let k = 0; k < m; k++) g += M[s * m + k] * rho![k]; return g; });
+    };
+
+    const rand = (n: number) => { const x = Math.sin(seed * 12.9898 + n * 78.233) * 43758.5453; return x - Math.floor(x); };
+    const newTruth = () => {
+      const R = 25 + 35 * rand(1), drho = 600 + 800 * rand(2);
+      truth = { x0: -250 + 500 * rand(3), z0: Math.max(R + 30, 60 + 190 * rand(4)), m: lambdaOf(R, drho), R, drho };
+    };
+    const makeObs = () => { survey = makeSurvey(truth, +nIn.value, seed); K = kernel(grid, survey.x); };
+
+    // geometry: top = anomaly plot, bottom = section, sharing the x axis
+    const geom = () => {
+      const W = canvas.clientWidth;
+      const H = Math.round(Math.max(320, Math.min(520, W * 0.78)));
+      const l = 48, r = 10, t = 8;
+      const plotB = Math.round(H * 0.4), surf = plotB + 26, bot = H - 6;
+      return { W, H, l, r, t, plotB, surf, bot, sx: (W - l - r) / (2 * XH), sz: (bot - surf) / ZMAX };
+    };
+    const X = (x: number) => { const g = geom(); return g.l + (x + XH) * g.sx; };
+    const Z = (z: number) => { const g = geom(); return g.surf + z * g.sz; };
+
+    const draw = () => {
+      const g = geom();
+      if (!g.W) return;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(g.W * dpr); canvas.height = Math.round(g.H * dpr);
+      canvas.style.height = `${g.H}px`;
+      const ctx = canvas.getContext('2d')!;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, g.W, g.H);
+      const ink = cssVar('--ink'), ink3 = cssVar('--ink-3'), paper2 = cssVar('--paper-2'), rule = cssVar('--rule');
+      const cData = cssVar('--c-data'), cPhys = cssVar('--c-physics'), cLearn = cssVar('--c-learned'), cTruth = cssVar('--c-truth');
+      const serif = cssVar('--font-serif');
+
+      // ----- anomaly plot
+      const pinnMode = method === 'pinn';
+      const gp = pinnMode ? predicted('dense') : [];
+      const gmax = Math.max(0.05, ...survey.g, ...(pinnMode ? gp : Array.from({ length: 50 }, (_, i) => anomaly(-XH + (2 * XH * i) / 49, trial)))) * 1.12;
+      const gmin = Math.min(0, ...survey.g) - 0.04 * gmax;
+      const Y = (v: number) => g.t + (1 - (v - gmin) / (gmax - gmin)) * (g.plotB - g.t);
+      ctx.font = `11.5px ${serif}`; ctx.fillStyle = ink; ctx.strokeStyle = ink; ctx.lineWidth = 0.7;
+      ctx.strokeRect(g.l, g.t, g.W - g.l - g.r, g.plotB - g.t);
+      ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      for (const v of niceTicks(gmin, gmax, 4)) {
+        if (v < gmin || v > gmax) continue;
+        ctx.fillText(fmt(v), g.l - 5, Y(v));
+        ctx.beginPath(); ctx.moveTo(g.l, Y(v)); ctx.lineTo(g.l + 4, Y(v)); ctx.stroke();
+      }
+      ctx.save(); ctx.font = `italic 12.5px ${serif}`; ctx.translate(12, (g.t + g.plotB) / 2); ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = 'center'; ctx.fillText(T.g, 0, 0); ctx.restore();
+      ctx.save(); ctx.beginPath(); ctx.rect(g.l, g.t, g.W - g.l - g.r, g.plotB - g.t); ctx.clip();
+      const curve = (b: Body, color: string, dash: number[], w: number) => {
+        ctx.strokeStyle = color; ctx.lineWidth = w; ctx.setLineDash(dash); ctx.beginPath();
+        for (let i = 0; i <= 200; i++) { const x = -XH + (2 * XH * i) / 200; const px = X(x), py = Y(anomaly(x, b)); i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); }
+        ctx.stroke(); ctx.setLineDash([]);
+      };
+      if (revealed) curve(truth, cTruth, [4, 3], 1.2);
+      if (!pinnMode) curve(trial, cPhys, [], 1.6);
+      else if (gp.length) {
+        ctx.strokeStyle = cLearn; ctx.lineWidth = 1.6; ctx.beginPath();
+        gp.forEach((v, i) => { const px = X(xd[i]), py = Y(v); i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); });
+        ctx.stroke();
+      }
+      ctx.fillStyle = cData; ctx.strokeStyle = cssVar('--paper'); ctx.lineWidth = 0.6;
+      survey.x.forEach((x, i) => { ctx.beginPath(); ctx.arc(X(x), Y(survey.g[i]), 2.8, 0, 2 * Math.PI); ctx.fill(); ctx.stroke(); });
+      ctx.restore();
+
+      // ----- x ticks between plot and surface
+      ctx.fillStyle = ink; ctx.strokeStyle = ink; ctx.lineWidth = 0.7;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.font = `11.5px ${serif}`;
+      const step = g.W < 460 ? 250 : 100;
+      for (let x = -XH; x <= XH; x += step) {
+        const last = x + step > XH;
+        ctx.textAlign = last ? 'right' : x === -XH ? 'left' : 'center';
+        ctx.fillText(last ? `${x} m` : String(x), last ? X(x) + 2 : X(x), g.plotB + 4);
+        ctx.beginPath(); ctx.moveTo(X(x), g.plotB); ctx.lineTo(X(x), g.plotB - 4); ctx.stroke();
+      }
+
+      // ----- section
+      ctx.fillStyle = paper2; ctx.fillRect(g.l, g.surf, g.W - g.l - g.r, g.bot - g.surf);
+      ctx.strokeStyle = rule; ctx.lineWidth = 0.5;
+      ctx.save(); ctx.beginPath(); ctx.rect(g.l, g.surf, g.W - g.l - g.r, g.bot - g.surf); ctx.clip();
+      for (let k = -g.H; k < g.W; k += 14) { ctx.beginPath(); ctx.moveTo(k, g.bot); ctx.lineTo(k + (g.bot - g.surf), g.surf); ctx.stroke(); }
+      ctx.restore();
+      ctx.strokeStyle = ink; ctx.lineWidth = 1.1;
+      ctx.beginPath(); ctx.moveTo(g.l, g.surf); ctx.lineTo(g.W - g.r, g.surf); ctx.stroke();
+      // stations
+      ctx.fillStyle = ink3;
+      for (const x of survey.x) { ctx.beginPath(); ctx.moveTo(X(x), g.surf - 1); ctx.lineTo(X(x) - 3, g.surf - 6); ctx.lineTo(X(x) + 3, g.surf - 6); ctx.closePath(); ctx.fill(); }
+      // depth ticks
+      ctx.fillStyle = ink; ctx.strokeStyle = ink; ctx.lineWidth = 0.7; ctx.font = `11.5px ${serif}`;
+      ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      for (let z = 100; z <= 300; z += 100) { ctx.fillText(String(z), g.l - 5, Z(z)); ctx.beginPath(); ctx.moveTo(g.l, Z(z)); ctx.lineTo(g.l + 4, Z(z)); ctx.stroke(); }
+      ctx.save(); ctx.font = `italic 12.5px ${serif}`; ctx.translate(12, (g.surf + g.bot) / 2); ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = 'center'; ctx.fillText(T.depth, 0, 0); ctx.restore();
+      // bodies
+      ctx.save(); ctx.beginPath(); ctx.rect(g.l, g.surf, g.W - g.l - g.r, g.bot - g.surf); ctx.clip();
+      const body = (x0: number, z0: number, R: number, stroke: string, fill: string | null, dash: number[]) => {
+        ctx.beginPath(); ctx.ellipse(X(x0), Z(z0), Math.max(2, R * g.sx), Math.max(2, R * g.sz), 0, 0, 2 * Math.PI);
+        if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+        ctx.setLineDash(dash); ctx.strokeStyle = stroke; ctx.lineWidth = 1.5; ctx.stroke(); ctx.setLineDash([]);
+      };
+      if (pinnMode && rho) {
+        // recovered density: violet cells, opacity ∝ density
+        let rmax = 0;
+        for (const v of rho) rmax = Math.max(rmax, v);
+        const cw = ((2 * XH) / grid.nx) * g.sx, ch = (ZMAX / grid.nz) * g.sz;
+        ctx.fillStyle = cLearn;
+        for (let j = 0; j < grid.nz; j++) for (let i = 0; i < grid.nx; i++) {
+          ctx.globalAlpha = Math.min(1, rho[j * grid.nx + i] / (rmax || 1)) * 0.85;
+          ctx.fillRect(X(grid.xc[i]) - cw / 2, Z(grid.zc[j]) - ch / 2, cw + 0.5, ch + 0.5);
+        }
+        ctx.globalAlpha = 1;
+      }
+      if (revealed) body(truth.x0, truth.z0, truth.R, cTruth, null, [4, 3]);
+      if (!pinnMode) {
+        const Rt = radiusOf(trial.m, +dIn.value);
+        body(trial.x0, trial.z0, Rt, cLearn, cLearn + '40', []);
+        ctx.fillStyle = cLearn; ctx.beginPath(); ctx.arc(X(trial.x0), Z(trial.z0), 2.2, 0, 2 * Math.PI); ctx.fill();
+      }
+      ctx.restore();
+    };
+
+    const update = () => {
+      const drho = +dIn.value;
+      const R = radiusOf(trial.m, drho);
+      oR.textContent = `${R.toFixed(0)} m`; oD.textContent = `${drho} kg/m³`; oN.textContent = `${(+nIn.value).toFixed(3)} mGal`;
+      if (method === 'pinn') {
+        let txt = T.pinn.idle;
+        if (rho) {
+          const c = centroid(rho, grid);
+          txt = `PINN: ${T.pinn.it} ${pIter} · ${T.pinn.mis} ${pRms.toFixed(3)} mGal (${T.rd.noise} ${(+nIn.value).toFixed(3)}) · ${T.pinn.cm} x = ${c.x.toFixed(0)} m, ${T.rd.depth} ${c.z.toFixed(0)} m · ${T.pinn.mass} ${c.mass.toFixed(2)}×10⁶ kg/m`;
+          if (revealed) txt += `. ${T.rd.truth}: x₀ = ${truth.x0.toFixed(0)} m, ${T.rd.depth} ${truth.z0.toFixed(0)} m, λ = ${truth.m.toFixed(2)}×10⁶ kg/m`;
+          txt += '. ' + (dwBox.checked ? T.pinn.deep : T.pinn.surf);
+        }
+        read.textContent = txt;
+        draw();
+        return;
+      }
+      const mis = rmsMisfit(trial, survey);
+      let txt = `${T.rd.trial}: x₀ = ${trial.x0.toFixed(0)} m, ${T.rd.depth} ${trial.z0.toFixed(0)} m, ${T.rd.mass} = ${trial.m.toFixed(2)}×10⁶ kg/m · ${T.rd.mis} ${mis.toFixed(3)} mGal (${T.rd.noise} ${(+nIn.value).toFixed(3)})`;
+      if (revealed) txt += `. ${T.rd.truth}: x₀ = ${truth.x0.toFixed(0)} m, ${T.rd.depth} ${truth.z0.toFixed(0)} m, ${T.rd.mass} = ${truth.m.toFixed(2)}×10⁶ kg/m (R = ${truth.R.toFixed(0)} m, Δρ = ${Math.round(truth.drho / 10) * 10} kg/m³). ${T.rd.note}`;
+      read.textContent = txt;
+      draw();
+    };
+
+    const stopP = () => { cancelAnimationFrame(praf); praf = 0; trainBtn.textContent = T.train; };
+    const loopP = () => {
+      if (!net) return;
+      if (root.hidden) { stopP(); return; }
+      const w = depthWeights(grid, dwBox.checked, P_BETA);
+      const t0 = performance.now();
+      while (pIter < P_STEPS && performance.now() - t0 < FRAME_MS) {
+        const r = gravLossGrad(net, grid, K, survey.g, w, P_ALPHA);
+        rho = r.rho; gravAdam(net, r.grad, P_LR); pIter++;
+      }
+      const gs = predicted('stations');
+      pRms = Math.sqrt(gs.reduce((a, v, i) => a + (v - survey.g[i]) ** 2, 0) / gs.length);
+      update();
+      if (pIter >= P_STEPS) { stopP(); return; }
+      praf = requestAnimationFrame(loopP);
+    };
+    const trainP = () => {
+      if (praf) { stopP(); return; }
+      net = initGravNet(P_H, 5); rho = null; pIter = 0;
+      trainBtn.textContent = T.stop;
+      praf = requestAnimationFrame(loopP);
+    };
+    const resetP = () => { stopP(); net = null; rho = null; };
+    const stop = () => { cancelAnimationFrame(raf); raf = 0; invBtn.textContent = T.inv2; };
+    const invert = () => {
+      if (raf) { stop(); return; }
+      const path = fitLM(survey, trial);
+      let k = 0, frame = 0;
+      invBtn.textContent = T.stop;
+      const step = () => {
+        if (frame++ % 5 === 0) {
+          k++;
+          trial = { ...path[Math.min(k, path.length - 1)] };
+          rIn.value = String(Math.min(120, Math.max(5, radiusOf(trial.m, +dIn.value))));
+          update();
+        }
+        if (k < path.length - 1) raf = requestAnimationFrame(step); else stop();
+      };
+      raf = requestAnimationFrame(step);
+    };
+
+    rIn.addEventListener('input', () => { stop(); trial.m = lambdaOf(+rIn.value, +dIn.value); trial.z0 = Math.max(trial.z0, +rIn.value + 3); update(); });
+    dIn.addEventListener('input', () => { stop(); trial.m = lambdaOf(+rIn.value, +dIn.value); update(); });
+    nIn.addEventListener('input', () => { stop(); resetP(); makeObs(); update(); });
+    invBtn.addEventListener('click', invert);
+    trainBtn.addEventListener('click', trainP);
+    dwBox.addEventListener('change', () => { resetP(); update(); });
+    root.querySelectorAll<HTMLButtonElement>('[data-mi-m]').forEach((b) => b.addEventListener('click', () => {
+      method = b.dataset.miM as 'classic' | 'pinn';
+      root.querySelectorAll<HTMLButtonElement>('[data-mi-m]').forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
+      invBtn.hidden = method === 'pinn'; trainBtn.hidden = method !== 'pinn';
+      root.querySelectorAll<HTMLElement>('[data-mi-pinnui]').forEach((e) => (e.hidden = method !== 'pinn'));
+      root.querySelectorAll<HTMLElement>('[data-mi-classicui]').forEach((e) => (e.hidden = method === 'pinn'));
+      stop(); resetP(); update();
+    }));
+    revBtn.addEventListener('click', () => { revealed = !revealed; revBtn.textContent = revealed ? T.hide : T.reveal; update(); });
+    newBtn.addEventListener('click', () => { stop(); resetP(); seed++; newTruth(); makeObs(); revealed = false; revBtn.textContent = T.reveal; update(); });
+
+    // drag the trial body in the section
+    let dragging = false;
+    const place = (e: PointerEvent) => {
+      const g = geom(), b = canvas.getBoundingClientRect();
+      const x = (e.clientX - b.left - g.l) / g.sx - XH, z = (e.clientY - b.top - g.surf) / g.sz;
+      const R = radiusOf(trial.m, +dIn.value);
+      trial.x0 = Math.max(-XH, Math.min(XH, x));
+      trial.z0 = Math.max(Math.max(15, R + 3), Math.min(ZMAX - 10, z));
+      update();
+    };
+    canvas.addEventListener('pointerdown', (e) => {
+      const g = geom(), b = canvas.getBoundingClientRect();
+      if (method === 'pinn' || e.clientY - b.top < g.surf) return;
+      stop(); dragging = true; canvas.setPointerCapture(e.pointerId); place(e);
+    });
+    canvas.addEventListener('pointermove', (e) => { if (dragging) place(e); });
+    canvas.addEventListener('pointerup', () => { dragging = false; });
+    canvas.addEventListener('pointercancel', () => { dragging = false; });
+    window.addEventListener('themechange', draw);
+    let lastW = 0;
+    new ResizeObserver(() => { const w = canvas.clientWidth; if (w && Math.abs(w - lastW) > 4) { lastW = w; draw(); } }).observe(canvas);
+
+    newTruth(); makeObs(); update();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-eng-tab="mining"]').forEach((root) => {
+    let done = false;
+    const go = () => { if (!done) { done = true; init(root); } };
+    root.addEventListener('eng:show', go);
+    if (!root.hidden) go();
+  });
+</script>
+
+<style>
+  .mi__fig { max-width: 40rem; margin: var(--s-3) auto 0; }
+  .mi__canvas { display: block; width: 100%; height: 22rem; touch-action: none; cursor: grab; background: var(--paper); }
+  .mi__hint { text-align: center; font-size: var(--step--2); font-style: italic; color: var(--ink-3); margin-top: 0.2rem; }
+  .mi__controls { display: grid; gap: var(--s-3) var(--s-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); max-width: 40rem; margin: var(--s-4) auto 0; }
+  .mi__btns { max-width: 40rem; margin: var(--s-3) auto 0; font-size: var(--step--1); text-align: center; display: flex; flex-wrap: wrap; gap: 0.2em 1em; justify-content: center; }
+  .mi__method { max-width: 40rem; margin: var(--s-3) auto 0; display: flex; flex-wrap: wrap; gap: 0.3em 1.2em; align-items: baseline; justify-content: center; font-size: var(--step--1); }
+  .mi__method label { display: inline-flex; gap: 0.4em; align-items: baseline; }
+  .mi__method [hidden], .mi__btns [hidden], .mi__loss[hidden] { display: none; }
+  .mi__loss { font-size: var(--step--1); text-align: center; max-width: 40rem; margin: var(--s-2) auto 0; overflow-x: auto; }
+  .mi [data-mi-classicui][hidden] { display: none; }
+  .mi__eqs { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0 var(--s-6); max-width: 40rem; margin-inline: auto; }
+  .mi__eqs :global(.eq) { margin-block: var(--s-3); }
+  .mi .lab__readout { max-width: 40rem; margin: var(--s-2) auto 0; text-align: center; }
+  .mi .eng-cap, .mi .eng-fi { max-width: 40rem; margin-inline: auto; }
+  .mi .eng-cap { margin-top: var(--s-3); font-size: var(--step--1); color: var(--ink-2); text-align: justify; }
+  @media (max-width: 34rem) { .mi .eng-cap { text-align: left; } }
+</style>

@@ -1,0 +1,151 @@
+---
+/**
+ * Bayesian calibration of Newton cooling with an animated Metropolis sampler:
+ * chain trace, posterior samples, marginal histograms and the posterior predictive band.
+ */
+import ParameterSlider from './ParameterSlider.astro';
+---
+<div class="lab" data-mcmc>
+  <div class="lab__grid">
+    <div class="lab__controls">
+      <ParameterSlider name="npts" label="Number of readings" min={4} max={30} step={1} value={10} format="int" />
+      <ParameterSlider name="tmax" label="Readings up to t (min)" min={5} max={40} step={1} value={15} format="int" unit=" min" />
+      <ParameterSlider name="sigma" label="Thermocouple noise σ" min={0.2} max={4} step={0.1} value={1.5} unit=" °C" />
+      <ParameterSlider name="prop" label="Proposal width log₁₀ w" min={-2} max={1.5} step={0.1} value={-0.3} hint="Random-walk step for both parameters." />
+      <p class="meta"><button type="button" class="btn btn--primary" data-mc-run>Run the sampler</button> <button type="button" class="btn" data-mc-reset>Reset</button> <button type="button" class="btn" data-mc-new>New data</button></p>
+      <p class="lab__readout" data-mc-read aria-live="polite"></p>
+    </div>
+    <div class="lab__plots">
+      <div class="wide">
+        <p class="panel-title">Readings and posterior predictive band (95 %)</p>
+        <div class="mc__plot" data-mc-data></div>
+      </div>
+      <div>
+        <p class="panel-title">Posterior samples of (τ, T∞)</p>
+        <div class="mc__plot" data-mc-post></div>
+      </div>
+      <div>
+        <p class="panel-title">Chain trace of τ</p>
+        <div class="mc__plot" data-mc-trace></div>
+      </div>
+      <div>
+        <p class="panel-title">Marginal posterior of τ</p>
+        <div class="mc__plot" data-mc-htau></div>
+      </div>
+      <div>
+        <p class="panel-title">Marginal posterior of T∞</p>
+        <div class="mc__plot" data-mc-htinf></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { makeData, startChain, step, quantile, histogram, cooling, BOX, type Chain, type Data } from '../../lib/mcmc';
+  import { LinePlot } from '../../lib/plot';
+
+  document.querySelectorAll<HTMLElement>('[data-mcmc]').forEach((root) => {
+    const $ = <T extends Element>(s: string) => root.querySelector<T>(s)!;
+    const val = (name: string) => +$<HTMLInputElement>(`[name="${name}"]`).value;
+    const pData = new LinePlot($('[data-mc-data]'), { width: 860, height: 280, xlabel: 'time t (min)', ylabel: 'T (°C)', title: 'Cooling data' });
+    const pPost = new LinePlot($('[data-mc-post]'), { width: 420, height: 280, xlabel: 'time constant τ (min)', ylabel: 'T∞ (°C)', title: 'Posterior samples', legend: false });
+    const pTrace = new LinePlot($('[data-mc-trace]'), { width: 420, height: 280, xlabel: 'iteration', ylabel: 'τ (min)', title: 'Trace' });
+    const pHt = new LinePlot($('[data-mc-htau]'), { width: 420, height: 240, xlabel: 'τ (min)', ylabel: 'density', title: 'Marginal τ', legend: false });
+    const pHT = new LinePlot($('[data-mc-htinf]'), { width: 420, height: 240, xlabel: 'T∞ (°C)', ylabel: 'density', title: 'Marginal T∞', legend: false });
+    const read = $<HTMLElement>('[data-mc-read]');
+    const btn = $<HTMLButtonElement>('[data-mc-run]');
+    const MAX = 20000, PER_FRAME = 60;
+    const TRUE = { tau: 8, Tinf: 25 };
+    let seed = 4;
+    let data: Data, ch: Chain, running = false, frame = 0;
+
+    const setup = () => {
+      data = makeData(TRUE.tau, TRUE.Tinf, Math.round(val('npts')), val('tmax'), val('sigma'), seed);
+      ch = startChain(data, [30, 50], seed + 100);
+    };
+    const burn = () => Math.min(1000, Math.floor(ch.tau.length * 0.2));
+
+    const draw = () => {
+      const ts = Array.from({ length: 81 }, (_, i) => (i * 40) / 80);
+      const b = burn(), N = ch.tau.length, post = N - b;
+      const series: import('../../lib/plot').Series[] = [];
+      if (post > 50) {
+        const lo: number[] = [], hi: number[] = [], med: number[] = [];
+        const draws = Array.from({ length: 120 }, (_, k) => b + Math.floor(((k + 0.5) / 120) * post));
+        for (const t of ts) {
+          const v = draws.map((j) => cooling(t, ch.tau[j], ch.Tinf[j]));
+          lo.push(quantile(v, 0.025)); hi.push(quantile(v, 0.975)); med.push(quantile(v, 0.5));
+        }
+        series.push({ kind: 'band', x: ts, y: lo, y2: hi, cls: 's-learned', label: 'posterior 95 % band' });
+        series.push({ kind: 'line', x: ts, y: med, cls: 's-learned', label: 'posterior median' });
+      }
+      series.push({ kind: 'line', x: ts, y: ts.map((t) => cooling(t, TRUE.tau, TRUE.Tinf)), cls: 's-truth', dash: true, label: 'true curve (hidden)' });
+      series.push({ kind: 'points', x: data.t, y: data.d, cls: 's-data', label: 'thermocouple readings' });
+      pData.render(series, { xlim: [0, 40], ylim: [10, 95] });
+
+      const lim = (a: number[], box: [number, number]) => a.length > 50 ? [Math.max(box[0], quantile(a, 0.002) - 1), Math.min(box[1], quantile(a, 0.998) + 1)] as [number, number] : box;
+      // posterior scatter (thinned) + recent path
+      const thin = Math.max(1, Math.floor(post / 500));
+      const sx: number[] = [], sy: number[] = [];
+      for (let j = b; j < N; j += thin) { sx.push(ch.tau[j]); sy.push(ch.Tinf[j]); }
+      const r0 = Math.max(0, N - 40);
+      pPost.render([
+        { kind: 'points', x: sx, y: sy, cls: 's-learned' },
+        { kind: 'line', x: ch.tau.slice(r0), y: ch.Tinf.slice(r0), cls: 's-muted' },
+        { kind: 'points', x: [TRUE.tau], y: [TRUE.Tinf], cls: 's-truth' },
+      ], post > 200 ? { xlim: lim(ch.tau.slice(b), BOX.tau), ylim: lim(ch.Tinf.slice(b), BOX.Tinf) } : { xlim: BOX.tau, ylim: BOX.Tinf });
+
+      const tstep = Math.max(1, Math.floor(N / 600));
+      const ti: number[] = [], tv: number[] = [];
+      for (let j = 0; j < N; j += tstep) { ti.push(j); tv.push(ch.tau[j]); }
+      pTrace.render([
+        { kind: 'line', x: ti, y: tv, cls: 's-physics', label: 'τ' },
+        { kind: 'line', x: [b, b], y: [BOX.tau[0], BOX.tau[1]], cls: 's-muted', dash: true, label: 'end of burn-in' },
+        { kind: 'line', x: [0, Math.max(N, 10)], y: [TRUE.tau, TRUE.tau], cls: 's-truth', dash: true, label: 'true τ' },
+      ], { xlim: [0, Math.max(N, 10)], ylim: BOX.tau });
+
+      const tauP = ch.tau.slice(b), TP = ch.Tinf.slice(b);
+      const lt = lim(tauP, BOX.tau), lT = lim(TP, BOX.Tinf);
+      const ht = histogram(tauP, lt[0], lt[1], 40), hT = histogram(TP, lT[0], lT[1], 40);
+      const ymt = Math.max(...ht.dens, 1e-9) * 1.1, ymT = Math.max(...hT.dens, 1e-9) * 1.1;
+      pHt.render([
+        { kind: 'step', x: ht.edges.concat([lt[1]]), y: ht.dens.concat([ht.dens.at(-1) ?? 0]), cls: 's-learned' },
+        { kind: 'line', x: [TRUE.tau, TRUE.tau], y: [0, ymt], cls: 's-truth', dash: true },
+      ], { xlim: lt, ylim: [0, ymt] });
+      pHT.render([
+        { kind: 'step', x: hT.edges.concat([lT[1]]), y: hT.dens.concat([hT.dens.at(-1) ?? 0]), cls: 's-learned' },
+        { kind: 'line', x: [TRUE.Tinf, TRUE.Tinf], y: [0, ymT], cls: 's-truth', dash: true },
+      ], { xlim: lT, ylim: [0, ymT] });
+
+      if (N < 2) { read.innerHTML = 'Press “Run the sampler”. The chain starts far from the truth, at τ = 30 min, T∞ = 50 °C.'; return; }
+      const acc = ch.proposed ? ch.accepted / ch.proposed : 0;
+      const ci = (a: number[]) => `${quantile(a, 0.5).toFixed(1)} [${quantile(a, 0.025).toFixed(1)}, ${quantile(a, 0.975).toFixed(1)}]`;
+      read.innerHTML = `${N - 1} samples, acceptance rate <strong>${(acc * 100).toFixed(0)} %</strong>` +
+        (post > 100 ? `. Median and 95 % credible interval: τ = <strong>${ci(tauP)}</strong> min (true ${TRUE.tau}), T∞ = <strong>${ci(TP)}</strong> °C (true ${TRUE.Tinf}).` : '.');
+    };
+
+    const loop = () => {
+      if (!running) return;
+      const w = 10 ** val('prop');
+      step(ch, data, PER_FRAME, w, w);
+      if (++frame % 2 === 0 || ch.tau.length > MAX) draw();
+      if (ch.tau.length > MAX) { running = false; btn.textContent = 'Run the sampler'; draw(); return; }
+      requestAnimationFrame(loop);
+    };
+    const reset = () => { running = false; btn.textContent = 'Run the sampler'; setup(); draw(); };
+    btn.addEventListener('click', () => {
+      if (running) { running = false; btn.textContent = 'Continue'; return; }
+      if (ch.tau.length > MAX) setup();
+      running = true; btn.textContent = 'Pause'; requestAnimationFrame(loop);
+    });
+    $('[data-mc-reset]').addEventListener('click', reset);
+    $('[data-mc-new]').addEventListener('click', () => { seed++; reset(); });
+    ['npts', 'tmax', 'sigma'].forEach((nm) => $(`[name="${nm}"]`).addEventListener('change', reset));
+    reset();
+  });
+</script>
+
+<style>
+  .wide { grid-column: 1 / -1; }
+  .mc__plot { min-height: 12rem; }
+</style>

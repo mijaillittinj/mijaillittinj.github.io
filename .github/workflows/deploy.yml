@@ -1,0 +1,57 @@
+name: Build and deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    # Weekly rebuild so new papers found on ORCID/Crossref appear without a push
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Tests (numerics of the learning modules, publication merge)
+        run: for f in tests/*.test.ts; do node --experimental-strip-types "$f" || exit 1; done
+      - name: Sync publications from ORCID and Crossref
+        # On a network failure the committed src/data/publications.auto.json is used
+        continue-on-error: true
+        run: node scripts/sync-publications.mjs
+      - name: Type check
+        run: npx astro check
+      - name: Build
+        run: npm run build
+        env:
+          # For a project repository (username.github.io/<repo>) set BASE_PATH=/<repo>/
+          # For a custom domain set SITE_URL=https://example.org
+          SITE_URL: ${{ vars.SITE_URL || 'https://mijaillittinj.github.io' }}
+          BASE_PATH: ${{ vars.BASE_PATH || '/' }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

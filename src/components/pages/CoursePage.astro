@@ -1,0 +1,150 @@
+---
+/**
+ * Course page: ILN223 Diseño y Optimización de Sistemas Térmicos (UTFSM, 2026-2).
+ * Content from the course slides and lab brief (see CONTENT_INVENTORY.md). Learning
+ * outcomes are written from the course content; the official syllabus should be
+ * checked before quoting them as such (CONTENT_QUESTIONS.md).
+ */
+import Base from '../../layouts/Base.astro';
+import { url, localized } from '../../i18n/utils';
+import type { Lang } from '../../i18n/ui';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const es = lang === 'es';
+
+const T = es
+  ? {
+      title: 'Diseño y Optimización de Sistemas Térmicos', eyebrow: 'Docencia · ILN223 · UTFSM · 2026-2',
+      lede: 'Un curso sobre cómo pasar de un sistema térmico real a un modelo que se puede resolver, verificar y optimizar, y sobre cuándo conviene aprender el modelo a partir de datos.',
+      about: 'Sobre el curso',
+      aboutText: [
+        'El curso recorre el ciclo completo del diseño computacional: formular un modelo físico, simplificarlo con criterio, resolverlo numéricamente, comprobar que la solución es confiable y usarla para tomar decisiones de diseño mediante optimización. La última unidad introduce el aprendizaje automático como herramienta de modelado basado en datos y lo conecta con los modelos físicos del resto del semestre.',
+        'Las clases combinan teoría con demostraciones en Python que los estudiantes pueden modificar. El primer laboratorio parte de un problema de ingeniería concreto: el calentamiento de un transformador.',
+      ],
+      outcomes: 'Al terminar, el estudiante puede',
+      outcomesList: [
+        'formular el modelo matemático de un sistema térmico y justificar sus simplificaciones (0D o distribuido, estacionario o transitorio) con números adimensionales;',
+        'resolver el modelo numéricamente, verificar la solución y analizar su sensibilidad a los parámetros;',
+        'plantear un problema de diseño como optimización, con objetivos y restricciones, y elegir un método de solución adecuado;',
+        'entender cómo funcionan los métodos de gradiente que se usan también para entrenar redes neuronales;',
+        'construir y evaluar un modelo basado en datos, y reconocer cuándo conviene imponer la física.',
+      ],
+      units: 'Unidades', unitList: [
+        ['1', 'Modelado de sistemas térmicos', 'Propósito de un modelo, leyes físicas, análisis dimensional y teorema Π de Buckingham, modelos concentrados y distribuidos (número de Biot), similitud y ajuste de curvas.', []],
+        ['2', 'Modelación numérica y simulación', 'Discretización, estabilidad de esquemas explícitos, verificación de la solución y análisis de sensibilidad.', []],
+        ['3', 'Optimización de sistemas térmicos', 'Anatomía de un problema de optimización, convexidad, restricciones y multiplicadores de Lagrange, descenso de gradiente, momentum, métodos estocásticos, Newton y BFGS.', [['Módulo: descenso de gradiente', '/learn/optimization/gradient-descent/']]],
+        ['4', 'Aprendizaje automático para modelado basado en datos', 'Regresión, redes neuronales y aprendizaje informado por la física (octubre de 2026).', [['Módulo: aprendizaje informado por la física', '/learn/machine-learning/physics-informed-learning/']]],
+      ],
+      labs: 'Laboratorios computacionales',
+      lab1: 'Laboratorio 1: por qué se sobrecalienta un transformador',
+      lab1Text: 'Modelos térmicos de un transformador de distribución, primero concentrado (0D) y luego unidimensional, para explicar cómo puede sobrecalentarse hasta fallar. Los estudiantes comparan una estimación empírica del punto caliente con un modelo espacial resuelto explícitamente, aplicando los modelos concentrados y los submodelos acoplados de la unidad 1.',
+      tools: 'Herramientas', toolsText: 'Python (NumPy, SciPy, Matplotlib) en notebooks. Bibliografía principal: Y. Jaluria, Design and Optimization of Thermal Systems; S. Brunton y J. N. Kutz, Data-Driven Science and Engineering.',
+      material: 'Material', materialText: 'Las diapositivas, apuntes y notebooks se entregan a los estudiantes inscritos por los canales del curso. Se publicarán aquí versiones abiertas de apuntes y demostraciones a medida que estén revisadas. Las evaluaciones y sus pautas no se publican.',
+      back: 'Docencia',
+    }
+  : {
+      title: 'Design and Optimization of Thermal Systems', eyebrow: 'Teaching · ILN223 · UTFSM · 2026-2',
+      lede: 'A course on turning a real thermal system into a model that can be solved, verified and optimised, and on when it pays to learn the model from data instead.',
+      about: 'About the course',
+      aboutText: [
+        'The course follows the full cycle of computational design: formulate a physical model, simplify it with judgement, solve it numerically, check that the solution can be trusted, and use it to make design decisions through optimisation. The last unit introduces machine learning as a tool for data-driven modelling and connects it with the physical models of the rest of the semester.',
+        'Classes combine theory with Python demonstrations that students can modify. The first laboratory starts from a concrete engineering problem: the heating of a transformer. The course is taught in Spanish.',
+      ],
+      outcomes: 'By the end, students can',
+      outcomesList: [
+        'formulate the mathematical model of a thermal system and justify its simplifications (lumped or distributed, steady or transient) with dimensionless numbers;',
+        'solve the model numerically, verify the solution and analyse its sensitivity to parameters;',
+        'pose a design problem as an optimisation problem with objectives and constraints, and choose a suitable method to solve it;',
+        'explain how the gradient methods used to train neural networks work;',
+        'build and assess a data-driven model, and recognise when physics should be imposed on it.',
+      ],
+      units: 'Units', unitList: [
+        ['1', 'Modelling thermal systems', 'Purpose of a model, physical laws, dimensional analysis and the Buckingham Π theorem, lumped and distributed models (Biot number), similarity and curve fitting.', []],
+        ['2', 'Numerical modelling and simulation', 'Discretisation, stability of explicit schemes, verification of the solution and sensitivity analysis.', []],
+        ['3', 'Optimisation of thermal systems', 'Anatomy of an optimisation problem, convexity, constraints and Lagrange multipliers, gradient descent, momentum, stochastic methods, Newton and BFGS.', [['Module: gradient descent', '/learn/optimization/gradient-descent/']]],
+        ['4', 'Machine learning for data-driven modelling', 'Regression, neural networks and physics-informed learning (October 2026).', [['Module: physics-informed learning', '/learn/machine-learning/physics-informed-learning/']]],
+      ],
+      labs: 'Computational laboratories',
+      lab1: 'Lab 1: why does a transformer overheat?',
+      lab1Text: 'Thermal models of a distribution transformer, first lumped (0D) and then one-dimensional, to explain how it can overheat until it fails. Students compare an empirical hot-spot estimate with an explicitly resolved spatial model, applying the lumped models and coupled sub-models of unit 1.',
+      tools: 'Tools', toolsText: 'Python (NumPy, SciPy, Matplotlib) in notebooks. Main references: Y. Jaluria, Design and Optimization of Thermal Systems; S. Brunton and J. N. Kutz, Data-Driven Science and Engineering.',
+      material: 'Material', materialText: 'Slides, notes and notebooks are distributed to enrolled students through the course channels. Open versions of notes and demonstrations will be published here once they have been reviewed. Assessments and their solutions are not published.',
+      back: 'Teaching',
+    };
+const jsonld = [{
+  '@context': 'https://schema.org', '@type': 'Course',
+  name: 'Diseño y Optimización de Sistemas Térmicos (ILN223)', courseCode: 'ILN223', inLanguage: 'es',
+  description: T.lede,
+  provider: { '@type': 'CollegeOrUniversity', name: 'Universidad Técnica Federico Santa María' },
+  instructor: { '@type': 'Person', name: 'Mijail Littin' },
+}];
+---
+<Base title={es ? T.title : `${T.title} (ILN223)`} description={T.lede} jsonld={jsonld}>
+  <header class="page-head frame">
+    <p class="eyebrow"><a href={localized('/teaching/', lang)}>{T.back}</a> · ILN223 · UTFSM · 2026-2</p>
+    <h1>{T.title}</h1>
+    {!es && <p class="meta orig" lang="es">Diseño y Optimización de Sistemas Térmicos</p>}
+    <p class="lede">{T.lede}</p>
+  </header>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label">{T.about}</h2>
+      <div class="prose">{T.aboutText.map((p) => <p>{p}</p>)}
+        <h3>{T.outcomes}</h3>
+        <ul>{T.outcomesList.map((o) => <li>{o}</li>)}</ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label">{T.units}</h2>
+      <ol class="units">
+        {T.unitList.map(([n, t, d, links]) => (
+          <li>
+            <span class="n">{n}</span>
+            <div>
+              <h3>{t}</h3>
+              <p>{d}</p>
+              {(links as string[][]).length > 0 && <ul class="links">{(links as string[][]).map(([l, h]) => <li><a href={url(h)}>{l}</a></li>)}</ul>}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label">{T.labs}</h2>
+      <div class="prose">
+        <h3 class="lab-h">{T.lab1}</h3>
+        <p>{T.lab1Text}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label">{T.tools}</h2>
+      <div class="prose">
+        <p>{T.toolsText}</p>
+        <h3>{T.material}</h3>
+        <p>{T.materialText}</p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .orig { font-style: italic; margin-top: var(--s-2); }
+  .units { list-style: none; padding: 0; }
+  .units > li { display: grid; grid-template-columns: 3rem minmax(0, 1fr); gap: var(--s-4); padding-block: var(--s-4); border-top: 1px solid var(--rule); }
+  .units > li:first-child { border-top: 0; padding-top: 0; }
+  .n { font-family: var(--font-sans); font-size: var(--step-1); color: var(--ink-3); }
+  .units h3 { font-size: var(--step-1); }
+  .units p { margin-top: var(--s-1); color: var(--ink-2); max-width: 44rem; }
+  .units .links { margin-top: var(--s-2); }
+  .lab-h { margin-top: 0 !important; }
+</style>

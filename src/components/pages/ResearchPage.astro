@@ -1,0 +1,230 @@
+---
+import Base from '../../layouts/Base.astro';
+import PubItem from '../ui/PubItem.astro';
+import Equation from '../viz/Equation.astro';
+import { byId, visiblePublications, domainLabels, type DomainId } from '../../data/publications';
+import { url } from '../../i18n/utils';
+import type { Lang } from '../../i18n/ui';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const es = lang === 'es';
+
+type Status = 'established' | 'current' | 'future';
+interface Theme {
+  id: string;
+  title: string;
+  status: { cls: Status; label: string }[];
+  question: string;
+  why: string;
+  done: string[];
+  developing: string[];
+  papers: string[];
+  resources: { label: string; href: string }[];
+}
+
+const S = {
+  established: es ? 'Trabajo establecido' : 'Established work',
+  current: es ? 'En curso' : 'Current work',
+  future: es ? 'Programa futuro' : 'Future research',
+};
+
+const themes: Theme[] = [
+  {
+    id: 'reconstruction',
+    title: es ? 'Reconstrucción regularizada a partir de mediciones indirectas' : 'Regularised reconstruction from indirect measurements',
+    status: [{ cls: 'established', label: S.established }],
+    question: es
+      ? '¿Cómo recuperar un campo local a partir de señales integradas a lo largo de la línea de visión, cuando la inversión directa amplifica el ruido y la propia señal se atenúa en su camino hacia el detector?'
+      : 'How can a local field be recovered from signals integrated along lines of sight, when direct inversion amplifies noise and the signal itself is attenuated on its way to the detector?',
+    why: es
+      ? 'Muchas mediciones no ven el punto que interesa, sino una suma a lo largo de un camino. En objetos axisimétricos esa suma es la transformada de Abel, cuya inversión es mal condicionada: un pequeño error en los datos produce grandes oscilaciones cerca del eje. Si además el medio absorbe parte de la señal, el modelo directo deja de ser lineal y los métodos clásicos sesgan el resultado.'
+      : 'Many measurements do not see the point of interest, only a sum along a path. For axisymmetric objects that sum is the Abel transform, and inverting it is ill-conditioned: a small error in the data becomes large oscillations near the axis. When the medium also absorbs part of the signal, the forward model is no longer a plain projection and classical methods give biased results.',
+    done: es
+      ? [
+          'El método SAT (Spline-based Abel Transform) representa el campo radial con un spline cúbico restringido y lo ajusta con una penalización de curvatura, incluyendo la autoabsorción (atrapamiento) en el modelo directo. Publicado en Fuel (2024) y distribuido como el paquete de Python pysat-abel.',
+          'Se mostró cómo el atrapamiento sesga los tamaños de agregados obtenidos por dispersión angular, y cómo corregirlo dentro de la reconstrucción (Journal of Aerosol Science, 2024).',
+          'Con esa reconstrucción se obtuvieron distribuciones de tamaño de agregados resueltas en dos dimensiones (Proc. Combust. Inst., 2025) y perfiles radiales de partículas primarias a partir de dispersión de rayos X de sincrotrón (Proc. Combust. Inst., 2025).',
+          'La reconstrucción regularizada es hoy la primera etapa de las inversiones informadas por la física descritas abajo: entrega los coeficientes locales que la red neuronal interpreta (Carbon, 2026).',
+        ]
+      : [
+          'The SAT method (Spline-based Abel Transform) represents the radial field as a constrained cubic spline and fits it with a curvature penalty, with self-absorption (signal trapping) included in the forward model. Published in Fuel (2024) and distributed as the Python package pysat-abel.',
+          'Showed how trapping biases aggregate sizes inferred from angular light scattering, and how to correct for it inside the reconstruction (Journal of Aerosol Science, 2024).',
+          'Used the same reconstruction to obtain two-dimensional aggregate size distributions (Proc. Combust. Inst., 2025) and radial profiles of primary-particle size from synchrotron X-ray scattering (Proc. Combust. Inst., 2025).',
+          'Regularised reconstruction is now the first stage of the physics-informed inversions described below: it provides the local coefficients that the neural network interprets (Carbon, 2026).',
+        ],
+    developing: [],
+    papers: ['littin2024sat', 'littin2024trapping', 'littin2025scatt', 'littin2025saxs'],
+    resources: [
+      { label: 'pysat-abel', href: '/software/pysat-abel/' },
+      { label: es ? 'Módulo interactivo: transformada de Abel' : 'Interactive module: the Abel transform', href: '/learn/inverse-problems/abel-transform/' },
+    ],
+  },
+  {
+    id: 'physics-informed',
+    title: es ? 'Inferencia informada por la física con redes neuronales' : 'Physics-informed neural inference',
+    status: [{ cls: 'established', label: S.established }, { cls: 'current', label: S.current }],
+    question: es
+      ? '¿Puede una red neuronal restringida por las leyes físicas invertir conjuntamente varias técnicas de medición, de modo que los campos recuperados sean consistentes con todas ellas a la vez?'
+      : 'Can a neural network constrained by physical laws invert several measurement techniques jointly, so that the recovered fields agree with all of them at once?',
+    why: es
+      ? 'Cuando cada técnica se invierte por separado, con su propia calibración y sus propias hipótesis, los resultados no encajan entre sí. No existen etiquetas de verdad de terreno para entrenar una red de forma supervisada. Lo que sí se conoce son las ecuaciones que relacionan las propiedades buscadas con las señales medidas.'
+      : 'When each technique is inverted on its own, with its own calibration and assumptions, the results do not agree with each other. There are no ground-truth labels to train a network in the supervised sense. What is known are the equations that link the sought properties to the measured signals.',
+    done: es
+      ? [
+          'En Carbon (2026) una red de coordenadas (r, z) → propiedades se entrena con una pérdida que contiene la teoría de Rayleigh–Debye–Gans para agregados fractales y la ley de Planck. Invierte a la vez atenuación, emisión y dispersión multiángulo a cinco longitudes de onda, y estima también los factores de calibración de los instrumentos. Validación con datos sintéticos de CoFlame y aplicación a una llama experimental.',
+          'Aplicación del mismo enfoque a combustibles sostenibles de aviación (Proc. Combust. Inst., aceptado, 2026).',
+          'Coautor de reconstrucciones neuronales con dos longitudes de onda (Proc. Combust. Inst., 2026, primera autora V. Yap) y de la inversión asistida por redes en una llama forzada periódicamente (aceptado, primer autor N. Gutiérrez).',
+        ]
+      : [
+          'In Carbon (2026) a coordinate network (r, z) → properties is trained with a loss containing Rayleigh–Debye–Gans theory for fractal aggregates and Planck’s law. It inverts attenuation, emission and multi-angle scattering at five wavelengths together, and estimates the calibration factors of the instruments as part of the solution. Validated on synthetic CoFlame data, then applied to an experimental flame.',
+          'The same approach applied to sustainable aviation fuels (Proc. Combust. Inst., accepted, 2026).',
+          'Co-author of dual-wavelength neural reconstructions (Proc. Combust. Inst., 2026, first author V. Yap) and of a neural-network-assisted inversion in a periodically forced flame (accepted, first author N. Gutiérrez).',
+        ],
+    developing: [],
+    papers: ['littin2026carbon', 'littin2026saf', 'yap2026dual', 'gutierrez2026maturity'],
+    resources: [
+      { label: es ? 'Caso de estudio: Carbon 2026' : 'Case study: Carbon 2026', href: '/publications/carbon-2026/' },
+      { label: es ? 'Presentación interactiva' : 'Interactive presentation', href: '/talks/carbon-2026/' },
+      { label: es ? 'Módulo: aprendizaje informado por la física' : 'Module: physics-informed learning', href: '/learn/machine-learning/physics-informed-learning/' },
+    ],
+  },
+  {
+    id: 'forward-models',
+    title: es ? 'Modelos directos y modelos sustitutos' : 'Forward models and surrogates',
+    status: [{ cls: 'established', label: S.established }, { cls: 'future', label: S.future }],
+    question: es
+      ? '¿Qué modelo físico conecta las propiedades buscadas con lo que se mide, y cómo hacerlo lo bastante rápido para usarlo dentro de una inversión?'
+      : 'Which physical model connects the sought properties to what is measured, and how can it be made fast enough to sit inside an inversion?',
+    why: es
+      ? 'La calidad de una inversión está limitada por su modelo directo. Los modelos de dispersión de luz por agregados, de intercambio radiativo o de cinética química pueden ser costosos de evaluar, y una inversión los evalúa miles de veces.'
+      : 'The quality of an inversion is limited by its forward model. Models of light scattering by aggregates, of radiative exchange or of chemical kinetics can be expensive to evaluate, and an inversion evaluates them thousands of times.',
+    done: es
+      ? [
+          'Modelos de dispersión de rayos X a luz visible por agregados fractales (JQSRT, 2026, dos artículos como coautor).',
+          'Como coautor, intercambio radiativo entre llamas y receptores: factores de vista por contornos (Exp. Therm. Fluid Sci., 2023) y análisis del campo de visión (IJHMT, 2026), liderados por P. Pinto, y modelos sustitutos por aprendizaje automático (IJHMT, 2026, primer autor M. Mercado).',
+          'En el trabajo de Carbon, una red sustituta reemplaza al modelo de dispersión de Lorentz–Drude del índice óptico con desviaciones inferiores a 0,1 %, lo que hace viable el entrenamiento.',
+          'Simulación detallada de formación de hollín con mecanismos cinéticos extendidos (Proc. Combust. Inst., 2024, primer autor; Case Stud. Therm. Eng., 2026, coautor).',
+        ]
+      : [
+          'Scattering models from X-rays to visible light for fractal agglomerates (JQSRT, 2026, two papers as co-author).',
+          'As co-author, radiative exchange between flames and receivers: view factors from contours (Exp. Therm. Fluid Sci., 2023) and field-of-view analysis (IJHMT, 2026), led by P. Pinto, and machine-learning surrogates (IJHMT, 2026, first author M. Mercado).',
+          'In the Carbon work, a surrogate network replaces the Lorentz–Drude dispersion model of the optical index with deviations below 0.1%, which makes training practical.',
+          'Detailed simulation of soot formation with extended kinetic mechanisms (Proc. Combust. Inst., 2024, first author; Case Stud. Therm. Eng., 2026, co-author).',
+        ],
+    developing: [],
+    papers: ['yon2026xray', 'raynaud2026structure', 'mercado2026view', 'pinto2026fov', 'littin2024jeta1'],
+    resources: [],
+  },
+];
+
+const domains = Object.keys(domainLabels) as DomainId[];
+const domainCount = (d: DomainId) => visiblePublications.filter((p) => p.domains.includes(d)).length;
+
+const T = es
+  ? {
+      title: 'Investigación', eyebrow: 'Programa de investigación',
+      h1: 'Inferir lo que no se puede medir directamente',
+      lede: 'El trabajo se organiza por preguntas de método. Los sistemas físicos (llamas, incendios, partículas, radiación térmica) son donde los métodos se han desarrollado y validado. Cada sección resume trabajo publicado o aceptado.',
+      general: 'La forma general del problema',
+      generalText: 'Se observa <em>y</em>, una transformación indirecta y ruidosa de un estado físico <em>x</em> que interesa. El modelo directo 𝒜 describe cómo <em>x</em> produce las observaciones. Invertirlo exige información adicional: una penalización ℛ que elimine soluciones sin sentido físico, o una representación aprendida restringida por las ecuaciones.',
+      q: 'La pregunta', w: 'Por qué importa', d: 'Lo realizado', dev: 'En desarrollo o propuesto', p: 'Artículos', r: 'Código, datos y material',
+      evo: 'Continuidad', evoTitle: 'Cómo se llegó aquí',
+      dom: 'Dominios de aplicación', domText: 'Para quien llega desde una comunidad de aplicación, estos son los sistemas físicos donde se han usado los métodos.',
+      proj: 'Proyectos', projNote: 'Participación en proyectos con financiamiento externo, sin rol de investigador responsable.',
+      papersIn: 'artículos',
+    }
+  : {
+      title: 'Research', eyebrow: 'Research programme',
+      h1: 'Inferring what cannot be measured directly',
+      lede: 'The work is organised by questions of method. Physical systems (flames, fires, particles, thermal radiation) are where the methods have been developed and validated. Each section summarises published or accepted work.',
+      general: 'The general form of the problem',
+      generalText: 'We observe <em>y</em>, an indirect and noisy transformation of a physical state <em>x</em> that we care about. The forward model 𝒜 describes how <em>x</em> produces the observations. Inverting it requires additional information: a penalty ℛ that rules out physically meaningless solutions, or a learned representation constrained by the governing equations.',
+      q: 'The question', w: 'Why it matters', d: 'What has been done', dev: 'In progress or proposed', p: 'Papers', r: 'Code, data and material',
+      evo: 'Continuity', evoTitle: 'How the work got here',
+      dom: 'Application domains', domText: 'For visitors from an application community, these are the physical systems in which the methods have been used.',
+      proj: 'Projects', projNote: 'Participation in externally funded projects, without a principal-investigator role.',
+      papersIn: 'papers',
+    };
+---
+<Base title={T.title} math description={T.lede}>
+  <header class="page-head frame">
+    <p class="eyebrow">{T.eyebrow}</p>
+    <h1>{T.h1}</h1>
+    <p class="abstract">{T.lede}</p>
+  </header>
+
+  <nav class="frame toc" aria-label={es ? 'Contenido' : 'Contents'}>
+    <p class="toc__h">{es ? 'Contenido' : 'Contents'}</p>
+    <ol>
+      <li><a href="#general"><span>1</span>{T.general}</a></li>
+      {themes.map((t, i) => <li><a href={`#${t.id}`}><span>{i + 2}</span>{t.title}</a></li>)}
+      <li><a href="#dom"><span>{themes.length + 2}</span>{T.dom}</a></li>
+    </ol>
+  </nav>
+
+  <section class="section frame" id="general">
+    <div class="row">
+      <h2 class="row__label">{T.general}</h2>
+      <div class="prose">
+        <Equation tex={String.raw`\underbrace{y}_{\text{observations}} = \underbrace{\mathcal{A}}_{\text{physical model}}(\underbrace{x}_{\text{latent state}}) + \varepsilon,`} label="(1)" />
+        <Equation tex={String.raw`\hat{x} = \arg\min_{x}\; \lVert y - \mathcal{A}(x) \rVert^{2} + \mathcal{R}(x).`} label="(2)" />
+        <p set:html={T.generalText} />
+      </div>
+    </div>
+  </section>
+
+  {themes.map((t) => (
+    <section class="section frame theme" id={t.id} aria-labelledby={`${t.id}-h`}>
+      <div class="row">
+        <h2 class="row__label" id={`${t.id}-h`}>{t.title}</h2>
+        <div class="prose">
+          <p><strong>{T.q}.</strong> <em>{t.question}</em></p>
+          <p><strong>{T.w}.</strong> {t.why}</p>
+          <p class="runin"><strong>{T.d}.</strong></p>
+          <ul>{t.done.map((d) => <li>{d}</li>)}</ul>
+          {t.developing.length > 0 && <p class="runin"><strong>{T.dev}.</strong></p>}
+          {t.developing.length > 0 && <ul>{t.developing.map((d) => <li>{d}</li>)}</ul>}
+        </div>
+        {t.papers.length > 0 && (
+          <div class="theme__papers">
+            <p class="runin"><strong>{T.p}.</strong></p>
+            {t.papers.map((id) => byId(id)).filter(Boolean).map((p) => <PubItem pub={p!} compact />)}
+          </div>
+        )}
+        {t.resources.length > 0 && (
+          <p class="theme__res"><strong>{T.r}.</strong> {t.resources.map((r, i) => <>{i > 0 && ' · '}<a href={url(r.href)}>{r.label}</a></>)}</p>
+        )}
+      </div>
+    </section>
+  ))}
+
+  <section class="section frame" id="dom" aria-labelledby="dom-h">
+    <div class="row">
+      <h2 class="row__label" id="dom-h">{T.dom}</h2>
+      <p class="prose">{T.domText}</p>
+      <ul class="domains">
+        {domains.map((d) => (
+          <li><a href={url(`/publications/?domain=${d}`)}>{domainLabels[d]}</a> <span class="meta">({domainCount(d)} {T.papersIn})</span></li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+</Base>
+
+<style>
+  .toc { margin-top: var(--s-3); }
+  .toc__h { font-weight: 700; font-size: var(--step-1); margin-bottom: var(--s-2); }
+  .toc ol { list-style: none; padding: 0; }
+  .toc li a { display: flex; gap: 0.6em; color: var(--ink); padding-block: 0.1rem; }
+  .toc li a:hover { color: var(--accent); }
+  .toc li span { min-width: 1.4em; font-weight: 700; }
+  .theme__status { margin: -0.6rem 0 var(--s-3); color: var(--ink-2); }
+  .runin { margin-bottom: -0.4em; }
+  .theme__papers { margin-top: var(--s-4); }
+  .theme__res { margin-top: var(--s-4); }
+  table.evo, table.projects { margin-top: var(--s-2); font-size: var(--step-0); }
+  .evo__y { white-space: nowrap; color: var(--ink-2); width: 7.5em; }
+  .domains { padding-left: 1.5em; margin-top: var(--s-3); columns: 2 14rem; }
+</style>

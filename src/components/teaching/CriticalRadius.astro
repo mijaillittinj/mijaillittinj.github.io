@@ -1,0 +1,78 @@
+---
+/** ILN222: critical radius of insulation on a pipe or wire. */
+import ParameterSlider from '../viz/ParameterSlider.astro';
+import Equation from '../viz/Equation.astro';
+interface Props { lang: 'en' | 'es'; n: string }
+const { lang, n } = Astro.props;
+const es = lang === 'es';
+const S = es
+  ? {
+      k: 'Conductividad del aislante k', h: 'Coeficiente de convección h', ri: 'Radio exterior del tubo rᵢ', dT: 'Diferencia de temperatura ΔT',
+      plot: 'Pérdida de calor por metro', xr: 'radio exterior del aislante r (mm)', yq: "q' (W/m)",
+      lq: "q'(r)", lbare: 'tubo desnudo', lrc: 'radio crítico',
+      read: ['Radio crítico rc = k/h', 'tubo desnudo', 'máxima pérdida', 'espesor para reducir la pérdida del tubo desnudo a la mitad'],
+      below: 'rᵢ < rc: agregar un poco de aislante aumenta la pérdida de calor, porque crece el área de convección más rápido de lo que crece la resistencia de conducción.',
+      above: 'rᵢ ≥ rc: cualquier espesor de aislante reduce la pérdida de calor.',
+      never: 'no se alcanza en el rango mostrado',
+      cap: 'Tubo con aislante (se desprecia la resistencia de la pared del tubo). Al aumentar el radio exterior r crecen a la vez la resistencia de conducción del aislante, ln(r/rᵢ)/(2πk), y el área de convección, lo que reduce 1/(2πrh). La pérdida es máxima en el radio crítico rc = k/h. Esto importa en cables eléctricos y tubos delgados, no en tuberías grandes.',
+    }
+  : {
+      k: 'Insulation conductivity k', h: 'Convection coefficient h', ri: 'Pipe outer radius rᵢ', dT: 'Temperature difference ΔT',
+      plot: 'Heat loss per metre', xr: 'insulation outer radius r (mm)', yq: "q' (W/m)",
+      lq: "q'(r)", lbare: 'bare pipe', lrc: 'critical radius',
+      read: ['Critical radius rc = k/h', 'bare pipe', 'maximum loss', 'thickness needed to halve the bare-pipe loss'],
+      below: 'rᵢ < rc: adding a little insulation increases the heat loss, because the convective area grows faster than the conduction resistance.',
+      above: 'rᵢ ≥ rc: any thickness of insulation reduces the heat loss.',
+      never: 'not reached in the range shown',
+      cap: 'An insulated pipe (the resistance of the pipe wall is neglected). As the outer radius r grows, the conduction resistance of the insulation, ln(r/rᵢ)/(2πk), increases while the convective area also increases, which lowers 1/(2πrh). The loss is largest at the critical radius rc = k/h. This matters for electrical cables and thin tubes, not for large pipes.',
+    };
+---
+<figure class="lab" data-t-crit data-s={JSON.stringify(S)}>
+  <div class="lab__grid">
+    <div class="lab__controls">
+      <ParameterSlider name="k" label={S.k} min={0.02} max={0.5} step={0.005} value={0.1} unit=" W/(m·K)" format="fixed3" />
+      <ParameterSlider name="h" label={S.h} min={2} max={50} step={0.5} value={10} unit=" W/(m²·K)" />
+      <ParameterSlider name="ri" label={S.ri} min={1} max={50} step={0.5} value={4} unit=" mm" />
+      <ParameterSlider name="dT" label={S.dT} min={10} max={200} step={5} value={60} unit=" K" format="int" />
+      <p class="lab__readout" data-t-read aria-live="polite"></p>
+    </div>
+    <div><p class="panel-title">{S.plot}</p><div class="t-plot" data-t-q></div></div>
+  </div>
+  <Equation tex={String.raw`q'=\frac{2\pi\,\Delta T}{\dfrac{\ln(r/r_i)}{k}+\dfrac{1}{h\,r}},\qquad \frac{dq'}{dr}=0\ \Longrightarrow\ r_c=\frac{k}{h}`} />
+  <figcaption><span class="fig-num">{es ? 'Figura' : 'Figure'} {n}.</span>{S.cap}</figcaption>
+</figure>
+
+<script>
+  import { LinePlot, fmt } from '../../lib/plot';
+  import { heatLossPerLength, criticalRadius } from '../../lib/teaching';
+
+  document.querySelectorAll<HTMLElement>('[data-t-crit]').forEach((root) => {
+    const S = JSON.parse(root.dataset.s!);
+    const val = (k: string) => +root.querySelector<HTMLInputElement>(`[name="${k}"]`)!.value;
+    const plot = new LinePlot(root.querySelector('[data-t-q]')!, { width: 760, height: 300, xlabel: S.xr, ylabel: S.yq, title: S.plot });
+    const read = root.querySelector<HTMLElement>('[data-t-read]')!;
+
+    const update = () => {
+      const k = val('k'), h = val('h'), ri = val('ri') / 1000, dT = val('dT');
+      const rc = criticalRadius(k, h);
+      const rmax = Math.max(4 * rc, 4 * ri);
+      const rs = Array.from({ length: 200 }, (_, i) => ri + ((rmax - ri) * i) / 199);
+      const q = rs.map((r) => heatLossPerLength(r, ri, k, h, dT));
+      const qBare = 2 * Math.PI * ri * h * dT;
+      const qMax = rc > ri ? heatLossPerLength(rc, ri, k, h, dT) : qBare;
+      // radius where q' = qBare / 2 (q' decreases monotonically beyond max(ri, rc))
+      let rHalf = NaN;
+      for (let r = Math.max(ri, rc); r < 50; r *= 1.002) if (heatLossPerLength(r, ri, k, h, dT) <= qBare / 2) { rHalf = r; break; }
+      const mm = (r: number) => r * 1000;
+      const top = Math.max(...q, qBare) * 1.1;
+      plot.render([
+        { kind: 'line', x: rs.map(mm), y: rs.map(() => qBare), cls: 's-muted', dash: true, label: S.lbare },
+        { kind: 'line', x: rs.map(mm), y: q, cls: 's-physics', label: S.lq },
+        { kind: 'line', x: [mm(rc), mm(rc)], y: [0, top], cls: 's-data', dash: true, label: S.lrc },
+      ], { xlim: [mm(ri), mm(rmax)], ylim: [0, top] });
+      read.innerHTML = `${S.read[0]} = <strong>${mm(rc).toFixed(1)}</strong> mm.<br>${S.read[1]}: <strong>${fmt(qBare)}</strong> W/m; ${S.read[2]}: <strong>${fmt(qMax)}</strong> W/m.<br>${S.read[3]}: <strong>${Number.isFinite(rHalf) ? mm(rHalf - ri).toFixed(1) + ' mm' : S.never}</strong>.<br>${ri < rc ? S.below : S.above}`;
+    };
+    root.querySelectorAll('input[type=range]').forEach((i) => i.addEventListener('input', update));
+    update();
+  });
+</script>

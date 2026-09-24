@@ -1,0 +1,312 @@
+---
+/**
+ * Finance tab: European call options under Black–Scholes.
+ * Forward: σ, r, K, T → price surface. Inverse: synthetic market quotes → implied
+ * volatility and a least-squares σ (with an optional volatility smile that a constant σ
+ * cannot fit), or a PINN whose loss contains the Black–Scholes equation.
+ * Maths in src/lib/eng/finance.ts and src/lib/eng/pinn-finance.ts. Synthetic data.
+ */
+import Equation from '../viz/Equation.astro';
+interface Props { lang?: 'en' | 'es'; hidden?: boolean }
+const { lang = 'en', hidden = false } = Astro.props;
+const es = lang === 'es';
+const T = es
+  ? {
+      fwd: 'Directo', fwdText: 'a partir de la volatilidad σ, la tasa r, el precio de ejercicio K y el plazo T, calcular el precio de una opción de compra europea.',
+      inv: 'Inverso', invText: 'a partir de precios de mercado ruidosos, estimar la volatilidad que los explica (calibración).',
+      mFwd: 'directo: valorar una opción', mInv: 'inverso: calibrar con el mercado',
+      sigma: 'Volatilidad σ', r: 'Tasa libre de riesgo r', K: 'Precio de ejercicio K', Tm: 'Plazo T', noise: 'Ruido de las cotizaciones',
+      smile: 'Mercado con sonrisa de volatilidad', method: 'Método', classic: 'mínimos cuadrados',
+      calib: 'calibrar', reveal: 'revelar la verdad', newM: 'nuevo mercado', train: 'entrenar la PINN', stop: 'detener',
+      pPrice: '(a) Precio de la opción', pSurf: '(b) Valor temporal V − (S − K)⁺', surfHint: 'S de 40 a 160 (horizontal) · τ de 0 a T (vertical)',
+      pIV: '(a) Volatilidad implícita por cotización', pRes: '(b) Residuo de precio (mercado − modelo)',
+      pPinn: '(a) Precios: cotizaciones y PINN', pSig: '(b) σ durante el entrenamiento',
+      S: 'precio del subyacente S', V: 'precio de la opción', Kx: 'precio de ejercicio K', iv: 'volatilidad', res: 'residuo', it: 'iteración', sig: 'σ',
+      leg: { tau: 'τ =', payoff: 'pago al vencimiento', q1: 'cotizaciones τ = 0,25', q2: 'cotizaciones τ = 1', fit: 'σ ajustada', truth: 'σ verdadera', pinn: 'PINN', bs: 'Black–Scholes (verdad)', quotes: 'cotizaciones' },
+      rd: { price: 'Precio en S = 100', delta: 'delta', fitted: 'σ ajustada', truth: 'σ verdadera', rms: 'RMS de precio', err: 'error', smileMsg: 'Los residuos tienen forma sistemática: una σ constante no puede ajustar todas las cotizaciones. Es error de modelo, no ruido: el supuesto de volatilidad constante de Black–Scholes es falso en este mercado.', flatMsg: 'Los residuos son ruido: el modelo es adecuado para este mercado.', press: 'Pulse «calibrar» para estimar una sola σ.', pinnIdle: 'Pulse «entrenar la PINN»: parte de σ = 0,30.', pinnData: 'pérdida de datos', pinnPde: 'residuo de la EDP', priceErr: 'error de precio' },
+      lossLabel: 'La PINN minimiza',
+      cap: 'Valorar una opción con un modelo es el problema directo; calibrar el modelo con los precios del mercado es el inverso, y la volatilidad implícita es su ejemplo clásico. Con volatilidad constante, una sola σ explica todas las cotizaciones; con una sonrisa de volatilidad aparece un patrón sistemático en los residuos, la misma lección de error de modelo que en las otras pestañas. Calibrar modelos más ricos, como la volatilidad local de Dupire, es un problema mal planteado que necesita regularización. Datos sintéticos, no es una recomendación de inversión.',
+      pinnCap: 'PINN: una red V(S, τ) y la volatilidad σ se entrenan juntas; la pérdida contiene la ecuación de Black–Scholes, el pago al vencimiento y las condiciones de borde, además de las cotizaciones de un solo precio de ejercicio registradas en varios días. A la red nunca se le da la fórmula de Black–Scholes. La PINN usa datos de un solo precio de ejercicio, por lo que la sonrisa no interviene.',
+    }
+  : {
+      fwd: 'Forward', fwdText: 'from the volatility σ, rate r, strike K and maturity T, compute the price of a European call option.',
+      inv: 'Inverse', invText: 'from noisy market prices, estimate the volatility that explains them (calibration).',
+      mFwd: 'forward: price an option', mInv: 'inverse: calibrate to the market',
+      sigma: 'Volatility σ', r: 'Risk-free rate r', K: 'Strike K', Tm: 'Maturity T', noise: 'Quote noise',
+      smile: 'Market with a volatility smile', method: 'Method', classic: 'least squares',
+      calib: 'calibrate', reveal: 'reveal the truth', newM: 'new market', train: 'train the PINN', stop: 'stop',
+      pPrice: '(a) Option price', pSurf: '(b) Time value V − (S − K)⁺', surfHint: 'S from 40 to 160 (horizontal) · τ from 0 to T (vertical)',
+      pIV: '(a) Implied volatility of each quote', pRes: '(b) Price residual (market − model)',
+      pPinn: '(a) Prices: quotes and PINN', pSig: '(b) σ during training',
+      S: 'underlying price S', V: 'option price', Kx: 'strike K', iv: 'volatility', res: 'residual', it: 'iteration', sig: 'σ',
+      leg: { tau: 'τ =', payoff: 'payoff at maturity', q1: 'quotes τ = 0.25', q2: 'quotes τ = 1', fit: 'fitted σ', truth: 'true σ', pinn: 'PINN', bs: 'Black–Scholes (truth)', quotes: 'quotes' },
+      rd: { price: 'Price at S = 100', delta: 'delta', fitted: 'fitted σ', truth: 'true σ', rms: 'price RMS', err: 'error', smileMsg: 'The residuals have a systematic shape: one constant σ cannot fit every quote. This is model error, not noise: the Black–Scholes assumption of constant volatility is wrong in this market.', flatMsg: 'The residuals are noise: the model is adequate for this market.', press: 'Press “calibrate” to estimate a single σ.', pinnIdle: 'Press “train the PINN”: it starts from σ = 0.30.', pinnData: 'data loss', pinnPde: 'PDE residual', priceErr: 'price error' },
+      lossLabel: 'The PINN minimises',
+      cap: 'Pricing an option with a model is the forward problem; calibrating the model to market prices is the inverse one, and implied volatility is its classic example. With constant volatility a single σ explains every quote; with a volatility smile the residuals show a systematic pattern, the same lesson about model error as in the other tabs. Calibrating richer models, such as Dupire’s local volatility, is ill-posed and needs regularisation. Synthetic data, not investment advice.',
+      pinnCap: 'PINN: a network V(S, τ) and the volatility σ are trained together; the loss contains the Black–Scholes equation, the payoff at maturity and the boundary conditions, plus the quotes of a single strike recorded on several days. The network is never told the Black–Scholes formula. The PINN uses one strike only, so the smile plays no role there.',
+    };
+---
+<div class="eng-tab fi" data-eng-tab="finance" data-fi-text={JSON.stringify(T)} hidden={hidden}>
+  <p class="eng-fi"><em>{T.fwd}</em>: {T.fwdText} <em>{T.inv}</em>: {T.invText}</p>
+
+  <div class="seg fi__modes" role="group" aria-label={es ? 'Modo' : 'Mode'}>
+    <button type="button" data-fi-mode="fwd" aria-pressed="true">{T.mFwd}</button>
+    <button type="button" data-fi-mode="inv" aria-pressed="false">{T.mInv}</button>
+  </div>
+
+  <div class="fi__grid">
+    <div class="fi__cell">
+      <p class="panel-title" data-fi-t1>{T.pPrice}</p>
+      <div class="fi__plot" data-fi-p1></div>
+      <p class="fi__key" data-fi-key></p>
+    </div>
+    <div class="fi__cell">
+      <p class="panel-title" data-fi-t2>{T.pSurf}</p>
+      <div class="fi__surfwrap" data-fi-surfbox><canvas class="fi__surf" data-fi-surf aria-hidden="true"></canvas><p class="fi__hint">{T.surfHint}</p></div>
+      <div class="fi__plot" data-fi-p2 hidden></div>
+    </div>
+  </div>
+
+  <div class="fi__controls" data-fi-fwdui>
+    <div class="control"><div class="control__head"><label for={`fi-s-${lang}`}>{T.sigma}</label><output data-fi-os>—</output></div><input id={`fi-s-${lang}`} data-fi-sigma type="range" min="0.05" max="0.8" step="0.01" value="0.25" /></div>
+    <div class="control"><div class="control__head"><label for={`fi-r-${lang}`}>{T.r}</label><output data-fi-or>—</output></div><input id={`fi-r-${lang}`} data-fi-r type="range" min="0" max="0.1" step="0.0025" value="0.03" /></div>
+    <div class="control"><div class="control__head"><label for={`fi-k-${lang}`}>{T.K}</label><output data-fi-ok>—</output></div><input id={`fi-k-${lang}`} data-fi-k type="range" min="60" max="140" step="1" value="100" /></div>
+    <div class="control"><div class="control__head"><label for={`fi-t-${lang}`}>{T.Tm}</label><output data-fi-ot>—</output></div><input id={`fi-t-${lang}`} data-fi-t type="range" min="0.1" max="2" step="0.05" value="1" /></div>
+  </div>
+
+  <div class="fi__controls" data-fi-invui hidden>
+    <div class="control"><div class="control__head"><label for={`fi-n-${lang}`}>{T.noise}</label><output data-fi-on>—</output></div><input id={`fi-n-${lang}`} data-fi-noise type="range" min="0" max="3" step="0.1" value="0.5" /></div>
+    <div class="fi__opts">
+      <div class="control"><span class="control__head">{T.method}</span>
+        <div class="seg" role="group" aria-label={T.method}><button type="button" data-fi-m="classic" aria-pressed="true">{T.classic}</button><button type="button" data-fi-m="pinn" aria-pressed="false">PINN</button></div>
+      </div>
+      <label class="meta" data-fi-smilebox><input type="checkbox" data-fi-smile /> {T.smile}</label>
+    </div>
+    <p class="fi__btns"><button type="button" class="btn" data-fi-calib>{T.calib}</button><button type="button" class="btn" data-fi-train hidden>{T.train}</button> <button type="button" class="btn" data-fi-reveal>{T.reveal}</button> <button type="button" class="btn" data-fi-new>{T.newM}</button></p>
+  </div>
+
+  <div data-fi-eqfwd><Equation tex={String.raw`\begin{gathered} C = S\,\Phi(d_1) - K e^{-r\tau}\,\Phi(d_2) \\ d_{1,2} = \frac{\ln(S/K) + (r \pm \tfrac12\sigma^2)\,\tau}{\sigma\sqrt{\tau}} \end{gathered}`} /></div>
+  <div data-fi-eqpde hidden><Equation tex={String.raw`\begin{gathered} \frac{\partial V}{\partial \tau} = \tfrac12\sigma^2 S^2 \frac{\partial^2 V}{\partial S^2} + r S \frac{\partial V}{\partial S} - r V \\ V(S, 0) = \max(S - K, 0) \end{gathered}`} /></div>
+  <p class="meta fi__loss" data-fi-pinnui hidden>{T.lossLabel} <Equation display={false} tex={String.raw`\mathcal{L}(\theta,\sigma) = \overline{(V_\theta - V_i)^2} + \overline{R_{\mathrm{BS}}^2} + \overline{\big(V_\theta(S,0) - (S-K)^+\big)^2} + \mathcal{L}_{\partial}`} /></p>
+  <p class="lab__readout" data-fi-read aria-live="polite"></p>
+  <p class="eng-cap">{T.cap} {T.pinnCap}</p>
+</div>
+
+<script>
+  import { LinePlot, drawField, viridis, type Series } from '../../lib/plot';
+  import { bsCall, bsDelta, impliedVol, makeMarket, fitSigma, sigmaOf, makePinnData, MATURITIES, type Market, type PinnQuote } from '../../lib/eng/finance';
+  import { initFinPinn, finLossGrad, finAdam, sigmaOfNet, evalFin, type FinPinn } from '../../lib/eng/pinn-finance';
+
+  const P_H = 32, P_STEPS = 10000, P_LR = 0.01, FRAME_MS = 7, P_K = 100;
+  const P_TAUS = [0.25, 0.5, 0.75, 1];
+
+  function init(root: HTMLElement) {
+    const T = JSON.parse(root.dataset.fiText!);
+    const q = <E extends Element>(s: string) => root.querySelector<E>(s)!;
+    const sIn = q<HTMLInputElement>('[data-fi-sigma]'), rIn = q<HTMLInputElement>('[data-fi-r]'), kIn = q<HTMLInputElement>('[data-fi-k]'), tIn = q<HTMLInputElement>('[data-fi-t]');
+    const nIn = q<HTMLInputElement>('[data-fi-noise]'), smileBox = q<HTMLInputElement>('[data-fi-smile]');
+    const read = q<HTMLElement>('[data-fi-read]'), surf = q<HTMLCanvasElement>('[data-fi-surf]');
+    const calibBtn = q<HTMLButtonElement>('[data-fi-calib]'), trainBtn = q<HTMLButtonElement>('[data-fi-train]');
+    const revealBtn = q<HTMLButtonElement>('[data-fi-reveal]'), newBtn = q<HTMLButtonElement>('[data-fi-new]');
+    const p1 = new LinePlot(q<HTMLElement>('[data-fi-p1]'), { width: 420, height: 300, xlabel: T.S, ylabel: T.V, title: T.pPrice, legend: false });
+    const keyEl = q<HTMLElement>('[data-fi-key]');
+    const key = (ss: Series[]) => {
+      keyEl.replaceChildren(...ss.filter((x) => x.label).map((x) => {
+        const sp = document.createElement('span');
+        const mk = document.createElement('span');
+        mk.className = x.kind === 'points' ? `fi__dot ${x.cls.replace('s-', 'c-')}` : `key fi__line ${x.cls.replace('s-', 'key--')}${x.dash ? ' fi__dash' : ''}`;
+        if (x.kind === 'points') mk.textContent = '●';
+        sp.append(mk, document.createTextNode(x.label!));
+        return sp;
+      }));
+    };
+    const p2 = new LinePlot(q<HTMLElement>('[data-fi-p2]'), { width: 420, height: 300, xlabel: T.Kx, ylabel: T.res, title: T.pRes, legend: false });
+    const es = T.mFwd.startsWith('directo');
+    const fmt = (v: number, d = 2) => (es ? v.toFixed(d).replace('.', ',') : v.toFixed(d));
+
+    let mode: 'fwd' | 'inv' = 'fwd', method: 'classic' | 'pinn' = 'classic';
+    let seed = 4, market: Market = makeMarket(seed, +nIn.value, false);
+    let fitted: { sigma: number; rms: number } | null = null, revealed = false;
+    let pinn: FinPinn | null = null, pIter = 0, praf = 0, pLd = NaN, pLp = NaN, sigHist: [number, number][] = [];
+    let pData: PinnQuote[] = [];
+
+    const setText = (sel: string, t: string) => { q<HTMLElement>(sel).textContent = t; };
+    const show = (sel: string, on: boolean) => root.querySelectorAll<HTMLElement>(sel).forEach((e) => (e.hidden = !on));
+
+    // ---- forward
+    const drawForward = () => {
+      const sig = +sIn.value, r = +rIn.value, K = +kIn.value, Tm = +tIn.value;
+      setText('[data-fi-os]', fmt(sig)); setText('[data-fi-or]', fmt(r * 100, 2) + ' %'); setText('[data-fi-ok]', String(K)); setText('[data-fi-ot]', fmt(Tm) + (es ? ' años' : ' yr'));
+      const Ss = Array.from({ length: 121 }, (_, i) => 40 + i);
+      const cls = ['s-physics', 's-learned', 's-data'];
+      const series: Series[] = [{ kind: 'line', x: Ss, y: Ss.map((S) => Math.max(S - K, 0)), cls: 's-muted', dash: true, label: T.leg.payoff }];
+      [Tm, (2 * Tm) / 3, Tm / 3].forEach((tau, i) => series.push({ kind: 'line', x: Ss, y: Ss.map((S) => bsCall(S, K, r, sig, tau)), cls: cls[i], label: `${T.leg.tau} ${fmt(tau)}` }));
+      p1.setLabels(T.S, T.V);
+      p1.render(series, { xlim: [40, 160], ylim: [0, Math.max(160 - K, 10) * 1.05] });
+      key(series);
+      // surface
+      const nx = 96, ny = 48, data = new Float64Array(nx * ny);
+      for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) { const S = 40 + (120 * i) / (nx - 1); data[j * nx + i] = bsCall(S, K, r, sig, (Tm * j) / (ny - 1)) - Math.max(S - K, 0); }
+      drawField(surf, data, { nx, ny, cmap: viridis, vmin: 0 });
+      read.textContent = `${T.rd.price}: ${fmt(bsCall(100, K, r, sig, Tm))} · ${T.rd.delta} ${fmt(bsDelta(100, K, r, sig, Tm))}`;
+    };
+
+    // ---- inverse, classical
+    const drawClassic = () => {
+      setText('[data-fi-on]', `${fmt(+nIn.value, 1)} %`);
+      const iv = market.quotes.map((qq) => impliedVol(qq.price, market.S, qq.K, market.r, qq.tau));
+      const pick = (tau: number) => market.quotes.map((qq, i) => [qq.K, iv[i], qq.tau] as const).filter((x) => x[2] === tau && Number.isFinite(x[1]));
+      const a = pick(MATURITIES[0]), b = pick(MATURITIES[1]);
+      const series: Series[] = [
+        { kind: 'points', x: a.map((x) => x[0]), y: a.map((x) => x[1]), cls: 's-data', label: T.leg.q1 },
+        { kind: 'points', x: b.map((x) => x[0]), y: b.map((x) => x[1]), cls: 's-muted', label: T.leg.q2 },
+      ];
+      const Ks = Array.from({ length: 41 }, (_, i) => 80 + i);
+      if (revealed) for (const tau of MATURITIES) series.push({ kind: 'line', x: Ks, y: Ks.map((K) => sigmaOf(market, K, tau)), cls: 's-truth', dash: tau !== MATURITIES[0], label: tau === MATURITIES[0] ? T.leg.truth : undefined });
+      if (fitted) series.push({ kind: 'line', x: [80, 120], y: [fitted.sigma, fitted.sigma], cls: 's-learned', label: T.leg.fit });
+      const all = [...iv.filter(Number.isFinite), market.sigma0, fitted?.sigma ?? market.sigma0];
+      p1.setLabels(T.Kx, T.iv);
+      p1.render(series, { xlim: [78, 122], ylim: [Math.max(0, Math.min(...all) - 0.05), Math.max(...all) + 0.05] });
+      key(series);
+      // residuals
+      const res: Series[] = [];
+      if (fitted) {
+        for (const [tau, cls] of [[MATURITIES[0], 's-data'], [MATURITIES[1], 's-muted']] as const) {
+          const qs = market.quotes.filter((qq) => qq.tau === tau);
+          res.push({ kind: 'points', x: qs.map((qq) => qq.K), y: qs.map((qq) => qq.price - bsCall(market.S, qq.K, market.r, fitted!.sigma, qq.tau)), cls, label: tau === MATURITIES[0] ? T.leg.q1 : T.leg.q2 });
+        }
+        res.push({ kind: 'line', x: [78, 122], y: [0, 0], cls: 's-muted', dash: true });
+      }
+      p2.setLabels(T.Kx, T.res);
+      p2.render(res.length ? res : [{ kind: 'line', x: [78, 122], y: [0, 0], cls: 's-muted', dash: true }], { xlim: [78, 122] });
+      let txt = fitted ? `${T.rd.fitted} ${fmt(fitted.sigma, 3)} · ${T.rd.rms} ${fmt(fitted.rms, 3)}` : T.rd.press;
+      if (revealed) txt += ` · ${T.rd.truth} ${market.smile ? `${fmt(sigmaOf(market, 100, MATURITIES[0]), 3)} (K = 100, τ = ${fmt(0.25)})` : fmt(market.sigma0, 3)}` + (fitted && !market.smile ? ` (${T.rd.err} ${fmt(Math.abs(fitted.sigma / market.sigma0 - 1) * 100, 1)} %)` : '');
+      if (fitted) txt += '. ' + (market.smile ? T.rd.smileMsg : T.rd.flatMsg);
+      read.textContent = txt;
+    };
+
+    // ---- inverse, PINN
+    const Sgrid = Array.from({ length: 81 }, (_, i) => 60 + i);
+    const drawPinn = () => {
+      setText('[data-fi-on]', `${fmt(+nIn.value, 1)} %`);
+      const series: Series[] = [];
+      const truthSig = market.sigma0;
+      P_TAUS.forEach((tau, k) => {
+        if (revealed) series.push({ kind: 'line', x: Sgrid, y: Sgrid.map((S) => bsCall(S, P_K, market.r, truthSig, tau)), cls: 's-truth', dash: true, label: k === 0 ? T.leg.bs : undefined });
+        if (pinn) series.push({ kind: 'line', x: Sgrid, y: evalFin(pinn, Sgrid, tau, P_K), cls: 's-learned', label: k === 0 ? T.leg.pinn : undefined });
+      });
+      series.push({ kind: 'points', x: pData.map((d) => d.S), y: pData.map((d) => d.price), cls: 's-data', label: T.leg.quotes });
+      p1.setLabels(T.S, T.V);
+      p1.render(series, { xlim: [60, 140], ylim: [-1, 45] });
+      key(series);
+      const h: Series[] = sigHist.length ? [{ kind: 'line', x: sigHist.map((s) => s[0]), y: sigHist.map((s) => s[1]), cls: 's-learned', label: 'σ (PINN)' }] : [];
+      if (revealed) h.push({ kind: 'line', x: [0, P_STEPS], y: [truthSig, truthSig], cls: 's-truth', dash: true, label: T.leg.truth });
+      p2.setLabels(T.it, T.sig);
+      p2.render(h.length ? h : [{ kind: 'line', x: [0, P_STEPS], y: [0.3, 0.3], cls: 's-muted', dash: true }], { xlim: [0, P_STEPS], ylim: [0, 0.6] });
+      let txt = T.rd.pinnIdle;
+      if (pinn) {
+        const s = sigmaOfNet(pinn);
+        txt = `PINN: ${T.it} ${pIter} · σ = ${fmt(s, 3)} · ${T.rd.pinnData} ${pLd.toExponential(1)} · ${T.rd.pinnPde} ${pLp.toExponential(1)}`;
+        if (revealed) {
+          let e = 0, n = 0;
+          for (const tau of P_TAUS) { const v = evalFin(pinn, Sgrid, tau, P_K); Sgrid.forEach((S, i) => { e += (v[i] - bsCall(S, P_K, market.r, truthSig, tau)) ** 2; n++; }); }
+          txt += ` · ${T.rd.truth} ${fmt(truthSig, 3)} (${T.rd.err} ${fmt(Math.abs(s / truthSig - 1) * 100, 1)} %) · ${T.rd.priceErr} RMS ${fmt(Math.sqrt(e / n), 3)}`;
+        }
+      }
+      read.textContent = txt;
+    };
+
+    const stopP = () => { cancelAnimationFrame(praf); praf = 0; trainBtn.textContent = T.train; };
+    const loopP = () => {
+      if (!pinn) return;
+      if (root.hidden) { stopP(); return; }
+      const cfg = { r: market.r, K: P_K, lambdaP: 1, lambdaIC: 1, lambdaBC: 1 };
+      const t0 = performance.now();
+      while (pIter < P_STEPS && performance.now() - t0 < FRAME_MS) {
+        const res = finLossGrad(pinn, pData, cfg);
+        pLd = res.Ld; pLp = res.Lp;
+        finAdam(pinn, res.grad, P_LR * (0.1 + 0.45 * (1 + Math.cos((Math.PI * pIter) / P_STEPS))));
+        pIter++;
+        if (pIter % 50 === 0) sigHist.push([pIter, sigmaOfNet(pinn)]);
+      }
+      if (pIter >= P_STEPS) { revealed = true; stopP(); drawPinn(); return; }
+      drawPinn();
+      praf = requestAnimationFrame(loopP);
+    };
+    const trainP = () => {
+      if (praf) { stopP(); return; }
+      pinn = initFinPinn(P_H, 5, 0.3); pIter = 0; pLd = NaN; pLp = NaN; sigHist = [[0, 0.3]]; revealed = false;
+      trainBtn.textContent = T.stop;
+      praf = requestAnimationFrame(loopP);
+    };
+
+    const layout = () => {
+      root.querySelectorAll<HTMLButtonElement>('[data-fi-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.fiMode === mode)));
+      root.querySelectorAll<HTMLButtonElement>('[data-fi-m]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.fiM === method)));
+      const inv = mode === 'inv', pn = inv && method === 'pinn';
+      show('[data-fi-fwdui]', !inv); show('[data-fi-invui]', inv);
+      show('[data-fi-surfbox]', !inv); show('[data-fi-p2]', inv);
+      show('[data-fi-eqfwd]', !pn); show('[data-fi-eqpde]', pn); show('[data-fi-pinnui]', pn);
+      show('[data-fi-smilebox]', !pn);
+      calibBtn.hidden = pn; trainBtn.hidden = !pn;
+      setText('[data-fi-t1]', !inv ? T.pPrice : pn ? T.pPinn : T.pIV);
+      setText('[data-fi-t2]', !inv ? T.pSurf : pn ? T.pSig : T.pRes);
+    };
+    const redraw = () => { layout(); if (mode === 'fwd') drawForward(); else if (method === 'pinn') drawPinn(); else drawClassic(); };
+    const newData = () => {
+      stopP(); pinn = null; sigHist = []; fitted = null; revealed = false;
+      market = makeMarket(seed, +nIn.value, smileBox.checked);
+      pData = makePinnData(seed, market.sigma0, market.r, P_K, +nIn.value);
+    };
+
+    [sIn, rIn, kIn, tIn].forEach((el) => el.addEventListener('input', drawForward));
+    nIn.addEventListener('input', () => { newData(); redraw(); });
+    smileBox.addEventListener('change', () => { newData(); redraw(); });
+    calibBtn.addEventListener('click', () => { fitted = fitSigma(market); drawClassic(); });
+    trainBtn.addEventListener('click', trainP);
+    revealBtn.addEventListener('click', () => { revealed = true; redraw(); });
+    newBtn.addEventListener('click', () => { seed++; newData(); redraw(); });
+    root.querySelectorAll<HTMLButtonElement>('[data-fi-mode]').forEach((b) => b.addEventListener('click', () => { stopP(); mode = b.dataset.fiMode as 'fwd' | 'inv'; redraw(); }));
+    root.querySelectorAll<HTMLButtonElement>('[data-fi-m]').forEach((b) => b.addEventListener('click', () => { stopP(); method = b.dataset.fiM as 'classic' | 'pinn'; revealed = false; redraw(); }));
+    window.addEventListener('themechange', redraw);
+
+    newData(); redraw();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-eng-tab="finance"]').forEach((root) => {
+    let done = false;
+    const go = () => { if (!done) { done = true; init(root); } };
+    root.addEventListener('eng:show', go);
+    if (!root.hidden) go();
+  });
+</script>
+
+<style>
+  .fi__modes { display: flex; justify-content: center; margin: 0 auto var(--s-3); }
+  .fi__grid { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); max-width: 40rem; margin: var(--s-2) auto 0; align-items: start; }
+  .fi__cell { min-width: 0; }
+  .fi__plot { min-height: 13rem; }
+  .fi__key { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.1em 0.9em; font-size: var(--step--2); color: var(--ink-2); margin-top: 0.2rem; }
+  .fi__key :global(.fi__dot) { font-size: 0.8em; margin-right: 0.3em; }
+  .fi__key :global(.fi__line) { margin-right: 0.35em; }
+  .fi__key :global(.key--muted) { background: var(--ink-3); }
+  .fi__key :global(.fi__dash) { background: repeating-linear-gradient(90deg, currentColor 0 4px, transparent 4px 7px) !important; }
+  .fi__key :global(.fi__dash.key--muted) { color: var(--ink-3); }
+  .fi__key :global(.fi__dash.key--truth) { color: var(--c-truth); }
+  .fi__key :global(.c-muted) { color: var(--ink-3); }
+  .fi__plot[hidden], .fi__surfwrap[hidden] { display: none; }
+  .fi__surf { display: block; width: 100%; aspect-ratio: 4 / 3; image-rendering: auto; outline: 0.5px solid var(--ink-3); background: var(--paper); }
+  .fi__hint { text-align: center; font-size: var(--step--2); font-style: italic; color: var(--ink-3); margin-top: 0.3rem; }
+  .fi__controls { display: grid; gap: var(--s-3) var(--s-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); max-width: 40rem; margin: var(--s-4) auto 0; }
+  .fi__controls[hidden] { display: none; }
+  .fi__opts { display: grid; gap: 0.3rem; align-content: start; }
+  .fi__opts label { display: flex; gap: 0.4em; align-items: baseline; }
+  .fi__opts [hidden] { display: none; }
+  .fi__btns { grid-column: 1 / -1; font-size: var(--step--1); text-align: center; }
+  .fi__btns [hidden], .fi__loss[hidden], [data-fi-eqpde][hidden], [data-fi-eqfwd][hidden] { display: none; }
+  .fi__loss { font-size: var(--step--1); text-align: center; max-width: 40rem; margin: var(--s-2) auto 0; overflow-x: auto; }
+  .fi :global(.eq) { max-width: 40rem; margin-inline: auto; justify-content: center; }
+  .fi .lab__readout { max-width: 40rem; margin: var(--s-2) auto 0; text-align: center; }
+  .fi .eng-cap, .fi .eng-fi { max-width: 40rem; margin-inline: auto; }
+  .fi .eng-cap { margin-top: var(--s-3); }
+</style>

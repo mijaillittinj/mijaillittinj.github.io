@@ -1,0 +1,112 @@
+---
+/**
+ * A neural network from scratch: an MLP trained live with hand-written backpropagation
+ * and Adam; training and validation losses, weight decay and early stopping.
+ */
+import ParameterSlider from './ParameterSlider.astro';
+---
+<div class="lab" data-mlp>
+  <div class="lab__grid">
+    <div class="lab__controls">
+      <div class="control">
+        <span class="control__head">Hidden layers</span>
+        <div class="seg" role="group" aria-label="Number of hidden layers">
+          <button type="button" data-depth="1" aria-pressed="false">1</button>
+          <button type="button" data-depth="2" aria-pressed="true">2</button>
+          <button type="button" data-depth="3" aria-pressed="false">3</button>
+        </div>
+      </div>
+      <ParameterSlider name="width" label="Neurons per layer" min={2} max={40} step={1} value={24} format="int" />
+      <ParameterSlider name="ntrain" label="Training points" min={5} max={60} step={1} value={12} format="int" />
+      <ParameterSlider name="noise" label="Noise on the data σ" min={0} max={0.4} step={0.01} value={0.15} />
+      <label class="meta"><input type="checkbox" data-mlp-decay /> Weight decay (κ = 10⁻³)</label>
+      <label class="meta"><input type="checkbox" data-mlp-early /> Early stopping (keep the best validation weights)</label>
+      <p class="meta"><button type="button" class="btn btn--primary" data-mlp-train>Train</button> <button type="button" class="btn" data-mlp-reset>Reset</button></p>
+      <p class="lab__readout" data-mlp-read aria-live="polite"></p>
+    </div>
+    <div class="lab__plots">
+      <div class="wide">
+        <p class="panel-title">Data, true function and network</p>
+        <div class="mlp__plot" data-mlp-fit></div>
+      </div>
+      <div class="wide">
+        <p class="panel-title">Training and validation error</p>
+        <div class="mlp__plot" data-mlp-loss></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { initMLP, lossGrad, adam, mse, predict, nParams, makeSplit, target, cloneParams, setParams, type MLP } from '../../lib/mlp';
+  import { LinePlot } from '../../lib/plot';
+
+  document.querySelectorAll<HTMLElement>('[data-mlp]').forEach((root) => {
+    const $ = <T extends Element>(s: string) => root.querySelector<T>(s)!;
+    const val = (name: string) => +$<HTMLInputElement>(`[name="${name}"]`).value;
+    const pFit = new LinePlot($('[data-mlp-fit]'), { width: 860, height: 300, xlabel: 'input x', ylabel: 'output y', title: 'Fit' });
+    const pLoss = new LinePlot($('[data-mlp-loss]'), { width: 860, height: 240, xlabel: 'iteration', ylabel: 'mean squared error', logy: true, title: 'Loss curves' });
+    const read = $<HTMLElement>('[data-mlp-read]');
+    const btn = $<HTMLButtonElement>('[data-mlp-train]');
+    const decayBox = $<HTMLInputElement>('[data-mlp-decay]'), earlyBox = $<HTMLInputElement>('[data-mlp-early]');
+    const xs = Array.from({ length: 201 }, (_, i) => i / 200);
+    const MAX = 6000, PER_FRAME = 20, PATIENCE = 600;
+    let depth = 2, running = false;
+    let s: { net: MLP; split: ReturnType<typeof makeSplit>; it: number; hI: number[]; hT: number[]; hV: number[]; best: number; bestIt: number; bestP: Float64Array[] | null; stopped: boolean };
+
+    const setup = () => {
+      const net = initMLP(depth, Math.round(val('width')), 7);
+      s = { net, split: makeSplit(Math.round(val('ntrain')), 60, val('noise'), 3), it: 0, hI: [], hT: [], hV: [], best: Infinity, bestIt: 0, bestP: null, stopped: false };
+    };
+    const draw = () => {
+      const { net, split } = s;
+      pFit.render([
+        { kind: 'line', x: xs, y: xs.map(target), cls: 's-truth', dash: true, label: 'true function' },
+        { kind: 'points', x: split.val.x, y: split.val.y, cls: 's-muted', label: 'validation points' },
+        { kind: 'points', x: split.train.x, y: split.train.y, cls: 's-data', label: 'training points' },
+        { kind: 'line', x: xs, y: xs.map((x) => Math.max(-3, Math.min(3, predict(net, x)))), cls: 's-learned', label: 'network' },
+      ], { xlim: [0, 1], ylim: [-2.2, 2.2] });
+      const series: import('../../lib/plot').Series[] = [
+        { kind: 'line', x: s.hI, y: s.hT, cls: 's-learned', label: 'training error' },
+        { kind: 'line', x: s.hI, y: s.hV, cls: 's-warn', label: 'validation error' },
+      ];
+      if (s.bestP && earlyBox.checked) series.push({ kind: 'line', x: [s.bestIt, s.bestIt], y: [1e-6, 10], cls: 's-muted', dash: true, label: 'best validation' });
+      pLoss.render(s.hI.length ? series : [], { xlim: [0, MAX], ylim: [1e-6, 10] });
+      const tr = mse(net, s.split.train.x, s.split.train.y), va = mse(net, s.split.val.x, s.split.val.y);
+      read.innerHTML = `${nParams(net)} parameters for ${s.split.train.x.length} training points. ` +
+        (s.it ? `Iteration ${s.it}: training error <strong>${tr.toExponential(1)}</strong>, validation error <strong>${va.toExponential(1)}</strong> (noise floor σ² = ${(val('noise') ** 2).toExponential(1)}).` : 'Press Train.') +
+        (s.stopped ? ` Early stopping restored the weights of iteration ${s.bestIt}.` : '');
+    };
+    const loop = () => {
+      if (!running) return;
+      const decay = decayBox.checked ? 1e-3 : 0;
+      for (let k = 0; k < PER_FRAME && s.it < MAX; k++, s.it++) adam(s.net, lossGrad(s.net, s.split.train.x, s.split.train.y, decay).grads, 0.01 / (1 + s.it / 1500));
+      const tr = mse(s.net, s.split.train.x, s.split.train.y), va = mse(s.net, s.split.val.x, s.split.val.y);
+      s.hI.push(s.it); s.hT.push(Math.max(tr, 1e-6)); s.hV.push(Math.max(va, 1e-6));
+      if (va < s.best) { s.best = va; s.bestIt = s.it; s.bestP = cloneParams(s.net); }
+      if (earlyBox.checked && s.it - s.bestIt > PATIENCE && s.bestP) { setParams(s.net, s.bestP); s.stopped = true; running = false; btn.textContent = 'Train'; draw(); return; }
+      draw();
+      if (s.it >= MAX) { running = false; btn.textContent = 'Train'; return; }
+      requestAnimationFrame(loop);
+    };
+    const reset = () => { running = false; btn.textContent = 'Train'; setup(); draw(); };
+    btn.addEventListener('click', () => {
+      if (running) { running = false; btn.textContent = 'Continue'; return; }
+      if (s.it >= MAX || s.stopped) setup();
+      running = true; btn.textContent = 'Pause'; requestAnimationFrame(loop);
+    });
+    $('[data-mlp-reset]').addEventListener('click', reset);
+    root.querySelectorAll<HTMLButtonElement>('[data-depth]').forEach((b) => b.addEventListener('click', () => {
+      depth = +b.dataset.depth!;
+      root.querySelectorAll('[data-depth]').forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
+      reset();
+    }));
+    ['width', 'ntrain', 'noise'].forEach((nm) => $(`[name="${nm}"]`).addEventListener('change', reset));
+    reset();
+  });
+</script>
+
+<style>
+  .wide { grid-column: 1 / -1; }
+  .mlp__plot { min-height: 12rem; }
+</style>

@@ -1,0 +1,37 @@
+---
+import LearnModule from '../../../../layouts/LearnModule.astro';
+import Equation from '../../../../components/viz/Equation.astro';
+import GradientDescentExplorer from '../../../../components/viz/GradientDescentExplorer.astro';
+import { url } from '../../../../i18n/utils';
+---
+<LearnModule slug="optimization/gradient-descent" description="Interactive gradient descent, momentum and Adam on quadratic, Rosenbrock and Himmelblau loss landscapes: step size, conditioning and stability.">
+  <div class="prose">
+    <h2>Walking downhill with a local view</h2>
+    <p>Training a neural network, calibrating a simulation and designing a heat exchanger all come down to minimising a function <em>f(x)</em>. Most practical methods only use local information: the value of <em>f</em> and its gradient at the current point. Gradient descent takes a step against the gradient,</p>
+    <Equation tex={String.raw`x_{k+1} = x_k - \alpha\, \nabla f(x_k),`} />
+    <p>where the step size <em>α</em> (the learning rate in machine learning) decides how far to go. That single number decides whether the method crawls, converges or explodes.</p>
+  </div>
+
+  <GradientDescentExplorer />
+
+  <div class="try">
+    <h3>Exercises</h3>
+    <ol>
+      <li>On the quadratic valley with κ = 20, raise α slowly. At what value does gradient descent start to zig-zag, and when does it diverge? Compare with the limit 2/κ printed under the loss plot.</li>
+      <li>Keep α just below the limit and increase κ. Why does convergence along the long, flat direction slow down even though the method is stable?</li>
+      <li>Turn on momentum with β = 0.8. It reaches the minimum in far fewer steps with the same α. Look at the path: what is momentum averaging out?</li>
+      <li>Switch to Himmelblau and click several starting points. Which minimum you land in depends on where you start. What does that mean for training a network from a random initialisation?</li>
+      <li>Try Adam on Rosenbrock with a large step. Adam rescales each coordinate by a running estimate of the gradient size. When does that help and when does it make the final approach noisy?</li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>Why the step size is limited</h2>
+    <p>On the quadratic <em>f = ½(x² + κy²)</em> each coordinate evolves independently: <em>y<sub>k+1</sub> = (1 − ακ) y<sub>k</sub></em>. The iteration shrinks only if <em>|1 − ακ| &lt; 1</em>, which gives</p>
+    <Equation tex={String.raw`0 < \alpha < \frac{2}{\lambda_{\max}(\nabla^2 f)} = \frac{2}{\kappa}.`} />
+    <p>The steepest direction sets the speed limit for every direction. The ratio of largest to smallest curvature, the <strong>condition number</strong>, therefore controls how many steps you need. The same stability argument appears when choosing the time step of an explicit simulation, which is not a coincidence: gradient descent is the explicit Euler method applied to <em>dx/dt = −∇f</em>.</p>
+    <h2>Momentum and Adam</h2>
+    <p>Momentum keeps a running velocity, <em>v<sub>k+1</sub> = βv<sub>k</sub> − α∇f(x<sub>k</sub>)</em>, so oscillations across the valley cancel while consistent motion along it accumulates. Adam additionally divides each component of the step by a running estimate of the gradient magnitude, which makes it less sensitive to the scale of each variable. These are the methods used to train the physics-informed networks in the <a href={url('/research/#physics-informed')}>research</a> on this site.</p>
+    <p class="muted">This module accompanies the optimisation unit of <a href={url('/teaching/thermal-systems-design/')}>Design and Optimization of Thermal Systems</a> (UTFSM, ILN223).</p>
+  </div>
+</LearnModule>

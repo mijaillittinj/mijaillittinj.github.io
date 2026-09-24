@@ -1,0 +1,27 @@
+{
+  "name": "mijaillittin-site",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Academic platform of Mijail Littin: research, publications, teaching, interactive learning modules and presentations.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/markdown-remark": "^7.3.1",
+    "@astrojs/mdx": "^8.0.2",
+    "@astrojs/sitemap": "^3.7.4",
+    "astro": "^7.3.5",
+    "katex": "^0.18.9",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "typescript": "^6.0.3"
+  }
+}

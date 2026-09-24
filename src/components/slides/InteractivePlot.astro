@@ -1,0 +1,22 @@
+---
+/**
+ * Wrapper for live content inside a slide: marks it interactive (clicks do not advance)
+ * and re-dispatches 'slide:enter' as 'plot:show' so heavy islands can initialise lazily.
+ */
+interface Props { title?: string; kicker?: string; caption?: string }
+const { title, kicker, caption } = Astro.props;
+---
+<section class="slide" data-title={title}>
+  {kicker && <p class="kicker">{kicker}</p>}
+  {title && <h2>{title}</h2>}
+  <div class="body"><div class="iplot" data-interactive><slot /></div>{caption && <p class="cap" set:html={caption} />}</div>
+  <aside class="notes"><slot name="notes" /></aside>
+</section>
+<script>
+  document.querySelectorAll<HTMLElement>('.iplot').forEach((el) => {
+    el.closest('.slide')?.addEventListener('slide:enter', () => el.dispatchEvent(new CustomEvent('plot:show', { bubbles: true })));
+  });
+</script>
+<style>
+  .iplot { font-size: 22px; }
+</style>

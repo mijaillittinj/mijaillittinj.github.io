@@ -1,0 +1,130 @@
+---
+/**
+ * Data-only vs physics-informed learning, trained live in the browser.
+ * Two identical one-hidden-layer networks start from the same weights; one also
+ * minimises the residual of the fin equation θ'' − m²θ = 0 (and can infer m).
+ */
+import ParameterSlider from './ParameterSlider.astro';
+---
+<div class="lab" data-pinn>
+  <div class="lab__grid">
+    <div class="lab__controls">
+      <ParameterSlider name="nsens" label="Number of sensors" min={2} max={12} step={1} value={4} format="int" />
+      <ParameterSlider name="cover" label="Sensors cover x ∈ [0, …]" min={0.2} max={1} step={0.05} value={0.4} />
+      <ParameterSlider name="noise" label="Sensor noise σ" min={0} max={0.08} step={0.005} value={0.02} format="fixed3" />
+      <ParameterSlider name="mtrue" label="True fin parameter m (hidden from the model)" min={0.5} max={3} step={0.1} value={2} />
+      <ParameterSlider name="lphys" label="Physics weight λ" min={0.01} max={5} step={0.01} value={1} />
+      <label class="meta"><input type="checkbox" data-learnm checked /> Infer m from the data (start from m = 1)</label>
+      <p class="meta"><button type="button" class="btn btn--primary" data-train>Train</button> <button type="button" class="btn" data-reset>Reset</button></p>
+      <p class="lab__readout" data-read aria-live="polite">Press Train. Both networks start from the same random weights.</p>
+    </div>
+    <div class="lab__plots">
+      <div class="wide">
+        <p class="panel-title">Temperature along the fin, θ(x)</p>
+        <div data-field></div>
+      </div>
+      <div>
+        <p class="panel-title">Training loss</p>
+        <div data-loss></div>
+      </div>
+      <div>
+        <p class="panel-title">Inferred parameter m</p>
+        <div data-mplot></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { initNet, evalNet, exact, lossGrad, makeTrainer, makeData, type PinnConfig } from '../../lib/pinn';
+  import { LinePlot } from '../../lib/plot';
+
+  document.querySelectorAll<HTMLElement>('[data-pinn]').forEach((root) => {
+    const $ = <T extends Element>(s: string) => root.querySelector<T>(s)!;
+    const val = (n: string) => +$<HTMLInputElement>(`[name="${n}"]`).value;
+    const pField = new LinePlot($('[data-field]'), { width: 860, height: 300, xlabel: 'position along the fin x', ylabel: 'θ', title: 'Temperature profile' });
+    const pLoss = new LinePlot($('[data-loss]'), { width: 420, height: 240, xlabel: 'iteration', ylabel: 'loss', logy: true, title: 'Loss' });
+    const pM = new LinePlot($('[data-mplot]'), { width: 420, height: 240, xlabel: 'iteration', ylabel: 'm', title: 'Inferred m' });
+    const read = $<HTMLElement>('[data-read]');
+    const btn = $<HTMLButtonElement>('[data-train]');
+    const xs = Float64Array.from({ length: 101 }, (_, i) => i / 100);
+    const col = Float64Array.from({ length: 40 }, (_, i) => i / 39);
+    const MAX = 4000, PER_FRAME = 40;
+
+    let state: ReturnType<typeof setup>;
+    let running = false;
+
+    function setup() {
+      const mTrue = val('mtrue');
+      const data = makeData(mTrue, val('nsens'), val('cover'), val('noise'), 11);
+      const learnM = $<HTMLInputElement>('[data-learnm]').checked;
+      const base: PinnConfig = { hidden: 16, lambdaPhys: 0, learnM: false, mInit: learnM ? 1 : mTrue, lr: 0.01, seed: 5 };
+      const cfgD = { ...base };
+      const cfgP = { ...base, lambdaPhys: val('lphys'), learnM };
+      const netD = initNet(16, 5, base.mInit), netP = initNet(16, 5, base.mInit);
+      return { mTrue, data, cfgD, cfgP, netD, netP, stepD: makeTrainer(netD, cfgD), stepP: makeTrainer(netP, cfgP), it: 0, hD: [] as number[], hP: [] as number[], hM: [] as number[], hI: [] as number[] };
+    }
+
+    const rmsErr = (net: ReturnType<typeof initNet>, m: number) => {
+      let s = 0;
+      for (const x of xs) s += (evalNet(net, x).u - exact(x, m)) ** 2;
+      return Math.sqrt(s / xs.length);
+    };
+
+    const draw = () => {
+      const s = state;
+      pField.render([
+        { kind: 'line', x: xs, y: xs.map((x) => exact(x, s.mTrue)), cls: 's-truth', label: 'true θ(x)' },
+        { kind: 'line', x: xs, y: xs.map((x) => evalNet(s.netD, x).u), cls: 's-muted', label: 'data only', dash: true },
+        { kind: 'line', x: xs, y: xs.map((x) => evalNet(s.netP, x).u), cls: 's-learned', label: 'data + physics' },
+        { kind: 'points', x: s.data.map((d) => d[0]), y: s.data.map((d) => d[1]), cls: 's-data', label: 'sensors' },
+      ], { xlim: [0, 1], ylim: [-0.3, 1.3] });
+      if (s.hI.length) {
+        pLoss.render([
+          { kind: 'line', x: s.hI, y: s.hD, cls: 's-muted', label: 'data only', dash: true },
+          { kind: 'line', x: s.hI, y: s.hP, cls: 's-learned', label: 'data + physics' },
+        ], { xlim: [0, MAX] });
+        pM.render([
+          { kind: 'line', x: [0, MAX], y: [s.mTrue, s.mTrue], cls: 's-truth', label: 'true m', dash: true },
+          { kind: 'line', x: s.hI, y: s.hM, cls: 's-learned', label: 'inferred' },
+        ], { xlim: [0, MAX], ylim: [0, 3.5] });
+      } else {
+        pLoss.render([], { xlim: [0, MAX], ylim: [1e-6, 1] });
+        pM.render([{ kind: 'line', x: [0, MAX], y: [s.mTrue, s.mTrue], cls: 's-truth', label: 'true m', dash: true }], { xlim: [0, MAX], ylim: [0, 3.5] });
+      }
+      const eD = rmsErr(s.netD, s.mTrue), eP = rmsErr(s.netP, s.mTrue);
+      const m = Math.exp(s.netP.logm);
+      read.innerHTML = s.it === 0 ? 'Press Train. Both networks start from the same random weights.' :
+        `Iteration ${s.it}. Error over the whole fin (RMS): data only <strong>${eD.toFixed(3)}</strong>, data + physics <strong>${eP.toFixed(3)}</strong>.` +
+        (s.cfgP.learnM ? ` Inferred m = <strong>${m.toFixed(2)}</strong> (true ${s.mTrue.toFixed(1)}).` : '');
+    };
+
+    const loop = () => {
+      if (!running) return;
+      const s = state;
+      let lD = 0, lP = 0;
+      for (let k = 0; k < PER_FRAME && s.it < MAX; k++, s.it++) {
+        const gd = lossGrad(s.netD, s.data, col, s.cfgD); s.stepD(gd.g); lD = gd.loss;
+        const gp = lossGrad(s.netP, s.data, col, s.cfgP); s.stepP(gp.g); lP = gp.loss;
+      }
+      s.hI.push(s.it); s.hD.push(Math.max(lD, 1e-12)); s.hP.push(Math.max(lP, 1e-12)); s.hM.push(Math.exp(s.netP.logm));
+      draw();
+      if (s.it < MAX) requestAnimationFrame(loop);
+      else { running = false; btn.textContent = 'Train'; }
+    };
+
+    const reset = () => { running = false; btn.textContent = 'Train'; state = setup(); draw(); };
+    btn.addEventListener('click', () => {
+      if (running) { running = false; btn.textContent = 'Continue'; return; }
+      if (state.it >= MAX) state = setup();
+      running = true; btn.textContent = 'Pause'; requestAnimationFrame(loop);
+    });
+    $('[data-reset]').addEventListener('click', reset);
+    root.querySelectorAll('input').forEach((i) => i.addEventListener('change', reset));
+    reset();
+  });
+</script>
+
+<style>
+  .wide { grid-column: 1 / -1; }
+</style>

@@ -1,0 +1,130 @@
+---
+/**
+ * ProjectionReconstruction + UncertaintyBand: the Abel transform learning lab.
+ * Shape a radial profile, project it, add noise, invert it directly (onion peeling)
+ * and with Tikhonov regularisation, and see the spread over repeated noise draws.
+ */
+import ParameterSlider from './ParameterSlider.astro';
+---
+<div class="lab" data-abel>
+  <div class="lab__grid">
+    <div class="lab__controls">
+      <div class="control">
+        <span class="control__head">Radial profile f(r)</span>
+        <div class="seg" role="group" aria-label="Radial profile">
+          <button type="button" data-kind="gaussian" aria-pressed="false">Peak on axis</button>
+          <button type="button" data-kind="annular" aria-pressed="true">Off-axis ring</button>
+          <button type="button" data-kind="two-zone" aria-pressed="false">Two zones</button>
+        </div>
+      </div>
+      <ParameterSlider name="a" label="Shape: position / width" min={0} max={1} step={0.01} value={0.5} />
+      <ParameterSlider name="b" label="Shape: sharpness" min={0} max={1} step={0.01} value={0.4} />
+      <ParameterSlider name="noise" label="Measurement noise (% of max)" min={0} max={6} step={0.1} value={2} format="fixed2" unit=" %" />
+      <ParameterSlider name="lam" label="Regularisation log₁₀ λ" min={-3} max={4} step={0.1} value={1} hint="Weight of the smoothness penalty ‖Df‖²." />
+      <label class="meta"><input type="checkbox" data-band checked /> Show spread over 30 noise draws</label>
+      <label class="meta"><input type="checkbox" data-direct checked /> Show direct inversion</label>
+      <p class="lab__readout" data-read aria-live="polite"></p>
+    </div>
+    <div class="lab__plots">
+      <div>
+        <p class="panel-title">Cross-section (what we want)</p>
+        <canvas class="canvas-field disk" data-disk width="240" height="240" aria-label="Cross-section of the axisymmetric field" role="img"></canvas>
+      </div>
+      <div>
+        <p class="panel-title">Projection (what we measure)</p>
+        <div data-proj></div>
+      </div>
+      <div class="wide">
+        <p class="panel-title">Reconstruction (what we infer)</p>
+        <div data-rec></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { chordMatrix, project, onionPeel, tikhonov, profile, type ProfileKind } from '../../lib/abel';
+  import { rng, rms } from '../../lib/linalg';
+  import { LinePlot, drawField, viridis } from '../../lib/plot';
+
+  document.querySelectorAll<HTMLElement>('[data-abel]').forEach((root) => {
+    const n = 60;
+    const L = chordMatrix(n);
+    const rc = Float64Array.from({ length: n }, (_, i) => (i + 0.5) / n); // annulus centres
+    const yr = Float64Array.from({ length: n }, (_, i) => i / n);         // ray offsets
+    const val = (name: string) => +root.querySelector<HTMLInputElement>(`[name="${name}"]`)!.value;
+    let kind: ProfileKind = 'annular';
+    const pProj = new LinePlot(root.querySelector('[data-proj]')!, { width: 420, height: 260, xlabel: 'ray offset y', ylabel: 'P(y)', title: 'Projection' });
+    const pRec = new LinePlot(root.querySelector('[data-rec]')!, { width: 860, height: 300, xlabel: 'radius r', ylabel: 'f(r)', title: 'Reconstruction' });
+    const disk = root.querySelector<HTMLCanvasElement>('[data-disk]')!;
+    const read = root.querySelector<HTMLElement>('[data-read]')!;
+    const bandBox = root.querySelector<HTMLInputElement>('[data-band]')!;
+    const directBox = root.querySelector<HTMLInputElement>('[data-direct]')!;
+
+    const drawDisk = (f: Float64Array) => {
+      const N = 120, img = new Float32Array(N * N);
+      for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
+        const x = (i + 0.5) / N * 2 - 1, y = (j + 0.5) / N * 2 - 1;
+        const r = Math.hypot(x, y);
+        img[j * N + i] = r < 1 ? f[Math.min(n - 1, Math.floor(r * n))] : NaN;
+      }
+      drawField(disk, img, { nx: N, ny: N, cmap: viridis, vmin: 0, nanColor: null });
+    };
+
+    const update = () => {
+      const a = val('a'), b = val('b'), sig = val('noise') / 100, lam = 10 ** val('lam');
+      const f = Float64Array.from(rc, (r) => profile(kind, r, a, b));
+      const fmax = Math.max(...f);
+      for (let i = 0; i < n; i++) f[i] /= fmax;
+      const p = project(L, f);
+      const pmax = Math.max(...p);
+      const noisy = (seed: number) => { const r = rng(seed); return Float64Array.from(p, (v) => v + sig * pmax * r.normal()); };
+      const pn = noisy(1);
+      const fd = onionPeel(L, pn);
+      const ft = tikhonov(L, pn, lam);
+
+      // spread over repeated noise draws (UncertaintyBand)
+      const R = 30;
+      const lo = new Float64Array(n).fill(Infinity), hi = new Float64Array(n).fill(-Infinity);
+      const sum = new Float64Array(n), sq = new Float64Array(n);
+      if (bandBox.checked && sig > 0) {
+        for (let s = 0; s < R; s++) {
+          const fr = tikhonov(L, noisy(100 + s), lam);
+          for (let i = 0; i < n; i++) { sum[i] += fr[i]; sq[i] += fr[i] * fr[i]; }
+        }
+        for (let i = 0; i < n; i++) {
+          const m = sum[i] / R, sd = Math.sqrt(Math.max(sq[i] / R - m * m, 0));
+          lo[i] = m - 2 * sd; hi[i] = m + 2 * sd;
+        }
+      }
+      drawDisk(f);
+      pProj.render([
+        { kind: 'line', x: yr, y: p, cls: 's-physics', label: 'exact projection' },
+        { kind: 'points', x: yr, y: pn, cls: 's-data', label: 'noisy data' },
+      ], { xlim: [0, 1] });
+      const series: Parameters<typeof pRec.render>[0] = [];
+      if (bandBox.checked && sig > 0) series.push({ kind: 'band', x: rc, y: lo, y2: hi, cls: 's-learned', label: 'regularised ±2σ (30 draws)' });
+      series.push({ kind: 'line', x: rc, y: f, cls: 's-truth', label: 'true f(r)' });
+      if (directBox.checked) series.push({ kind: 'line', x: rc, y: fd, cls: 's-warn', label: 'direct inversion' });
+      series.push({ kind: 'line', x: rc, y: ft, cls: 's-learned', label: 'regularised' });
+      pRec.render(series, { xlim: [0, 1], ylim: [-0.4, 1.5] });
+      const eD = rms(fd, f), eT = rms(ft, f);
+      read.innerHTML = `Error (RMS, relative to peak): direct <strong>${(100 * eD).toFixed(1)} %</strong>, regularised <strong>${(100 * eT).toFixed(1)} %</strong>.` +
+        (eT > eD ? ' Here regularisation hurts: λ is too large and flattens real structure.' : eD > 3 * eT ? ' The penalty removes most of the amplified noise.' : '');
+    };
+
+    root.querySelectorAll<HTMLButtonElement>('[data-kind]').forEach((btn) => btn.addEventListener('click', () => {
+      kind = btn.dataset.kind as ProfileKind;
+      root.querySelectorAll('[data-kind]').forEach((x) => x.setAttribute('aria-pressed', String(x === btn)));
+      update();
+    }));
+    root.querySelectorAll('input').forEach((i) => i.addEventListener('input', update));
+    update();
+  });
+</script>
+
+<style>
+  .disk { max-width: 15rem; aspect-ratio: 1; border-radius: 50%; background: transparent; margin-inline: auto; }
+  .wide { grid-column: 1 / -1; }
+  [data-abel] .seg { flex-wrap: wrap; }
+</style>

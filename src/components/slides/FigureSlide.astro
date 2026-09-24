@@ -1,0 +1,26 @@
+---
+/** Figure with caption, optional side text (slot "side"). */
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+interface Props { title?: string; kicker?: string; src?: ImageMetadata; alt?: string; caption?: string; credit?: string }
+const { title, kicker, src, alt = '', caption, credit } = Astro.props;
+const hasSide = Astro.slots.has('side');
+---
+<section class="slide" data-title={title}>
+  {kicker && <p class="kicker">{kicker}</p>}
+  {title && <h2>{title}</h2>}
+  <div class:list={['body', 'fig', { 'fig--side': hasSide }]}>
+    <figure>
+      {src ? <Image src={src} alt={alt} widths={[800, 1400]} sizes="1400px" loading="lazy" /> : <slot />}
+      {(caption || credit) && <figcaption>{caption && <Fragment set:html={caption} />}{credit && <span class="credit">{credit}</span>}</figcaption>}
+    </figure>
+    {hasSide && <div class="side"><slot name="side" /></div>}
+  </div>
+  <aside class="notes"><slot name="notes" /></aside>
+</section>
+<style>
+  .fig { display: grid; align-items: center; gap: 56px; }
+  .fig--side { grid-template-columns: 1.35fr 1fr; }
+  figure :global(img) { max-height: 560px; width: auto; max-width: 100%; margin-inline: auto; object-fit: contain; }
+  .side { font-size: 28px; }
+</style>

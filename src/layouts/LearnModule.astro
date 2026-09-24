@@ -1,0 +1,50 @@
+---
+import Base from './Base.astro';
+import { modules, categories } from '../data/learn';
+import { url } from '../i18n/utils';
+interface Props { slug: string; description: string }
+const { slug, description } = Astro.props;
+const m = modules.find((x) => x.slug === slug)!;
+const cat = categories[m.category];
+const jsonld = [{
+  '@context': 'https://schema.org',
+  '@type': 'LearningResource',
+  name: m.title,
+  description,
+  educationalLevel: 'Undergraduate / early graduate',
+  learningResourceType: 'Interactive simulation',
+  inLanguage: 'en',
+  isAccessibleForFree: true,
+  author: { '@type': 'Person', name: 'Mijail Littin' },
+  license: 'https://creativecommons.org/licenses/by/4.0/',
+}];
+---
+<Base title={m.title} description={description} math jsonld={jsonld} ogType="article">
+  <header class="page-head frame">
+    <p class="eyebrow"><a href={url('/learn/')}>Learn</a> · {cat.title}</p>
+    <h1 class="lm-title">{m.title}</h1>
+    <p class="lede abstract">{m.question}</p>
+    <p class="meta lm-meta">About {m.minutes} minutes · runs in your browser, nothing to install · CC BY 4.0</p>
+  </header>
+  <article class="frame lm">
+    <slot />
+    {m.related && m.related.length > 0 && (
+      <aside class="lm-related">
+        <p class="label">Connected material</p>
+        <ul class="links">{m.related.map((r) => <li><a href={url(r.href)}>{r.label}</a></li>)}</ul>
+      </aside>
+    )}
+  </article>
+</Base>
+
+<style>
+  .lm-title { max-width: 26ch; }
+  .lm-meta { margin-top: var(--s-3); }
+  .lm { padding-top: var(--s-6); }
+  .lm :global(.prose) { margin-inline: 0; }
+  .lm :global(.try) { margin-block: var(--s-5); max-width: var(--measure); }
+  .lm :global(.try h3) { font-size: var(--step-1); font-weight: 700; }
+  .lm :global(.try ol) { padding-left: 1.2em; margin-top: var(--s-2); }
+  .lm :global(.try li + li) { margin-top: var(--s-2); }
+  .lm-related { margin-top: var(--s-8); border-top: 1px solid var(--rule); padding-top: var(--s-4); }
+</style>

@@ -1,0 +1,158 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { visiblePublications, theses, citation } from '../../../data/publications';
+import { talks } from '../../../data/talks';
+import { courses, pastTeaching } from '../../../data/teaching';
+import { person } from '../../../data/site';
+import { url } from '../../../i18n/utils';
+const pubs = [...visiblePublications].sort((a, b) => b.year - a.year);
+const published = pubs.filter((p) => p.status === 'published' || p.status === 'in-press');
+const accepted = pubs.filter((p) => p.status === 'accepted');
+const confs = talks.filter((t) => t.kind !== 'web');
+const bold = (s: string) => s.replace('M. Littin', '<strong>M. Littin</strong>');
+---
+<Base noindex title="Curriculum vitae" description="Academic CV of Mijail Littin, PhD: appointments, education, research, teaching, projects, awards, publications, service and software.">
+  <header class="page-head frame cv-head">
+    <p class="eyebrow">Curriculum vitae</p>
+    <h1>Mijail Littin, PhD</h1>
+    <p class="lede">Computational methods for inverse problems in physical systems. Current direction: scientific machine learning for physics-constrained inference.</p>
+    <p class="meta contact">{person.email} · ORCID <a href={`https://orcid.org/${person.orcid}`}>{person.orcid}</a> · Scopus {person.scopus}</p>
+    <p class="cluster no-print dl">
+      <a class="btn btn--primary" href={url('/cv/Mijail_Littin_CV.pdf')} download>Download academic CV (PDF)</a>
+      <span class="meta">Generated from this page. Updated September 2026.</span>
+    </p>
+  </header>
+
+  <div class="frame cv">
+    <section class="row cvs">
+      <h2 class="label row__label">Current appointment</h2>
+      <div>
+        <div class="e"><span class="d">2026–</span><div><strong>Adjunct instructor (profesor de cátedra)</strong>, Department of Industrial Engineering, Universidad Técnica Federico Santa María (UTFSM), Chile. Four undergraduate courses (see Teaching).</div></div>
+      </div>
+    </section>
+
+    <section class="row cvs">
+      <h2 class="label row__label">Previous positions</h2>
+      <div>
+        <div class="e"><span class="d">2022–2025</span><div><strong>Doctoral researcher</strong>, CORIA laboratory (UMR 6614 CNRS), INSA Rouen Normandie, France. RIN doctoral fellowship, Normandy Region. Collaboration with SAFRAN within the doctorate (2023–2025).</div></div>
+        <div class="e"><span class="d">2020–2022</span><div><strong>Research assistant</strong> (MSc student), Energy Conversion and Combustion Group (EC2G), UTFSM. ANID–NSFC and FONDECYT projects.</div></div>
+      </div>
+    </section>
+
+    <section class="row cvs">
+      <h2 class="label row__label">Education</h2>
+      <div>
+        <div class="e"><span class="d">2025</span><div><strong>PhD</strong>, Normandie Université / INSA Rouen Normandie, France. Doctoral school PSIME, CORIA laboratory. Thesis: <em>{theses[0].title}</em>. Defended 11 December 2025. Supervisors: J. Yon, A. Fuentes.</div></div>
+        <div class="e"><span class="d">2024</span><div><strong>MSc in Industrial Engineering Sciences</strong>, UTFSM, Chile. Thesis on soot formation in a jet-fuel laminar flame with an extended HyChem mechanism. Grade 100/100, highest distinction.</div></div>
+        <div class="e"><span class="d">2024</span><div><strong>Industrial Civil Engineer</strong>, UTFSM, Chile. Grade 100/100, highest distinction.</div></div>
+        <div class="e"><span class="d">2020</span><div><strong>Licentiate in Industrial Engineering Sciences</strong>, UTFSM, Chile.</div></div>
+      </div>
+    </section>
+
+    <section class="row cvs">
+      <h2 class="label row__label">Research</h2>
+      <div class="prose">
+        <p>Inference of latent physical quantities from indirect, incomplete and noisy observations by combining physical models and data. Regularised reconstruction of ill-posed problems, including axisymmetric tomography; joint inversion of several measurement modalities with physics-informed neural networks. In progress: uncertainty quantification in neural inversion. Proposed: identifiability and surrogate models of physical operators. Application and validation contexts: energy, combustion, thermal radiation, optical diagnostics, aerosols.</p>
+        <p>{published.length} journal articles published or in press and {accepted.length} accepted; {pubs.filter((p) => p.firstAuthor).length} as first author; {pubs.filter((p) => p.ml).length} based on neural networks or machine learning. {confs.length} conference, workshop and meeting contributions.</p>
+      </div>
+    </section>
+
+    <section class="row cvs">
+      <h2 class="label row__label">Teaching</h2>
+      <div>
+        {courses.map((c) => <div class="e"><span class="d">{c.period}</span><div><strong>{c.title.en}</strong> ({c.code}), UTFSM. <span lang="es" class="muted">{c.title.es}</span>.</div></div>)}
+        {pastTeaching.map((p) => <div class="e"><span class="d">{p.period}</span><div><strong>{p.where}.</strong> {p.what.en}</div></div>)}
+      </div>
+    </section>
+
+    <section class="row cvs">
+      <h2 class="label row__label">Projects</h2>
+      <div>
+        <p class="meta">Participation in externally funded projects, without a principal-investigator role.</p>
+        <div class="e"><span class="d">2025–2027</span><div><strong>ECOS–ANID ECOS240010, DATINV</strong>: data inversion for in situ soot metrology, conventional vs neural networks. PI F. Escudero (UTFSM); French counterpart J. Yon (INSA Rouen). Co-author of the proposal, prepared and managed from the French side (2024); work on neural-network inversion.</div></div>
+        <div class="e"><span class="d">2026</span><div><strong>FONDECYT Regular</strong> (ANID), PI R. Demarco, and <strong>FONDECYT de Iniciación</strong> (ANID), PI F. Escudero. Technical support in optical diagnostics and inversion models.</div></div>
+        <div class="e"><span class="d">2020–2022</span><div><strong>ANID–NSFC</strong> (Chile–China): revealing soot chemistry evolution in the combustion of biofuels for jet applications. PI A. Fuentes. Research assistant.</div></div>
+        <div class="e"><span class="d">2021–2022</span><div><strong>FONDECYT</strong>: soot production from liquid fuels in laminar diffusion flames, application to gasoline surrogates. PI R. Demarco. Research assistant.</div></div>
+      </div>
+    </section>
+
+    <section class="row cvs">
+      <h2 class="label row__label">Awards and fellowships</h2>
+      <div>
+        <div class="e"><span class="d">2025</span><div><strong>Prix Jean Bricard</strong>, Association Française d’Études et de Recherches sur les Aérosols (ASFERA), for doctoral work in aerosol science.</div></div>
+        <div class="e"><span class="d">2022–2025</span><div>RIN doctoral fellowship, Normandy Region, France.</div></div>
+        <div class="e"><span class="d">2022</span><div>Scientific initiation programme (PIIC), UTFSM.</div></div>
+        <div class="e"><span class="d">2020–2024</span><div>Graduate tuition scholarship (2020–2024) and maintenance scholarship (2020–2022), UTFSM, for academic merit.</div></div>
+      </div>
+    </section>
+
+    <section class="row cvs">
+      <h2 class="label row__label">Publications</h2>
+      <div>
+        <h3 class="sub">Journal articles, published or in press</h3>
+        <ol class="plist">{published.map((p) => <li set:html={bold(citation(p))} />)}</ol>
+        <h3 class="sub">Accepted</h3>
+        <ol class="plist" start={published.length + 1}>{accepted.map((p) => <li set:html={bold(citation(p)) + ' Accepted.'} />)}</ol>
+        <h3 class="sub">Theses</h3>
+        <ol class="plist">{theses.map((t) => <li><strong>M. Littin</strong> ({t.year}). {t.title}. {t.kind}, {t.institution}. doi:{t.doi}</li>)}</ol>
+        <h3 class="sub">Conference contributions ({confs.length})</h3>
+        <ol class="plist small">{confs.map((t) => <li set:html={bold(`${t.authors} (${t.year}). ${t.title}. <em>${t.event}</em>${t.place ? `, ${t.place}` : ''}.${t.kind === 'poster' ? ' Poster.' : ''}`)} />)}</ol>
+        <p class="meta">Dataset: G. Lefevre, M. Littin, M. Mazur, J. Yon (2024). Combined USAXS, SAXS, WAXS techniques for studying the oxidation of soot nanoparticles in a flame. ESRF, doi:10.15151/esrf-es-1654076896 (embargoed until 2027).</p>
+      </div>
+    </section>
+
+    <section class="row cvs">
+      <h2 class="label row__label">Service</h2>
+      <div>
+        <ul class="plain">
+          <li>Reviewer for <em>Journal of Aerosol Science</em>, <em>Combustion Science and Technology</em>, <em>Journal of Quantitative Spectroscopy and Radiative Transfer</em>, <em>International Journal of Heat and Mass Transfer</em> and <em>Fuel</em>.</li>
+          <li>Co-organiser, Asia-Pacific Combustion Institute Summer School, UTFSM (2022 and 2025).</li>
+          <li>Academic consulting for Lipigas, GASCO and Copec through UTFSM (2020–2025).</li>
+          <li>Member of The Combustion Institute and ASFERA.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="row cvs">
+      <h2 class="label row__label">Software and tools</h2>
+      <div>
+        <ul class="plain">
+          <li><strong>pysat-abel</strong>: Python implementation of the spline-based Abel transform (Fuel, 2024), on PyPI since 2024.</li>
+          <li>Programming and machine learning: Python (NumPy, SciPy), JAX, PyTorch; MATLAB, Julia, Fortran, R.</li>
+          <li>Simulation: CoFlame (laminar reacting flows), Cantera (chemical kinetics), radiative transfer and light-scattering models.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="row cvs">
+      <h2 class="label row__label">Languages</h2>
+      <div><p>Spanish (native), English (professional), French (intermediate).</p></div>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .contact { margin-top: var(--s-3); }
+  .dl { margin-top: var(--s-4); }
+  .cv { padding-top: var(--s-5); }
+  .cvs { padding-block: var(--s-5); border-bottom: 1px solid var(--rule); }
+  .e { display: grid; grid-template-columns: 6.5rem minmax(0, 1fr); gap: var(--s-3); padding-block: var(--s-2); line-height: 1.5; }
+  .d { font-family: var(--font-sans); font-size: var(--step--1); color: var(--ink-3); padding-top: 0.15em; font-variant-numeric: tabular-nums; }
+  .sub { font-family: var(--font-sans); font-size: var(--step--1); font-weight: 600; margin-block: var(--s-4) var(--s-2); }
+  .sub:first-child { margin-top: 0; }
+  .plist { font-size: var(--step--1); padding-left: 1.6em; line-height: 1.5; }
+  .plist li + li { margin-top: 0.45em; }
+  .plist.small { font-size: var(--step--2); }
+  .plist :global(strong) { font-weight: 600; }
+  .plain { padding-left: 1.1em; }
+  .plain li + li { margin-top: 0.4em; }
+  @media print {
+    .cv-head { padding-block: 0 0.5rem; }
+    .cv-head h1 { font-size: 22pt; }
+    .cvs { padding-block: 0.4rem; break-inside: auto; }
+    .row { grid-template-columns: 9rem 1fr !important; }
+    .row__label { position: static !important; }
+    .e { break-inside: avoid; }
+    a { text-decoration: none; }
+  }
+</style>
