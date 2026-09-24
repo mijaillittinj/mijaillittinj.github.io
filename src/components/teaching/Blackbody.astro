@@ -1,0 +1,100 @@
+---
+/** ILN222: Planck's law, Wien's displacement law and the Stefan–Boltzmann law. */
+import ParameterSlider from '../viz/ParameterSlider.astro';
+import Equation from '../viz/Equation.astro';
+interface Props { lang: 'en' | 'es'; n: string }
+const { lang, n } = Astro.props;
+const es = lang === 'es';
+const S = es
+  ? {
+      T: 'Temperatura T', scale: 'Escala vertical', lin: 'lineal', log: 'logarítmica',
+      presets: 'Ejemplos', pRoom: 'ambiente (300 K)', pFlame: 'llama (1800 K)', pLamp: 'filamento (2800 K)', pSun: 'Sol (5800 K)',
+      plot: 'Poder emisivo espectral del cuerpo negro', xl: 'λ (µm)', ye: 'Ebλ (W m⁻² µm⁻¹)',
+      lE: 'Ebλ(T)', lvis: 'visible 0,38–0,78 µm', lpk: 'máximo (Wien)',
+      read: ['Máximo en λ', 'Poder emisivo total σT⁴', 'fracción en el visible'],
+      cap: 'Distribución espectral de la radiación emitida por un cuerpo negro (ley de Planck). Al subir la temperatura la emisión total crece como T⁴ y el máximo se desplaza hacia longitudes de onda cortas, λmax·T = 2898 µm·K. Un cuerpo a temperatura ambiente emite casi todo en el infrarrojo; un filamento incandescente emite solo una pequeña parte en el visible. Estas mismas leyes se usan en pirometría para medir temperaturas de llamas a partir de su emisión.',
+    }
+  : {
+      T: 'Temperature T', scale: 'Vertical scale', lin: 'linear', log: 'logarithmic',
+      presets: 'Examples', pRoom: 'room (300 K)', pFlame: 'flame (1800 K)', pLamp: 'filament (2800 K)', pSun: 'Sun (5800 K)',
+      plot: 'Blackbody spectral emissive power', xl: 'λ (µm)', ye: 'Ebλ (W m⁻² µm⁻¹)',
+      lE: 'Ebλ(T)', lvis: 'visible 0.38–0.78 µm', lpk: 'peak (Wien)',
+      read: ['Peak at λ', 'Total emissive power σT⁴', 'fraction in the visible'],
+      cap: 'Spectral distribution of the radiation emitted by a blackbody (Planck’s law). As the temperature rises, total emission grows as T⁴ and the peak moves to shorter wavelengths, λmax·T = 2898 µm·K. A body at room temperature emits almost everything in the infrared; an incandescent filament emits only a small part in the visible. The same laws are used in pyrometry to measure flame temperatures from their emission.',
+    };
+---
+<figure class="lab" data-t-bb data-s={JSON.stringify(S)}>
+  <div class="lab__grid">
+    <div class="lab__controls">
+      <ParameterSlider name="T" label={S.T} min={250} max={6500} step={10} value={1800} unit=" K" format="int" />
+      <div class="control">
+        <span class="control__head">{S.presets}</span>
+        <div class="seg" role="group" aria-label={S.presets}>
+          <button type="button" data-preset="300">{S.pRoom}</button>
+          <button type="button" data-preset="1800">{S.pFlame}</button>
+          <button type="button" data-preset="2800">{S.pLamp}</button>
+          <button type="button" data-preset="5800">{S.pSun}</button>
+        </div>
+      </div>
+      <div class="control">
+        <span class="control__head">{S.scale}</span>
+        <div class="seg" role="group" aria-label={S.scale}>
+          <button type="button" data-scale="lin" aria-pressed="true">{S.lin}</button>
+          <button type="button" data-scale="log" aria-pressed="false">{S.log}</button>
+        </div>
+      </div>
+      <p class="lab__readout" data-t-read aria-live="polite"></p>
+    </div>
+    <div><p class="panel-title">{S.plot}</p><div class="t-plot" data-t-lin></div><div class="t-plot" data-t-log hidden></div></div>
+  </div>
+  <Equation tex={String.raw`E_{b\lambda}(\lambda,T)=\frac{2\pi h c^2}{\lambda^5\left[\exp\!\left(\dfrac{hc}{\lambda k_B T}\right)-1\right]},\qquad \lambda_{\max}T=2898\ \mu\mathrm{m\,K},\qquad \int_0^\infty E_{b\lambda}\,d\lambda=\sigma T^4`} />
+  <figcaption><span class="fig-num">{es ? 'Figura' : 'Figure'} {n}.</span>{S.cap}</figcaption>
+</figure>
+
+<script>
+  import { LinePlot } from '../../lib/plot';
+  import { planck, wienPeak, bandFraction, SIGMA } from '../../lib/teaching';
+
+  document.querySelectorAll<HTMLElement>('[data-t-bb]').forEach((root) => {
+    const S = JSON.parse(root.dataset.s!);
+    const input = root.querySelector<HTMLInputElement>('[name="T"]')!;
+    const boxLin = root.querySelector<HTMLElement>('[data-t-lin]')!;
+    const boxLog = root.querySelector<HTMLElement>('[data-t-log]')!;
+    const opts = { width: 760, height: 300, xlabel: S.xl, ylabel: S.ye, title: S.plot };
+    const pLin = new LinePlot(boxLin, opts);
+    const pLog = new LinePlot(boxLog, { ...opts, logy: true });
+    const read = root.querySelector<HTMLElement>('[data-t-read]')!;
+    let log = false;
+
+    const update = () => {
+      const T = +input.value;
+      const lm = wienPeak(T);
+      const peak = planck(lm, T);
+      const lmax = Math.min(40, Math.max(3, 6 * lm));
+      const lmin = log ? 0.1 : 0.05;
+      const ls = Array.from({ length: 400 }, (_, i) => lmin + ((lmax - lmin) * i) / 399);
+      const E = ls.map((l) => planck(l, T));
+      const ylim: [number, number] = log ? [peak * 1e-6, peak * 3] : [0, peak * 1.12];
+      const series = [
+        { kind: 'band' as const, x: [0.38, 0.78], y: [ylim[0], ylim[0]], y2: [ylim[1], ylim[1]], cls: 's-muted', label: S.lvis },
+        { kind: 'line' as const, x: ls, y: E, cls: 's-physics', label: S.lE },
+        { kind: 'points' as const, x: [lm], y: [peak], cls: 's-data', label: S.lpk },
+      ];
+      (log ? pLog : pLin).render(series, { xlim: [0, lmax], ylim });
+      const vis = bandFraction(0.38, 0.78, T);
+      read.innerHTML = `${S.read[0]} = <strong>${lm.toFixed(2)}</strong> µm.<br>${S.read[1]} = <strong>${(SIGMA * T ** 4).toExponential(2)}</strong> W/m².<br>${S.read[2]}: <strong>${vis < 1e-4 ? vis.toExponential(1) : (100 * vis).toFixed(vis < 0.01 ? 3 : 1) + ' %'}</strong>.`;
+    };
+    root.querySelectorAll<HTMLButtonElement>('[data-preset]').forEach((b) => b.addEventListener('click', () => {
+      input.value = b.dataset.preset!;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    }));
+    root.querySelectorAll<HTMLButtonElement>('[data-scale]').forEach((b) => b.addEventListener('click', () => {
+      root.querySelectorAll('[data-scale]').forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
+      log = b.dataset.scale === 'log';
+      boxLin.hidden = log; boxLog.hidden = !log;
+      update();
+    }));
+    input.addEventListener('input', update);
+    update();
+  });
+</script>

@@ -1,0 +1,255 @@
+---
+/**
+ * Electrical engineering tab: non-intrusive load monitoring (energy disaggregation).
+ * Forward: appliances switch on and off during a day; the smart meter records only their sum.
+ * Inverse: from the meter trace alone, infer which appliance was on at each minute
+ * (factorial hidden Markov model decoded with Viterbi, src/lib/eng/nilm.ts).
+ * Lesson: equal-power appliances (kettle, oven) are ambiguous from power alone; typical
+ * durations resolve them. Synthetic day, idealised signatures.
+ */
+import Equation from '../viz/Equation.astro';
+import { APPLIANCES } from '../../lib/eng/nilm';
+interface Props { lang?: 'en' | 'es'; hidden?: boolean }
+const { lang = 'en', hidden = false } = Astro.props;
+const es = lang === 'es';
+const names: Record<string, string> = es
+  ? { fridge: 'Refrigerador', lights: 'Iluminación', tv: 'Televisor', washer: 'Lavadora', kettle: 'Hervidor', oven: 'Horno' }
+  : { fridge: 'Fridge', lights: 'Lighting', tv: 'TV', washer: 'Washing machine', kettle: 'Kettle', oven: 'Oven' };
+const T = es
+  ? {
+      fwd: 'Directo', inv: 'Inverso',
+      fi: [': los aparatos de una casa se encienden y apagan durante el día; el medidor inteligente registra solo la suma de sus potencias. ', ': a partir de esa única curva, deducir qué aparato estaba encendido en cada minuto.'],
+      house: 'Aparatos en la casa', noise: 'Ruido del medidor', prior: 'Información a priori',
+      pDur: 'duraciones típicas de cada aparato', pFlat: 'la misma penalización para todos',
+      run: 'desagregar la curva', newDay: 'nuevo día',
+      pMeter: '(a) Medidor inteligente: lo que se mide', pTrue: '(b) Consumo real por aparato (oculto)', pEst: '(c) Estimado solo a partir del medidor',
+      pending: 'Pulse «desagregar la curva»', hours: 'hora del día', kw: 'kW',
+      thA: 'Aparato', thP: 'Potencia', thT: 'Real', thE: 'Estimado',
+      rdAcc: 'Estados correctos', rdE: 'energía bien asignada', rdTime: 'tiempo de cálculo',
+      rdAmb: 'El hervidor y el horno consumen lo mismo (2 kW): sin información sobre su duración, la potencia sola no permite distinguirlos.',
+      rdOk: 'Las duraciones típicas (minutos para el hervidor, casi una hora para el horno) resuelven la ambigüedad.',
+      rdIdle: 'La curva del medidor es todo lo que ve el algoritmo.',
+      cap: 'La desagregación de consumo (monitoreo no intrusivo de cargas) estima el consumo de cada aparato con un solo medidor, sin sensores adicionales. Aquí cada aparato es una cadena de Markov de dos estados cuyas probabilidades de cambio codifican sus duraciones típicas; la combinación de los seis (64 estados conjuntos) se decodifica con el algoritmo de Viterbi. Dos aparatos con la misma potencia no se distinguen por la potencia, sino por lo que se sabe de ellos: es la misma lección de identificabilidad que en los demás ejemplos. Día sintético con firmas de potencia idealizadas.',
+    }
+  : {
+      fwd: 'Forward', inv: 'Inverse',
+      fi: [': the appliances of a house switch on and off during the day; the smart meter records only the sum of their power. ', ': from that single curve, infer which appliance was on at every minute.'],
+      house: 'Appliances in the house', noise: 'Meter noise', prior: 'Prior information',
+      pDur: 'typical duration of each appliance', pFlat: 'the same penalty for all',
+      run: 'disaggregate the curve', newDay: 'new day',
+      pMeter: '(a) Smart meter: what is measured', pTrue: '(b) True use per appliance (hidden)', pEst: '(c) Estimated from the meter alone',
+      pending: 'Press “disaggregate the curve”', hours: 'time of day', kw: 'kW',
+      thA: 'Appliance', thP: 'Power', thT: 'True', thE: 'Estimated',
+      rdAcc: 'Correct states', rdE: 'energy correctly assigned', rdTime: 'computed in',
+      rdAmb: 'The kettle and the oven draw the same power (2 kW): without information on their durations, power alone cannot tell them apart.',
+      rdOk: 'Typical durations (minutes for the kettle, about an hour for the oven) resolve the ambiguity.',
+      rdIdle: 'The meter curve is all the algorithm sees.',
+      cap: 'Energy disaggregation (non-intrusive load monitoring) estimates the consumption of each appliance from a single meter, without extra sensors. Here each appliance is a two-state Markov chain whose switching probabilities encode its typical durations; the six chains together (64 joint states) are decoded with the Viterbi algorithm. Two appliances with the same power are not told apart by power but by what is known about them: the same identifiability lesson as in the other examples. Synthetic day with idealised power signatures.',
+    };
+const client = { lang, names, T };
+---
+<div class="eng-tab el" data-eng-tab="electrical" hidden={hidden} data-el-text={JSON.stringify(client)}>
+  <p class="eng-fi"><em>{T.fwd}</em>{T.fi[0]}<em>{T.inv}</em>{T.fi[1]}</p>
+
+  <fieldset class="el__house">
+    <legend>{T.house}</legend>
+    {APPLIANCES.map((a, i) => (
+      <label class="el__app"><input type="checkbox" data-el-app={i} checked /> <i class="el__sw" style={`background:${a.colour}`}></i>{names[a.id]} <span class="el__w">{a.power >= 1000 ? `${a.power / 1000} kW` : `${a.power} W`}</span></label>
+    ))}
+  </fieldset>
+
+  <canvas class="el__canvas" data-el-canvas role="img" aria-label={`${T.pMeter}; ${T.pTrue}; ${T.pEst}`}></canvas>
+
+  <div class="el__controls">
+    <div class="control">
+      <div class="control__head"><label for={`el-noise-${lang}`}>{T.noise}</label><output data-el-nout>40 W</output></div>
+      <input id={`el-noise-${lang}`} data-el-noise type="range" min="0" max="120" step="5" value="40" />
+    </div>
+    <div class="control">
+      <span class="control__head">{T.prior}</span>
+      <div class="seg" role="group" aria-label={T.prior}>
+        <button type="button" data-el-prior="dur" aria-pressed="true">{T.pDur}</button>
+        <button type="button" data-el-prior="flat" aria-pressed="false">{T.pFlat}</button>
+      </div>
+    </div>
+    <p class="el__btns"><button type="button" class="btn" data-el-run>{T.run}</button> <button type="button" class="btn" data-el-new>{T.newDay}</button></p>
+  </div>
+
+  <table class="el__table">
+    <thead><tr><th>{T.thA}</th><th class="n">{T.thP}</th><th class="n">{T.thT} (kWh)</th><th class="n">{T.thE} (kWh)</th></tr></thead>
+    <tbody data-el-rows></tbody>
+  </table>
+
+  <div class="eng-eqs">
+    <Equation tex={String.raw`P(t) = P_0 + \sum_i P_i\, s_i(t) + \varepsilon(t)`} />
+    <Equation tex={String.raw`s_i(t)\in\{0,1\}`} />
+    <Equation tex={String.raw`\hat{s} = \arg\max_{s}\; p\big(s \mid P\big)`} />
+  </div>
+  <p class="lab__readout" data-el-read aria-live="polite">{T.rdIdle}</p>
+  <p class="eng-cap">{T.cap}</p>
+</div>
+
+<script>
+  import { APPLIANCES, MINUTES, BASE_LOAD, syntheticDay, meter, disaggregate, energies, accuracy, energyAccuracy } from '../../lib/eng/nilm';
+  import { cssVar } from '../../lib/plot';
+
+  function init(root: HTMLElement) {
+    const { lang, names, T } = JSON.parse(root.dataset.elText!);
+    const es = lang === 'es';
+    const nf = (v: number, d = 2) => (es ? v.toFixed(d).replace('.', ',') : v.toFixed(d));
+    const canvas = root.querySelector<HTMLCanvasElement>('[data-el-canvas]')!;
+    const ctx = canvas.getContext('2d')!;
+    const boxes = [...root.querySelectorAll<HTMLInputElement>('[data-el-app]')];
+    const noiseIn = root.querySelector<HTMLInputElement>('[data-el-noise]')!;
+    const nout = root.querySelector<HTMLOutputElement>('[data-el-nout]')!;
+    const rows = root.querySelector<HTMLElement>('[data-el-rows]')!;
+    const read = root.querySelector<HTMLElement>('[data-el-read]')!;
+
+    let seed = 1, prior: 'dur' | 'flat' = 'dur', ran = false;
+    let present = boxes.map((b) => b.checked);
+    let truth: Uint8Array[] = [], P: Float64Array = new Float64Array(0), est: Uint8Array[] | null = null, ms = 0;
+    let W = 600, H = 420;
+
+    const simulate = () => {
+      truth = syntheticDay(seed, present);
+      P = meter(truth, +noiseIn.value, seed + 100);
+      nout.textContent = `${noiseIn.value} W`;
+    };
+    const estimate = () => {
+      if (!ran) { est = null; return; }
+      const t0 = performance.now();
+      est = disaggregate(P, +noiseIn.value, present, prior === 'dur');
+      ms = performance.now() - t0;
+    };
+
+    const resize = () => {
+      const w = Math.round(canvas.clientWidth);
+      if (!w) return false;
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = w; H = Math.round(Math.min(460, Math.max(360, w * 0.72)));
+      canvas.style.height = `${H}px`;
+      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return true;
+    };
+
+    const draw = () => {
+      const c = { ink: cssVar('--ink'), ink3: cssVar('--ink-3'), rule: cssVar('--rule'), paper: cssVar('--paper'), data: cssVar('--c-data'), font: cssVar('--font-serif') || 'serif' };
+      ctx.clearRect(0, 0, W, H);
+      const L = W < 420 ? 34 : 44, R = 8, top = 6, bottom = 30, gap = 22;
+      const ph = (H - top - bottom - 3 * gap) / 3;
+      const pw = W - L - R;
+      const pmax = 5000;
+      const X = (t: number) => L + (t / MINUTES) * pw;
+      const fs = W < 420 ? 10.5 : 11.5;
+      ctx.font = `${fs}px ${c.font}`;
+      const panel = (k: number, title: string, body: (Y: (p: number) => number) => void) => {
+        const y0 = top + gap + k * (ph + gap);
+        const Y = (p: number) => y0 + ph - (p / pmax) * ph;
+        ctx.fillStyle = c.ink; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+        ctx.fillText(title, L, y0 - 6);
+        ctx.save(); ctx.beginPath(); ctx.rect(L, y0, pw, ph); ctx.clip();
+        body(Y);
+        ctx.restore();
+        ctx.strokeStyle = c.ink; ctx.lineWidth = 0.7; ctx.strokeRect(L + 0.5, y0 + 0.5, pw - 1, ph - 1);
+        ctx.fillStyle = c.ink; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+        for (const p of [0, 2000, 4000]) ctx.fillText(String(p / 1000), L - 5, Y(p));
+        if (k === 1) {
+          ctx.save(); ctx.translate(11, y0 + ph / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = 'center'; ctx.font = `italic ${fs + 1}px ${c.font}`;
+          ctx.fillText(T.kw, 0, 0); ctx.restore(); ctx.font = `${fs}px ${c.font}`;
+        }
+        return y0;
+      };
+      const stacked = (S: Uint8Array[], Y: (p: number) => number) => {
+        const dx = pw / MINUTES + 0.4;
+        for (let t = 0; t < MINUTES; t++) {
+          let acc = 0;
+          ctx.fillStyle = c.rule;
+          ctx.fillRect(X(t), Y(BASE_LOAD), dx, Y(0) - Y(BASE_LOAD));
+          acc = BASE_LOAD;
+          for (let i = 0; i < APPLIANCES.length; i++) {
+            if (!S[i][t]) continue;
+            const p = APPLIANCES[i].power;
+            ctx.fillStyle = APPLIANCES[i].colour;
+            ctx.fillRect(X(t), Y(acc + p), dx, Y(acc) - Y(acc + p));
+            acc += p;
+          }
+        }
+      };
+      const meterLine = (Y: (p: number) => number, colour: string, width: number) => {
+        ctx.strokeStyle = colour; ctx.lineWidth = width; ctx.beginPath();
+        for (let t = 0; t < MINUTES; t++) { const x = X(t), y = Y(P[t]); if (t) ctx.lineTo(x, y); else ctx.moveTo(x, y); }
+        ctx.stroke();
+      };
+      panel(0, T.pMeter, (Y) => meterLine(Y, c.data, 1));
+      panel(1, T.pTrue, (Y) => stacked(truth, Y));
+      const y2 = panel(2, T.pEst, (Y) => {
+        if (est) { stacked(est, Y); meterLine(Y, c.ink, 0.6); }
+      });
+      if (!est) {
+        ctx.fillStyle = c.ink3; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = `italic ${fs + 1}px ${c.font}`;
+        ctx.fillText(T.pending, L + pw / 2, y2 + ph / 2); ctx.font = `${fs}px ${c.font}`;
+      }
+      // time axis
+      ctx.fillStyle = c.ink; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      const step = W < 420 ? 6 : 3;
+      for (let h = 0; h <= 24; h += step) ctx.fillText(`${h}`, X(h * 60), y2 + ph + 5);
+      ctx.font = `italic ${fs + 1}px ${c.font}`;
+      ctx.fillText(T.hours, L + pw / 2, y2 + ph + 17);
+    };
+
+    const table = () => {
+      const et = energies(truth), ee = est ? energies(est) : null;
+      rows.innerHTML = APPLIANCES.map((a, i) => {
+        if (!present[i]) return '';
+        const bad = ee && Math.abs(ee[i] - et[i]) > 0.15 ? ' class="bad"' : '';
+        return `<tr><td><i class="el__sw" style="background:${a.colour}"></i>${names[a.id]}</td><td class="n">${a.power >= 1000 ? nf(a.power / 1000, 0) + ' kW' : a.power + ' W'}</td><td class="n">${nf(et[i])}</td><td class="n"${bad}>${ee ? nf(ee[i]) : '—'}</td></tr>`;
+      }).join('');
+      if (!est) { read.textContent = T.rdIdle; return; }
+      const acc = accuracy(truth, est, present), eacc = energyAccuracy(truth, est);
+      const k = APPLIANCES.findIndex((a) => a.id === 'kettle'), o = APPLIANCES.findIndex((a) => a.id === 'oven');
+      const confused = present[k] && present[o] && Math.abs(ee![k] - et[k]) + Math.abs(ee![o] - et[o]) > 0.5;
+      read.textContent = `${T.rdAcc} ${nf(acc * 100, 1)} % · ${T.rdE} ${nf(eacc * 100, 1)} % · ${T.rdTime} ${Math.max(1, Math.round(ms))} ms. ${confused ? T.rdAmb : prior === 'dur' && present[k] && present[o] ? T.rdOk : ''}`;
+    };
+
+    const update = (resim = true) => { if (resim) simulate(); estimate(); if (resize()) draw(); table(); };
+
+    boxes.forEach((b) => b.addEventListener('change', () => { present = boxes.map((x) => x.checked); update(); }));
+    noiseIn.addEventListener('input', () => update());
+    root.querySelectorAll<HTMLButtonElement>('[data-el-prior]').forEach((b) => b.addEventListener('click', () => {
+      prior = b.dataset.elPrior as 'dur' | 'flat';
+      root.querySelectorAll('[data-el-prior]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      update(false);
+    }));
+    root.querySelector('[data-el-run]')!.addEventListener('click', () => { ran = true; update(false); });
+    root.querySelector('[data-el-new]')!.addEventListener('click', () => { seed++; update(); });
+    window.addEventListener('themechange', () => { if (!root.hidden) draw(); });
+    new ResizeObserver(() => { if (!root.hidden && resize()) draw(); }).observe(canvas);
+    root.addEventListener('eng:show', () => { if (resize()) draw(); });
+    update();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-eng-tab="electrical"]').forEach((root) => {
+    let done = false;
+    const start = () => { if (done) return; done = true; init(root); };
+    root.addEventListener('eng:show', start, { once: true });
+    if (!root.hidden) start();
+  });
+</script>
+
+<style>
+  .el__house { border: 0; padding: 0; margin: 0 auto var(--s-3); max-width: 40rem; display: flex; flex-wrap: wrap; gap: 0.25rem 1.1rem; justify-content: center; font-size: var(--step--1); }
+  .el__house legend { width: 100%; text-align: center; font-style: italic; color: var(--ink-2); margin-bottom: 0.3rem; padding: 0; }
+  .el__app { display: inline-flex; align-items: center; gap: 0.3em; white-space: nowrap; }
+  .el__w { color: var(--ink-3); font-size: 0.9em; }
+  .el :global(.el__sw) { display: inline-block; width: 0.8em; height: 0.8em; margin-right: 0.3em; vertical-align: -0.05em; }
+  .el__canvas { display: block; width: 100%; max-width: 40rem; margin-inline: auto; }
+  .el__controls { max-width: 40rem; margin: var(--s-4) auto 0; display: grid; gap: var(--s-3); grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); align-items: end; }
+  .el__btns { font-size: var(--step--1); display: flex; flex-wrap: wrap; gap: 0.3em 1em; grid-column: 1 / -1; justify-content: center; }
+  .el__table { max-width: 30rem; margin: var(--s-4) auto 0; }
+  .el__table .n, .el__table :global(td.n) { text-align: right; font-family: var(--font-mono); font-size: 0.92em; }
+  .el__table th.n { font-family: inherit; }
+  .el__table :global(td.bad) { color: var(--c-warn); }
+  .eng-eqs { display: flex; flex-wrap: wrap; justify-content: center; column-gap: var(--s-6); margin-block: var(--s-3); }
+  .eng-eqs :global(.eq) { justify-content: center; margin-block: var(--s-2); max-width: 100%; min-width: 0; }
+</style>

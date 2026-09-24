@@ -1,0 +1,125 @@
+---
+/**
+ * Explore several co-registered axisymmetric fields: choose a field, hover to read
+ * values, and see the radial profile at the selected height.
+ * <FieldExplorer base="/data/carbon2026/" fields={[{key:'fs', label:'Soot volume fraction'}]} />
+ */
+import { url } from '../../i18n/utils';
+interface Props { base: string; fields: { key: string; label: string }[]; caption?: string; id?: string }
+const { base, fields, caption, id = 'fe' } = Astro.props;
+---
+<figure class="fe" data-fe data-base={url(base)} data-fields={JSON.stringify(fields)}>
+  <div class="fe__top">
+    <div class="seg" role="group" aria-label="Field">
+      {fields.map((f, i) => <button type="button" data-key={f.key} aria-pressed={i === 0 ? 'true' : 'false'}>{f.label}</button>)}
+    </div>
+  </div>
+  <div class="fe__body">
+    <div class="fe__mapwrap">
+      <div class="fe__map">
+        <canvas class="canvas-field" data-map aria-hidden="true"></canvas>
+        <div class="fe__line" data-line></div>
+      </div>
+      <div class="fe__cbar"><span data-cmin></span><i data-cbar></i><span data-cmax></span></div>
+      <p class="meta fe__read" data-read aria-live="polite">&nbsp;</p>
+    </div>
+    <div class="fe__side">
+      <div class="control">
+        <div class="control__head"><label for={`${id}-z`}>Height above burner</label><output data-zout></output></div>
+        <input id={`${id}-z`} type="range" min="0" max="1" step="0.005" value="0.5" data-z />
+      </div>
+      <div data-plot></div>
+    </div>
+  </div>
+  {caption && <figcaption set:html={caption} />}
+</figure>
+
+<script>
+  import { drawField, viridis, LinePlot, fmt } from '../../lib/plot';
+  import { loadMeta, loadField } from '../../lib/fields';
+
+  document.querySelectorAll<HTMLElement>('[data-fe]').forEach((root) => {
+    const io = new IntersectionObserver((es) => {
+      if (es.some((e) => e.isIntersecting)) { io.disconnect(); init(root); }
+    }, { rootMargin: '300px' });
+    io.observe(root);
+  });
+
+  async function init(root: HTMLElement) {
+    const base = root.dataset.base!;
+    const fields: { key: string; label: string }[] = JSON.parse(root.dataset.fields!);
+    const meta = await loadMeta(base);
+    const { nz, nr } = meta;
+    const cache: Record<string, Float32Array> = {};
+    const canvas = root.querySelector<HTMLCanvasElement>('[data-map]')!;
+    const mapBox = root.querySelector<HTMLElement>('.fe__map')!;
+    mapBox.style.aspectRatio = `${2 * meta.r_mm[1]} / ${meta.z_mm[1] - meta.z_mm[0]}`;
+    const zIn = root.querySelector<HTMLInputElement>('[data-z]')!;
+    const zout = root.querySelector<HTMLElement>('[data-zout]')!;
+    const read = root.querySelector<HTMLElement>('[data-read]')!;
+    const line = root.querySelector<HTMLElement>('[data-line]')!;
+    const cbar = root.querySelector<HTMLElement>('[data-cbar]')!;
+    const stops = Array.from({ length: 11 }, (_, i) => `rgb(${viridis(i / 10).join(',')})`).join(',');
+    cbar.style.background = `linear-gradient(90deg, ${stops})`;
+    const plot = new LinePlot(root.querySelector<HTMLElement>('[data-plot]')!, { width: 420, height: 250, xlabel: 'r (mm)', legend: false, title: 'Radial profile' });
+    const rr = Float64Array.from({ length: nr }, (_, i) => meta.r_mm[0] + ((meta.r_mm[1] - meta.r_mm[0]) * i) / (nr - 1));
+    let key = fields[0].key;
+
+    const get = async (k: string) => (cache[k] ??= (await loadField(base, k)).data);
+    const zAt = (j: number) => meta.z_mm[0] + ((meta.z_mm[1] - meta.z_mm[0]) * j) / (nz - 1);
+
+    const renderProfile = () => {
+      const d = cache[key];
+      const j = Math.round(+zIn.value * (nz - 1));
+      line.style.bottom = `${(j / (nz - 1)) * 100}%`;
+      zout.textContent = `${zAt(j).toFixed(1)} mm`;
+      const info = meta.fields[key];
+      plot.render([{ kind: 'line', x: rr, y: Array.from(d.subarray(j * nr, (j + 1) * nr)), cls: 's-learned' }], { xlim: [0, meta.r_mm[1]], ylim: [info.min, info.max] });
+      plot.svg.querySelector('.axlabel:last-of-type');
+    };
+    const render = async () => {
+      const d = await get(key);
+      const info = meta.fields[key];
+      drawField(canvas, d, { nx: nr, ny: nz, mirror: true, cmap: viridis, vmin: info.min, vmax: info.max, nanColor: null });
+      root.querySelector<HTMLElement>('[data-cmin]')!.textContent = fmt(info.min);
+      root.querySelector<HTMLElement>('[data-cmax]')!.textContent = `${fmt(info.max)} ${info.unit === '-' ? '' : info.unit}`;
+      renderProfile();
+    };
+    root.querySelectorAll<HTMLButtonElement>('[data-key]').forEach((b) => b.addEventListener('click', () => {
+      key = b.dataset.key!;
+      root.querySelectorAll('[data-key]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      render();
+    }));
+    zIn.addEventListener('input', renderProfile);
+    mapBox.addEventListener('pointermove', (e) => {
+      const b = mapBox.getBoundingClientRect();
+      const fx = (e.clientX - b.left) / b.width, fy = 1 - (e.clientY - b.top) / b.height;
+      const i = Math.min(nr - 1, Math.round(Math.abs(fx * 2 - 1) * (nr - 1)));
+      const j = Math.min(nz - 1, Math.max(0, Math.round(fy * (nz - 1))));
+      zIn.value = String(j / (nz - 1));
+      renderProfile();
+      const v = cache[key]?.[j * nr + i];
+      const info = meta.fields[key];
+      read.textContent = Number.isFinite(v)
+        ? `r = ${rr[i].toFixed(2)} mm, z = ${zAt(j).toFixed(1)} mm: ${fmt(v)} ${info.unit === '-' ? '' : info.unit}`
+        : `r = ${rr[i].toFixed(2)} mm, z = ${zAt(j).toFixed(1)} mm: no data (not all diagnostics available)`;
+    });
+    render();
+  }
+</script>
+
+<style>
+  .fe { margin-block: var(--s-6); }
+  .fe__top { margin-bottom: var(--s-4); overflow-x: auto; }
+  .fe__body { display: grid; gap: var(--s-5); }
+  @media (min-width: 52rem) { .fe__body { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); align-items: start; } }
+  .fe__mapwrap { max-width: 15rem; width: 100%; margin-inline: auto; }
+  .fe__map { position: relative; aspect-ratio: 2 / 3; background: var(--paper-2); cursor: crosshair; }
+  .fe__map canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .fe__line { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--ink); opacity: 0.7; pointer-events: none; }
+  .fe__cbar { display: flex; align-items: center; gap: var(--s-2); margin-top: var(--s-2); font-family: var(--font-sans); font-size: var(--step--2); color: var(--ink-3); }
+  .fe__cbar i { flex: 1; height: 8px; }
+  .fe__read { min-height: 2.8em; margin-top: var(--s-2); font-variant-numeric: tabular-nums; }
+  .fe__side { display: grid; gap: var(--s-4); }
+  .fe .seg button { white-space: nowrap; }
+</style>

@@ -1,0 +1,301 @@
+---
+/**
+ * Mechanical and energy engineering tab of the homepage figure: flame emission tomography.
+ * Forward: a camera records the soot emission integrated along each line of sight; part of
+ * the light is reabsorbed by the soot on its way out (signal trapping).
+ * Inverse: the spline-based Abel transform (SAT, Littin et al., Fuel 2024; pysat-abel)
+ * recovers the local emission of one section, with or without the trapping correction.
+ * Field: CoFlame simulation of the Gülder ethylene flame (Eaves et al., CPC 2016),
+ * exported by scripts/export_coflame.py.
+ */
+import Equation from '../viz/Equation.astro';
+import { url } from '../../i18n/utils';
+interface Props { lang?: 'en' | 'es'; hidden?: boolean }
+const { lang = 'en', hidden = false } = Astro.props;
+const es = lang === 'es';
+const T = es
+  ? {
+      fi: ['una cámara registra la emisión del hollín integrada a lo largo de cada línea de visión, y parte de la luz es reabsorbida por el propio hollín antes de salir de la llama (atrapamiento de señal).', 'recuperar la emisión local, sección por sección, con la transformada de Abel basada en splines (SAT).'],
+      obs: 'Imagen de la cámara', lat: 'Emisión local J', obsSub: 'con autoabsorción', latSub: 'simulación CoFlame · radio ×2,5', op: 'integral de línea con atenuación',
+      section: 'Altura de la sección', noise: 'Ruido de medición', tau: 'Espesor óptico a través de la llama', lam: 'Regularización log₁₀ λ', knots: 'Tramos del spline',
+      ign: 'Comparar con SAT ignorando el atrapamiento', direct: 'Mostrar la inversión directa (pelado de cebolla)',
+      leg: { obs: 'señal medida', truth: 'emisión J (CoFlame)', sat: 'SAT con corrección', ign: 'SAT sin corrección', direct: 'inversión directa', pinn: 'PINN' }, x: 'r (mm)', y: 'normalizado',
+      rd: { sat: 'SAT con corrección de atrapamiento', ign: 'sin corrección', err: 'error cuadrático medio', ofPeak: 'del máximo', depth: 'espesor óptico en el eje a esta altura', it: 'iteración', mis: 'desajuste', pinn: 'PINN', idle: 'Pulse «entrenar la PINN»: la red solo ve la señal medida y el operador físico.' },
+      method: 'Método', train: 'entrenar la PINN', stop: 'detener', lossLabel: 'La PINN minimiza',
+      pinnCap: 'PINN: es el enfoque ANNAbel', pinnRef: '(Escudero et al., 2024)', pinnCap2: ', que incluye el atrapamiento de señal. Una pequeña red J_θ(r) se entrena para que su proyección, a través del mismo operador con autoabsorción, reproduzca la señal medida; la red nunca ve J. Usa r² como entrada, lo que hace el campo suave en el eje, y una salida softplus que lo mantiene positivo.',
+      cap1: 'Llama laminar de etileno (quemador de Gülder) simulada con', cap2: '. La emisión local J se calcula a partir de la fracción volumétrica de hollín y la temperatura simuladas, con la ley de Planck a 660 nm. El método SAT representa J con un spline cúbico y lo ajusta con una penalización de curvatura; al incluir la absorción en el modelo directo corrige el atrapamiento de señal (Littin et al., Fuel 2024, distribuido como', cap3: '). Si se ignora el atrapamiento, la emisión cerca del eje se subestima, y el sesgo crece con el espesor óptico; para esta llama a 660 nm es del orden de 0,2, mayor en combustibles más hollinosos.',
+    }
+  : {
+      fi: ['a camera records soot emission integrated along each line of sight, and part of the light is reabsorbed by the soot before it leaves the flame (signal trapping).', 'recover the local emission, section by section, with the spline-based Abel transform (SAT).'],
+      obs: 'Camera image', lat: 'Local emission J', obsSub: 'with self-absorption', latSub: 'CoFlame simulation · radius ×2.5', op: 'line integral with attenuation',
+      section: 'Section height', noise: 'Measurement noise', tau: 'Optical depth across the flame', lam: 'Regularisation log₁₀ λ', knots: 'Spline segments',
+      ign: 'Compare with SAT ignoring trapping', direct: 'Show the direct inversion (onion peeling)',
+      leg: { obs: 'measured signal', truth: 'emission J (CoFlame)', sat: 'SAT, corrected', ign: 'SAT, trapping ignored', direct: 'direct inversion', pinn: 'PINN' }, x: 'r (mm)', y: 'normalised',
+      rd: { sat: 'SAT with trapping correction', ign: 'trapping ignored', err: 'RMS error', ofPeak: 'of the peak', depth: 'optical depth on the axis at this height', it: 'iteration', mis: 'misfit', pinn: 'PINN', idle: 'Press “train the PINN”: the network sees only the measured signal and the physical operator.' },
+      method: 'Method', train: 'train the PINN', stop: 'stop', lossLabel: 'The PINN minimises',
+      pinnCap: 'PINN: this is the ANNAbel approach', pinnRef: '(Escudero et al., 2024)', pinnCap2: ', which includes signal trapping. A small network J_θ(r) is trained so that its projection through the same self-absorbing operator reproduces the measured signal; the network never sees J. It takes r² as input, which keeps the field smooth on the axis, and a softplus output keeps it positive.',
+      cap1: 'Laminar ethylene flame (Gülder burner) simulated with', cap2: '. The local emission J is computed from the simulated soot volume fraction and temperature with Planck’s law at 660 nm. SAT represents J as a cubic spline fitted with a curvature penalty; with absorption included in the forward model it corrects for signal trapping (Littin et al., Fuel 2024, released as', cap3: '). Ignoring trapping underestimates the emission near the axis, and the bias grows with optical depth; for this flame at 660 nm it is about 0.2, larger for heavier-sooting fuels.',
+    };
+const client = { T };
+---
+<div class="eng-tab" data-eng-tab="mechanical" hidden={hidden} data-base={url('/data/coflame-gulder/')} data-text={JSON.stringify(client)}>
+  <p class="eng-fi"><em>{es ? 'Directo' : 'Forward'}</em>: {T.fi[0]} <em>{es ? 'Inverso' : 'Inverse'}</em>: {T.fi[1]}</p>
+
+  <div class="mt__panels">
+    <div>
+      <p class="panel-title">(a) {T.obs}</p>
+      <div class="mt__frame" data-mt-frame><canvas data-mt-obs aria-hidden="true"></canvas><div class="mt__line" data-mt-line></div></div>
+      <p class="mt__sub">{T.obsSub}</p>
+    </div>
+    <div class="mt__op" aria-hidden="true">
+      <svg viewBox="0 0 64 24" width="64" height="24"><path d="M58 12H4m7-6-7 6 7 6" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
+      <span>{T.op}</span>
+    </div>
+    <div>
+      <p class="panel-title">(b) {T.lat}</p>
+      <div class="mt__frame" data-mt-frame><canvas data-mt-lat aria-hidden="true"></canvas><div class="mt__line" data-mt-line></div></div>
+      <p class="mt__sub">{T.latSub}</p>
+    </div>
+  </div>
+
+  <Equation tex={String.raw`S(y) = \int_{-\ell(y)}^{\ell(y)} J(s)\, \exp\!\Big(-\int_{s}^{\ell(y)} \kappa\,\mathrm{d}s'\Big)\,\mathrm{d}s`} />
+
+  <div class="mt__below">
+    <div class="mt__controls">
+      <div class="control"><span class="control__head">{T.method}</span>
+        <div class="seg" role="group" aria-label={T.method}><button type="button" data-mt-m="sat" aria-pressed="true">SAT</button><button type="button" data-mt-m="pinn" aria-pressed="false">PINN</button></div>
+      </div>
+      <p class="mt__btns" data-mt-pinnui hidden><button type="button" class="btn" data-mt-train>{T.train}</button></p>
+      <div class="control"><div class="control__head"><label for={`mt-z-${lang}`}>{T.section}</label><output data-mt-zout>—</output></div><input id={`mt-z-${lang}`} data-mt-z type="range" min="0" max="1" step="0.005" value="0.35" /></div>
+      <div class="control"><div class="control__head"><label for={`mt-t-${lang}`}>{T.tau}</label><output data-mt-tout>—</output></div><input id={`mt-t-${lang}`} data-mt-tau type="range" min="0" max="2" step="0.05" value="0.8" /></div>
+      <div class="control"><div class="control__head"><label for={`mt-n-${lang}`}>{T.noise}</label><output data-mt-nout>—</output></div><input id={`mt-n-${lang}`} data-mt-noise type="range" min="0" max="5" step="0.25" value="1" /></div>
+      <div class="control"><div class="control__head"><label for={`mt-l-${lang}`}>{T.lam}</label><output data-mt-lout>—</output></div><input id={`mt-l-${lang}`} data-mt-lam type="range" min="-7" max="0" step="0.25" value="-4" /></div>
+      <div class="control"><div class="control__head"><label for={`mt-k-${lang}`}>{T.knots}</label><output data-mt-kout>—</output></div><input id={`mt-k-${lang}`} data-mt-knots type="range" min="4" max="24" step="1" value="12" /></div>
+      <label class="meta mt__check"><input type="checkbox" data-mt-ign checked /> {T.ign}</label>
+      <label class="meta mt__check"><input type="checkbox" data-mt-direct /> {T.direct}</label>
+    </div>
+    <div class="mt__plot" data-mt-plot></div>
+  </div>
+  <p class="meta mt__loss" data-mt-pinnui hidden>{T.lossLabel} <Equation display={false} tex={String.raw`\mathcal{L}(\theta) = \lVert T_\kappa J_\theta - S \rVert^2 / \lVert S \rVert^2`} /></p>
+  <p class="lab__readout mt__read" data-mt-read aria-live="polite">&nbsp;</p>
+
+  <p class="eng-cap">{T.cap1} <a href="https://doi.org/10.1016/j.cpc.2016.06.016">CoFlame (Eaves et al., Comput. Phys. Commun., 2016)</a>{T.cap2} <a href={url('/software/pysat-abel/')}><code>pysat-abel</code></a>{T.cap3} {T.pinnCap} <a href="https://doi.org/10.1016/j.proci.2024.105493">{T.pinnRef}</a>{T.pinnCap2}</p>
+</div>
+
+<script>
+  import { drawField, loadU8Field, viridis, LinePlot, type RGB, type Series } from '../../lib/plot';
+  import { trappingMatrix, splineBasis, satSolve, sootEmission } from '../../lib/sat';
+  import { chordMatrix } from '../../lib/abel';
+  import { matvec, solveUpper, rng, type Mat } from '../../lib/linalg';
+  import { initFlameNet, flameLossGrad, flameAdam, evalFlameNet, type FlameNet } from '../../lib/eng/pinn-flame';
+
+  const STRETCH = 2.5; // radial display stretch (tall, thin flame)
+  const P_HIDDEN = 32, P_STEPS = 6000, P_LR = 0.02, FRAME_MS = 7;
+
+  const ink = (t: number): RGB => {
+    const dark = document.documentElement.dataset.theme === 'dark' ||
+      (!document.documentElement.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+    const a: RGB = dark ? [18, 20, 23] : [251, 250, 247];
+    const b: RGB = dark ? [235, 233, 228] : [21, 23, 28];
+    t = Math.max(0, Math.min(1, t)) ** 0.85;
+    return a.map((v, i) => Math.round(v + (b[i] - v) * t)) as RGB;
+  };
+
+  async function init(root: HTMLElement) {
+    const { T } = JSON.parse(root.dataset.text!);
+    const base = root.dataset.base!;
+    const meta = await (await fetch(base + 'meta.json')).json();
+    const { nz, nr } = meta;
+    const fs = await loadU8Field(base + 'fs.u8', meta.fields.fs.min, meta.fields.fs.max);
+    const Tk = await loadU8Field(base + 'T.u8', meta.fields.T.min, meta.fields.T.max);
+
+    // local emission J (normalised) and absorption shape (∝ f_s)
+    const J = new Float64Array(nz * nr);
+    let jmax = 0;
+    for (let k = 0; k < J.length; k++) { J[k] = sootEmission(fs[k], Tk[k]); jmax = Math.max(jmax, J[k]); }
+    for (let k = 0; k < J.length; k++) J[k] /= jmax;
+    const L = chordMatrix(nr, 1);
+    // optical depth along the axis ray per unit absorption scale: Σ_k f_s,k L_0k
+    let depthMax = 0;
+    const depthRow = new Float64Array(nz);
+    for (let j = 0; j < nz; j++) {
+      let s = 0;
+      for (let k = 0; k < nr; k++) s += fs[j * nr + k] * L.a[k];
+      depthRow[j] = s; depthMax = Math.max(depthMax, s);
+    }
+
+    const $ = <E extends Element>(s: string) => root.querySelector<E>(s)!;
+    const cObs = $<HTMLCanvasElement>('[data-mt-obs]'), cLat = $<HTMLCanvasElement>('[data-mt-lat]');
+    const aspect = (STRETCH * 2 * meta.r_mm[1]) / (meta.z_mm[1] - meta.z_mm[0]);
+    [cObs, cLat].forEach((c) => c.style.setProperty('--ar', String(aspect)));
+    const lines = root.querySelectorAll<HTMLElement>('[data-mt-line]');
+    const zIn = $<HTMLInputElement>('[data-mt-z]'), tauIn = $<HTMLInputElement>('[data-mt-tau]'), nIn = $<HTMLInputElement>('[data-mt-noise]');
+    const lamIn = $<HTMLInputElement>('[data-mt-lam]'), kIn = $<HTMLInputElement>('[data-mt-knots]');
+    const ignBox = $<HTMLInputElement>('[data-mt-ign]'), dirBox = $<HTMLInputElement>('[data-mt-direct]');
+    const read = $<HTMLElement>('[data-mt-read]');
+    const plot = new LinePlot($<HTMLElement>('[data-mt-plot]'), { width: 560, height: 250, xlabel: T.x, ylabel: T.y, title: 'Section' });
+    const xmm = Array.from({ length: nr }, (_, i) => ((i + 0.5) / nr) * meta.r_mm[1]);
+
+    let obs = new Float64Array(nz * nr), omax = 1, row = 0;
+    const Trow: Mat[] = [];
+    const kappaOf = (j: number) => {
+      const s = +tauIn.value / (depthMax || 1);
+      return Float64Array.from(fs.subarray(j * nr, (j + 1) * nr), (f) => s * f);
+    };
+    const forward = () => {
+      const R = rng(11), noise = +nIn.value / 100;
+      obs = new Float64Array(nz * nr);
+      for (let j = 0; j < nz; j++) {
+        Trow[j] = trappingMatrix(nr, kappaOf(j));
+        const g = matvec(Trow[j], J.subarray(j * nr, (j + 1) * nr));
+        obs.set(g, j * nr);
+      }
+      omax = 0;
+      for (const v of obs) omax = Math.max(omax, v);
+      for (let k = 0; k < obs.length; k++) obs[k] += noise * omax * R.normal();
+    };
+    const paint = () => {
+      drawField(cLat, J, { nx: nr, ny: nz, mirror: true, cmap: viridis, vmin: 0, vmax: 1 });
+      drawField(cObs, obs, { nx: nr, ny: nz, mirror: true, cmap: ink, vmin: 0, vmax: omax * 1.02 });
+    };
+    const rms = (a: ArrayLike<number>, b: ArrayLike<number>, scale: number) => {
+      let e = 0;
+      for (let i = 0; i < nr; i++) e += (a[i] - b[i]) ** 2;
+      return (Math.sqrt(e / nr) / scale) * 100;
+    };
+    // PINN state
+    const rr = Float64Array.from({ length: nr }, (_, i) => (i + 0.5) / nr);
+    let method: 'sat' | 'pinn' = 'sat';
+    let net: FlameNet | null = null, iter = 0, pLoss = NaN, running = false, trainedOnce = false, praf = 0;
+    const trainBtn = $<HTMLButtonElement>('[data-mt-train]');
+    const solve = () => {
+      const f = J.subarray(row * nr, (row + 1) * nr), g = obs.subarray(row * nr, (row + 1) * nr);
+      const fm = Math.max(...f, 0.2), gm = Math.max(...g, 0.2 * omax);
+      const B = splineBasis(nr, +kIn.value), lam = 10 ** +lamIn.value;
+      const sat = satSolve(Trow[row], g, B, lam);
+      const px: number[] = [], py: number[] = [];
+      for (let i = 0; i < nr; i += 2) { px.push(xmm[i]); py.push(g[i] / gm); }
+      const series: Series[] = [
+        { kind: 'points', x: px, y: py, cls: 's-data', label: T.leg.obs },
+        { kind: 'line', x: xmm, y: Array.from(f, (v) => v / fm), cls: 's-truth', label: T.leg.truth },
+      ];
+      let msg = `${T.rd.sat}: ${T.rd.err} ${rms(sat, f, fm).toFixed(1)} % ${T.rd.ofPeak}`;
+      if (ignBox.checked) {
+        const ign = satSolve(L, g, B, lam);
+        series.push({ kind: 'line', x: xmm, y: Array.from(ign, (v) => v / fm), cls: 's-muted', dash: true, label: T.leg.ign });
+        msg += ` · ${T.rd.ign}: ${rms(ign, f, fm).toFixed(1)} %`;
+      }
+      if (dirBox.checked) {
+        const d = solveUpper(L, g);
+        series.push({ kind: 'line', x: xmm, y: Array.from(d, (v) => Math.max(-0.5, Math.min(1.7, v / fm))), cls: 's-warn', dash: true, label: T.leg.direct });
+      }
+      const tauAxis = (+tauIn.value * depthRow[row]) / (depthMax || 1);
+      if (method === 'pinn') {
+        series.push({ kind: 'line', x: xmm, y: Array.from(sat, (v) => v / fm), cls: 's-physics', label: T.leg.sat });
+        if (net) {
+          const pf = evalFlameNet(net, rr);
+          series.push({ kind: 'line', x: xmm, y: Array.from(pf, (v) => v / fm), cls: 's-learned', label: T.leg.pinn });
+          read.textContent = `${T.rd.pinn}: ${T.rd.it} ${iter} · ${T.rd.mis} ${pLoss.toExponential(1)} · ${T.rd.err} ${rms(pf, f, fm).toFixed(1)} % ${T.rd.ofPeak} · SAT ${rms(sat, f, fm).toFixed(1)} %`;
+        } else read.textContent = T.rd.idle;
+      } else {
+        series.push({ kind: 'line', x: xmm, y: Array.from(sat, (v) => v / fm), cls: 's-learned', label: T.leg.sat });
+        read.textContent = `${msg} · ${T.rd.depth}: ${tauAxis.toFixed(2)}`;
+      }
+      plot.render(series, { ylim: [-0.15, 1.3], xlim: [0, meta.r_mm[1]] });
+    };
+    const outputs = () => {
+      $<HTMLOutputElement>('[data-mt-tout]').textContent = (+tauIn.value).toFixed(2);
+      $<HTMLOutputElement>('[data-mt-nout]').textContent = `${nIn.value} %`;
+      $<HTMLOutputElement>('[data-mt-lout]').textContent = (+lamIn.value).toFixed(2);
+      $<HTMLOutputElement>('[data-mt-kout]').textContent = kIn.value;
+    };
+    const setRow = (t: number) => {
+      row = Math.max(0, Math.min(nz - 1, Math.round(t * (nz - 1))));
+      lines.forEach((l) => (l.style.bottom = `${(row / (nz - 1)) * 100}%`));
+      $<HTMLOutputElement>('[data-mt-zout]').textContent = `z = ${(meta.z_mm[0] + ((meta.z_mm[1] - meta.z_mm[0]) * row) / (nz - 1)).toFixed(1)} mm`;
+    };
+    const stopP = () => { running = false; cancelAnimationFrame(praf); trainBtn.textContent = T.train; };
+    const loop = () => {
+      if (!running || !net) return;
+      if (root.hidden) { stopP(); return; }
+      const g = obs.subarray(row * nr, (row + 1) * nr);
+      const t0 = performance.now();
+      while (iter < P_STEPS && performance.now() - t0 < FRAME_MS) {
+        const r = flameLossGrad(net, Trow[row], rr, g);
+        pLoss = r.loss; flameAdam(net, r.grad, P_LR); iter++;
+      }
+      solve();
+      if (iter >= P_STEPS) { stopP(); return; }
+      praf = requestAnimationFrame(loop);
+    };
+    const train = () => {
+      stopP();
+      net = initFlameNet(P_HIDDEN, 5); iter = 0; pLoss = NaN;
+      running = true; trainedOnce = true; trainBtn.textContent = T.stop;
+      praf = requestAnimationFrame(loop);
+    };
+    let retrain = 0;
+    const resetP = () => {
+      stopP(); net = null;
+      if (method === 'pinn' && trainedOnce) { clearTimeout(retrain); retrain = window.setTimeout(train, 250); }
+    };
+    let pending = 0;
+    const schedule = (full: boolean, affectsData = true) => {
+      if (affectsData) resetP();
+      cancelAnimationFrame(pending);
+      pending = requestAnimationFrame(() => { outputs(); if (full) { forward(); paint(); } solve(); });
+    };
+
+    zIn.addEventListener('input', () => { setRow(+zIn.value); schedule(false); });
+    [tauIn, nIn].forEach((el) => el.addEventListener('input', () => schedule(true)));
+    [lamIn, kIn].forEach((el) => el.addEventListener('input', () => schedule(false, false)));
+    [ignBox, dirBox].forEach((el) => el.addEventListener('change', () => schedule(false, false)));
+    trainBtn.addEventListener('click', () => (running ? stopP() : train()));
+    root.querySelectorAll<HTMLButtonElement>('[data-mt-m]').forEach((b) => b.addEventListener('click', () => {
+      method = b.dataset.mtM as 'sat' | 'pinn';
+      root.querySelectorAll<HTMLButtonElement>('[data-mt-m]').forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
+      root.querySelectorAll<HTMLElement>('[data-mt-pinnui]').forEach((e) => (e.hidden = method !== 'pinn'));
+      if (method === 'sat') stopP();
+      solve();
+    }));
+    root.querySelectorAll<HTMLElement>('[data-mt-frame]').forEach((fr) => fr.addEventListener('pointermove', (e) => {
+      const b = fr.getBoundingClientRect();
+      zIn.value = String(Math.max(0, Math.min(1, 1 - (e.clientY - b.top) / b.height)));
+      setRow(+zIn.value); schedule(false);
+    }));
+    window.addEventListener('themechange', paint);
+
+    outputs(); forward(); paint(); setRow(+zIn.value); solve();
+    lines.forEach((l) => (l.style.opacity = '0.7'));
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-eng-tab="mechanical"]').forEach((root) => {
+    let done = false;
+    const go = () => { if (done) return; done = true; init(root).catch((e) => console.warn('mechanical tab', e)); };
+    root.addEventListener('eng:show', go);
+    if (!root.hidden) go();
+  });
+</script>
+
+<style>
+  .mt__panels { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: var(--s-3); max-width: 30rem; margin-inline: auto; }
+  .mt__frame { position: relative; aspect-ratio: 2 / 3; overflow: hidden; }
+  .mt__frame canvas { position: absolute; top: 0; left: 50%; height: 100%; width: auto; aspect-ratio: var(--ar, 0.4); transform: translateX(-50%); outline: 0.5px solid var(--ink-3); background: var(--paper); }
+  .mt__line { position: absolute; left: 0; right: 0; height: 0; border-top: 1px dashed var(--ink); opacity: 0; pointer-events: none; }
+  .mt__sub { margin-top: 0.3rem; font-size: var(--step--2); text-align: center; font-style: italic; color: var(--ink-3); }
+  .mt__op { display: grid; justify-items: center; gap: 0.25rem; color: var(--ink-2); font-style: italic; font-size: var(--step--1); text-align: center; max-width: 7rem; line-height: 1.25; }
+  .mt__below { display: grid; gap: var(--s-4); grid-template-columns: minmax(0, 14rem) minmax(0, 1fr); align-items: start; }
+  .mt__controls { display: grid; gap: var(--s-2); }
+  .mt__check { display: flex; gap: 0.4em; align-items: baseline; }
+  .mt__plot { min-width: 0; min-height: 14rem; }
+  .mt__read { margin-top: var(--s-2); text-align: center; min-height: 1.5em; }
+  .mt__btns { font-size: var(--step--1); white-space: nowrap; }
+  .mt__btns[hidden], .mt__loss[hidden] { display: none; }
+  .mt__loss { font-size: var(--step--1); text-align: center; margin-top: var(--s-3); }
+  @media (max-width: 44rem) { .mt__below { grid-template-columns: 1fr; } }
+  @media (max-width: 34rem) {
+    .mt__op span { display: none; }
+    .mt__op svg { width: 28px; }
+    .mt__sub { display: none; }
+  }
+</style>

@@ -1,0 +1,11 @@
+---
+import Base from '../layouts/Base.astro';
+import { url } from '../i18n/utils';
+---
+<Base title="Page not found" noindex>
+  <header class="page-head frame">
+    <p class="eyebrow">404</p>
+    <h1>This page does not exist</h1>
+    <p class="lede">The address may have changed. Try the <a href={url('/')}>home page</a>, <a href={url('/publications/')}>publications</a> or <a href={url('/learn/')}>learning modules</a>.</p>
+  </header>
+</Base>

@@ -1,0 +1,107 @@
+---
+import Base from '../../layouts/Base.astro';
+import EngineeringFigure from '../viz/EngineeringFigure.astro';
+import PubItem from '../ui/PubItem.astro';
+import { byId } from '../../data/publications';
+import { courses } from '../../data/teaching';
+import { modules } from '../../data/learn';
+import { localized, url } from '../../i18n/utils';
+import type { Lang } from '../../i18n/ui';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const es = lang === 'es';
+
+const recent = ['yap2026dual', 'mercado2026view', 'littin2025scatt'].map((id) => byId(id)!);
+const current = courses.filter((c) => c.current);
+const latestModule = modules.find((m) => m.slug === 'inverse-problems/abel-transform')!;
+
+const T = es
+  ? {
+      title: undefined,
+      eyebrow: 'Métodos computacionales para problemas inversos',
+      tags: ['Problemas inversos', 'Aprendizaje automático científico', 'Sistemas físicos'],
+      lede: 'Desarrollo métodos para estimar magnitudes que no se pueden medir directamente, como campos de temperatura, propiedades de partículas o fuentes de radiación, a partir de observaciones indirectas y ruidosas. Lo hago combinando modelos físicos con datos: primero con reconstrucción regularizada y ahora con redes neuronales informadas por la física.',
+      cta1: 'Programa de investigación', cta2: 'Publicaciones',
+      pubLabel: 'Publicaciones recientes', allPubs: 'Todas las publicaciones',
+      teachLabel: 'Docencia', teachNow: 'Este semestre', allTeach: 'Docencia',
+      learnLabel: 'Aprender', learnNew: 'Módulo interactivo', allLearn: 'Todos los módulos',
+      demosLabel: 'Ejemplos interactivos', demosTitle: 'Mecánica de fluidos, transferencia de calor e intercambiadores, con controles deslizantes', demosDesc: 'Flujo en tuberías y diagrama de Moody, vaciado de estanques, conducción transitoria y número de Biot, radio crítico de aislamiento, radiación de cuerpo negro y método ε–NTU.', coursesNow: 'Cursos que dicto en la UTFSM',
+      swLabel: 'Software', swDesc: 'Implementación en Python de la transformada de Abel basada en splines, con corrección de atrapamiento de señal.',
+    }
+  : {
+      title: undefined,
+      eyebrow: 'Computational methods for inverse problems',
+      tags: ['Inverse problems', 'Scientific machine learning', 'Physical systems'],
+      lede: 'I develop methods that estimate quantities we cannot measure directly, such as temperature fields, particle properties or radiative sources, from indirect and noisy observations. The approach combines physical models with data: first through regularised reconstruction, now through physics-informed neural networks.',
+      cta1: 'Research programme', cta2: 'Publications',
+      pubLabel: 'Recent papers', allPubs: 'All publications',
+      teachLabel: 'Teaching', teachNow: 'This semester', allTeach: 'Teaching',
+      learnLabel: 'Learn', learnNew: 'Interactive module', allLearn: 'All modules',
+      demosLabel: 'Interactive examples', demosTitle: 'Fluid mechanics, heat transfer and heat exchangers, with sliders', demosDesc: 'Pipe flow and the Moody diagram, tank draining, transient conduction and the Biot number, the critical radius of insulation, blackbody radiation and the ε–NTU method.', coursesNow: 'Courses I teach at UTFSM',
+      swLabel: 'Software', swDesc: 'Python implementation of the spline-based Abel transform with signal-trapping correction.',
+    };
+---
+<Base title={T.title} image="/og-default.png">
+  <header class="page-head frame titlepage">
+    <h1 class="tp-name">Mijail Littin</h1>
+    <p class="tp-sub"><em>{T.eyebrow}</em></p>
+    <p class="tp-aff">{es ? 'Departamento de Industrias, Universidad Técnica Federico Santa María, Chile' : 'Department of Industrial Engineering, Universidad Técnica Federico Santa María, Chile'}</p>
+    <p class="tp-aff"><a href="mailto:mijaillittin@icloud.com">mijaillittin@icloud.com</a> · ORCID <a href="https://orcid.org/0000-0002-5577-5060">0000-0002-5577-5060</a></p>
+    <p class="abstract">{T.lede}</p>
+    <p class="tp-kw"><em>{es ? 'Palabras clave' : 'Keywords'}:</em> {T.tags.join(' · ')}</p>
+    <p class="tp-links">
+      <a class="btn" href={localized('/research/', lang)}>{T.cta1}</a>
+      <a class="btn" href={url('/publications/')}>{T.cta2}</a>
+      <a class="btn" href={localized('/teaching/', lang)}>{T.teachLabel}</a>
+      <a class="btn" href={url('/cv/Mijail_Littin_CV.pdf')}>CV</a>
+    </p>
+  </header>
+
+  <section class="frame">
+    <EngineeringFigure lang={lang} />
+  </section>
+
+  <section class="section frame" aria-labelledby="pubs-title">
+    <div class="row">
+      <h2 class="row__label" id="pubs-title">{T.pubLabel}</h2>
+      <div class="bib">
+        {recent.map((p) => <PubItem pub={p} compact />)}
+        <p class="more-wrap"><a class="more" href={url('/publications/')}>{T.allPubs}</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section frame" aria-labelledby="res-title">
+    <div class="row">
+      <h2 class="row__label" id="res-title">{es ? 'Docencia, material abierto y software' : 'Teaching, open material and software'}</h2>
+      <dl class="desc">
+        <dt>{T.teachLabel}.</dt>
+        <dd>{T.coursesNow}: {current.map((c, i) => <>{i > 0 && '; '}{c.page ? <a href={localized(c.page, lang)}>{c.title[lang]}</a> : c.title[lang]} ({c.code})</>)}. <a class="more" href={localized('/teaching/', lang)}>{T.allTeach}</a></dd>
+        <dt>{T.demosLabel}.</dt>
+        <dd><a href={localized('/teaching/interactive/', lang)}>{T.demosTitle}</a>. {T.demosDesc}</dd>
+        <dt>{T.learnLabel}.</dt>
+        <dd><a href={url(`/learn/${latestModule.slug}/`)}>{latestModule.title}</a>. {latestModule.question} <a class="more" href={url('/learn/')}>{T.allLearn}</a></dd>
+        <dt>{T.swLabel}.</dt>
+        <dd><a href={url('/software/pysat-abel/')}><code>pysat-abel</code></a>. {T.swDesc}</dd>
+      </dl>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .titlepage { padding-top: var(--s-8); }
+  .tp-name { font-size: var(--step-5); font-weight: 400; margin-top: 0; }
+  .tp-sub { font-size: var(--step-1); margin-top: var(--s-3); }
+  .tp-aff { font-size: var(--step--1); margin-top: var(--s-2); color: var(--ink-2); }
+  .tp-aff + .tp-aff { margin-top: 0.2rem; }
+  .abstract { margin: var(--s-6) auto 0 !important; max-width: 34rem; text-align: justify; font-size: var(--step--1) !important; hyphens: auto; }
+  .tp-kw { max-width: 34rem; margin: var(--s-3) auto 0; text-align: left; font-size: var(--step--1); }
+  .tp-links { margin-top: var(--s-5); display: flex; flex-wrap: wrap; justify-content: center; gap: 0.3em 1.2em; font-size: var(--step--1); }
+
+  .more-wrap { margin-top: var(--s-3); font-size: var(--step--1); }
+
+  .desc dt { font-weight: 700; display: inline; }
+  .desc dd { display: inline; margin: 0; text-align: justify; }
+  .desc dd::after { content: ''; display: block; margin-bottom: var(--s-3); }
+</style>

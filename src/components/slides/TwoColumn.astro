@@ -1,0 +1,14 @@
+---
+interface Props { title?: string; kicker?: string; ratio?: string }
+const { title, kicker, ratio = '1fr 1fr' } = Astro.props;
+---
+<section class="slide" data-title={title}>
+  {kicker && <p class="kicker">{kicker}</p>}
+  {title && <h2>{title}</h2>}
+  <div class="body"><div class="cols" style={`grid-template-columns:${ratio}`}><div class="col"><slot name="left" /></div><div class="col"><slot name="right" /></div></div></div>
+  <aside class="notes"><slot name="notes" /></aside>
+</section>
+<style>
+  .cols { display: grid; gap: 72px; align-items: center; }
+  .col { min-width: 0; }
+</style>

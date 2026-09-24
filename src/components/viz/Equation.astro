@@ -1,0 +1,24 @@
+---
+/**
+ * Build-time KaTeX rendering (no client JS). Pages using it must set `math` on Base.
+ * <Equation tex="y = \mathcal{A}(x) + \varepsilon" display label="(1)" />
+ */
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
+interface Props { tex: string; display?: boolean; label?: string; class?: string }
+const { tex, display = true, label, class: cls } = Astro.props;
+const html = katex.renderToString(tex, { displayMode: display, throwOnError: false, output: 'htmlAndMathml', strict: 'ignore' });
+---
+{display ? (
+  <div class:list={['eq', cls]}>
+    <div class="eq__body" set:html={html} />
+    {label && <span class="eq__label">{label}</span>}
+  </div>
+) : <span class:list={['eq-inline', cls]} set:html={html} />}
+
+<style>
+  .eq { display: flex; align-items: center; gap: var(--s-4); margin-block: var(--s-5); }
+  .eq__body { flex: 1; overflow-x: auto; overflow-y: hidden; padding-block: 0.15em; }
+  .eq__body :global(.katex-display) { margin: 0; }
+  .eq__label { font-family: var(--font-sans); font-size: var(--step--1); color: var(--ink-3); }
+</style>

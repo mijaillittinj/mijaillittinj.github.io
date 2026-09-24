@@ -1,0 +1,147 @@
+---
+/**
+ * Interactive teaching examples for ILN221, ILN222 and ILN223 (UTFSM).
+ * Standard textbook models only; no course assessments or private material.
+ * Physics in src/lib/teaching.ts, checked by tests/teaching.test.ts.
+ */
+import Base from '../../layouts/Base.astro';
+import PipeFlow from '../teaching/PipeFlow.astro';
+import TankDraining from '../teaching/TankDraining.astro';
+import TransientConduction from '../teaching/TransientConduction.astro';
+import CriticalRadius from '../teaching/CriticalRadius.astro';
+import Blackbody from '../teaching/Blackbody.astro';
+import HeatExchanger from '../teaching/HeatExchanger.astro';
+import { courses } from '../../data/teaching';
+import { localized, url } from '../../i18n/utils';
+import type { Lang } from '../../i18n/ui';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const es = lang === 'es';
+const title = (code: string) => courses.find((c) => c.code === code)!.title[lang];
+
+const T = es
+  ? {
+      title: 'Ejemplos interactivos de docencia',
+      eyebrow: 'Docencia',
+      h1: 'Ejemplos interactivos de mecánica de fluidos y transferencia de calor',
+      lede: 'Estos ejemplos acompañan los cursos ILN221, ILN222 e ILN223 de la UTFSM. Cada uno es un modelo clásico que el estudiante puede manipular: mover un parámetro, ver cómo responde el sistema y comparar con la ecuación. Sirven para construir intuición antes de resolver problemas y para revisar después de clases. Todo se calcula en el navegador.',
+      back: 'Volver a Docencia',
+      how: 'Cómo usarlos',
+      howText: 'Cada figura tiene controles a la izquierda y gráficos a la derecha. Los números en cursiva se actualizan con cada cambio. Una buena forma de estudiar es predecir primero qué va a pasar al mover un control y luego comprobarlo. Las propiedades de los fluidos son valores típicos a unos 20 °C.',
+      s: { fluids: 'Mecánica de fluidos', heat: 'Transferencia de calor', design: 'Diseño de sistemas térmicos' },
+      sub: {
+        pipe: 'Flujo en tuberías: régimen, fricción y caída de presión',
+        tank: 'Vaciado de un estanque',
+        wall: 'Conducción transitoria y número de Biot',
+        crit: 'Radio crítico de aislación',
+        bb: 'Radiación de cuerpo negro',
+        hx: 'Intercambiadores de calor: método ε–NTU',
+      },
+      intro: {
+        fluids: 'Dos problemas que combinan conservación de masa, energía mecánica y pérdidas por fricción.',
+        heat: 'Los tres modos de transferencia de calor: conducción en régimen transitorio, conducción y convección combinadas, y radiación térmica.',
+        design: 'Del análisis al dimensionamiento: relaciones que se usan para elegir el tamaño de un equipo.',
+      },
+      note: 'Los ejemplos son material abierto (CC BY 4.0). Las evaluaciones y pautas de los cursos no se publican.',
+    }
+  : {
+      title: 'Interactive teaching examples',
+      eyebrow: 'Teaching',
+      h1: 'Interactive examples in fluid mechanics and heat transfer',
+      lede: 'These examples accompany the courses ILN221, ILN222 and ILN223 at UTFSM. Each one is a classical model that students can manipulate: change a parameter, watch the system respond and compare with the equation. They are meant to build intuition before solving problems and to review after class. Everything is computed in the browser.',
+      back: 'Back to Teaching',
+      how: 'How to use them',
+      howText: 'Each figure has controls on the left and plots on the right. The italic readouts update with every change. A good way to study is to predict what will happen before moving a control, then check. Fluid properties are typical values at about 20 °C.',
+      s: { fluids: 'Fluid mechanics', heat: 'Heat transfer', design: 'Design of thermal systems' },
+      sub: {
+        pipe: 'Pipe flow: regime, friction and pressure drop',
+        tank: 'Draining a tank',
+        wall: 'Transient conduction and the Biot number',
+        crit: 'Critical radius of insulation',
+        bb: 'Blackbody radiation',
+        hx: 'Heat exchangers: the ε–NTU method',
+      },
+      intro: {
+        fluids: 'Two problems that combine mass conservation, mechanical energy and friction losses.',
+        heat: 'The three modes of heat transfer: transient conduction, combined conduction and convection, and thermal radiation.',
+        design: 'From analysis to sizing: relations used to choose the size of a piece of equipment.',
+      },
+      note: 'The examples are open material (CC BY 4.0). Course assessments and solutions are not published.',
+    };
+---
+<Base title={T.title} description={T.lede} math>
+  <header class="page-head frame">
+    <p class="eyebrow"><a href={localized('/teaching/', lang)}>{T.eyebrow}</a></p>
+    <h1>{T.h1}</h1>
+    <p class="abstract">{T.lede}</p>
+  </header>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="row__label nonum">{T.how}</h2>
+      <p class="prose">{T.howText}</p>
+      <nav class="toc" aria-label={es ? 'Contenido' : 'Contents'}>
+        <ol>
+          <li><a href="#fluids">{T.s.fluids}</a> <span class="meta">(ILN221)</span>
+            <ol><li><a href="#pipe">{T.sub.pipe}</a></li><li><a href="#tank">{T.sub.tank}</a></li></ol></li>
+          <li><a href="#heat">{T.s.heat}</a> <span class="meta">(ILN222)</span>
+            <ol><li><a href="#wall">{T.sub.wall}</a></li><li><a href="#crit">{T.sub.crit}</a></li><li><a href="#bb">{T.sub.bb}</a></li></ol></li>
+          <li><a href="#design">{T.s.design}</a> <span class="meta">(ILN223)</span>
+            <ol><li><a href="#hx">{T.sub.hx}</a></li></ol></li>
+        </ol>
+      </nav>
+    </div>
+  </section>
+
+  <section class="section frame" id="fluids">
+    <div class="row">
+      <h2 class="row__label">{T.s.fluids}</h2>
+      <p class="meta course">ILN221 · {title('ILN221')}</p>
+      <p class="prose">{T.intro.fluids}</p>
+      <h3 class="sub" id="pipe"><span>1.1</span>{T.sub.pipe}</h3>
+      <PipeFlow lang={lang} n="1" />
+      <h3 class="sub" id="tank"><span>1.2</span>{T.sub.tank}</h3>
+      <TankDraining lang={lang} n="2" />
+    </div>
+  </section>
+
+  <section class="section frame" id="heat">
+    <div class="row">
+      <h2 class="row__label">{T.s.heat}</h2>
+      <p class="meta course">ILN222 · {title('ILN222')}</p>
+      <p class="prose">{T.intro.heat}</p>
+      <h3 class="sub" id="wall"><span>2.1</span>{T.sub.wall}</h3>
+      <TransientConduction lang={lang} n="3" />
+      <h3 class="sub" id="crit"><span>2.2</span>{T.sub.crit}</h3>
+      <CriticalRadius lang={lang} n="4" />
+      <h3 class="sub" id="bb"><span>2.3</span>{T.sub.bb}</h3>
+      <Blackbody lang={lang} n="5" />
+    </div>
+  </section>
+
+  <section class="section frame" id="design">
+    <div class="row">
+      <h2 class="row__label">{T.s.design}</h2>
+      <p class="meta course">ILN223 · <a href={localized('/teaching/thermal-systems-design/', lang)}>{title('ILN223')}</a></p>
+      <p class="prose">{T.intro.design}</p>
+      <h3 class="sub" id="hx"><span>3.1</span>{T.sub.hx}</h3>
+      <HeatExchanger lang={lang} n="6" />
+      <p class="meta">{T.note} <a class="more" href={localized('/teaching/', lang)}>{T.back}</a>{!es && <> · <a class="more" href={url('/learn/')}>Learn</a></>}</p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .toc { margin-top: var(--s-4); font-size: var(--step--1); }
+  .toc ol { list-style: none; padding-left: 0; counter-reset: toc; }
+  .toc > ol > li { counter-increment: toc; margin-top: var(--s-2); }
+  .toc > ol > li::before { content: counter(toc) '\2002'; font-weight: 700; }
+  .toc ol ol { padding-left: 1.6em; counter-reset: tsub; }
+  .toc ol ol li { counter-increment: tsub; }
+  .toc ol ol li::before { content: counter(toc) '.' counter(tsub) '\2002'; }
+  .course { margin-top: calc(-1 * var(--s-3)); margin-bottom: var(--s-3); font-style: italic; }
+  .sub { font-size: var(--step-1); margin-top: var(--s-6); }
+  .sub span { display: inline-block; min-width: 2.2em; }
+  :global(.js .t-plot) { min-height: 13rem; }
+  :global(.lab .t-plot:not([hidden])) { display: block; }
+</style>

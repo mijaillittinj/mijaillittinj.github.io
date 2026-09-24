@@ -1,0 +1,41 @@
+---
+/**
+ * A rendered Manim clip inside a slide or page. Plays when its slide becomes active
+ * (or when scrolled into view on a normal page), pauses when left. With reduced motion
+ * it never autoplays and shows controls. A transcript is always available.
+ */
+import { url } from '../../i18n/utils';
+interface Props { name: string; transcript: string; label: string; width?: number; loop?: boolean }
+const { name, transcript, label, width = 1280, loop = false } = Astro.props;
+---
+<figure class="manim" data-manim>
+  <video muted playsinline preload="none" poster={url(`/media/${name}-poster.webp`)} width={width} height={Math.round(width * 9 / 16)} aria-label={label} loop={loop} data-interactive>
+    <source src={url(`/media/${name}.webm`)} type="video/webm" />
+    <source src={url(`/media/${name}.mp4`)} type="video/mp4" />
+  </video>
+  <details class="manim__tr"><summary>Transcript of the animation</summary><p>{transcript}</p></details>
+</figure>
+<script>
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll<HTMLElement>('[data-manim]').forEach((fig) => {
+    const v = fig.querySelector('video')!;
+    if (reduced) { v.controls = true; return; }
+    const slide = fig.closest('.slide');
+    const play = () => { v.currentTime = 0; v.play().catch(() => { v.controls = true; }); };
+    if (slide) {
+      slide.addEventListener('slide:enter', play);
+      slide.addEventListener('slide:leave', () => v.pause());
+      if (slide.classList.contains('is-active')) play();
+    } else {
+      v.controls = true;
+      new IntersectionObserver((es) => es.forEach((e) => (e.isIntersecting ? v.play().catch(() => {}) : v.pause())), { threshold: 0.6 }).observe(v);
+    }
+    v.addEventListener('click', () => (v.paused ? v.play() : v.pause()));
+  });
+</script>
+<style>
+  .manim { margin: 0; }
+  .manim video { width: 100%; height: auto; background: var(--paper); }
+  .manim__tr { font-family: var(--font-sans); font-size: 0.85em; color: var(--ink-2); margin-top: 8px; }
+  .manim__tr summary { cursor: pointer; color: var(--ink-3); }
+</style>

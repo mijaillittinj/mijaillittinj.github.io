@@ -1,0 +1,38 @@
+---
+import LearnModule from '../../../../layouts/LearnModule.astro';
+import Equation from '../../../../components/viz/Equation.astro';
+import McmcExplorer from '../../../../components/viz/McmcExplorer.astro';
+import { url } from '../../../../i18n/utils';
+---
+<LearnModule slug="uncertainty/bayesian-mcmc" description="Interactive Bayesian calibration of Newton's law of cooling with a Metropolis Markov chain Monte Carlo sampler: chain trace, posterior samples, credible intervals and posterior predictive band.">
+  <div class="prose">
+    <h2>Not one answer, but a distribution of answers</h2>
+    <p>A hot object cools towards the ambient temperature. With Newton’s law of cooling its temperature is</p>
+    <Equation tex={String.raw`T(t) = T_\infty + (T_0 - T_\infty)\, e^{-t/\tau},`} />
+    <p>where <em>T</em><sub>0</sub> = 90 °C is known, while the time constant <em>τ</em> (which depends on the heat transfer coefficient) and the ambient temperature <em>T</em><sub>∞</sub> are not. A thermocouple gives a few noisy readings. A least-squares fit returns one pair (<em>τ</em>, <em>T</em><sub>∞</sub>). The Bayesian question is different: <em>which values are compatible with the data, and how compatible?</em></p>
+    <p>Bayes’ theorem combines what the data say (the likelihood) with what we knew before (the prior). With Gaussian noise of known size <em>σ</em> and a uniform prior on a plausible box,</p>
+    <Equation tex={String.raw`p(\tau, T_\infty \mid d) \;\propto\; \exp\!\Big(-\frac{1}{2\sigma^2}\sum_i \big(d_i - T(t_i;\tau,T_\infty)\big)^2\Big)\; p(\tau, T_\infty).`} />
+    <p>The normalising constant is an integral we would rather not compute. Markov chain Monte Carlo avoids it: it produces samples whose histogram converges to the posterior, using only ratios of the formula above.</p>
+    <h2>The Metropolis algorithm</h2>
+    <p>From the current point, propose a random step of typical size <em>w</em>. Accept it with probability min(1, <em>p</em>(proposal)/<em>p</em>(current)); otherwise stay where you are and record the current point again. Uphill moves are always accepted, downhill moves sometimes, so the chain spends time in each region in proportion to its probability.</p>
+  </div>
+
+  <McmcExplorer />
+
+  <div class="try">
+    <h3>Exercises</h3>
+    <ol>
+      <li>Run the sampler. The chain starts far away (τ = 30 min, T∞ = 50 °C). How many iterations does it need to reach the high-probability region? This is the <em>burn-in</em>, which is discarded.</li>
+      <li>Set the proposal width very small (log₁₀ w = −2), then very large (+1.5). Watch the acceptance rate and the trace. Why are both extremes inefficient? Values of about 20–50 % are usually a good target.</li>
+      <li>Keep only readings up to 5 min. The posterior samples form a long, tilted cloud: <em>τ</em> and <em>T</em>∞ are correlated. Why can a slow cooling towards a low ambient look like a fast cooling towards a high one when the experiment is short?</li>
+      <li>Extend the readings to 40 min and compare the width of the credible intervals. Which parameter benefited most from the longer experiment?</li>
+      <li>Increase the noise. Does the 95 % band on the data plot still contain the true curve? It should most of the time, but not always: that is what 95 % means.</li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>What the samples give you</h2>
+    <p>Every question about the parameters becomes an average over samples: the median and a 95 % credible interval come from sorting them; the <strong>posterior predictive band</strong> comes from evaluating the model for many samples and taking quantiles at each time. The correlation between parameters, invisible in a table of ± values, is visible in the cloud.</p>
+    <p>Metropolis is the simplest MCMC method; it slows down in many dimensions and in narrow, curved posteriors, which is why methods such as Hamiltonian Monte Carlo use gradients. The same idea, a distribution instead of a single answer, is what uncertainty quantification brings to the reconstructions in the <a href={url('/learn/inverse-problems/abel-transform/')}>Abel module</a> and to <a href={url('/learn/machine-learning/physics-informed-learning/')}>physics-informed networks</a>.</p>
+  </div>
+</LearnModule>

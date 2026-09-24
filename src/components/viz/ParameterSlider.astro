@@ -1,0 +1,24 @@
+---
+/** Labelled range input with live numeric readout. Islands listen to `input` events on `name`. */
+interface Props { name: string; label: string; min: number; max: number; step: number; value: number; unit?: string; format?: 'fixed2' | 'fixed3' | 'exp' | 'int'; hint?: string }
+const { name, label, min, max, step, value, unit = '', format = 'fixed2', hint } = Astro.props;
+const id = `p-${name}-${Math.random().toString(36).slice(2, 7)}`;
+---
+<div class="control" data-param={name} data-format={format} data-unit={unit}>
+  <div class="control__head">
+    <label for={id}>{label}</label>
+    <output for={id}>{value}{unit}</output>
+  </div>
+  <input id={id} name={name} type="range" min={min} max={max} step={step} value={value} aria-describedby={hint ? `${id}-h` : undefined} />
+  {hint && <small id={`${id}-h`} class="muted">{hint}</small>}
+</div>
+<script>
+  const f = (v: number, kind: string) => kind === 'exp' ? v.toExponential(1) : kind === 'int' ? String(Math.round(v)) : kind === 'fixed3' ? v.toFixed(3) : v.toFixed(2);
+  document.querySelectorAll<HTMLElement>('[data-param]').forEach((c) => {
+    const input = c.querySelector('input')!;
+    const out = c.querySelector('output')!;
+    const upd = () => { out.textContent = f(+input.value, c.dataset.format!) + (c.dataset.unit ?? ''); };
+    input.addEventListener('input', upd);
+    upd();
+  });
+</script>

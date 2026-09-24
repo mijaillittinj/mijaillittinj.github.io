@@ -1,0 +1,146 @@
+---
+import Base from '../../layouts/Base.astro';
+import { courses } from '../../data/teaching';
+import { modules, categories } from '../../data/learn';
+import { url, localized } from '../../i18n/utils';
+import type { Lang } from '../../i18n/ui';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const es = lang === 'es';
+const live = modules.filter((m) => m.status === 'live');
+const T = es
+  ? {
+      title: 'Docencia', eyebrow: 'Docencia',
+      h1: 'Modelar, simular, optimizar y aprender de los datos',
+      lede: 'Enseño ingeniería térmica y de energía con un enfoque computacional: los estudiantes escriben modelos, los verifican y los usan para decidir. Métodos que uso en investigación, como la optimización y el aprendizaje automático, entran al aula como herramientas de trabajo.',
+      current: 'Cursos actuales', areas: 'Áreas de docencia', open: 'Material abierto', past: 'Experiencia previa',
+      coursePage: 'Página del curso',
+      areasList: [
+        ['Modelación y simulación de sistemas térmicos', 'Modelos concentrados y distribuidos, análisis dimensional, verificación numérica y sensibilidad.'],
+        ['Optimización', 'Desde problemas con restricciones y condiciones KKT hasta métodos de gradiente, momentum, Adam y BFGS.'],
+        ['Transferencia de calor y mecánica de fluidos', 'Conducción, convección y radiación, con demostraciones computacionales en Python.'],
+        ['Aprendizaje automático para ingeniería', 'Modelado basado en datos, redes neuronales y aprendizaje informado por la física (unidad de ILN223, octubre de 2026).'],
+      ],
+      openText: 'Los módulos de la sección Aprender acompañan estos cursos y están disponibles para cualquier estudiante. No reemplazan los apuntes: permiten manipular un modelo y ver qué pasa.',
+      allLearn: 'Todos los módulos (en inglés)',
+      note: 'Las evaluaciones, pautas y material con datos de estudiantes no se publican.',
+      demos: 'Ejemplos interactivos para estudiantes',
+      demosText: 'Modelos clásicos de mecánica de fluidos y transferencia de calor que se pueden manipular en el navegador, con controles deslizantes y gráficos que responden al instante.',
+      demosAll: 'Abrir los ejemplos interactivos',
+      demoList: [
+        ['ILN221', 'Flujo en tuberías: número de Reynolds, factor de fricción y diagrama de Moody', '#pipe'],
+        ['ILN221', 'Vaciado de un estanque (Torricelli)', '#tank'],
+        ['ILN222', 'Conducción transitoria en una pared y número de Biot', '#wall'],
+        ['ILN222', 'Radio crítico de aislación', '#crit'],
+        ['ILN222', 'Radiación de cuerpo negro: leyes de Planck, Wien y Stefan–Boltzmann', '#bb'],
+        ['ILN223', 'Intercambiadores de calor: método ε–NTU', '#hx'],
+      ],
+    }
+  : {
+      title: 'Teaching', eyebrow: 'Teaching',
+      h1: 'Model, simulate, optimise and learn from data',
+      lede: 'I teach thermal and energy engineering with a computational emphasis: students write models, verify them and use them to make decisions. Methods from my research, such as optimisation and machine learning, enter the classroom as working tools.',
+      current: 'Current courses', areas: 'Teaching areas', open: 'Open material', past: 'Earlier teaching',
+      coursePage: 'Course page',
+      areasList: [
+        ['Modelling and simulation of thermal systems', 'Lumped and distributed models, dimensional analysis, numerical verification and sensitivity.'],
+        ['Optimisation', 'From constrained problems and KKT conditions to gradient methods, momentum, Adam and BFGS.'],
+        ['Heat transfer and fluid mechanics', 'Conduction, convection and radiation, with computational demonstrations in Python.'],
+        ['Machine learning for engineering', 'Data-driven modelling, neural networks and physics-informed learning (ILN223 unit, October 2026).'],
+      ],
+      openText: 'The modules in the Learn section accompany these courses and are open to any student. They do not replace course notes. They let you manipulate a model and see what happens.',
+      allLearn: 'All modules',
+      note: 'Assessments, solutions and material containing student information are not published.',
+      demos: 'Interactive examples for students',
+      demosText: 'Classical models of fluid mechanics and heat transfer that can be manipulated in the browser, with sliders and plots that respond immediately.',
+      demosAll: 'Open the interactive examples',
+      demoList: [
+        ['ILN221', 'Pipe flow: Reynolds number, friction factor and the Moody diagram', '#pipe'],
+        ['ILN221', 'Draining a tank (Torricelli)', '#tank'],
+        ['ILN222', 'Transient conduction in a wall and the Biot number', '#wall'],
+        ['ILN222', 'Critical radius of insulation', '#crit'],
+        ['ILN222', 'Blackbody radiation: the laws of Planck, Wien and Stefan–Boltzmann', '#bb'],
+        ['ILN223', 'Heat exchangers: the ε–NTU method', '#hx'],
+      ],
+    };
+---
+<Base title={T.title} description={T.lede}>
+  <header class="page-head frame">
+    <p class="eyebrow">{T.eyebrow}</p>
+    <h1>{T.h1}</h1>
+    <p class="lede">{T.lede}</p>
+  </header>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label">{T.current}</h2>
+      <div>
+        {courses.filter((c) => c.current).map((c) => (
+          <article class="course">
+            <p class="meta">{c.code} · {c.institution[lang]} · {c.period}</p>
+            <h3>{c.page ? <a href={localized(c.page, lang)}>{c.title[lang]}</a> : c.title[lang]}</h3>
+            {!es && c.title.es !== c.title.en && <p class="meta orig" lang="es">{c.title.es}</p>}
+            {c.description && <p class="desc">{c.description[lang]}</p>}
+            {c.page && <a class="more" href={localized(c.page, lang)}>{T.coursePage}</a>}
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label">{T.demos}</h2>
+      <div>
+        <p class="prose">{T.demosText}</p>
+        <ol class="demos">
+          {T.demoList.map(([code, name, hash]) => <li><a href={localized('/teaching/interactive/', lang) + hash}>{name}</a> <span class="meta">({code})</span></li>)}
+        </ol>
+        <p><a class="btn" href={localized('/teaching/interactive/', lang)}>{T.demosAll}</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label">{T.areas}</h2>
+      <dl class="areas">
+        {T.areasList.map(([a, d]) => <div><dt>{a}</dt><dd>{d}</dd></div>)}
+      </dl>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label">{T.open}</h2>
+      <div>
+        <p class="prose">{T.openText}</p>
+        <ul class="mods">
+          {live.map((m) => <li><span class="label">{categories[m.category].title}</span><a href={url(`/learn/${m.slug}/`)}>{m.title}</a></li>)}
+        </ul>
+        <p><a class="more" href={url('/learn/')}>{T.allLearn}</a></p>
+      </div>
+    </div>
+  </section>
+
+  <p class="frame meta note">{T.note}</p>
+</Base>
+
+<style>
+  .course { padding-block: var(--s-4); border-top: 1px solid var(--rule); }
+  .course:first-child { border-top: 0; padding-top: 0; }
+  .course h3 { font-size: var(--step-2); margin-top: var(--s-1); }
+  .course h3 a { color: var(--ink); text-decoration: none; }
+  .course h3 a:hover { color: var(--accent); }
+  .orig { font-style: italic; }
+  .desc { margin-top: var(--s-2); color: var(--ink-2); max-width: 44rem; }
+  .course .more { display: inline-block; margin-top: var(--s-2); }
+  .areas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: var(--s-5) var(--s-6); }
+  .areas dt { font-weight: 600; line-height: 1.3; border-top: 2px solid var(--ink); padding-top: var(--s-2); }
+  .areas dd { margin: var(--s-2) 0 0; font-family: var(--font-sans); font-size: var(--step--1); color: var(--ink-2); line-height: 1.5; }
+  .mods { list-style: none; padding: 0; margin-block: var(--s-4); }
+  .mods li { display: grid; gap: 0.15rem; padding-block: var(--s-3); border-bottom: 1px solid var(--rule); }
+  .note { margin-top: var(--s-5); }
+  .demos { padding-left: 1.6em; margin-block: var(--s-3); }
+  .demos li + li { margin-top: 0.3em; }
+</style>

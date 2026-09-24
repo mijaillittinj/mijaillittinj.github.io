@@ -1,0 +1,51 @@
+# ---------------------------------------------------------------------------
+# The repository holds only what is needed to build and deploy the website.
+# Kept: src/, public/, tests/ (run in CI), .github/, package*.json,
+#       astro.config.mjs, tsconfig.json, README.md, LICENSE,
+#       scripts/sync-publications.mjs (weekly publication update in CI).
+# Everything below stays on the local machine only.
+# ---------------------------------------------------------------------------
+
+# Dependencies, build output, caches
+node_modules/
+dist/
+.astro/
+*.log
+
+# Secrets and environment files
+.env
+.env.*
+
+# Operating system and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Private and unpublished material (never commit)
+private/
+data-raw/
+
+# Internal project notes and planning documents
+CONTENT_INVENTORY.md
+CONTENT_QUESTIONS.md
+DESIGN_SYSTEM.md
+PRESENTATION_WORKFLOW.md
+PROJECT_STATE.md
+PUBLICATION_WORKFLOW.md
+RESTART.md
+ROADMAP.md
+TEACHING_WORKFLOW.md
+WORK_LOG.md
+docs/
+
+# Local QA output (screenshots, Lighthouse reports)
+qa/
+
+# Animation sources and renders (only the encoded clips in public/media are used)
+manim/
+
+# Local maintenance scripts (data export, figures, screenshots, CV PDF, link check)
+scripts/*
+!scripts/sync-publications.mjs

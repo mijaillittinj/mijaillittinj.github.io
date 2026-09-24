@@ -1,0 +1,105 @@
+---
+/** ILN221: fully developed pipe flow, Reynolds number, friction factor and pressure drop. */
+import ParameterSlider from '../viz/ParameterSlider.astro';
+import Equation from '../viz/Equation.astro';
+interface Props { lang: 'en' | 'es'; n: string }
+const { lang, n } = Astro.props;
+const es = lang === 'es';
+const S = es
+  ? {
+      fluid: 'Fluido', water: 'Agua', air: 'Aire', oil: 'Aceite liviano',
+      V: 'Velocidad media V', D: 'Diámetro D', eps: 'Rugosidad relativa log₁₀(ε/D)',
+      prof: 'Perfil de velocidad', moody: 'Diagrama de Moody',
+      lam: 'laminar', trans: 'de transición', turb: 'turbulento',
+      read: ['Re', 'régimen', 'f', 'Δp/L'],
+      transNote: 'En transición el valor de f es incierto; se muestra el de Colebrook.',
+      cap: 'Flujo completamente desarrollado en una tubería. El número de Reynolds decide el régimen. En régimen laminar el perfil es parabólico y f = 64/Re; en régimen turbulento el perfil es mucho más plano (ley de potencia 1/7) y f depende también de la rugosidad (ecuación de Colebrook, resuelta aquí de forma iterativa). La franja gris marca la transición, 2300 < Re < 4000.',
+      xr: 'r/R', yu: 'u/V', xre: 'log₁₀ Re', yf: 'f',
+      lLam: 'laminar', lTurb: 'turbulento (1/7)', lCur: 'caso actual',
+    }
+  : {
+      fluid: 'Fluid', water: 'Water', air: 'Air', oil: 'Light oil',
+      V: 'Mean velocity V', D: 'Diameter D', eps: 'Relative roughness log₁₀(ε/D)',
+      prof: 'Velocity profile', moody: 'Moody diagram',
+      lam: 'laminar', trans: 'transitional', turb: 'turbulent',
+      read: ['Re', 'regime', 'f', 'Δp/L'],
+      transNote: 'In the transition range f is uncertain; the Colebrook value is shown.',
+      cap: 'Fully developed flow in a pipe. The Reynolds number decides the regime. In laminar flow the profile is parabolic and f = 64/Re; in turbulent flow the profile is much flatter (1/7 power law) and f also depends on roughness (Colebrook equation, solved here iteratively). The grey strip marks the transition, 2300 < Re < 4000.',
+      xr: 'r/R', yu: 'u/V', xre: 'log₁₀ Re', yf: 'f',
+      lLam: 'laminar', lTurb: 'turbulent (1/7)', lCur: 'current case',
+    };
+---
+<figure class="lab" data-t-pipe data-s={JSON.stringify(S)}>
+  <div class="lab__grid">
+    <div class="lab__controls">
+      <div class="control">
+        <span class="control__head">{S.fluid}</span>
+        <div class="seg" role="group" aria-label={S.fluid}>
+          <button type="button" data-fluid="water" aria-pressed="true">{S.water}</button>
+          <button type="button" data-fluid="air" aria-pressed="false">{S.air}</button>
+          <button type="button" data-fluid="oil" aria-pressed="false">{S.oil}</button>
+        </div>
+      </div>
+      <ParameterSlider name="V" label={S.V} min={0.01} max={5} step={0.01} value={0.5} unit=" m/s" />
+      <ParameterSlider name="D" label={S.D} min={5} max={300} step={1} value={25} unit=" mm" format="int" />
+      <ParameterSlider name="eps" label={S.eps} min={-6} max={-1.5} step={0.1} value={-4} />
+      <p class="lab__readout" data-t-read aria-live="polite"></p>
+    </div>
+    <div class="lab__plots">
+      <div><p class="panel-title">{S.prof}</p><div class="t-plot" data-t-prof></div></div>
+      <div><p class="panel-title">{S.moody}</p><div class="t-plot" data-t-moody></div></div>
+    </div>
+  </div>
+  <Equation tex={String.raw`\mathrm{Re}=\frac{\rho V D}{\mu},\qquad \frac{\Delta p}{L}=f\,\frac{\rho V^2}{2D},\qquad \frac{1}{\sqrt f}=-2\log_{10}\!\left(\frac{\varepsilon/D}{3.7}+\frac{2.51}{\mathrm{Re}\sqrt f}\right)`} />
+  <figcaption><span class="fig-num">{es ? 'Figura' : 'Figure'} {n}.</span>{S.cap}</figcaption>
+</figure>
+
+<script>
+  import { LinePlot, fmt } from '../../lib/plot';
+  import { fluids, reynolds, regime, frictionFactor, fLaminar, fColebrook, dpPerLength, uLaminar, uPowerLaw, RE_LAM, RE_TURB } from '../../lib/teaching';
+
+  document.querySelectorAll<HTMLElement>('[data-t-pipe]').forEach((root) => {
+    const S = JSON.parse(root.dataset.s!);
+    const val = (k: string) => +root.querySelector<HTMLInputElement>(`[name="${k}"]`)!.value;
+    let fluid = fluids[0];
+    const pProf = new LinePlot(root.querySelector('[data-t-prof]')!, { width: 420, height: 280, xlabel: S.xr, ylabel: S.yu, title: S.prof });
+    const pMoody = new LinePlot(root.querySelector('[data-t-moody]')!, { width: 420, height: 280, xlabel: S.xre, ylabel: S.yf, logy: true, title: S.moody });
+    const read = root.querySelector<HTMLElement>('[data-t-read]')!;
+    const s = Array.from({ length: 101 }, (_, i) => i / 100);
+    const lre = Array.from({ length: 121 }, (_, i) => 2.7 + (i * 5.3) / 120);
+
+    const update = () => {
+      const V = val('V'), D = val('D') / 1000, e = 10 ** val('eps');
+      const Re = reynolds(fluid.rho, V, D, fluid.mu);
+      const reg = regime(Re);
+      const f = frictionFactor(Re, e);
+      const dp = dpPerLength(f, fluid.rho, V, D);
+      const regName = reg === 'laminar' ? S.lam : reg === 'transitional' ? S.trans : S.turb;
+      read.innerHTML = `${S.read[0]} = <strong>${Re < 1e4 ? Re.toFixed(0) : Re.toExponential(2)}</strong>, ${S.read[1]}: ${regName}.<br>${S.read[2]} = <strong>${f.toFixed(4)}</strong>, ${S.read[3]} = <strong>${fmt(dp)}</strong> Pa/m.` + (reg === 'transitional' ? `<br>${S.transNote}` : '');
+
+      pProf.render([
+        { kind: 'line', x: s, y: s.map(uLaminar), cls: reg === 'laminar' ? 's-physics' : 's-muted', label: S.lLam, dash: reg !== 'laminar' },
+        { kind: 'line', x: s, y: s.map((v) => uPowerLaw(v)), cls: reg === 'laminar' ? 's-muted' : 's-physics', label: S.lTurb, dash: reg === 'laminar' },
+      ], { xlim: [0, 1], ylim: [0, 2.1] });
+
+      const lam = lre.filter((x) => 10 ** x < RE_LAM * 1.6);
+      const tur = lre.filter((x) => 10 ** x > RE_LAM);
+      const trans = [Math.log10(RE_LAM), Math.log10(RE_TURB)];
+      pMoody.render([
+        { kind: 'band', x: trans, y: [0.006, 0.006], y2: [0.12, 0.12], cls: 's-muted' },
+        { kind: 'line', x: lam, y: lam.map((x) => fLaminar(10 ** x)), cls: 's-muted' },
+        ...[1e-5, 1e-4, 1e-3, 1e-2].map((ee) => ({ kind: 'line' as const, x: tur, y: tur.map((x) => fColebrook(10 ** x, ee)), cls: 's-muted', dash: true })),
+        { kind: 'line', x: tur, y: tur.map((x) => fColebrook(10 ** x, e)), cls: 's-physics' },
+        { kind: 'points', x: [Math.log10(Re)], y: [f], cls: 's-data', label: S.lCur },
+      ], { xlim: [2.7, 8], ylim: [0.006, 0.12] });
+    };
+
+    root.querySelectorAll<HTMLButtonElement>('[data-fluid]').forEach((b) => b.addEventListener('click', () => {
+      root.querySelectorAll('[data-fluid]').forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
+      fluid = fluids.find((f) => f.key === b.dataset.fluid)!;
+      update();
+    }));
+    root.querySelectorAll('input[type=range]').forEach((i) => i.addEventListener('input', update));
+    update();
+  });
+</script>

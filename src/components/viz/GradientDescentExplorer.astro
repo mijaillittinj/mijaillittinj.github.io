@@ -1,0 +1,190 @@
+---
+/**
+ * ContourField + InteractiveLinePlot: gradient descent, momentum and Adam on a 2D loss.
+ * Click (or use the arrow keys on the map) to choose the starting point.
+ */
+import ParameterSlider from './ParameterSlider.astro';
+import { objectives } from '../../lib/optim';
+---
+<div class="lab" data-gd>
+  <div class="lab__grid">
+    <div class="lab__controls">
+      <div class="control">
+        <label class="control__head" for="gd-obj">Objective</label>
+        <select id="gd-obj" data-obj>{objectives.map((o) => <option value={o.id}>{o.label}</option>)}</select>
+      </div>
+      <fieldset class="control methods">
+        <legend class="control__head">Methods</legend>
+        <label><input type="checkbox" data-m="gd" checked /> <span class="sw sw-gd"></span>Gradient descent</label>
+        <label><input type="checkbox" data-m="momentum" checked /> <span class="sw sw-mo"></span>Momentum</label>
+        <label><input type="checkbox" data-m="adam" /> <span class="sw sw-ad"></span>Adam</label>
+      </fieldset>
+      <ParameterSlider name="alpha" label="Step size log₁₀ α" min={-3.5} max={0} step={0.02} value={-1.3} />
+      <ParameterSlider name="beta" label="Momentum β" min={0} max={0.99} step={0.01} value={0.8} />
+      <ParameterSlider name="kappa" label="Valley curvature κ (condition number)" min={1} max={50} step={1} value={20} format="int" />
+      <ParameterSlider name="steps" label="Iterations" min={5} max={300} step={1} value={60} format="int" />
+      <p class="meta"><button type="button" class="btn" data-anim>Animate</button> <button type="button" class="btn" data-reset>Reset start</button></p>
+      <p class="lab__readout" data-read aria-live="polite"></p>
+    </div>
+    <div class="lab__plots">
+      <div>
+        <p class="panel-title">Loss landscape · click to set the start</p>
+        <div class="map" data-map tabindex="0" role="application" aria-label="Loss landscape. Click or use arrow keys to move the starting point.">
+          <canvas data-canvas width="300" height="300"></canvas>
+          <svg data-svg viewBox="0 0 300 300" preserveAspectRatio="none"></svg>
+        </div>
+      </div>
+      <div>
+        <p class="panel-title">Loss per iteration (log scale)</p>
+        <div data-loss></div>
+        <p class="meta note" data-note></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { objectives, run, type Vec2, type Method } from '../../lib/optim';
+  import { LinePlot, landscape } from '../../lib/plot';
+
+  const colors: Record<Method, string> = { gd: 's-data', momentum: 's-physics', adam: 's-learned' };
+  const names: Record<Method, string> = { gd: 'GD', momentum: 'Momentum', adam: 'Adam' };
+
+  document.querySelectorAll<HTMLElement>('[data-gd]').forEach((root) => {
+    const $ = <T extends Element>(s: string) => root.querySelector<T>(s)!;
+    const val = (n: string) => +$<HTMLInputElement>(`[name="${n}"]`).value;
+    const canvas = $<HTMLCanvasElement>('[data-canvas]');
+    const svg = $<SVGSVGElement>('[data-svg]');
+    const map = $<HTMLElement>('[data-map]');
+    const read = $<HTMLElement>('[data-read]');
+    const note = $<HTMLElement>('[data-note]');
+    const lossPlot = new LinePlot($('[data-loss]'), { width: 420, height: 300, xlabel: 'iteration', ylabel: 'f(x)', logy: true, title: 'Loss history' });
+    let obj = objectives[0];
+    let start: Vec2 = [...obj.start] as Vec2;
+    let animT = -1;
+    const S = 300;
+    const toPx = ([x, y]: Vec2): Vec2 => [((x - obj.domain[0]) / (obj.domain[1] - obj.domain[0])) * S, S - ((y - obj.domain[2]) / (obj.domain[3] - obj.domain[2])) * S];
+    const fromPx = (px: number, py: number): Vec2 => [obj.domain[0] + (px / S) * (obj.domain[1] - obj.domain[0]), obj.domain[2] + ((S - py) / S) * (obj.domain[3] - obj.domain[2])];
+
+    let drawnKey = '';
+    const drawLandscape = () => {
+      const k = val('kappa');
+      const key = `${obj.id}-${k}`;
+      if (key === drawnKey) return;
+      drawnKey = key;
+      const ctx = canvas.getContext('2d')!;
+      const img = ctx.createImageData(S, S);
+      const vals = new Float32Array(S * S);
+      let lo = Infinity, hi = -Infinity;
+      for (let j = 0; j < S; j++) for (let i = 0; i < S; i++) {
+        const [x, y] = fromPx(i + 0.5, j + 0.5);
+        const v = Math.log10(obj.f(x, y, k) + 1e-3);
+        vals[j * S + i] = v; lo = Math.min(lo, v); hi = Math.max(hi, v);
+      }
+      const nb = 14;
+      for (let q = 0; q < S * S; q++) {
+        const t = (vals[q] - lo) / (hi - lo);
+        const band = Math.floor(t * nb);
+        const i = q % S, j = Math.floor(q / S);
+        // iso-line where the band changes to the right or below
+        const edge = (i < S - 1 && Math.floor(((vals[q + 1] - lo) / (hi - lo)) * nb) !== band) || (j < S - 1 && Math.floor(((vals[q + S] - lo) / (hi - lo)) * nb) !== band);
+        const [r, g, b] = landscape(1 - (band + 0.5) / nb);
+        const d = edge ? 0.9 : 1;
+        img.data[q * 4] = r * d; img.data[q * 4 + 1] = g * d; img.data[q * 4 + 2] = b * d; img.data[q * 4 + 3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
+    };
+
+    const methods = () => [...root.querySelectorAll<HTMLInputElement>('[data-m]')].filter((c) => c.checked).map((c) => c.dataset.m as Method);
+
+    const update = () => {
+      obj = objectives.find((o) => o.id === $<HTMLSelectElement>('[data-obj]').value)!;
+      root.querySelector<HTMLElement>('[data-param="kappa"]')!.hidden = obj.id !== 'valley';
+      drawLandscape();
+      const alpha = 10 ** val('alpha'), beta = val('beta'), steps = val('steps'), k = val('kappa');
+      const runs = methods().map((m) => ({ m, ...run(obj, start, m, { alpha, beta, steps, k }) }));
+      const lim = animT >= 0 ? animT : Infinity;
+      svg.replaceChildren();
+      const NS = 'http://www.w3.org/2000/svg';
+      for (const mn of obj.minima) {
+        const [px, py] = toPx(mn);
+        const c = document.createElementNS(NS, 'path');
+        c.setAttribute('d', `M${px - 5},${py}h10M${px},${py - 5}v10`);
+        c.setAttribute('class', 'min');
+        svg.appendChild(c);
+      }
+      for (const r of runs) {
+        const pts = r.path.slice(0, Math.min(r.path.length, lim + 1)).map(toPx);
+        const pl = document.createElementNS(NS, 'polyline');
+        pl.setAttribute('points', pts.map((p) => p.map((v) => Math.max(-50, Math.min(350, v))).join(',')).join(' '));
+        pl.setAttribute('class', `traj ${colors[r.m]}`);
+        svg.appendChild(pl);
+        const end = pts[pts.length - 1];
+        const dot = document.createElementNS(NS, 'circle');
+        dot.setAttribute('cx', String(end[0])); dot.setAttribute('cy', String(end[1])); dot.setAttribute('r', '3.5');
+        dot.setAttribute('class', `pt ${colors[r.m]}`);
+        svg.appendChild(dot);
+      }
+      const [sx, sy] = toPx(start);
+      const st = document.createElementNS(NS, 'circle');
+      st.setAttribute('cx', String(sx)); st.setAttribute('cy', String(sy)); st.setAttribute('r', '5'); st.setAttribute('class', 'start');
+      svg.appendChild(st);
+
+      lossPlot.render(runs.map((r) => ({
+        kind: 'line' as const, x: r.loss.map((_, i) => i).slice(0, lim + 1), y: r.loss.slice(0, lim + 1).map((v) => Math.max(v, 1e-12)), cls: colors[r.m], label: names[r.m],
+      })), { xlim: [0, steps] });
+
+      read.innerHTML = runs.map((r) => {
+        const last = r.loss[r.loss.length - 1];
+        const hit = r.loss.findIndex((v) => v < 1e-6 + (obj.id === 'himmelblau' ? 0 : 0));
+        return `<span class="${colors[r.m].replace('s-', 'c-')}">${names[r.m]}</span>: ${r.diverged ? '<strong>diverged</strong>' : `f = ${last.toExponential(1)}`}${hit > 0 ? `, below 10⁻⁶ after ${hit} steps` : ''}`;
+      }).join('<br>') || 'Select at least one method.';
+      note.textContent = obj.id === 'valley'
+        ? `Stability limit for plain gradient descent: α < 2/κ = ${(2 / k).toFixed(3)} (now α = ${alpha.toFixed(3)}). ${obj.note.split('. ').slice(-1)[0]}`
+        : obj.note;
+    };
+
+    map.addEventListener('click', (e) => {
+      const b = map.getBoundingClientRect();
+      start = fromPx(((e.clientX - b.left) / b.width) * S, ((e.clientY - b.top) / b.height) * S);
+      animT = -1; update();
+    });
+    map.addEventListener('keydown', (e) => {
+      const d = (obj.domain[1] - obj.domain[0]) / 40;
+      const mv: Record<string, Vec2> = { ArrowLeft: [-d, 0], ArrowRight: [d, 0], ArrowUp: [0, d], ArrowDown: [0, -d] };
+      if (mv[e.key]) { e.preventDefault(); start = [start[0] + mv[e.key][0], start[1] + mv[e.key][1]]; animT = -1; update(); }
+    });
+    $('[data-reset]').addEventListener('click', () => { start = [...obj.start] as Vec2; animT = -1; update(); });
+    $('[data-obj]').addEventListener('change', () => {
+      obj = objectives.find((o) => o.id === $<HTMLSelectElement>('[data-obj]').value)!;
+      start = [...obj.start] as Vec2; animT = -1; drawnKey = '';
+      const a = $<HTMLInputElement>('[name="alpha"]'); a.value = String(obj.logAlpha); a.dispatchEvent(new Event('input'));
+    });
+    root.querySelectorAll('input').forEach((i) => i.addEventListener('input', () => { animT = -1; update(); }));
+    root.querySelectorAll('input[type=checkbox]').forEach((i) => i.addEventListener('change', update));
+    $('[data-anim]').addEventListener('click', () => {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) { animT = -1; update(); return; }
+      const steps = val('steps');
+      animT = 0;
+      const tick = () => { if (animT < 0) return; animT++; update(); if (animT < steps) requestAnimationFrame(tick); else animT = -1; };
+      requestAnimationFrame(tick);
+    });
+    update();
+  });
+</script>
+
+<style>
+  .map { position: relative; aspect-ratio: 1; width: 100%; max-width: 26rem; cursor: crosshair; outline-offset: 2px; }
+  .map canvas, .map svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .map :global(.traj) { fill: none; stroke-width: 2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+  .map :global(.pt) { stroke: var(--paper); stroke-width: 1; vector-effect: non-scaling-stroke; }
+  .map :global(.start) { fill: var(--paper); stroke: var(--ink); stroke-width: 2; vector-effect: non-scaling-stroke; }
+  .map :global(.min) { stroke: var(--ink); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+  .methods { border: 0; padding: 0; display: grid; gap: 0.3rem; }
+  .methods legend { margin-bottom: 0.3rem; }
+  .methods label { display: flex; align-items: center; gap: 0.45rem; }
+  .sw { display: inline-block; width: 1rem; height: 3px; }
+  .sw-gd { background: var(--c-data); } .sw-mo { background: var(--c-physics); } .sw-ad { background: var(--c-learned); }
+  .note { margin-top: var(--s-2); }
+  [data-gd] :global(.c-data), [data-gd] :global(.c-physics), [data-gd] :global(.c-learned) { font-weight: 600; }
+</style>

@@ -1,0 +1,13 @@
+/*
+ * Computer Modern for the web.
+ * CMU Serif / CMU Typewriter (Computer Modern Unicode, SIL OFL, see fonts/OFL-CMU.txt)
+ * and Latin Modern Roman Caps (GUST Font License, see fonts/GUST-FONT-LICENSE.txt),
+ * subset from TeX Live to Latin, Latin-1/Ext-A, Greek, punctuation, arrows and math
+ * operators (scripts/README: see DESIGN_SYSTEM.md "Fonts").
+ */
+@font-face { font-family: 'CMU Serif'; src: url('./fonts/cmu-serif-regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'CMU Serif'; src: url('./fonts/cmu-serif-italic.woff2') format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: 'CMU Serif'; src: url('./fonts/cmu-serif-bold.woff2') format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: 'CMU Serif'; src: url('./fonts/cmu-serif-bolditalic.woff2') format('woff2'); font-weight: 700; font-style: italic; font-display: swap; }
+@font-face { font-family: 'CMU Typewriter'; src: url('./fonts/cmu-typewriter.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'LM Caps'; src: url('./fonts/lm-caps.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }

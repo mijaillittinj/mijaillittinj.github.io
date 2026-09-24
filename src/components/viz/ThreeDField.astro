@@ -1,0 +1,133 @@
+---
+/**
+ * Axisymmetric field revolved in 3D and rendered as a line-of-sight integral.
+ * At elevation 0 the image is exactly the Abel projection a side-on camera records;
+ * tilting the view shows the annular structure that the projection hides.
+ * No WebGL: a small CPU ray integration on a canvas (about 30 ms per frame).
+ * Static fallback: the caption and the 2D field figure elsewhere on the page.
+ */
+import { url } from '../../i18n/utils';
+interface Props { base: string; field: string; caption?: string; id?: string }
+const { base, field, caption, id = 'td' } = Astro.props;
+---
+<figure class="td" data-td data-base={url(base)} data-field={field}>
+  <div class="td__grid">
+    <div class="td__view"><canvas class="canvas-field" data-c width="220" height="260" role="img" aria-label="Line-of-sight integral of the revolved field at the selected viewing elevation"></canvas></div>
+    <div class="td__ctrl">
+      <div class="control">
+        <div class="control__head"><label for={`${id}-el`}>Viewing elevation</label><output data-elout>0°</output></div>
+        <input id={`${id}-el`} type="range" min="0" max="80" step="1" value="0" data-el />
+        <small class="muted">0° is a side-on camera: the image is the Abel projection of the field.</small>
+      </div>
+      <div class="control">
+        <div class="control__head"><label for={`${id}-cut`}>Cut away the front half</label></div>
+        <label class="meta"><input type="checkbox" data-cut /> show only the rear half (y &gt; 0)</label>
+      </div>
+      <p class="lab__readout" data-note>Side-on, every pixel sums the field along a chord. The bright edges are the off-axis maximum seen tangentially, not a maximum of the field at that position.</p>
+    </div>
+  </div>
+  {caption && <figcaption set:html={caption} />}
+</figure>
+
+<script>
+  import { loadField, firstCompleteRow, projectable } from '../../lib/fields';
+  import type { RGB } from '../../lib/plot';
+
+  const inkmap = (t: number): RGB => {
+    const dark = document.documentElement.dataset.theme === 'dark' ||
+      (!document.documentElement.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+    const a: RGB = dark ? [18, 20, 23] : [251, 250, 247];
+    const b: RGB = dark ? [235, 233, 228] : [21, 23, 28];
+    t = Math.max(0, Math.min(1, t)) ** 0.8;
+    return a.map((v, i) => Math.round(v + (b[i] - v) * t)) as RGB;
+  };
+
+  document.querySelectorAll<HTMLElement>('[data-td]').forEach((root) => {
+    const io = new IntersectionObserver((es) => {
+      if (es.some((e) => e.isIntersecting)) { io.disconnect(); init(root); }
+    }, { rootMargin: '300px' });
+    io.observe(root);
+  });
+
+  async function init(root: HTMLElement) {
+    const { meta, data } = await loadField(root.dataset.base!, root.dataset.field!);
+    const { nz, nr } = meta;
+    const j0 = firstCompleteRow(data, nz, nr);
+    const NZ = nz - j0;
+    const f = projectable(data, nz, nr, j0);
+    const R = meta.r_mm[1];
+    const zlo = meta.z_mm[0] + ((meta.z_mm[1] - meta.z_mm[0]) * j0) / (nz - 1);
+    const H = meta.z_mm[1] - zlo;
+    const canvas = root.querySelector<HTMLCanvasElement>('[data-c]')!;
+    const W = 220, Hpx = 260;
+    canvas.width = W; canvas.height = Hpx;
+    const ctx = canvas.getContext('2d')!;
+    const el = root.querySelector<HTMLInputElement>('[data-el]')!;
+    const out = root.querySelector<HTMLElement>('[data-elout]')!;
+    const cut = root.querySelector<HTMLInputElement>('[data-cut]')!;
+
+    // bilinear sample of f(r, z) with z measured from the bottom of the cropped field
+    const sample = (r: number, z: number) => {
+      if (r >= R || z < 0 || z > H) return 0;
+      const x = (r / R) * (nr - 1), y = (z / H) * (NZ - 1);
+      const i = Math.floor(x), j = Math.floor(y);
+      const dx = x - i, dy = y - j;
+      const i1 = Math.min(i + 1, nr - 1), j1 = Math.min(j + 1, NZ - 1);
+      return (f[j * nr + i] * (1 - dx) + f[j * nr + i1] * dx) * (1 - dy) + (f[j1 * nr + i] * (1 - dx) + f[j1 * nr + i1] * dx) * dy;
+    };
+
+    let pending = false;
+    const draw = () => {
+      pending = false;
+      const phi = (+el.value * Math.PI) / 180;
+      out.textContent = `${el.value}°`;
+      const c = Math.cos(phi), s = Math.sin(phi);
+      // image extent: width 2R, height covers the tilted cylinder
+      const halfW = R * 1.08;
+      const vmin = -R * s - 0.02 * H, vmax = H * c + R * s + 0.02 * H;
+      const img = new Float32Array(W * Hpx);
+      const steps = 110;
+      const tmax = R * 1.02;
+      let mx = 0;
+      for (let py = 0; py < Hpx; py++) {
+        const v = vmax - ((vmax - vmin) * py) / (Hpx - 1);
+        for (let px = 0; px < W; px++) {
+          const u = -halfW + (2 * halfW * px) / (W - 1);
+          if (Math.abs(u) >= R) continue;
+          let acc = 0;
+          const t0 = cut.checked ? 0 : -tmax;
+          const dt = (tmax - t0) / steps;
+          for (let k = 0; k < steps; k++) {
+            const t = t0 + (k + 0.5) * dt;
+            // point = u e_x + v (0, s, c) + t (0, c, -s)
+            const y = v * s + t * c;
+            const z = v * c - t * s;
+            acc += sample(Math.hypot(u, y), z);
+          }
+          acc *= dt;
+          img[py * W + px] = acc;
+          if (acc > mx) mx = acc;
+        }
+      }
+      const id = ctx.createImageData(W, Hpx);
+      for (let q = 0; q < W * Hpx; q++) {
+        const [r, g, b] = inkmap(img[q] / (mx || 1));
+        id.data[q * 4] = r; id.data[q * 4 + 1] = g; id.data[q * 4 + 2] = b; id.data[q * 4 + 3] = 255;
+      }
+      ctx.putImageData(id, 0, 0);
+    };
+    const req = () => { if (!pending) { pending = true; requestAnimationFrame(draw); } };
+    el.addEventListener('input', req);
+    cut.addEventListener('change', req);
+    window.addEventListener('themechange', req);
+    req();
+  }
+</script>
+
+<style>
+  .td { margin-block: var(--s-6); }
+  .td__grid { display: grid; gap: var(--s-5); }
+  @media (min-width: 46rem) { .td__grid { grid-template-columns: minmax(0, 20rem) minmax(0, 1fr); align-items: start; } }
+  .td__view canvas { width: 100%; height: auto; aspect-ratio: 220 / 260; }
+  .td__ctrl { display: grid; gap: var(--s-4); }
+</style>

@@ -1,0 +1,67 @@
+---
+import Base from '../../layouts/Base.astro';
+import { software, methods } from '../../data/software';
+import { byId } from '../../data/publications';
+import { url } from '../../i18n/utils';
+---
+<Base title="Software" description="Research software and methods by Mijail Littin: pysat-abel (spline-based Abel transform with signal-trapping correction), physics-informed inversion of optical diagnostics, neural soot-maturity reconstruction and soot–gas radiation separation.">
+  <header class="page-head frame">
+    <p class="eyebrow">Software</p>
+    <h1>Code that others can run</h1>
+    <p class="lede">Released research software comes first. The other methods below are described in words only; code for published methods is available upon request.</p>
+  </header>
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label">Released</h2>
+      <div>
+        {software.map((s) => {
+          const p = s.paper ? byId(s.paper) : undefined;
+          return (
+            <article class="sw">
+              <h3><a href={url(`/software/${s.slug}/`)}><code>{s.name}</code></a></h3>
+              <p class="meta">{s.language} · {s.license} · <code>pip install {s.name}</code></p>
+              <p class="d">{s.summary}</p>
+              {p && <p class="meta">Method paper: {p.authors[0]} et al., <em>{p.journal}</em> {p.volume} ({p.year}).</p>}
+              <ul class="links">
+                <li><a href={url(`/software/${s.slug}/`)}>Documentation and example</a></li>
+                {s.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+              </ul>
+            </article>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label">Methods</h2>
+      <div>
+        {methods.map((m) => {
+          const p = m.paper ? byId(m.paper) : undefined;
+          return (
+            <article class="sw method">
+              <h3>{m.page ? <a href={url(m.page)}>{m.name}</a> : m.name}</h3>
+              <p class="d">{m.summary}</p>
+              <p class="meta"><em>{m.status}</em>{p && <> Paper: {p.authors[0]} et al., <em>{p.journal}</em>{p.volume && <> {p.volume}</>} ({p.year}){p.doi && <>, <a href={`https://doi.org/${p.doi}`}>doi:{p.doi}</a></>}.</>}</p>
+            </article>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label">Also on this site</h2>
+      <div class="prose">
+        <p>The interactive <a href={url('/learn/')}>learning modules</a> contain small, readable implementations of onion-peeling and Tikhonov Abel inversion, gradient-based optimisers and a physics-informed network with analytic gradients, written in TypeScript without dependencies. Their source is part of this site’s repository.</p>
+      </div>
+    </div>
+  </section>
+</Base>
+<style>
+  .sw h3 { font-size: var(--step-2); }
+  .sw h3 a { text-decoration: none; }
+  .d { margin-block: var(--s-3); max-width: 44rem; }
+  .method + .method { margin-top: var(--s-5); }
+  .method h3 { font-size: var(--step-1); }
+</style>

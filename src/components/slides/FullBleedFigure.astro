@@ -1,0 +1,16 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+interface Props { src: ImageMetadata; alt: string; title?: string; caption?: string }
+const { src, alt, title, caption } = Astro.props;
+---
+<section class="slide slide--plain slide--bleed" data-title={title ?? alt}>
+  <Image src={src} alt={alt} widths={[1600]} sizes="1600px" loading="lazy" class="bleed" />
+  {caption && <p class="bleed__cap"><Fragment set:html={caption} /></p>}
+  <aside class="notes"><slot name="notes" /></aside>
+</section>
+<style>
+  .slide--bleed { padding: 0; background: var(--paper); }
+  .bleed { width: 100%; height: 100%; object-fit: contain; }
+  .bleed__cap { position: absolute; left: 48px; bottom: 32px; font-family: var(--font-sans); font-size: 20px; background: color-mix(in srgb, var(--paper) 88%, transparent); padding: 6px 12px; }
+</style>

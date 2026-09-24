@@ -1,0 +1,60 @@
+---
+import LearnModule from '../../../../layouts/LearnModule.astro';
+import Equation from '../../../../components/viz/Equation.astro';
+import AbelExplorer from '../../../../components/viz/AbelExplorer.astro';
+import ManimScene from '../../../../components/slides/ManimScene.astro';
+import EquationDerivation from '../../../../components/viz/EquationDerivation.astro';
+import { url } from '../../../../i18n/utils';
+---
+<LearnModule slug="inverse-problems/abel-transform" description="Interactive introduction to the Abel transform and its inversion: line-of-sight projection of an axisymmetric field, noise amplification in direct inversion, and Tikhonov regularisation.">
+  <div class="prose">
+    <h2>A camera sees sums, not points</h2>
+    <p>Many objects in engineering are round: jets, flames, plasmas, pipes, some biological tissues. When a camera looks at such an object from the side, each pixel does not record the value at one point. It records the sum of everything along the line of sight through the object. For an object that is symmetric about its axis, described by a radial profile <em>f(r)</em>, the recorded signal at lateral offset <em>y</em> is</p>
+    <Equation tex={String.raw`P(y) = 2\int_{y}^{R} \frac{f(r)\, r}{\sqrt{r^2 - y^2}}\, dr .`} />
+    <p>This is the <strong>Abel transform</strong>. Getting <em>f(r)</em> back from <em>P(y)</em> is an inverse problem. The animation shows the idea: a ray sweeps across the object, and each ray adds up all the rings it crosses.</p>
+  </div>
+  <div class="anim"><ManimScene name="abel-projection" label="Animation of line-of-sight integration through an axisymmetric field and of outside-in inversion"
+    transcript="An axisymmetric field is shown as concentric rings, brightest on an off-axis ring. A horizontal ray sweeps from the edge to the centre and the projection P(y) is traced. The projection is the Abel integral. To invert it, the outermost ring is found first from the outermost ray, then each inner ring after subtracting the rings outside it. Errors accumulate towards the axis." /></div>
+
+  <div class="prose">
+    <h2>Discretise, then invert</h2>
+    <p>Split the disk into <em>N</em> thin rings with constant value <em>f<sub>j</sub></em>. A ray at offset <em>y<sub>i</sub></em> crosses ring <em>j</em> along a chord of known length <em>L<sub>ij</sub></em>, so the forward model becomes a matrix product.</p>
+    <EquationDerivation title="From integral to matrix" steps={[
+      { tex: String.raw`P(y_i) \approx \sum_{j} L_{ij}\, f_j`, note: 'Each measurement is a weighted sum of ring values; the weight is the chord length inside the ring.' },
+      { tex: String.raw`L_{ij} = 2\Big(\sqrt{r_{j+1}^2 - y_i^2} - \sqrt{\max(r_j, y_i)^2 - y_i^2}\Big), \quad j \ge i`, note: 'A ray only crosses rings outside its own offset, so L is upper triangular.' },
+      { tex: String.raw`f_{N} = \frac{P_N}{L_{NN}},\quad f_{j} = \frac{1}{L_{jj}}\Big(P_j - \sum_{k>j} L_{jk} f_k\Big)`, note: 'Back substitution: solve for the outermost ring first, then peel inwards. This is called onion peeling.' },
+      { tex: String.raw`\delta f_j \;\text{inherits}\; \delta P_j \;\text{and every}\; \delta f_{k>j}`, note: 'Each inner value reuses all the outer ones, so measurement noise accumulates towards the axis.' },
+    ]} />
+    <p>Without noise, onion peeling is exact. With noise it is not, and the error grows towards the centre, where the chords are short and many previous errors pile up. This is what it means for a problem to be <strong>ill-conditioned</strong>: small changes in the data produce large changes in the answer.</p>
+
+    <h2>Regularisation: prefer plausible answers</h2>
+    <p>Instead of solving <em>Lf = P</em> exactly, ask for the profile that fits the data <em>and</em> is not too rough:</p>
+    <Equation tex={String.raw`\hat f = \arg\min_f \; \lVert L f - P \rVert^2 + \lambda \lVert D f \rVert^2 ,`} />
+    <p>where <em>D</em> takes second differences, a discrete curvature. The parameter <em>λ</em> sets the trade-off. Too small and noise comes back. Too large and real features are smoothed away. The spline-based Abel transform used in research (<a href={url('/software/pysat-abel/')}>pysat-abel</a>) follows the same logic with a spline instead of rings, and adds the attenuation of light inside the object to the forward model.</p>
+  </div>
+
+  <AbelExplorer />
+
+  <div class="try">
+    <h3>Exercises</h3>
+    <ol>
+      <li>Set the noise to 0. Is the direct inversion exact? Now raise the noise to 1 %. Where does the error appear first, near the axis or near the edge? Why?</li>
+      <li>With 2 % noise, move λ from 10⁻³ to 10⁴ and watch the error readout. Sketch error against λ. Where is the minimum, and what happens on either side?</li>
+      <li>Choose "Off-axis ring" and make it sharp. Can regularisation keep the peak height? What is the price of smoothness?</li>
+      <li>Turn on the spread over 30 noise draws. The shaded band shows how much the answer changes if the experiment is repeated. Is the uncertainty the same at every radius?</li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>What to take away</h2>
+    <ul>
+      <li>An inverse problem needs a <strong>forward model</strong> (here the chord-length matrix) and something to <strong>stabilise</strong> the inversion (here the curvature penalty).</li>
+      <li>Regularisation trades variance (noise) for bias (over-smoothing). The best λ depends on the noise level and on how sharp the true profile is.</li>
+      <li>The same structure, data misfit plus prior knowledge, appears in tomography, image deblurring and physics-informed learning. The <a href={url('/learn/machine-learning/physics-informed-learning/')}>next module</a> replaces the smoothness penalty with a physical law.</li>
+    </ul>
+  </div>
+</LearnModule>
+
+<style>
+  .anim { max-width: 46rem; margin-block: var(--s-5); }
+</style>

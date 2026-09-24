@@ -1,0 +1,85 @@
+---
+/** ILN222: transient conduction in a plane wall, finite differences vs lumped capacitance. */
+import ParameterSlider from '../viz/ParameterSlider.astro';
+import Equation from '../viz/Equation.astro';
+interface Props { lang: 'en' | 'es'; n: string }
+const { lang, n } = Astro.props;
+const es = lang === 'es';
+const S = es
+  ? {
+      Bi: 'Número de Biot log₁₀ Bi', Fo: 'Número de Fourier final Fo',
+      prof: 'Perfiles de temperatura θ(ξ)', hist: 'Evolución en el tiempo',
+      xx: 'ξ = x/L', yt: 'θ', xf: 'Fo', lc: 'centro (DF)', ls: 'superficie (DF)', lm: 'media (DF)', ll: 'concentrado',
+      at: 'Fo =',
+      ok: 'Bi < 0,1: el modelo concentrado es una buena aproximación; la temperatura es casi uniforme dentro del sólido.',
+      mid: '0,1 ≤ Bi < 1: el modelo concentrado empieza a fallar; hay un gradiente interno visible.',
+      bad: 'Bi ≥ 1: la resistencia interna domina; el modelo concentrado no sirve y hace falta resolver el perfil.',
+      read: ['Bi', 'θ centro', 'θ superficie', 'concentrado'],
+      cap: 'Pared plana de semiespesor L, inicialmente a temperatura uniforme, que se enfría por convección en ambas caras. Las curvas de color salen de diferencias finitas implícitas (estables para cualquier paso de tiempo). La línea discontinua es el modelo de capacitancia concentrada, θ = exp(−Bi·Fo), que supone temperatura uniforme en el sólido. Compare ambas al variar el número de Biot, el cociente entre la resistencia interna por conducción y la externa por convección.',
+    }
+  : {
+      Bi: 'Biot number log₁₀ Bi', Fo: 'Final Fourier number Fo',
+      prof: 'Temperature profiles θ(ξ)', hist: 'Evolution in time',
+      xx: 'ξ = x/L', yt: 'θ', xf: 'Fo', lc: 'centre (FD)', ls: 'surface (FD)', lm: 'mean (FD)', ll: 'lumped',
+      at: 'Fo =',
+      ok: 'Bi < 0.1: the lumped model is a good approximation; the temperature is almost uniform inside the solid.',
+      mid: '0.1 ≤ Bi < 1: the lumped model starts to fail; an internal gradient is visible.',
+      bad: 'Bi ≥ 1: internal resistance dominates; the lumped model is not usable and the profile must be solved.',
+      read: ['Bi', 'θ centre', 'θ surface', 'lumped'],
+      cap: 'A plane wall of half-thickness L, initially at uniform temperature, cooled by convection on both faces. The coloured curves come from implicit finite differences (stable for any time step). The dashed line is the lumped-capacitance model, θ = exp(−Bi·Fo), which assumes a uniform temperature in the solid. Compare the two while changing the Biot number, the ratio of the internal conduction resistance to the external convection resistance.',
+    };
+---
+<figure class="lab" data-t-wall data-s={JSON.stringify(S)}>
+  <div class="lab__grid">
+    <div class="lab__controls">
+      <ParameterSlider name="lbi" label={S.Bi} min={-2} max={1.5} step={0.05} value={-0.5} />
+      <ParameterSlider name="fo" label={S.Fo} min={0.05} max={5} step={0.05} value={2} />
+      <p class="lab__readout" data-t-read aria-live="polite"></p>
+    </div>
+    <div class="lab__plots">
+      <div><p class="panel-title">{S.prof}</p><div class="t-plot" data-t-prof></div></div>
+      <div><p class="panel-title">{S.hist}</p><div class="t-plot" data-t-hist></div></div>
+    </div>
+  </div>
+  <Equation tex={String.raw`\frac{\partial\theta}{\partial\,\mathrm{Fo}}=\frac{\partial^2\theta}{\partial\xi^2},\qquad \left.\frac{\partial\theta}{\partial\xi}\right|_{0}=0,\qquad -\left.\frac{\partial\theta}{\partial\xi}\right|_{1}=\mathrm{Bi}\,\theta(1),\qquad \mathrm{Bi}=\frac{hL}{k},\ \ \mathrm{Fo}=\frac{\alpha t}{L^2}`} />
+  <figcaption><span class="fig-num">{es ? 'Figura' : 'Figure'} {n}.</span>{S.cap}</figcaption>
+</figure>
+
+<script>
+  import { LinePlot, type Series } from '../../lib/plot';
+  import { wallTransient, profileMean, lumped } from '../../lib/teaching';
+
+  document.querySelectorAll<HTMLElement>('[data-t-wall]').forEach((root) => {
+    const S = JSON.parse(root.dataset.s!);
+    const val = (k: string) => +root.querySelector<HTMLInputElement>(`[name="${k}"]`)!.value;
+    const pProf = new LinePlot(root.querySelector('[data-t-prof]')!, { width: 420, height: 280, xlabel: S.xx, ylabel: S.yt, title: S.prof });
+    const pHist = new LinePlot(root.querySelector('[data-t-hist]')!, { width: 420, height: 280, xlabel: S.xf, ylabel: S.yt, title: S.hist });
+    const read = root.querySelector<HTMLElement>('[data-t-read]')!;
+    const nodes = 41;
+    const xi = Array.from({ length: nodes }, (_, i) => i / (nodes - 1));
+    const classes = ['s-truth', 's-physics', 's-learned', 's-data'];
+
+    const update = () => {
+      const Bi = 10 ** val('lbi'), Fo = val('fo');
+      const nh = 60;
+      const times = Array.from({ length: nh + 1 }, (_, i) => (i * Fo) / nh);
+      const sol = wallTransient(Bi, times, nodes, Math.min(2e-3, Fo / 200));
+      const snaps = [0.1, 0.25, 0.5, 1].map((q) => Math.round(q * nh));
+      const series: Series[] = snaps.map((k, j) => ({ kind: 'line', x: xi, y: Array.from(sol[k]), cls: classes[j], label: `${S.at} ${times[k].toFixed(2)}` }));
+      for (const k of snaps) series.push({ kind: 'line', x: [0, 1], y: [lumped(Bi, times[k]), lumped(Bi, times[k])], cls: 's-muted', dash: true });
+      pProf.render(series, { xlim: [0, 1], ylim: [0, 1.05] });
+      pHist.render([
+        { kind: 'line', x: times, y: sol.map((p) => p[0]), cls: 's-physics', label: S.lc },
+        { kind: 'line', x: times, y: sol.map((p) => p[nodes - 1]), cls: 's-data', label: S.ls },
+        { kind: 'line', x: times, y: sol.map(profileMean), cls: 's-learned', label: S.lm },
+        { kind: 'line', x: times, y: times.map((t) => lumped(Bi, t)), cls: 's-muted', dash: true, label: S.ll },
+      ], { xlim: [0, Fo], ylim: [0, 1.05] });
+      const last = sol[nh];
+      const verdict = Bi < 0.1 ? S.ok : Bi < 1 ? S.mid : S.bad;
+      const f2 = (v: number) => v.toFixed(3);
+      read.innerHTML = `${S.read[0]} = <strong>${Bi < 1 ? Bi.toFixed(3) : Bi.toFixed(2)}</strong>. ${S.at} ${Fo.toFixed(2)}: ${S.read[1]} <strong>${f2(last[0])}</strong>, ${S.read[2]} <strong>${f2(last[nodes - 1])}</strong>, ${S.read[3]} <strong>${f2(lumped(Bi, Fo))}</strong>.<br>${verdict}`;
+    };
+    root.querySelectorAll('input[type=range]').forEach((i) => i.addEventListener('input', update));
+    update();
+  });
+</script>

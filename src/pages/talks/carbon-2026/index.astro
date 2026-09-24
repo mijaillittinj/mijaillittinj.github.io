@@ -1,0 +1,216 @@
+---
+/**
+ * Exemplar interactive presentation (≈ 15–18 min).
+ * Littin et al., Carbon 250 (2026) 121296 — open access, CC BY 4.0.
+ * Built from the reusable components in src/components/slides (docs/PRESENTATION_SYSTEM.md).
+ */
+import Deck from '../../../components/slides/Deck.astro';
+import TitleSlide from '../../../components/slides/TitleSlide.astro';
+import SectionSlide from '../../../components/slides/SectionSlide.astro';
+import Slide from '../../../components/slides/Slide.astro';
+import EquationSlide from '../../../components/slides/EquationSlide.astro';
+import FigureSlide from '../../../components/slides/FigureSlide.astro';
+import TwoColumn from '../../../components/slides/TwoColumn.astro';
+import KeyMessage from '../../../components/slides/KeyMessage.astro';
+import ReferencesSlide from '../../../components/slides/ReferencesSlide.astro';
+import ManimScene from '../../../components/slides/ManimScene.astro';
+import Equation from '../../../components/viz/Equation.astro';
+import { Image } from 'astro:assets';
+import fieldsFig from '../../../assets/figures/carbon2026-fields.png';
+import compFig from '../../../assets/figures/carbon2026-composition.png';
+
+const credit = 'Regenerated from the author’s data. Littin et al., Carbon 250 (2026) 121296, CC BY 4.0.';
+---
+<Deck title="Inverting several optical measurements at once (slides)" short="Physics-informed multi-diagnostic inversion" backHref="/publications/carbon-2026/"
+  description="Interactive HTML presentation of Littin et al., Carbon 2026: physics-informed neural network retrieval of soot properties from multi-wavelength optical diagnostics.">
+
+  <TitleSlide title="Inverting several optical measurements at once with a physics-informed neural network"
+    subtitle="Inverse problems · Scientific machine learning" author="Mijail Littin"
+    affiliation="with F. Escudero, E. Magaña, C. López, M. Mazur, A. Fuentes, J. Yon" paper="Carbon 250 (2026) 121296">
+    <Image src={compFig} alt="Composition map of the flame" widths={[700]} sizes="700px" class="title-art" />
+    <Fragment slot="notes"><p>Introduce the question in one sentence: several instruments look at the same object through different physics; can we invert them together so that everything is consistent? About 15 minutes. The flame is the test case, not the topic.</p></Fragment>
+  </TitleSlide>
+
+  <EquationSlide kicker="The general problem" title="We rarely measure the quantity we care about"
+    tex={String.raw`\underbrace{y}_{\text{observations}} \;=\; \underbrace{\mathcal{A}}_{\text{physical model}}\big(\underbrace{x}_{\text{hidden state}}\big) \;+\; \underbrace{\varepsilon}_{\text{noise}}`}
+    terms={[
+      { label: 'Observations y', text: 'Camera images: integrals along lines of sight, at several wavelengths and angles.', cls: 'c-data' },
+      { label: 'Physical model 𝒜', text: 'Radiative transfer and light-scattering theory. Known, but nonlinear.', cls: 'c-physics' },
+      { label: 'Hidden state x', text: 'Temperature, particle amount, size and composition at every point.', cls: 'c-learned' },
+    ]}>
+    <Fragment slot="notes"><p>Frame everything as an inverse problem. Stress that the physical model is known; what is unknown is the state. This framing is what transfers to other fields.</p></Fragment>
+  </EquationSlide>
+
+  <SectionSlide number="01" title="From images to local fields" lead="The first inverse problem: undoing the line-of-sight integral." />
+
+  <Slide kicker="Line-of-sight integration" title="A camera sees sums along chords">
+    <div class="manim-wrap">
+      <ManimScene name="abel-projection" label="Animation: a ray sweeps across an axisymmetric cross-section while the projection curve is traced; then rings are recovered from the outside in."
+        transcript="An axisymmetric field is shown as concentric rings, brightest on an off-axis ring. A horizontal ray sweeps from the edge to the centre. At each offset y, the camera records the sum of the field along the chord, and the projection P(y) is traced on the right. The projection is given by the Abel integral. To invert it, the outermost ring is found first from the outermost ray, then each inner ring after subtracting the rings outside it. Errors accumulate towards the axis." />
+    </div>
+    <Fragment slot="notes"><p>Let the animation run (about 16 s). Point out that the brightest part of the projection is not where the field is maximum. Onion peeling shows why errors accumulate towards the axis.</p></Fragment>
+  </Slide>
+
+  <EquationSlide kicker="Regularised reconstruction (SAT)" title="Fit a smooth radial profile instead of peeling"
+    tex={String.raw`\hat\kappa = \arg\min_{\kappa \,\in\, \text{splines},\; \kappa_i \ge 0}\; \int \big[S_{mod}(x;\kappa) - S_{exp}(x)\big]^2 dx \;+\; \mu \int_0^R \kappa''(r)^2\, dr`}
+    terms={[
+      { label: 'Forward model', text: 'The Abel projection of the spline, including self-absorption on the way to the camera.', cls: 'c-physics' },
+      { label: 'Curvature penalty', text: 'μ trades data fit for smoothness and stops noise from being amplified near the axis.', cls: 'c-learned' },
+      { label: 'Constraints', text: 'Non-negative knots, zero slope at the axis. Released as the Python package pysat-abel.', cls: 'c-truth' },
+    ]}>
+    <Fragment slot="notes"><p>This is the 2024 Fuel method. It gives the local extinction, emission and scattering coefficients that feed the next step. Keep it short; mention the interactive Abel module on the website for students.</p></Fragment>
+  </EquationSlide>
+
+  <SectionSlide number="02" title="Three measurements, one object" lead="The second inverse problem: from optical coefficients to soot properties." />
+
+  <TwoColumn kicker="Three diagnostics, five wavelengths (405–750 nm)" title="Each technique sees a different combination" ratio="1fr 1fr">
+    <div slot="left" class="diag">
+      <div data-fragment="1"><p class="dlabel c-data">Attenuation (LOSA)</p><p>Absolute extinction <span class="m">κ<sub>ext</sub> = κ<sub>abs</sub> + κ<sub>sca</sub></span>. No calibration needed.</p></div>
+      <div data-fragment="2"><p class="dlabel c-data">Emission (SSE)</p><p>Radiated light <span class="m">J = κ<sub>abs</sub> B(T, λ)</span>. Carries temperature.</p></div>
+      <div data-fragment="3"><p class="dlabel c-data">Multi-angle scattering (MALS)</p><p>Angular pattern of <span class="m">κ<sub>vv</sub>(θ)</span>. Carries aggregate size.</p></div>
+    </div>
+    <div slot="right" data-fragment="4">
+      <Equation tex={String.raw`\kappa_{abs} = \frac{6\pi f_s E(m)}{\lambda}`} />
+      <Equation tex={String.raw`\kappa_{vv}(0^\circ) = \frac{9\pi^2}{\lambda^4} f_s \frac{\overline{V^2_{agg}}}{\overline{V_{agg}}} F(m)`} />
+      <p class="small">Rayleigh–Debye–Gans theory for fractal aggregates. <em>E(m)</em>, <em>F(m)</em> depend on the refractive index, which depends on composition.</p>
+    </div>
+    <Fragment slot="notes"><p>Reveal one technique at a time. The key point: the unknowns are shared. Temperature, volume fraction, aggregate size and composition appear in several measurements.</p></Fragment>
+  </TwoColumn>
+
+  <KeyMessage title="Separate inversions disagree" message="Inverted one at a time, the three techniques give answers that do not add up."
+    detail="Absorption deduced from emission plus scattering from MALS does not reproduce the extinction measured by LOSA. About fifteen measured quantities, about eight unknown fields, and errors propagate from one diagnostic into the next.">
+    <Fragment slot="notes"><p>Refer to Fig. 1 of the paper: systematic deviation from the identity line. This motivates solving one joint problem instead of chaining several.</p></Fragment>
+  </KeyMessage>
+
+  <SectionSlide number="03" title="A network constrained by physics" lead="No labels exist. The physical model replaces the training set." />
+
+  <Slide kicker="Architecture" title="Coordinates in, physical properties out">
+    <svg class="net" viewBox="0 0 1400 520" role="img" aria-label="Diagram: coordinates r and z enter a network of ten layers; outputs are soot properties and calibration gains; a physics layer maps them to predicted measurements, compared with the measured ones in the loss.">
+      <g font-family="IBM Plex Sans" font-size="24">
+        <g data-fragment="1">
+          <text x="40" y="200" class="t-ink">r</text><text x="40" y="320" class="t-ink">z</text>
+          <path d="M70 192 L170 250 M70 312 L170 270" class="edge" />
+          <rect x="170" y="130" width="300" height="260" class="box-learn" />
+          <text x="320" y="245" text-anchor="middle" class="t-ink">10 layers × 20</text>
+          <text x="320" y="280" text-anchor="middle" class="t-mute">tanh</text>
+        </g>
+        <g data-fragment="2">
+          <path d="M470 260 L540 260" class="edge" />
+          <text x="560" y="130" class="t-learn">f<tspan baseline-shift="sub" font-size="17">s</tspan>, T, V<tspan baseline-shift="sub" font-size="17">agg</tspan></text>
+          <text x="560" y="175" class="t-learn">f<tspan baseline-shift="sub" font-size="17">O</tspan>, f<tspan baseline-shift="sub" font-size="17">G</tspan>, f<tspan baseline-shift="sub" font-size="17">A</tspan>  (softmax)</text>
+          <text x="560" y="220" class="t-learn">γ<tspan baseline-shift="sub" font-size="17">J</tspan>(λ), γ<tspan baseline-shift="sub" font-size="17">s</tspan>(λ)  gains</text>
+          <text x="560" y="300" class="t-mute">bounded by sigmoids,</text>
+          <text x="560" y="332" class="t-mute">fractions sum to one</text>
+        </g>
+        <g data-fragment="3">
+          <path d="M880 180 L920 180" class="edge" />
+          <rect x="920" y="110" width="220" height="140" class="box-phys" />
+          <text x="1030" y="170" text-anchor="middle" class="t-phys">RDG-FA</text>
+          <text x="1030" y="205" text-anchor="middle" class="t-phys">+ Planck</text>
+          <text x="1030" y="290" text-anchor="middle" class="t-mute">m(λ) from a surrogate</text>
+          <text x="1030" y="320" text-anchor="middle" class="t-mute">of the dispersion model</text>
+        </g>
+        <g data-fragment="4">
+          <path d="M1140 180 L1200 180" class="edge" />
+          <text x="1210" y="150" class="t-data">predicted</text>
+          <text x="1210" y="185" class="t-data">κ<tspan baseline-shift="sub" font-size="17">ext</tspan>, κ<tspan baseline-shift="sub" font-size="17">sca</tspan>,</text>
+          <text x="1210" y="220" class="t-data">κ<tspan baseline-shift="sub" font-size="17">vv</tspan>(0°), J</text>
+          <path d="M1260 250 L1260 430 L320 430 L320 390" class="edge dash" />
+          <text x="790" y="470" text-anchor="middle" class="t-ink">loss: misfit to all measurements, all wavelengths → gradients update the network</text>
+        </g>
+      </g>
+    </svg>
+    <Fragment slot="notes"><p>Walk through left to right. The network represents the fields continuously in space. The refractive index is not a free output; it follows from composition through the Bescond dispersion model, evaluated by a surrogate network accurate to 0.1%.</p></Fragment>
+  </Slide>
+
+  <EquationSlide kicker="Training objective" title="One loss, every measurement"
+    tex={String.raw`\mathcal{L} = \mathcal{L}_{ext} + \mathcal{L}_{\kappa_{vv}(0^\circ)} + \mathcal{L}_{sca} + \mathcal{L}_{J},\qquad \mathcal{L}_X = \frac{1}{N_\lambda N_p}\sum_{i,j} \frac{\big(X^{pred}_{ij} - X^{meas}_{ij}\big)^2}{\max_j |X^{meas}_{ij}|^2}`}
+    terms={[
+      { label: 'Normalised', text: 'Each diagnostic weighs the same, whatever its units or magnitude.', cls: 'c-physics' },
+      { label: 'Calibration-free', text: 'LOSA fixes the absolute scale; the emission and scattering gains are solved for.', cls: 'c-truth' },
+      { label: 'Training', text: 'Adam, learning rate 10⁻⁴, early stopping; about 6 minutes on one GPU.', cls: 'c-learned' },
+    ]}>
+    <Fragment slot="notes"><p>Emphasise calibration-free: because κ_ext = κ_abs + κ_sca must hold at each wavelength, the wavelength-dependent gains are determined by the data themselves.</p></Fragment>
+  </EquationSlide>
+
+  <SectionSlide number="04" title="Results" lead="Synthetic validation first, then a laboratory flame." />
+
+  <TwoColumn kicker="Validation" title="Does it recover what we know?" ratio="1fr 1fr">
+    <div slot="left">
+      <p class="dlabel c-truth">Synthetic flames (CoFlame)</p>
+      <p data-fragment="1">Temperature, volume fraction and composition recovered with mean relative errors of about <strong>4–6 %</strong> without noise.</p>
+      <p data-fragment="2">Errors stay bounded and localised with multiplicative noise and with parts of the data removed.</p>
+    </div>
+    <div slot="right">
+      <p class="dlabel c-data">Experimental flame</p>
+      <p data-fragment="3">Extinction rebuilt from emission and scattering now matches measured extinction; largest deviation about <strong>5 %</strong> at 480 nm.</p>
+      <p data-fragment="4">Inferred gains: <strong>0.65–0.8</strong> for scattering, <strong>0.73–1.28</strong> for emission. Temperatures agree with pyrometry and CARS data in the literature.</p>
+    </div>
+    <Fragment slot="notes"><p>Numbers are from sections 3.1 and 3.2 of the paper. Mention that synthetic validation is necessary but is not uncertainty quantification — that comes at the end.</p></Fragment>
+  </TwoColumn>
+
+  <FigureSlide kicker="Retrieved fields" title="Coherent maps from a single inversion" src={fieldsFig} alt="Maps of soot volume fraction, temperature and graphitic fraction in the flame" caption="Soot volume fraction, temperature and graphitic fraction, 20–38 mm above the burner." credit={credit}>
+    <Fragment slot="notes"><p>Volume fraction and temperature peak on the wings. Blank regions: not all diagnostics have signal, so nothing is retrieved there.</p></Fragment>
+  </FigureSlide>
+
+  <FigureSlide kicker="A new observable" title="Scattering makes the amorphous fraction visible" src={compFig} alt="Ternary composition map" caption="Blue organic, red amorphous, green graphitic (paper’s convention)." credit={credit}>
+    <div slot="side">
+      <ul>
+        <li data-fragment="1">Organic soot near the base.</li>
+        <li data-fragment="2">Amorphous along the centre, mapped here for the first time.</li>
+        <li data-fragment="3">Graphitic on the hot outer wings.</li>
+      </ul>
+      <p class="small" data-fragment="4">Along streamlines: growth and oxidation coexist rather than forming horizontal layers.</p>
+    </div>
+    <Fragment slot="notes"><p>The fractions are an effective optical description, not a chemical analysis. Comparison with Raman after sampling is the natural next check.</p></Fragment>
+  </FigureSlide>
+
+  <TwoColumn kicker="Scope" title="What the paper shows, and its limits" ratio="1fr 1fr">
+    <div slot="left">
+      <p class="dlabel c-learned">Shown</p>
+      <ul>
+        <li data-fragment="1">One network inverts attenuation, emission and scattering together.</li>
+        <li data-fragment="2">Instrument calibration factors are recovered as part of the solution.</li>
+        <li data-fragment="3">Validated on synthetic CoFlame data before the experimental flame.</li>
+      </ul>
+    </div>
+    <div slot="right">
+      <p class="dlabel">Limits</p>
+      <ul>
+        <li data-fragment="4">RDG-FA is an approximation for these aggregates.</li>
+        <li data-fragment="5">Composition fractions are effective, not chemical.</li>
+        <li data-fragment="6">No uncertainty is attached to the fields.</li>
+      </ul>
+    </div>
+    <Fragment slot="notes"><p>Summarise what is established in the paper and state its limits plainly.</p></Fragment>
+  </TwoColumn>
+
+  <KeyMessage title="Conclusion" message="Writing the shared physics into one loss turns reconciling instruments into a single optimisation problem."
+    detail="It needs no labels and it calibrates the instruments as it goes. Nothing in it is specific to flames, which makes other multi-instrument problems a natural next test.">
+    <Fragment slot="notes"><p>Close on the transferable idea. Invite questions; the website has the paper (open access), the case study and the interactive modules.</p></Fragment>
+  </KeyMessage>
+
+  <ReferencesSlide refs={[
+    { text: 'M. Littin, F. Escudero, E. Magaña, C. López, M. Mazur, A. Fuentes, J. Yon. Physics-informed neural network retrieval of spatially-resolved soot properties from multi-wavelength optical diagnostics. Carbon 250 (2026) 121296.', doi: '10.1016/j.carbon.2026.121296' },
+    { text: 'M. Littin et al. Spline-based Abel Transform (SAT) radial property reconstruction for noise and trapping correction. Fuel 374 (2024) 132365.', doi: '10.1016/j.fuel.2024.132365' },
+    { text: 'M. Littin et al. In situ determination of 2D spatially-resolved size distribution of soot aggregates in a laminar diffusion flame. Proc. Combust. Inst. 41 (2025) 105946.', doi: '10.1016/j.proci.2025.105946' },
+    { text: 'Bescond et al. — dispersion model of the soot refractive index used for E(m), F(m); see reference [15] of the Carbon paper.' },
+    { text: 'Slides, figures and animation: mijaillittinj.github.io. Figures regenerated from the author’s data (CC BY 4.0).' },
+  ]} />
+</Deck>
+
+<style>
+  .title-art { width: 100%; height: auto; max-height: 640px; object-fit: contain; }
+  .manim-wrap { max-width: 1180px; margin-inline: auto; width: 100%; }
+  .diag > div + div { margin-top: 28px; }
+  .diag p { font-size: 28px; }
+  .dlabel { font-family: var(--font-caps); font-weight: 400; font-size: 28px !important; letter-spacing: 0.03em; text-transform: lowercase; margin-bottom: 4px; }
+  .m { font-family: var(--font-serif); font-style: italic; white-space: nowrap; }
+  .net { width: 100%; height: auto; }
+  .net .edge { stroke: var(--ink-3); stroke-width: 2; fill: none; }
+  .net .dash { stroke-dasharray: 8 6; }
+  .net .box-learn { fill: color-mix(in srgb, var(--c-learned) 10%, transparent); stroke: var(--c-learned); stroke-width: 2; }
+  .net .box-phys { fill: color-mix(in srgb, var(--c-physics) 10%, transparent); stroke: var(--c-physics); stroke-width: 2; }
+  .net .t-ink { fill: var(--ink); } .net .t-mute { fill: var(--ink-3); font-size: 20px; }
+  .net .t-learn { fill: var(--c-learned); } .net .t-phys { fill: var(--c-physics); font-weight: 600; } .net .t-data { fill: var(--c-data); }
+</style>

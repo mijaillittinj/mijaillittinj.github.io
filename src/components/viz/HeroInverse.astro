@@ -1,0 +1,192 @@
+---
+/**
+ * Homepage scientific visual (concept A, see docs/HERO_CONCEPTS.md):
+ * indirect observation (line-of-sight projection) -> latent physical field.
+ * Uses the PINN-retrieved soot volume fraction of Littin et al., Carbon 2026 (CC BY 4.0).
+ * The projection is computed in the browser from the field with the discrete Abel
+ * transform, plus 2% noise. Static fallback: the field figure rendered at build time.
+ */
+import { Picture } from 'astro:assets';
+import fallback from '../../assets/figures/carbon2026-fields.png';
+import { url } from '../../i18n/utils';
+interface Props { lang?: 'en' | 'es' }
+const { lang = 'en' } = Astro.props;
+const L = lang === 'es'
+  ? {
+      obs: 'Observación indirecta', obsSub: 'integral a lo largo de la línea de visión',
+      op: 'modelo físico + datos', lat: 'Campo latente', latSub: 'reconstruido punto a punto',
+      height: 'Altura de la sección', profile: 'Perfil a la altura seleccionada',
+      proj: 'proyección medida', field: 'campo reconstruido',
+      cap: '(a) Lo que registra una cámara, la integral del campo a lo largo de cada línea de visión (calculada aquí a partir del campo, con 2 % de ruido). (b) El campo local, en este caso la fracción volumétrica de hollín recuperada con una red neuronal informada por la física en una llama laminar (Littin et al., Carbon 2026). Mueva el cursor sobre la figura o use el control para comparar una sección.',
+    }
+  : {
+      obs: 'Indirect observation', obsSub: 'integral along each line of sight',
+      op: 'physical model + data', lat: 'Latent field', latSub: 'reconstructed point by point',
+      height: 'Section height', profile: 'Profile at the selected height',
+      proj: 'measured projection', field: 'reconstructed field',
+      cap: '(a) What a camera records, the integral of a field along each line of sight (computed here from the field, with 2% noise). (b) The local field itself, in this case the soot volume fraction retrieved by a physics-informed neural network in a laminar flame (Littin et al., Carbon 2026). Move the pointer over the figure or use the slider to compare one section.',
+    };
+---
+<figure class="hero-inv" data-hero data-lang={lang} data-base={url('/data/carbon2026/')}>
+  <div class="hero-inv__panels">
+    <div class="hero-inv__panel">
+      <p class="panel-title">(a) {L.obs}</p>
+      <div class="hero-inv__frame">
+        <canvas class="canvas-field" data-proj width="200" height="160" aria-hidden="true"></canvas>
+        <div class="hero-inv__line" data-line></div>
+      </div>
+      <p class="hero-inv__sub meta">{L.obsSub}</p>
+    </div>
+    <div class="hero-inv__op" aria-hidden="true">
+      <svg viewBox="0 0 64 24" width="64" height="24"><path d="M2 12h56m-7-6 7 6-7 6" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>
+      <span>{L.op}</span>
+    </div>
+    <div class="hero-inv__panel">
+      <p class="panel-title">(b) {L.lat}</p>
+      <div class="hero-inv__frame">
+        <canvas class="canvas-field" data-field width="200" height="160" aria-hidden="true"></canvas>
+        <div class="hero-inv__line" data-line></div>
+      </div>
+      <p class="hero-inv__sub meta">{L.latSub}</p>
+    </div>
+  </div>
+  <div class="hero-inv__below">
+    <div class="control hero-inv__slider">
+      <div class="control__head"><label for="hero-z">{L.height}</label><output data-zout>—</output></div>
+      <input id="hero-z" type="range" min="0" max="1" step="0.005" value="0.55" />
+    </div>
+    <div class="hero-inv__plot" data-plot aria-label={L.profile}></div>
+  </div>
+  <noscript>
+    <Picture src={fallback} alt="Reconstructed soot volume fraction, temperature and graphitic fraction fields" formats={['avif', 'webp']} widths={[600, 1000]} sizes="(min-width: 60rem) 40rem, 100vw" />
+  </noscript>
+  <figcaption><span class="fig-num">{lang === 'es' ? 'Figura' : 'Figure'} 1.</span>{L.cap}</figcaption>
+</figure>
+
+<script>
+  import { drawField, loadU8Field, viridis, LinePlot, type RGB } from '../../lib/plot';
+  import { chordMatrix } from '../../lib/abel';
+  import { rng } from '../../lib/linalg';
+
+  const ink = (t: number): RGB => {
+    const dark = document.documentElement.dataset.theme === 'dark' ||
+      (!document.documentElement.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+    const a: RGB = dark ? [18, 20, 23] : [251, 250, 247];
+    const b: RGB = dark ? [235, 233, 228] : [21, 23, 28];
+    t = Math.max(0, Math.min(1, t)) ** 0.85;
+    return a.map((v, i) => Math.round(v + (b[i] - v) * t)) as RGB;
+  };
+
+  async function init(root: HTMLElement) {
+    const base = root.dataset.base!;
+    const meta = await (await fetch(base + 'meta.json')).json();
+    const { nz, nr } = meta;
+    const fsMeta = meta.fields.fs;
+    const raw = await loadU8Field(base + 'fs.u8', fsMeta.min, fsMeta.max);
+
+    // keep rows without interior gaps (the measured region); outer masked cells -> 0
+    const rows: number[] = [];
+    for (let j = 0; j < nz; j++) {
+      let last = -1, gap = false;
+      for (let i = 0; i < nr; i++) if (Number.isFinite(raw[j * nr + i])) last = i;
+      for (let i = 0; i < last; i++) if (!Number.isFinite(raw[j * nr + i])) gap = true;
+      if (!gap && last > 0) rows.push(j);
+    }
+    const j0 = rows[0];
+    const NZ = nz - j0;
+    const field = new Float32Array(NZ * nr);   // outer masked cells -> 0 (for the projection)
+    const shown = new Float32Array(NZ * nr);   // masked cells stay NaN (drawn as paper)
+    for (let j = 0; j < NZ; j++) for (let i = 0; i < nr; i++) {
+      const v = raw[(j + j0) * nr + i];
+      field[j * nr + i] = Number.isFinite(v) ? v : 0;
+      shown[j * nr + i] = v;
+    }
+    // Abel projection per row (+2% noise)
+    const L = chordMatrix(nr, meta.r_mm[1]);
+    const proj = new Float32Array(NZ * nr);
+    const R = rng(7);
+    let pmax = 0;
+    for (let j = 0; j < NZ; j++) {
+      for (let i = 0; i < nr; i++) {
+        let s = 0;
+        for (let k = i; k < nr; k++) s += L.a[i * nr + k] * field[j * nr + k];
+        proj[j * nr + i] = s;
+        pmax = Math.max(pmax, s);
+      }
+    }
+    for (let q = 0; q < proj.length; q++) proj[q] += 0.02 * pmax * R.normal();
+
+    const cf = root.querySelector<HTMLCanvasElement>('[data-field]')!;
+    const cp = root.querySelector<HTMLCanvasElement>('[data-proj]')!;
+    const paint = () => {
+      drawField(cf, shown, { nx: nr, ny: NZ, mirror: true, cmap: viridis, vmin: 0, vmax: fsMeta.max, nanColor: null });
+      drawField(cp, proj, { nx: nr, ny: NZ, mirror: true, cmap: ink, vmin: 0, vmax: pmax * 1.02 });
+    };
+    paint();
+    window.addEventListener('themechange', paint);
+
+    const zmin = meta.z_mm[0] + ((meta.z_mm[1] - meta.z_mm[0]) * j0) / (nz - 1);
+    const zmax = meta.z_mm[1];
+    // keep physical proportions (width 2R, height zmax - zmin)
+    root.querySelectorAll<HTMLElement>('.hero-inv__frame').forEach((fr) => {
+      fr.style.aspectRatio = `${2 * meta.r_mm[1]} / ${zmax - zmin}`;
+    });
+    const plot = new LinePlot(root.querySelector<HTMLElement>('[data-plot]')!, { width: 560, height: 190, xlabel: 'r or x (mm)', ylabel: 'normalised', title: 'Profile at the selected height' });
+    const lines = root.querySelectorAll<HTMLElement>('[data-line]');
+    const slider = root.querySelector<HTMLInputElement>('#hero-z')!;
+    const zout = root.querySelector<HTMLOutputElement>('[data-zout]')!;
+    const rr = Float64Array.from({ length: nr }, (_, i) => (i * meta.r_mm[1]) / (nr - 1));
+    const update = (t: number) => {
+      const j = Math.max(0, Math.min(NZ - 1, Math.round(t * (NZ - 1))));
+      lines.forEach((l) => (l.style.bottom = `${(j / (NZ - 1)) * 100}%`));
+      const z = zmin + ((zmax - zmin) * j) / (NZ - 1);
+      zout.textContent = `${z.toFixed(1)} mm`;
+      const f = field.subarray(j * nr, (j + 1) * nr);
+      const p = proj.subarray(j * nr, (j + 1) * nr);
+      const fm = Math.max(...f) || 1, pm = Math.max(...p) || 1;
+      const step = 3;
+      const xs: number[] = [], ps: number[] = [];
+      for (let i = 0; i < nr; i += step) { xs.push(rr[i]); ps.push(p[i] / pm); }
+      plot.render([
+        { kind: 'points', x: xs, y: ps, cls: 's-data', label: root.dataset.lang === 'es' ? 'proyección' : 'projection (data)' },
+        { kind: 'line', x: rr, y: Array.from(f, (v) => v / fm), cls: 's-learned', label: 'field f(r)' },
+      ], { ylim: [-0.05, 1.1], xlim: [0, meta.r_mm[1]] });
+    };
+    slider.addEventListener('input', () => update(+slider.value));
+    root.querySelectorAll<HTMLElement>('.hero-inv__frame').forEach((fr) => {
+      fr.addEventListener('pointermove', (e) => {
+        const b = fr.getBoundingClientRect();
+        const t = 1 - (e.clientY - b.top) / b.height;
+        slider.value = String(Math.max(0, Math.min(1, t)));
+        update(+slider.value);
+      });
+    });
+    update(+slider.value);
+    root.classList.add('is-ready');
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-hero]').forEach((root) => {
+    init(root).catch((e) => console.warn('hero', e));
+  });
+</script>
+
+<style>
+  .hero-inv { margin-block: var(--s-4) var(--s-2); }
+  .hero-inv__panels { max-width: 40rem; margin-inline: auto; }
+  .hero-inv__below { max-width: 40rem; margin-inline: auto; }
+  .hero-inv__panels { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: var(--s-3); }
+  .hero-inv__frame { position: relative; aspect-ratio: 2 / 3; background: var(--paper); overflow: hidden; outline: 0.5px solid var(--ink-3); }
+  .hero-inv__frame canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .hero-inv__line { position: absolute; left: 0; right: 0; height: 0; border-top: 1px dashed var(--ink); opacity: 0; pointer-events: none; }
+  .is-ready .hero-inv__line { opacity: 0.7; }
+  .hero-inv__op { display: grid; justify-items: center; gap: 0.25rem; color: var(--ink-2); font-style: italic; font-size: var(--step--1); text-align: center; max-width: 6.5rem; line-height: 1.25; }
+  .hero-inv__sub { margin-top: 0.3rem; font-size: var(--step--2); text-align: center; font-style: italic; }
+  .hero-inv__below { display: grid; gap: var(--s-3); margin-top: var(--s-4); }
+  .hero-inv__plot { max-width: 100%; }
+  @media (max-width: 34rem) {
+    .hero-inv__panels { gap: var(--s-2); }
+    .hero-inv__op span { display: none; }
+    .hero-inv__op svg { width: 28px; }
+    .hero-inv__sub { display: none; }
+  }
+</style>

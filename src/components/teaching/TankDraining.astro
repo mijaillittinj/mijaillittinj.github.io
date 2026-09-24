@@ -1,0 +1,123 @@
+---
+/** ILN221: draining a tank through an orifice (Bernoulli + mass conservation). */
+import ParameterSlider from '../viz/ParameterSlider.astro';
+import Equation from '../viz/Equation.astro';
+interface Props { lang: 'en' | 'es'; n: string }
+const { lang, n } = Astro.props;
+const es = lang === 'es';
+const S = es
+  ? {
+      Dt: 'Diámetro del estanque', d: 'Diámetro del orificio', h0: 'Altura inicial h₀', Cd: 'Coeficiente de descarga Cd',
+      play: 'animar', stop: 'detener', plot: 'Nivel en función del tiempo', sketch: 'Estanque',
+      xt: 't (s)', yh: 'h (m)', lh: 'h(t)', lnow: 'instante animado', lv: 'velocidad de salida',
+      read: ['Tiempo de vaciado', 'caudal inicial', 'velocidad inicial en el chorro'],
+      cap: 'Vaciado de un estanque cilíndrico por un orificio en el fondo. Bernoulli entre la superficie libre y el chorro da la velocidad de salida, y la conservación de masa relaciona esa velocidad con la bajada del nivel. El nivel baja cada vez más lento, porque la velocidad del chorro disminuye con √h; la mitad inferior del estanque tarda más que la superior. El coeficiente de descarga resume las pérdidas y la contracción del chorro.',
+    }
+  : {
+      Dt: 'Tank diameter', d: 'Orifice diameter', h0: 'Initial height h₀', Cd: 'Discharge coefficient Cd',
+      play: 'animate', stop: 'stop', plot: 'Level against time', sketch: 'Tank',
+      xt: 't (s)', yh: 'h (m)', lh: 'h(t)', lnow: 'animated instant', lv: 'outflow velocity',
+      read: ['Drain time', 'initial flow rate', 'initial jet velocity'],
+      cap: 'Draining a cylindrical tank through an orifice in its base. Bernoulli between the free surface and the jet gives the outflow velocity, and mass conservation links that velocity to the falling level. The level falls ever more slowly because the jet velocity decreases with √h, so the lower half of the tank takes longer to empty than the upper half. The discharge coefficient lumps losses and the contraction of the jet.',
+    };
+---
+<figure class="lab" data-t-tank data-s={JSON.stringify(S)}>
+  <div class="lab__grid">
+    <div class="lab__controls">
+      <ParameterSlider name="Dt" label={S.Dt} min={0.2} max={3} step={0.05} value={1} unit=" m" />
+      <ParameterSlider name="d" label={S.d} min={5} max={100} step={1} value={30} unit=" mm" format="int" />
+      <ParameterSlider name="h0" label={S.h0} min={0.2} max={5} step={0.05} value={2} unit=" m" />
+      <ParameterSlider name="Cd" label={S.Cd} min={0.5} max={1} step={0.01} value={0.61} />
+      <p><button type="button" class="btn" data-t-play>{S.play}</button></p>
+      <p class="lab__readout" data-t-read aria-live="polite"></p>
+    </div>
+    <div class="lab__plots tank-plots">
+      <div>
+        <p class="panel-title">{S.sketch}</p>
+        <svg class="tank" viewBox="0 0 160 200" role="img" aria-label={S.sketch}>
+          <rect data-t-water x="30" y="40" width="100" height="140" class="tank__water" />
+          <path d="M30 20 V180 H74 M86 180 H130 V20" class="tank__wall" />
+          <path data-t-jet d="M80 180 Q80 195 80 200" class="tank__jet" />
+          <line x1="140" x2="150" y1="40" y2="40" data-t-mark class="tank__mark" />
+          <text x="152" y="44" class="tank__lbl" data-t-hlbl>h</text>
+        </svg>
+      </div>
+      <div><p class="panel-title">{S.plot}</p><div class="t-plot" data-t-h></div></div>
+    </div>
+  </div>
+  <Equation tex={String.raw`\frac{\pi D_t^2}{4}\,\frac{dh}{dt}=-C_d\,\frac{\pi d^2}{4}\sqrt{2gh}\quad\Longrightarrow\quad t_{\mathrm{${es ? "vac" : "drain"}}}=\left(\frac{D_t}{d}\right)^{2}\frac{1}{C_d}\sqrt{\frac{2h_0}{g}}`} />
+  <figcaption><span class="fig-num">{es ? 'Figura' : 'Figure'} {n}.</span>{S.cap}</figcaption>
+</figure>
+
+<script>
+  import { LinePlot, fmt } from '../../lib/plot';
+  import { tankHeight, drainTime, G } from '../../lib/teaching';
+
+  document.querySelectorAll<HTMLElement>('[data-t-tank]').forEach((root) => {
+    const S = JSON.parse(root.dataset.s!);
+    const val = (k: string) => +root.querySelector<HTMLInputElement>(`[name="${k}"]`)!.value;
+    const plot = new LinePlot(root.querySelector('[data-t-h]')!, { width: 420, height: 280, xlabel: S.xt, ylabel: S.yh, title: S.plot });
+    const read = root.querySelector<HTMLElement>('[data-t-read]')!;
+    const water = root.querySelector<SVGRectElement>('[data-t-water]')!;
+    const jet = root.querySelector<SVGPathElement>('[data-t-jet]')!;
+    const mark = root.querySelector<SVGLineElement>('[data-t-mark]')!;
+    const hlbl = root.querySelector<SVGTextElement>('[data-t-hlbl]')!;
+    const playBtn = root.querySelector<HTMLButtonElement>('[data-t-play]')!;
+    const HMAX = 5; // m, full height of the sketch
+    let tNow = 0, raf = 0, t0 = 0;
+
+    const draw = () => {
+      const Dt = val('Dt'), d = val('d') / 1000, h0 = val('h0'), Cd = val('Cd');
+      const td = drainTime(h0, Dt, d, Cd);
+      tNow = Math.min(tNow, td);
+      const h = tankHeight(tNow, h0, Dt, d, Cd);
+      const ts = Array.from({ length: 121 }, (_, i) => (i * td * 1.05) / 120);
+      plot.render([
+        { kind: 'line', x: ts, y: ts.map((t) => tankHeight(t, h0, Dt, d, Cd)), cls: 's-physics', label: S.lh },
+        { kind: 'points', x: [tNow], y: [h], cls: 's-data', label: S.lnow },
+      ], { xlim: [0, td * 1.05], ylim: [0, h0 * 1.05] });
+      // sketch: 140 px of wall height = HMAX metres
+      const px = (h / HMAX) * 140;
+      water.setAttribute('y', String(180 - px));
+      water.setAttribute('height', String(px));
+      mark.setAttribute('y1', String(180 - px)); mark.setAttribute('y2', String(180 - px));
+      hlbl.setAttribute('y', String(184 - px));
+      const v = Cd * Math.sqrt(2 * G * h);
+      const reach = Math.min(70, v * 6);
+      jet.setAttribute('d', h > 0 ? `M80 180 Q${80 + reach * 0.6} 182 ${80 + reach} 200` : 'M80 180');
+      const Q0 = Cd * Math.PI * d * d / 4 * Math.sqrt(2 * G * h0);
+      const tdTxt = td < 120 ? `${td.toFixed(1)} s` : td < 7200 ? `${(td / 60).toFixed(1)} min` : `${(td / 3600).toFixed(2)} h`;
+      read.innerHTML = `${S.read[0]}: <strong>${tdTxt}</strong>.<br>${S.read[1]}: <strong>${fmt(Q0 * 1000)}</strong> L/s; ${S.read[2]}: <strong>${Math.sqrt(2 * G * h0).toFixed(2)}</strong> m/s.`;
+      return td;
+    };
+
+    const stop = () => { cancelAnimationFrame(raf); raf = 0; playBtn.textContent = S.play; };
+    playBtn.addEventListener('click', () => {
+      if (raf) return stop();
+      const td = draw();
+      if (tNow >= td) tNow = 0;
+      playBtn.textContent = S.stop;
+      const dur = 6000; // the full drain is shown in 6 s
+      t0 = performance.now() - (tNow / td) * dur;
+      const tick = (now: number) => {
+        const tdNow = drainTime(val('h0'), val('Dt'), val('d') / 1000, val('Cd'));
+        tNow = ((now - t0) / dur) * tdNow;
+        draw();
+        if (tNow >= tdNow) return stop();
+        raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+    });
+    root.querySelectorAll('input[type=range]').forEach((i) => i.addEventListener('input', () => { if (!raf) tNow = 0; draw(); }));
+    draw();
+  });
+</script>
+
+<style>
+  .tank { width: 100%; max-width: 13rem; margin-inline: auto; overflow: visible; }
+  .tank__wall { fill: none; stroke: var(--ink); stroke-width: 1.4; }
+  .tank__water { fill: color-mix(in srgb, var(--c-physics) 22%, transparent); }
+  .tank__jet { fill: none; stroke: var(--c-physics); stroke-width: 2; }
+  .tank__mark { stroke: var(--ink-3); stroke-width: 0.8; }
+  .tank__lbl { font-size: 11px; font-style: italic; fill: var(--ink); font-family: var(--font-serif); }
+</style>

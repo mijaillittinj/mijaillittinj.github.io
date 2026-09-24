@@ -1,0 +1,15 @@
+---
+/** Highwire Press / Google Scholar citation metadata for a publication page. */
+import type { Publication } from '../../data/publications';
+interface Props { pub: Publication }
+const { pub: p } = Astro.props;
+const authors = p.authors.map((a) => (a === 'M. Littin' ? 'Littin, Mijail' : a));
+---
+<meta name="citation_title" content={p.title} />
+{authors.map((a) => <meta name="citation_author" content={a} />)}
+<meta name="citation_publication_date" content={String(p.year)} />
+<meta name="citation_journal_title" content={p.journal} />
+{p.volume && <meta name="citation_volume" content={p.volume} />}
+{p.article && <meta name="citation_firstpage" content={p.article} />}
+{p.doi && <meta name="citation_doi" content={p.doi} />}
+{p.access.pdf && p.access.kind === 'open' && <meta name="citation_fulltext_html_url" content={p.access.pdf} />}

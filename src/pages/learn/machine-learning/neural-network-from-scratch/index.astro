@@ -1,0 +1,41 @@
+---
+import LearnModule from '../../../../layouts/LearnModule.astro';
+import Equation from '../../../../components/viz/Equation.astro';
+import EquationDerivation from '../../../../components/viz/EquationDerivation.astro';
+import MlpExplorer from '../../../../components/viz/MlpExplorer.astro';
+import { url } from '../../../../i18n/utils';
+---
+<LearnModule slug="machine-learning/neural-network-from-scratch" description="Train a small neural network in the browser with hand-written backpropagation and Adam: fitting, overfitting, validation error, weight decay and early stopping.">
+  <div class="prose">
+    <h2>A function with many adjustable knobs</h2>
+    <p>A multilayer perceptron is a composition of simple steps. Each layer multiplies its input by a weight matrix, adds a bias and applies a nonlinear function, here tanh:</p>
+    <Equation tex={String.raw`h^{(0)} = x, \qquad h^{(\ell)} = \tanh\!\big(W^{(\ell)} h^{(\ell-1)} + b^{(\ell)}\big), \qquad \hat y = W^{(L+1)} h^{(L)} + b^{(L+1)} .`} />
+    <p>Training means choosing all the weights so that the network’s outputs match the training data, usually by minimising the mean squared error with a gradient method such as Adam (see the <a href={url('/learn/optimization/gradient-descent/')}>gradient descent module</a>).</p>
+    <h2>Backpropagation is the chain rule, applied backwards</h2>
+    <EquationDerivation title="Gradients layer by layer" steps={[
+      { tex: String.raw`\mathcal{L} = \frac{1}{N}\sum_{n} (\hat y_n - y_n)^2, \qquad \delta^{(L+1)} = \frac{\partial \mathcal{L}}{\partial \hat y} = \frac{2}{N}(\hat y - y)`, note: 'Start at the output: the sensitivity of the loss to the prediction.' },
+      { tex: String.raw`\frac{\partial \mathcal{L}}{\partial W^{(\ell)}} = \delta^{(\ell)}\, {h^{(\ell-1)}}^{\mathsf T}, \qquad \frac{\partial \mathcal{L}}{\partial b^{(\ell)}} = \delta^{(\ell)}`, note: 'Each weight gradient is the local error times the input that the weight multiplied.' },
+      { tex: String.raw`\delta^{(\ell-1)} = \big({W^{(\ell)}}^{\mathsf T} \delta^{(\ell)}\big) \odot \big(1 - {h^{(\ell-1)}}^2\big)`, note: 'Pass the error back through the weights and through the derivative of tanh.' },
+    ]} />
+    <p>One forward pass and one backward pass give the gradient with respect to every parameter, at about the cost of two evaluations of the network. The code running below is exactly these three lines, written out in TypeScript, and it is checked against finite differences.</p>
+  </div>
+
+  <MlpExplorer />
+
+  <div class="try">
+    <h3>Exercises</h3>
+    <ol>
+      <li>Train with the default settings (2 layers × 24 neurons, 12 points). The training error keeps falling while the validation error turns around and rises. That is <strong>overfitting</strong>: the network memorises the noise.</li>
+      <li>Increase the training points to 60 without changing the network. Why does the gap between training and validation error close?</li>
+      <li>With 12 points, reduce the width to 3 neurons. Now the network is too simple to follow the function: <em>underfitting</em>. Find the width with the lowest validation error.</li>
+      <li>Turn on early stopping and train again. Which iteration is kept? Then try weight decay instead. Both are forms of <strong>regularisation</strong>, the same idea as in the <a href={url('/learn/inverse-problems/svd-noise-amplification/')}>SVD module</a>.</li>
+      <li>Set the noise to 0. Can a large network now reach a validation error close to zero? What limits it?</li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>Generalisation is the real goal</h2>
+    <p>The training error tells you how well the network describes the points it has seen; the validation error, on points it has not seen, estimates how it will behave in use. With more parameters than data, many networks fit the training set perfectly and differ wildly between the points. Weight decay adds ½κ‖<em>W</em>‖² to the loss and favours small weights and smooth functions; early stopping halts training when the validation error stops improving.</p>
+    <p>Physics offers a third way to constrain a flexible model: put the governing equation in the loss. That is the subject of the <a href={url('/learn/machine-learning/physics-informed-learning/')}>physics-informed learning module</a>.</p>
+  </div>
+</LearnModule>

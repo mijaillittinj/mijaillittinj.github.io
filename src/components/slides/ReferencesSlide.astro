@@ -1,0 +1,18 @@
+---
+interface Ref { text: string; doi?: string }
+interface Props { title?: string; refs: Ref[] }
+const { title = 'References', refs } = Astro.props;
+---
+<section class="slide" data-title={title}>
+  <h2>{title}</h2>
+  <div class="body">
+    <ol class="refs">{refs.map((r) => <li>{r.text}{r.doi && <> <a href={`https://doi.org/${r.doi}`}>doi:{r.doi}</a></>}</li>)}</ol>
+    <slot />
+  </div>
+  <aside class="notes"><slot name="notes" /></aside>
+</section>
+<style>
+  .refs { font-family: var(--font-sans); font-size: 21px; line-height: 1.45; padding-left: 1.4em; }
+  .refs li + li { margin-top: 12px; }
+  .refs a { word-break: break-all; }
+</style>

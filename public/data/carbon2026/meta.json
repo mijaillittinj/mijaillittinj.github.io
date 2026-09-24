@@ -1,0 +1,65 @@
+{
+ "source": "Littin et al., Carbon 250 (2026) 121296, doi:10.1016/j.carbon.2026.121296 (CC BY 4.0)",
+ "description": "PINN-retrieved fields in a laminar ethylene coflow diffusion flame (Gulder burner).",
+ "nz": 160,
+ "nr": 100,
+ "r_mm": [
+  0.0,
+  4.2569732666015625
+ ],
+ "z_mm": [
+  20.0,
+  37.688575744628906
+ ],
+ "encoding": "uint8 row-major [z][r], value = min + (max-min)*q/254, q=255 means masked",
+ "fields": {
+  "fs": {
+   "min": 0.7777210474014282,
+   "max": 7.764888286590576,
+   "unit": "ppm",
+   "label": "Soot volume fraction f_s"
+  },
+  "T": {
+   "min": 1708.283447265625,
+   "max": 1877.4595947265625,
+   "unit": "K",
+   "label": "Soot temperature T"
+  },
+  "fO": {
+   "min": 0.006857746280729771,
+   "max": 0.8779058456420898,
+   "unit": "-",
+   "label": "Organic fraction f_O"
+  },
+  "fG": {
+   "min": 0.020673127844929695,
+   "max": 0.7879127860069275,
+   "unit": "-",
+   "label": "Graphitic fraction f_G"
+  },
+  "fA": {
+   "min": 0.10142102837562561,
+   "max": 0.7559663653373718,
+   "unit": "-",
+   "label": "Amorphous fraction f_A"
+  },
+  "V2": {
+   "min": 0.06313123553991318,
+   "max": 9.836010932922363,
+   "unit": "10\u2076 nm\u00b3",
+   "label": "Aggregate volume moment V\u00b2/V"
+  },
+  "Em532": {
+   "min": 0.20267745852470398,
+   "max": 0.37495288252830505,
+   "unit": "-",
+   "label": "Absorption function E(m), 532 nm"
+  },
+  "Em1064": {
+   "min": 0.11365805566310883,
+   "max": 0.32603317499160767,
+   "unit": "-",
+   "label": "Absorption function E(m), 1064 nm"
+  }
+ }
+}

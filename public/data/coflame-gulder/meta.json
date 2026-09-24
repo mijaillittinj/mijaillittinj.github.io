@@ -1,0 +1,28 @@
+{
+ "source": "CoFlame simulation of the G\u00fclder laminar ethylene coflow flame (CoFlame: Eaves et al., Comput. Phys. Commun. 207 (2016) 464-477)",
+ "nz": 150,
+ "nr": 80,
+ "r_mm": [
+  0.0,
+  6.0
+ ],
+ "z_mm": [
+  5.0,
+  80.0
+ ],
+ "encoding": "uint8 row-major [z][r] at annulus centres, value = min + (max-min)*q/254",
+ "fields": {
+  "fs": {
+   "min": 0.0,
+   "max": 7.148737164429531,
+   "unit": "ppm",
+   "label": "Soot volume fraction f_s"
+  },
+  "T": {
+   "min": 751.01,
+   "max": 2117.4222734899326,
+   "unit": "K",
+   "label": "Temperature T"
+  }
+ }
+}

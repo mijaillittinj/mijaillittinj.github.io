@@ -1,0 +1,408 @@
+---
+/**
+ * Chemical engineering tab: consecutive reactions A → B → C.
+ * Forward: rate constants → concentration curves. Inverse: noisy samples of B → rate
+ * constants, on a misfit landscape, with the classic k₁ ↔ k₂ ambiguity when the
+ * detector calibration is unknown. Synthetic data. Maths in src/lib/eng/kinetics.ts.
+ */
+import Equation from '../viz/Equation.astro';
+interface Props { lang?: 'en' | 'es'; hidden?: boolean }
+const { lang = 'en', hidden = false } = Astro.props;
+const es = lang === 'es';
+const T = es
+  ? {
+      fwd: 'Directo', fwdText: 'a partir de las constantes de velocidad k₁ y k₂, calcular cómo evolucionan las concentraciones de A, B y C en un reactor discontinuo.',
+      inv: 'Inverso', invText: 'a partir de unas pocas mediciones ruidosas del intermedio B, estimar k₁ y k₂.',
+      plot: 'Concentraciones', land: 'Paisaje del desajuste', landHint: 'haga clic o arrastre para elegir (k₁, k₂)',
+      k1: 'Constante k₁', k2: 'Constante k₂', noise: 'Ruido de medición', unit: ' 1/min',
+      scale: 'Factor de calibración del detector desconocido', measA: 'Medir también A',
+      fit: 'ajustar', newExp: 'nuevo experimento', stop: 'detener', method: 'Método', classic: 'mínimos cuadrados', train: 'entrenar la PINN', lossLabel: 'La PINN minimiza',
+      pinn: { it: 'iteración', data: 'pérdida de datos', ode: 'residuo de las EDO', idle: 'Pulse «entrenar la PINN»: parte de las constantes marcadas en el paisaje.', key: ['PINN B', 'PINN A', 'PINN C'] },
+      pinnCap: 'PINN: una sola red entrega A, B y C en función del tiempo, con la condición inicial incorporada; k₁ y k₂ se entrenan junto con los pesos, y la pérdida suma al desajuste con los datos los residuos de las tres ecuaciones de velocidad, r_A = A′ + k₁A, r_B = B′ − k₁A + k₂B y r_C = C′ − k₂B. Con el detector sin calibrar, termina en uno de los dos mínimos simétricos.',
+      t: 't (min)', c: 'concentración / A₀',
+      leg: { A: 'modelo A', B: 'modelo B', sB: 'modelo s·B', C: 'modelo C', dB: 'B medido', dA: 'A medido' },
+      rd: { cur: 'Estimación', mis: 'desajuste', s: 'factor s', truth: 'valores verdaderos', err: 'error', twin: 'Hay dos mínimos igualmente buenos, (k₁, k₂) y (k₂, k₁): con solo B y sin calibración, los datos no distinguen una primera etapa lenta de una segunda etapa lenta.', unique: 'Mínimo único: los datos determinan ambas constantes.' },
+      cap: 'El paisaje muestra el desajuste entre el modelo y los datos para cada par (k₁, k₂), en escala logarítmica; las zonas oscuras ajustan mejor. Con el detector calibrado hay un único valle. Si el factor de calibración es desconocido, aparecen dos mínimos simétricos respecto de la diagonal k₁ = k₂, un ejemplo clásico de falta de identificabilidad; medir también A lo resuelve. Ejemplo sintético.',
+    }
+  : {
+      fwd: 'Forward', fwdText: 'from the rate constants k₁ and k₂, compute how the concentrations of A, B and C evolve in a batch reactor.',
+      inv: 'Inverse', invText: 'from a few noisy measurements of the intermediate B, estimate k₁ and k₂.',
+      plot: 'Concentrations', land: 'Misfit landscape', landHint: 'click or drag to choose (k₁, k₂)',
+      k1: 'Rate constant k₁', k2: 'Rate constant k₂', noise: 'Measurement noise', unit: ' 1/min',
+      scale: 'Detector calibration factor unknown', measA: 'Also measure A',
+      fit: 'fit', newExp: 'new experiment', stop: 'stop', method: 'Method', classic: 'least squares', train: 'train the PINN', lossLabel: 'The PINN minimises',
+      pinn: { it: 'iteration', data: 'data loss', ode: 'ODE residual', idle: 'Press “train the PINN”: it starts from the constants marked on the landscape.', key: ['PINN B', 'PINN A', 'PINN C'] },
+      pinnCap: 'PINN: one network gives A, B and C as functions of time, with the initial condition built in; k₁ and k₂ are trained together with the weights, and the loss adds the residuals of the three rate equations, r_A = A′ + k₁A, r_B = B′ − k₁A + k₂B and r_C = C′ − k₂B, to the data misfit. With an uncalibrated detector it lands in one of the two mirror minima.',
+      t: 't (min)', c: 'concentration / A₀',
+      leg: { A: 'model A', B: 'model B', sB: 'model s·B', C: 'model C', dB: 'measured B', dA: 'measured A' },
+      rd: { cur: 'Estimate', mis: 'misfit', s: 'factor s', truth: 'true values', err: 'error', twin: 'Two equally good minima, (k₁, k₂) and (k₂, k₁): with B alone and no calibration, the data cannot tell a slow first step from a slow second step.', unique: 'A single minimum: the data determine both constants.' },
+      cap: 'The landscape shows the misfit between model and data for every pair (k₁, k₂), on a logarithmic scale; darker means a better fit. With a calibrated detector there is a single valley. If the calibration factor is unknown, two minima appear, mirrored about the diagonal k₁ = k₂: a classic loss of identifiability. Measuring A as well removes it. Synthetic example.',
+    };
+---
+<div class="eng-tab ch" data-eng-tab="chemical" data-ch-text={JSON.stringify(T)} hidden={hidden}>
+  <p class="eng-fi"><em>{T.fwd}</em>: {T.fwdText} <em>{T.inv}</em>: {T.invText}</p>
+
+  <div class="ch__grid">
+    <div class="ch__cell">
+      <p class="panel-title">{T.plot}</p>
+      <div class="ch__plot" data-ch-plot></div>
+      <p class="ch__key"><span><span class="key key--physics"></span><span data-ch-keyb>{T.leg.B}</span></span> <span><span class="key key--physics ch__dash"></span><span data-ch-keyla>{T.leg.A}</span></span> <span><span class="key ch__muted ch__dash"></span><span data-ch-keylc>{T.leg.C}</span></span> <span><span class="ch__dot c-data">●</span>{T.leg.dB}</span> <span data-ch-keya hidden><span class="ch__dot muted">●</span>{T.leg.dA}</span></p>
+    </div>
+    <div class="ch__cell">
+      <p class="panel-title">{T.land}</p>
+      <div class="ch__landwrap"><canvas class="ch__land" data-ch-land aria-label={T.land} role="img"></canvas></div>
+      <p class="ch__hint">{T.landHint}</p>
+    </div>
+  </div>
+
+  <div class="ch__controls">
+    <div class="control">
+      <div class="control__head"><label for={`ch-k1-${lang}`}>{T.k1}</label><output data-ch-o1>—</output></div>
+      <input id={`ch-k1-${lang}`} data-ch-k1 type="range" min="-1.5" max="1" step="0.01" value="0" />
+    </div>
+    <div class="control">
+      <div class="control__head"><label for={`ch-k2-${lang}`}>{T.k2}</label><output data-ch-o2>—</output></div>
+      <input id={`ch-k2-${lang}`} data-ch-k2 type="range" min="-1.5" max="1" step="0.01" value="-1" />
+    </div>
+    <div class="control">
+      <div class="control__head"><label for={`ch-n-${lang}`}>{T.noise}</label><output data-ch-on>—</output></div>
+      <input id={`ch-n-${lang}`} data-ch-noise type="range" min="0" max="8" step="0.5" value="3" />
+    </div>
+    <div class="ch__opts">
+      <div class="control"><span class="control__head">{T.method}</span>
+        <div class="seg" role="group" aria-label={T.method}><button type="button" data-ch-m="classic" aria-pressed="true">{T.classic}</button><button type="button" data-ch-m="pinn" aria-pressed="false">PINN</button></div>
+      </div>
+      <label class="meta"><input type="checkbox" data-ch-scale /> {T.scale}</label>
+      <label class="meta"><input type="checkbox" data-ch-measa /> {T.measA}</label>
+      <p class="ch__btns"><button type="button" class="btn" data-ch-fit>{T.fit}</button><button type="button" class="btn" data-ch-train hidden>{T.train}</button> <button type="button" class="btn" data-ch-new>{T.newExp}</button></p>
+    </div>
+  </div>
+
+  <Equation tex={String.raw`C_B(t) = \frac{k_1 A_0}{k_2 - k_1}\left(e^{-k_1 t} - e^{-k_2 t}\right)`} />
+  <p class="meta ch__loss" data-ch-pinnui hidden>{T.lossLabel} <Equation display={false} tex={String.raw`\mathcal{L} = \overline{(sB - B_i)^2} + \lambda\,\overline{r_A^2 + s^2 r_B^2 + r_C^2}`} /></p>
+  <p class="lab__readout" data-ch-read aria-live="polite"></p>
+  <p class="eng-cap">{T.cap} {T.pinnCap}</p>
+</div>
+
+<script>
+  import { LinePlot, cssVar, type Series } from '../../lib/plot';
+  import { conc, makeData, misfit, nelderMead, type KData } from '../../lib/eng/kinetics';
+  import { initKinPinn, kinLossGrad, kinAdam, kOf, evalKin, type KinPinn } from '../../lib/eng/pinn-kinetics';
+  const P_H = 24, P_STEPS = 20000, P_LR = 0.02, FRAME_MS = 7;
+
+  const L0 = -1.5, L1 = 1, NG = 90;
+  const hex = (c: string): [number, number, number] => {
+    const m = c.trim().match(/^#([0-9a-f]{6})$/i);
+    if (!m) return [128, 128, 128];
+    const v = parseInt(m[1], 16);
+    return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
+  };
+  const fmtK = (l: number) => { const k = 10 ** l; return k >= 1 ? k.toFixed(2) : k.toPrecision(2); };
+
+  function init(root: HTMLElement) {
+    const T = JSON.parse(root.dataset.chText!);
+    const q = <E extends Element>(s: string) => root.querySelector<E>(s)!;
+    const k1In = q<HTMLInputElement>('[data-ch-k1]'), k2In = q<HTMLInputElement>('[data-ch-k2]'), nIn = q<HTMLInputElement>('[data-ch-noise]');
+    const o1 = q<HTMLOutputElement>('[data-ch-o1]'), o2 = q<HTMLOutputElement>('[data-ch-o2]'), on = q<HTMLOutputElement>('[data-ch-on]');
+    const scaleBox = q<HTMLInputElement>('[data-ch-scale]'), aBox = q<HTMLInputElement>('[data-ch-measa]');
+    const fitBtn = q<HTMLButtonElement>('[data-ch-fit]'), newBtn = q<HTMLButtonElement>('[data-ch-new]');
+    const read = q<HTMLElement>('[data-ch-read]');
+    const canvas = q<HTMLCanvasElement>('[data-ch-land]');
+    const plot = new LinePlot(q<HTMLElement>('[data-ch-plot]'), { width: 420, height: 300, xlabel: T.t, ylabel: T.c, title: T.plot, legend: false });
+    const keyA = q<HTMLElement>('[data-ch-keya]'), keyB = q<HTMLElement>('[data-ch-keyb]');
+    const keyLA = q<HTMLElement>('[data-ch-keyla]'), keyLC = q<HTMLElement>('[data-ch-keylc]');
+
+    let seed = 3;
+    let truth: [number, number] = [0, 0];
+    let data: KData;
+    let grid = new Float64Array(NG * NG);
+    let path: [number, number][] = [];
+    let shown = 0, raf = 0, revealed = false;
+    let method: 'classic' | 'pinn' = 'classic';
+    let pinn: KinPinn | null = null, pIter = 0, pLd = NaN, pLp = NaN, praf = 0;
+    const trainBtn = q<HTMLButtonElement>('[data-ch-train]');
+
+    const opts = () => ({ scaleUnknown: scaleBox.checked, measureA: aBox.checked });
+    const newTruth = () => {
+      // deterministic pseudo-random draw per experiment
+      const r = (n: number) => { const x = Math.sin(seed * 12.9898 + n * 78.233) * 43758.5453; return x - Math.floor(x); };
+      const a = Math.log10(0.15) + r(1) * (Math.log10(1.2) - Math.log10(0.15));
+      const b = a + Math.log10(2.5 + 3 * r(2));
+      truth = r(3) < 0.5 ? [a, b] : [b, a];
+    };
+    const makeObs = () => { data = makeData(10 ** truth[0], 10 ** truth[1], +nIn.value / 100, seed); };
+    const computeGrid = () => {
+      const o = opts();
+      for (let j = 0; j < NG; j++) for (let i = 0; i < NG; i++) {
+        const l1 = L0 + ((L1 - L0) * (i + 0.5)) / NG, l2 = L0 + ((L1 - L0) * (j + 0.5)) / NG;
+        grid[j * NG + i] = Math.log10(misfit(l1, l2, data, o).m + 1e-12);
+      }
+    };
+
+    // --- landscape canvas
+    const geom = () => {
+      const W = canvas.clientWidth, H = W; // square
+      return { W, H, l: 40, r: 8, t: 6, b: 34 };
+    };
+    const toPx = (l1: number, l2: number) => {
+      const g = geom();
+      return [g.l + ((l1 - L0) / (L1 - L0)) * (g.W - g.l - g.r), g.t + (1 - (l2 - L0) / (L1 - L0)) * (g.H - g.t - g.b)];
+    };
+    const fromPx = (x: number, y: number): [number, number] => {
+      const g = geom();
+      const l1 = L0 + ((x - g.l) / (g.W - g.l - g.r)) * (L1 - L0);
+      const l2 = L0 + (1 - (y - g.t) / (g.H - g.t - g.b)) * (L1 - L0);
+      return [Math.max(L0, Math.min(L1, l1)), Math.max(L0, Math.min(L1, l2))];
+    };
+    const off = document.createElement('canvas');
+    off.width = NG; off.height = NG;
+    const paintGrid = () => {
+      const low = hex(cssVar('--c-physics')), high = hex(cssVar('--paper'));
+      const sorted = Float64Array.from(grid).sort();
+      const lo = sorted[0], hi = sorted[Math.floor(sorted.length * 0.9)];
+      const ctx = off.getContext('2d')!;
+      const img = ctx.createImageData(NG, NG);
+      for (let j = 0; j < NG; j++) for (let i = 0; i < NG; i++) {
+        let t = (grid[j * NG + i] - lo) / (hi - lo || 1);
+        t = Math.max(0, Math.min(1, t)) ** 0.7;
+        const p = ((NG - 1 - j) * NG + i) * 4;
+        for (let k = 0; k < 3; k++) img.data[p + k] = Math.round(low[k] + (high[k] - low[k]) * t);
+        img.data[p + 3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
+    };
+    const drawLand = () => {
+      const g = geom();
+      if (!g.W) return;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(g.W * dpr); canvas.height = Math.round(g.H * dpr);
+      canvas.style.height = `${g.H}px`;
+      const ctx = canvas.getContext('2d')!;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, g.W, g.H);
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(off, g.l, g.t, g.W - g.l - g.r, g.H - g.t - g.b);
+      const ink = cssVar('--ink'), ink3 = cssVar('--ink-3');
+      // diagonal k1 = k2
+      ctx.setLineDash([3, 3]); ctx.strokeStyle = ink3; ctx.lineWidth = 0.8;
+      let [x0, y0] = toPx(L0, L0), [x1, y1] = toPx(L1, L1);
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke(); ctx.setLineDash([]);
+      // frame and ticks
+      ctx.strokeStyle = ink; ctx.lineWidth = 0.7;
+      ctx.strokeRect(g.l, g.t, g.W - g.l - g.r, g.H - g.t - g.b);
+      ctx.fillStyle = ink; ctx.font = `11.5px ${cssVar('--font-serif')}`;
+      for (const k of [0.1, 0.3, 1, 3, 10]) {
+        const l = Math.log10(k);
+        const [px] = toPx(l, L0), [, py] = toPx(L0, l);
+        ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+        ctx.fillText(String(k), px, g.H - g.b + 4);
+        ctx.beginPath(); ctx.moveTo(px, g.H - g.b); ctx.lineTo(px, g.H - g.b - 4); ctx.stroke();
+        ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+        ctx.fillText(String(k), g.l - 4, py);
+        ctx.beginPath(); ctx.moveTo(g.l, py); ctx.lineTo(g.l + 4, py); ctx.stroke();
+      }
+      ctx.font = `italic 12.5px ${cssVar('--font-serif')}`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      ctx.fillText('k₁ (1/min)', g.l + (g.W - g.l - g.r) / 2, g.H - 1);
+      ctx.save(); ctx.translate(11, g.t + (g.H - g.t - g.b) / 2); ctx.rotate(-Math.PI / 2);
+      ctx.textBaseline = 'middle'; ctx.fillText('k₂ (1/min)', 0, 0); ctx.restore();
+      // optimisation path
+      const learned = cssVar('--c-learned');
+      if (shown > 1) {
+        ctx.strokeStyle = learned; ctx.lineWidth = 1.3; ctx.beginPath();
+        for (let i = 0; i < shown; i++) { const [px, py] = toPx(path[i][0], path[i][1]); i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); }
+        ctx.stroke();
+      }
+      // truth (after a fit), and its mirror image when the data cannot separate them
+      if (revealed) {
+        const truthC = cssVar('--c-truth');
+        const cross = (l1: number, l2: number, solid: boolean) => {
+          const [px, py] = toPx(l1, l2);
+          ctx.strokeStyle = truthC; ctx.lineWidth = solid ? 2 : 1.2;
+          if (!solid) ctx.setLineDash([2, 2]);
+          ctx.beginPath(); ctx.moveTo(px - 5, py - 5); ctx.lineTo(px + 5, py + 5); ctx.moveTo(px + 5, py - 5); ctx.lineTo(px - 5, py + 5); ctx.stroke();
+          ctx.setLineDash([]);
+        };
+        cross(truth[0], truth[1], true);
+        if (scaleBox.checked && !aBox.checked) cross(truth[1], truth[0], false);
+      }
+      // current guess
+      const [gx, gy] = toPx(+k1In.value, +k2In.value);
+      ctx.fillStyle = learned; ctx.strokeStyle = cssVar('--paper'); ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(gx, gy, 4.5, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+    };
+
+    // --- concentration plot and readout
+    const tt = Array.from({ length: 161 }, (_, i) => (10 * i) / 160);
+    const update = () => {
+      const l1 = +k1In.value, l2 = +k2In.value, k1 = 10 ** l1, k2 = 10 ** l2;
+      o1.textContent = fmtK(l1) + T.unit; o2.textContent = fmtK(l2) + T.unit; on.textContent = `${nIn.value} %`;
+      const { m, s } = misfit(l1, l2, data, opts());
+      const cs = tt.map((t) => conc(t, k1, k2));
+      if (method === 'pinn') return updatePinn();
+      const series: Series[] = [
+        { kind: 'line', x: tt, y: cs.map((c) => c.A), cls: 's-physics', dash: true, label: T.leg.A },
+        { kind: 'line', x: tt, y: cs.map((c) => s * c.B), cls: 's-physics', label: scaleBox.checked ? T.leg.sB : T.leg.B },
+        { kind: 'line', x: tt, y: cs.map((c) => c.C), cls: 's-muted', dash: true, label: T.leg.C },
+        { kind: 'points', x: data.samples.map((p) => p.t), y: data.samples.map((p) => p.B), cls: 's-data', label: T.leg.dB },
+      ];
+      if (aBox.checked) series.push({ kind: 'points', x: data.samples.map((p) => p.t), y: data.samples.map((p) => p.A), cls: 's-muted', label: T.leg.dA });
+      plot.render(series, { xlim: [0, 10], ylim: [-0.05, 1.05] });
+      keyA.hidden = !aBox.checked;
+      keyB.textContent = scaleBox.checked ? T.leg.sB : T.leg.B; keyLA.textContent = T.leg.A; keyLC.textContent = T.leg.C;
+      let txt = `${T.rd.cur}: k₁ = ${fmtK(l1)}, k₂ = ${fmtK(l2)} 1/min · ${T.rd.mis} ${m.toExponential(1)}`;
+      if (scaleBox.checked) txt += ` · ${T.rd.s} ${s.toFixed(2)}`;
+      if (revealed) {
+        const e1 = Math.abs(10 ** l1 / 10 ** truth[0] - 1) * 100, e2 = Math.abs(10 ** l2 / 10 ** truth[1] - 1) * 100;
+        txt += ` · ${T.rd.truth}: ${fmtK(truth[0])}, ${fmtK(truth[1])} (${T.rd.err} ${e1.toFixed(0)} %, ${e2.toFixed(0)} %)`;
+      }
+      txt += '. ' + (scaleBox.checked && !aBox.checked ? T.rd.twin : T.rd.unique);
+      read.textContent = txt;
+      drawLand();
+    };
+
+    const updatePinn = () => {
+      const l1 = +k1In.value, l2 = +k2In.value;
+      o1.textContent = fmtK(l1) + T.unit; o2.textContent = fmtK(l2) + T.unit; on.textContent = `${nIn.value} %`;
+      const series: Series[] = [
+        { kind: 'points', x: data.samples.map((p) => p.t), y: data.samples.map((p) => p.B), cls: 's-data', label: T.leg.dB },
+      ];
+      if (aBox.checked) series.push({ kind: 'points', x: data.samples.map((p) => p.t), y: data.samples.map((p) => p.A), cls: 's-muted', label: T.leg.dA });
+      let txt = T.pinn.idle;
+      if (pinn) {
+        const c = evalKin(pinn, tt), k = kOf(pinn), sc = scaleBox.checked ? k.s : 1;
+        series.unshift(
+          { kind: 'line', x: tt, y: c.A, cls: 's-learned', dash: true, label: T.pinn.key[1] },
+          { kind: 'line', x: tt, y: c.B.map((v) => sc * v), cls: 's-learned', label: T.pinn.key[0] },
+          { kind: 'line', x: tt, y: c.C, cls: 's-muted', dash: true, label: T.pinn.key[2] },
+        );
+        txt = `PINN: ${T.pinn.it} ${pIter} · k₁ = ${fmtK(k.l1)}, k₂ = ${fmtK(k.l2)} 1/min${scaleBox.checked ? ` · ${T.rd.s} ${k.s.toFixed(2)}` : ''} · ${T.pinn.data} ${pLd.toExponential(1)} · ${T.pinn.ode} ${pLp.toExponential(1)}`;
+        if (revealed) {
+          const e1 = Math.abs(10 ** k.l1 / 10 ** truth[0] - 1) * 100, e2 = Math.abs(10 ** k.l2 / 10 ** truth[1] - 1) * 100;
+          txt += ` · ${T.rd.truth}: ${fmtK(truth[0])}, ${fmtK(truth[1])} (${T.rd.err} ${e1.toFixed(0)} %, ${e2.toFixed(0)} %). ` + (scaleBox.checked && !aBox.checked ? T.rd.twin : T.rd.unique);
+        }
+      }
+      plot.render(series, { xlim: [0, 10], ylim: [-0.05, 1.05] });
+      keyA.hidden = !aBox.checked;
+      keyB.textContent = scaleBox.checked ? 'PINN s·B' : T.pinn.key[0]; keyLA.textContent = T.pinn.key[1]; keyLC.textContent = T.pinn.key[2];
+      read.textContent = txt;
+      drawLand();
+    };
+    const stopP = () => { cancelAnimationFrame(praf); praf = 0; trainBtn.textContent = T.train; };
+    const loopP = () => {
+      if (!pinn) return;
+      if (root.hidden) { stopP(); return; }
+      const cfg = { hidden: P_H, lambdaOde: 1, scaleUnknown: scaleBox.checked, measureA: aBox.checked, nCol: 40 };
+      const t0 = performance.now();
+      while (pIter < P_STEPS && performance.now() - t0 < FRAME_MS) {
+        cfg.lambdaOde = 30 ** (pIter / P_STEPS);
+        const r = kinLossGrad(pinn, data, cfg);
+        pLd = r.Ld; pLp = r.Lp;
+        kinAdam(pinn, r.grad, P_LR * (0.1 + 0.45 * (1 + Math.cos((Math.PI * pIter) / P_STEPS))));
+        pIter++;
+      }
+      const k = kOf(pinn);
+      const cl = (v: number) => Math.max(L0, Math.min(L1, v));
+      path.push([cl(k.l1), cl(k.l2)]); shown = path.length;
+      k1In.value = String(cl(k.l1)); k2In.value = String(cl(k.l2));
+      if (pIter >= P_STEPS) { revealed = true; stopP(); updatePinn(); return; }
+      updatePinn();
+      praf = requestAnimationFrame(loopP);
+    };
+    const trainP = () => {
+      if (praf) { stopP(); return; }
+      pinn = initKinPinn(P_H, 5, +k1In.value, +k2In.value); pIter = 0; pLd = NaN; pLp = NaN;
+      path = [[+k1In.value, +k2In.value]]; shown = 1; revealed = false;
+      trainBtn.textContent = T.stop;
+      praf = requestAnimationFrame(loopP);
+    };
+    const stop = () => { cancelAnimationFrame(raf); raf = 0; fitBtn.textContent = T.fit; };
+    const resetFit = () => { stop(); stopP(); pinn = null; path = []; shown = 0; revealed = false; };
+    let frame = 0;
+    const animate = () => {
+      frame++;
+      if (frame % 2 === 0 && shown < path.length) {
+        shown++;
+        const p = path[shown - 1];
+        k1In.value = String(p[0]); k2In.value = String(p[1]);
+        if (shown === path.length) revealed = true;
+        update();
+      }
+      if (shown < path.length) raf = requestAnimationFrame(animate); else stop();
+    };
+    const fit = () => {
+      if (raf) { stop(); return; }
+      const o = opts();
+      path = nelderMead((x) => misfit(Math.max(L0, Math.min(L1, x[0])), Math.max(L0, Math.min(L1, x[1])), data, o).m + (Math.abs(x[0]) > 3 || Math.abs(x[1]) > 3 ? 1 : 0), [+k1In.value, +k2In.value], 0.25);
+      path = path.map(([a, b]) => [Math.max(L0, Math.min(L1, a)), Math.max(L0, Math.min(L1, b))]);
+      shown = 0; revealed = false; frame = 0;
+      fitBtn.textContent = T.stop;
+      raf = requestAnimationFrame(animate);
+    };
+    const refresh = (regen: boolean) => { resetFit(); if (regen) makeObs(); computeGrid(); paintGrid(); update(); };
+
+    k1In.addEventListener('input', () => { resetFit(); update(); });
+    k2In.addEventListener('input', () => { resetFit(); update(); });
+    nIn.addEventListener('input', () => refresh(true));
+    scaleBox.addEventListener('change', () => refresh(false));
+    aBox.addEventListener('change', () => refresh(false));
+    fitBtn.addEventListener('click', fit);
+    trainBtn.addEventListener('click', trainP);
+    root.querySelectorAll<HTMLButtonElement>('[data-ch-m]').forEach((b) => b.addEventListener('click', () => {
+      method = b.dataset.chM as 'classic' | 'pinn';
+      root.querySelectorAll<HTMLButtonElement>('[data-ch-m]').forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
+      fitBtn.hidden = method === 'pinn'; trainBtn.hidden = method !== 'pinn';
+      root.querySelectorAll<HTMLElement>('[data-ch-pinnui]').forEach((e) => (e.hidden = method !== 'pinn'));
+      root.classList.toggle('ch--pinn', method === 'pinn');
+      resetFit(); update();
+    }));
+    newBtn.addEventListener('click', () => { seed++; newTruth(); refresh(true); });
+    const pick = (e: PointerEvent) => {
+      const b = canvas.getBoundingClientRect();
+      const [l1, l2] = fromPx(e.clientX - b.left, e.clientY - b.top);
+      k1In.value = String(l1); k2In.value = String(l2);
+      resetFit(); update();
+    };
+    canvas.addEventListener('pointerdown', (e) => { canvas.setPointerCapture(e.pointerId); pick(e); });
+    canvas.addEventListener('pointermove', (e) => { if (e.buttons) pick(e); });
+    window.addEventListener('themechange', () => { paintGrid(); drawLand(); });
+    let lastW = 0;
+    new ResizeObserver(() => { const w = canvas.clientWidth; if (w && Math.abs(w - lastW) > 4) { lastW = w; drawLand(); } }).observe(canvas);
+
+    newTruth(); makeObs(); computeGrid(); paintGrid(); update();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-eng-tab="chemical"]').forEach((root) => {
+    let done = false;
+    const go = () => { if (!done) { done = true; init(root); } };
+    root.addEventListener('eng:show', go);
+    if (!root.hidden) go();
+  });
+</script>
+
+<style>
+  .ch__grid { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); max-width: 40rem; margin: var(--s-3) auto 0; align-items: start; }
+  .ch__cell { min-width: 0; }
+  .ch__plot { min-height: 13rem; }
+  .ch__key { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.1em 0.9em; font-size: var(--step--2); color: var(--ink-2); margin-top: 0.2rem; }
+  .ch__key [hidden] { display: none; }
+  .ch__dash { background: repeating-linear-gradient(90deg, currentColor 0 4px, transparent 4px 7px) !important; color: var(--c-physics); }
+  .ch__muted.ch__dash { color: var(--ink-3); }
+  .ch__dot { font-size: 0.8em; margin-right: 0.3em; }
+  .ch__landwrap { width: 100%; max-width: 20rem; margin-inline: auto; }
+  .ch__land { display: block; width: 100%; aspect-ratio: 1; touch-action: none; cursor: crosshair; background: var(--paper); }
+  .ch__hint { text-align: center; font-size: var(--step--2); font-style: italic; color: var(--ink-3); margin-top: 0.2rem; }
+  .ch__controls { display: grid; gap: var(--s-3) var(--s-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); max-width: 40rem; margin: var(--s-4) auto 0; }
+  .ch__opts { display: grid; gap: 0.3rem; align-content: start; }
+  .ch__opts label { display: flex; gap: 0.4em; align-items: baseline; }
+  .ch__btns { font-size: var(--step--1); margin-top: 0.2rem; }
+  .ch__btns [hidden], .ch__loss[hidden] { display: none; }
+  .ch__loss { font-size: var(--step--1); text-align: center; max-width: 40rem; margin: var(--s-2) auto 0; overflow-x: auto; }
+  .ch--pinn .ch__key .key--physics { background: var(--c-learned); }
+  .ch--pinn .ch__key .ch__dash:not(.ch__muted) { color: var(--c-learned); }
+  .ch :global(.eq) { max-width: 40rem; margin-inline: auto; justify-content: center; }
+  .ch .lab__readout { max-width: 40rem; margin: var(--s-2) auto 0; text-align: center; }
+  .ch .eng-cap, .ch .eng-fi { max-width: 40rem; margin-inline: auto; }
+  .ch .eng-cap { margin-top: var(--s-3); font-size: var(--step--1); color: var(--ink-2); text-align: justify; }
+  @media (max-width: 34rem) { .ch .eng-cap { text-align: left; } }
+</style>

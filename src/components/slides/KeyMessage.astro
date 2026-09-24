@@ -1,0 +1,16 @@
+---
+interface Props { message: string; detail?: string; title?: string }
+const { message, detail, title = 'Key message' } = Astro.props;
+---
+<section class="slide slide--key" data-title={title}>
+  <div class="body">
+    <p class="msg">{message}</p>
+    {detail && <p class="detail" data-fragment>{detail}</p>}
+    <slot />
+  </div>
+  <aside class="notes"><slot name="notes" /></aside>
+</section>
+<style>
+  .msg { font-size: 60px; line-height: 1.2; font-weight: 400; font-style: italic; max-width: 1300px; border-left: 2px solid var(--ink); padding-left: 48px; }
+  .detail { margin-top: 40px; padding-left: 52px; font-size: 32px; color: var(--ink-2); max-width: 1200px; }
+</style>

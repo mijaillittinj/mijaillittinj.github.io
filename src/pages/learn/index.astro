@@ -1,0 +1,80 @@
+---
+import Base from '../../layouts/Base.astro';
+import { modules, categories, type LearnCategory } from '../../data/learn';
+import { url } from '../../i18n/utils';
+const order: LearnCategory[] = ['inverse-problems', 'optimization', 'machine-learning', 'numerical-methods', 'thermal-systems', 'uncertainty'];
+const live = modules.filter((m) => m.status === 'live');
+---
+<Base title="Learn" description="Open, interactive learning modules on inverse problems, optimization, machine learning, numerical methods, thermal systems and uncertainty. Everything runs in the browser.">
+  <header class="page-head frame">
+    <p class="eyebrow">Learn</p>
+    <h1>Open modules you can manipulate</h1>
+    <p class="lede">Short, self-contained lessons built around one question each: what can you change, and what do you observe? Everything runs in the browser. No account, no download, no PDF. The material is shared under CC BY 4.0 and can be reused in other courses.</p>
+  </header>
+
+  <section class="section frame">
+    <div class="row">
+      <p class="label row__label">Available now</p>
+      <ol class="featured">
+        {live.map((m, i) => (
+          <li>
+            <span class="n">{String(i + 1).padStart(2, '0')}</span>
+            <div>
+              <p class="label">{categories[m.category].title} · ~{m.minutes} min</p>
+              <h2><a href={url(`/learn/${m.slug}/`)}>{m.title}</a></h2>
+              <p class="q">{m.question}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <p class="label row__label">By topic</p>
+      <div class="cats">
+        {order.map((c) => (
+          <section class="cat" aria-labelledby={`cat-${c}`}>
+            <h2 id={`cat-${c}`} class="cat__h">{categories[c].title}</h2>
+            <p class="meta">{categories[c].blurb}</p>
+            <ul>
+              {modules.filter((m) => m.category === c).map((m) => (
+                <li>
+                  {m.status === 'live' ? <a href={url(`/learn/${m.slug}/`)}>{m.title}</a> : <span class="planned">{m.title}</span>}
+                  {m.status === 'planned' && <span class="tag"> · in preparation</span>}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <p class="label row__label">For instructors</p>
+      <div class="prose">
+        <p>Each module is a single page that can be linked from a course site or projected in class. The numerical code is small, commented TypeScript without external libraries, so it can be read alongside the lesson. Suggestions and corrections are welcome by email.</p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .featured { list-style: none; padding: 0; }
+  .featured li { display: grid; grid-template-columns: 3rem minmax(0, 1fr); gap: var(--s-4); padding-block: var(--s-5); border-top: 1px solid var(--rule); }
+  .featured li:first-child { border-top: 0; padding-top: 0; }
+  .n { font-family: var(--font-sans); font-size: var(--step-1); color: var(--ink-3); }
+  .featured h2 { font-size: var(--step-2); margin-top: var(--s-1); }
+  .featured h2 a { color: var(--ink); text-decoration: none; }
+  .featured h2 a:hover { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px; }
+  .q { margin-top: var(--s-2); color: var(--ink-2); max-width: 42rem; }
+  .cats { display: grid; gap: var(--s-6); grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
+  .cat { border-top: 2px solid var(--ink); padding-top: var(--s-3); }
+  .cat__h { font-size: var(--step-1); }
+  .cat ul { list-style: none; padding: 0; margin-top: var(--s-3); font-family: var(--font-sans); font-size: var(--step--1); }
+  .cat li { padding-block: 0.4rem; border-bottom: 1px solid var(--rule); }
+  .planned { color: var(--ink-3); }
+</style>

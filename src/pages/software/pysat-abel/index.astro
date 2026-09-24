@@ -1,0 +1,90 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Equation from '../../../components/viz/Equation.astro';
+import ScientificFigure from '../../../components/viz/ScientificFigure.astro';
+import PubItem from '../../../components/ui/PubItem.astro';
+import { software } from '../../../data/software';
+import { byId } from '../../../data/publications';
+import { url } from '../../../i18n/utils';
+import fig from '../../../assets/figures/pysat-3d-abel.png';
+const s = software.find((x) => x.slug === 'pysat-abel')!;
+const paper = byId('littin2024sat')!;
+const jsonld = [{
+  '@context': 'https://schema.org', '@type': 'SoftwareSourceCode', name: 'pysat-abel',
+  description: s.summary, programmingLanguage: 'Python', codeRepository: 'https://gitlab.coria-cfd.fr/littinm/pysat',
+  author: { '@type': 'Person', name: 'Mijail Littin' }, version: '0.1.3',
+  citation: `https://doi.org/${paper.doi}`,
+}];
+---
+<Base title="pysat-abel" math description={s.summary} jsonld={jsonld}>
+  <header class="page-head frame">
+    <p class="eyebrow"><a href={url('/software/')}>Software</a> · Python</p>
+    <h1><code class="h1code">pysat-abel</code></h1>
+    <p class="lede">{s.summary}</p>
+    <ul class="links head-links">{s.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}<li><a href={`https://doi.org/${paper.doi}`}>Paper (Fuel 2024)</a></li></ul>
+  </header>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label">What it solves</h2>
+      <div class="prose">
+        <p>A camera looking at an axisymmetric object (a flame, a jet, a plasma) records integrals along lines of sight. Recovering the local radial profile is the Abel inversion problem, which amplifies measurement noise near the axis. When the medium also absorbs part of the light on its way to the camera, the recorded signal is attenuated, which is called signal trapping or self-absorption, and a plain Abel inversion is biased.</p>
+        <p>SAT represents the unknown radial profile <em>κ(r)</em> as a cubic spline with non-negative knots and zero slope at the axis. It fits the spline by comparing its forward Abel projection with the measurement, with a curvature penalty:</p>
+        <Equation tex={String.raw`\hat\kappa = \arg\min_{\kappa}\; \int \big[S_{mod}(x;\kappa_1,\dots,\kappa_N) - S_{exp}(x)\big]^2 dx \;+\; \mu \int_0^R \kappa''(r)^2\, dr,`} />
+        <Equation tex={String.raw`S(x) = 2\int_x^\infty \frac{\kappa(r)\, F(x,r)}{\sqrt{r^2-x^2}}\, r\, dr .`} />
+        <p>The factor <em>F(x, r)</em> accounts for trapping. It is computed from the extinction profile, itself obtained first by inverting a line-of-sight attenuation measurement (for which <em>F</em> = 1).</p>
+        <p>For a hands-on introduction to the underlying problem, see the <a href={url('/learn/inverse-problems/abel-transform/')}>interactive Abel module</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <ScientificFigure src={fig} alt="Diagram: a line-of-sight integrated map of an ethylene flame is converted by the spline-based Abel transform into a deconvoluted radial map, shown as a revolved three-dimensional field." caption="From a line-of-sight integrated map to the deconvoluted radial map with the spline-based Abel transform, for an ethylene flame." credit="Figure by M. Littin, from the pysat-abel documentation." sizes="(min-width: 50rem) 36rem, 100vw" />
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label">Install</h2>
+      <div class="prose">
+        <pre><code>python -m venv pysat-env
+source pysat-env/bin/activate
+pip install pysat-abel</code></pre>
+        <p class="meta">Current release 0.1.3 (May 2025). Dependencies: NumPy, SciPy, joblib and <code>abel</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label">Minimal usage</h2>
+      <div class="prose">
+        <pre><code>import numpy as np
+from pysat.modules import abel_inversion
+
+# tau: transmissivity across the object (1D, centred on the axis)
+r, kext = abel_inversion(tau, data_type="transmissivity", nknots=15, lambda_=1e6)
+
+# emission profile, corrected for trapping with the extinction just recovered
+r, J = abel_inversion(s_emi, data_type="emission",
+                      apply_correction=True, kext=kext)</code></pre>
+        <p><code>abel_inversion</code> returns the radial axis and the recovered coefficient. <code>nknots</code> sets the flexibility of the spline and <code>lambda_</code> the weight of the curvature penalty. The same call handles transmissivity, emission and scattering data. The package documentation includes a tutorial notebook with synthetic data.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label">Cite and license</h2>
+      <div>
+        <PubItem pub={paper} compact />
+        <p class="meta lic">License: {s.license}. {s.licenseNote}</p>
+        <p class="meta">Authors (PyPI metadata): M. Littin, A. Poux, G. Lefevre, M. Mazur, F. Escudero, A. Fuentes, J. Yon.</p>
+      </div>
+    </div>
+  </section>
+</Base>
+<style>
+  .h1code { font-size: 0.9em; background: none; padding: 0; }
+  .head-links { margin-top: var(--s-4); }
+  .lic { margin-top: var(--s-4); }
+</style>
