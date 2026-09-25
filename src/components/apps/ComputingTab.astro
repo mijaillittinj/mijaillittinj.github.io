@@ -4,8 +4,8 @@
  * 1. Image deblurring (computational imaging). Forward: a sharp image is blurred by a
  *    known point-spread function and noise is added. Inverse: Fourier deconvolution
  *    (inverse filter, Tikhonov/Wiener), Richardson–Lucy, or a physics-informed neural
- *    field (src/lib/eng/deblur.ts, pinn-image.ts). The test image (a simplified drawing
- *    inspired by the crest of Club Deportivo Universidad Católica) is drawn in the browser.
+ *    field (src/lib/eng/deblur.ts, pinn-image.ts). The test image (the letters "UC" and a
+ *    football) is drawn in the browser.
  * 2. Trustworthy AI: deep ensembles and split conformal prediction on a damped oscillator
  *    observed with a gap, plain vs physics-informed ensembles (src/lib/eng/trust.ts).
  *    Lazily initialised on first selection.
@@ -24,14 +24,14 @@ const T = es
       mInv: 'filtro inverso', mTik: 'Tikhonov (Wiener)', mRl: 'Richardson–Lucy', mPinn: 'PINN',
       train: 'entrenar la PINN', stop: 'detener', lossLabel: 'La PINN minimiza',
       rdPinn: 'La red solo ve la foto borrosa a través del modelo de desenfoque; su representación suave actúa como prior.', rdPinnIdle: 'Pulse «entrenar la PINN»: una red de coordenadas f(x, y) de filtros sinusoidales (64 en x y 64 en y) se ajusta a la foto borrosa a través del núcleo h.', rdTikRef: 'Tikhonov con el λ actual',
-      pinnCap: ' Versión PINN: la imagen nítida es una red de coordenadas f(x, y) (filtros sinusoidales multiplicados entre sí, inicializados como características de Fourier aleatorias, con salida sigmoide en [0, 1]) entrenada solo a través del modelo físico de la cámara, ‖h ∗ f_θ − g‖². La red nunca ve la imagen original: su representación de banda limitada es el prior. En este ejemplo suele superar a Tikhonov en PSNR, porque la salida sigmoide favorece imágenes casi en blanco y negro como este escudo; con otras escenas esa ventaja puede desaparecer.',
+      pinnCap: ' Versión PINN: la imagen nítida es una red de coordenadas f(x, y) (filtros sinusoidales multiplicados entre sí, inicializados como características de Fourier aleatorias, con salida sigmoide en [0, 1]) entrenada solo a través del modelo físico de la cámara, ‖h ∗ f_θ − g‖². La red nunca ve la imagen original: su representación de banda limitada es el prior. En este ejemplo suele superar a Tikhonov en PSNR, porque la salida sigmoide favorece imágenes casi en blanco y negro como esta; con otras escenas esa ventaja puede desaparecer.',
       lam: 'Regularización log₁₀ λ', run: 'iterar', reveal: 'revelar la original', hide: 'ocultar la original',
       rdBlur: 'foto borrosa', rdRec: 'reconstrucción', rdIt: 'iteración',
       rdInv: 'El filtro inverso divide por |H|, que casi se anula en algunas frecuencias (las franjas oscuras del espectro): el ruido se amplifica sin control.',
       rdTik: 'λ sacrifica resolución a cambio de estabilidad: muy pequeño y reaparece el ruido, muy grande y la imagen queda borrosa.',
       rdRl: 'Richardson–Lucy mantiene la imagen no negativa; iterar demasiado también termina amplificando el ruido.',
       exLabel: 'Ejemplo', exDeblur: 'restauración de imágenes', exTrust: 'IA confiable',
-      credit: ' Imagen de prueba: un dibujo simplificado inspirado en el escudo del Club Deportivo Universidad Católica.',
+      credit: ' Imagen de prueba: las letras UC y un balón de fútbol, dibujados en el navegador.',
       tr: {
         fi: [': una red neuronal entrenada predice y a partir de x. ', ': a partir de datos escasos y ruidosos, inferir el modelo y cuánto se puede confiar en cada predicción.'],
         method: 'Método', mNn: 'red neuronal', mPinn: 'PINN', coverage: 'Cobertura objetivo', noise: 'Ruido de medición', members: 'Mostrar los cinco miembros',
@@ -56,14 +56,14 @@ const T = es
       mInv: 'inverse filter', mTik: 'Tikhonov (Wiener)', mRl: 'Richardson–Lucy', mPinn: 'PINN',
       train: 'train the PINN', stop: 'stop', lossLabel: 'The PINN minimises',
       rdPinn: 'The network sees the blurred photo only through the blur model; its smooth representation acts as the prior.', rdPinnIdle: 'Press “train the PINN”: a coordinate network f(x, y) of sinusoidal filters (64 in x and 64 in y) is fitted to the blurred photo through the kernel h.', rdTikRef: 'Tikhonov at the current λ',
-      pinnCap: ' PINN version: the sharp image is a coordinate network f(x, y) (multiplied sinusoidal filters initialised as random Fourier features, with a sigmoid output in [0, 1]) trained only through the physical model of the camera, ‖h ∗ f_θ − g‖². The network never sees the original image: its band-limited representation is the prior. In this example it usually beats Tikhonov in PSNR, because the sigmoid output favours nearly black-and-white images such as this crest; with other scenes that advantage can disappear.',
+      pinnCap: ' PINN version: the sharp image is a coordinate network f(x, y) (multiplied sinusoidal filters initialised as random Fourier features, with a sigmoid output in [0, 1]) trained only through the physical model of the camera, ‖h ∗ f_θ − g‖². The network never sees the original image: its band-limited representation is the prior. In this example it usually beats Tikhonov in PSNR, because the sigmoid output favours nearly black-and-white images such as this one; with other scenes that advantage can disappear.',
       lam: 'Regularisation log₁₀ λ', run: 'iterate', reveal: 'reveal the original', hide: 'hide the original',
       rdBlur: 'blurred photo', rdRec: 'reconstruction', rdIt: 'iteration',
       rdInv: 'The inverse filter divides by |H|, which nearly vanishes at some frequencies (the dark bands of the spectrum): the noise is amplified without control.',
       rdTik: 'λ trades resolution for stability: too small and the noise comes back, too large and the image stays blurred.',
       rdRl: 'Richardson–Lucy keeps the image non-negative; iterating too long also ends up amplifying the noise.',
       exLabel: 'Example', exDeblur: 'image deblurring', exTrust: 'trustworthy AI',
-      credit: ' Test image: a simplified drawing inspired by the crest of Club Deportivo Universidad Católica.',
+      credit: ' Test image: the letters UC and a football, drawn in the browser.',
       tr: {
         fi: [': a trained neural network predicts y from x. ', ': from limited, noisy data, infer the model and how much each prediction can be trusted.'],
         method: 'Method', mNn: 'neural network', mPinn: 'PINN', coverage: 'Target coverage', noise: 'Measurement noise', members: 'Show the five members',
@@ -198,36 +198,45 @@ const client = { lang, T };
   const N = 128, RL_MAX = 120, RL_PER_FRAME = 3, PINN_STEPS = 500, FRAME_MS = 8;
 
   /**
-   * The sharp scene, drawn once in the browser: a simplified shield with a cross and the
-   * letters "UC" (inspired by the crest of Club Deportivo Universidad Católica, not the
-   * official artwork), the forward model, bars and a checker block.
+   * The sharp scene, drawn once in the browser: the letters "UC" next to a football,
+   * the forward model, bars and a checker block.
    */
   function scene(): Float64Array {
     const c = document.createElement('canvas');
     c.width = N; c.height = N;
     const x = c.getContext('2d')!;
     x.fillStyle = '#fff'; x.fillRect(0, 0, N, N);
-    // shield: flat top, straight sides, pointed base
-    const shield = (l: number, t: number, w: number, h: number) => {
+    // letters UC
+    x.fillStyle = '#111';
+    x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.font = 'bold 34px Georgia, "Times New Roman", serif';
+    x.fillText('UC', 35, 38);
+    // football: white disc, central black pentagon, seams to five clipped outer pentagons
+    const bx = 96, by = 36, r = 27;
+    const pent = (cx: number, cy: number, rad: number, rot: number) => {
       x.beginPath();
-      x.moveTo(l, t);
-      x.lineTo(l + w, t);
-      x.lineTo(l + w, t + h * 0.55);
-      x.quadraticCurveTo(l + w, t + h * 0.85, l + w / 2, t + h);
-      x.quadraticCurveTo(l, t + h * 0.85, l, t + h * 0.55);
+      for (let k = 0; k < 5; k++) {
+        const a = rot + (2 * Math.PI * k) / 5;
+        x.lineTo(cx + rad * Math.cos(a), cy + rad * Math.sin(a));
+      }
       x.closePath();
     };
-    const L0 = 38, T0 = 3, W = 52, H = 66;
-    x.fillStyle = '#111'; shield(L0, T0, W, H); x.fill();
-    x.strokeStyle = '#fff'; x.lineWidth = 2; shield(L0 + 4, T0 + 4, W - 8, H - 8); x.stroke();
-    // cross in the upper field
-    x.fillStyle = '#fff';
-    x.fillRect(L0 + W / 2 - 2.5, T0 + 9, 5, 22);
-    x.fillRect(L0 + W / 2 - 10, T0 + 15, 20, 5);
-    // letters UC below the cross
-    x.textAlign = 'center'; x.textBaseline = 'middle';
-    x.font = 'bold 21px Georgia, "Times New Roman", serif';
-    x.fillText('UC', L0 + W / 2, T0 + 44);
+    x.save();
+    x.beginPath(); x.arc(bx, by, r, 0, 2 * Math.PI); x.clip();
+    x.fillStyle = '#fff'; x.fillRect(bx - r, by - r, 2 * r, 2 * r);
+    x.fillStyle = '#111'; x.strokeStyle = '#111'; x.lineWidth = 2;
+    const up = -Math.PI / 2, rc = r * 0.34;
+    pent(bx, by, rc, up); x.fill();
+    for (let k = 0; k < 5; k++) {
+      const a = up + (2 * Math.PI * k) / 5, ca = Math.cos(a), sa = Math.sin(a);
+      x.beginPath();
+      x.moveTo(bx + rc * ca, by + rc * sa);
+      x.lineTo(bx + r * 0.68 * ca, by + r * 0.68 * sa);
+      x.stroke();
+      pent(bx + r * 0.98 * ca, by + r * 0.98 * sa, r * 0.32, a + Math.PI); x.fill();
+    }
+    x.restore();
+    x.lineWidth = 2.5; x.beginPath(); x.arc(bx, by, r - 1, 0, 2 * Math.PI); x.stroke();
     // forward model, bars and checker block
     x.fillStyle = '#000';
     x.font = 'italic 14px Georgia, "Times New Roman", serif';
