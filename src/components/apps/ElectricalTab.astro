@@ -1,255 +1,372 @@
 ---
 /**
- * Electrical engineering tab: non-intrusive load monitoring (energy disaggregation).
- * Forward: appliances switch on and off during a day; the smart meter records only their sum.
- * Inverse: from the meter trace alone, infer which appliance was on at each minute
- * (factorial hidden Markov model decoded with Viterbi, src/lib/eng/nilm.ts).
- * Lesson: equal-power appliances (kettle, oven) are ambiguous from power alone; typical
- * durations resolve them. Synthetic day, idealised signatures.
+ * Electrical engineering tab: soiling and degradation of a utility-scale PV plant in the
+ * desert. Forward: irradiation, temperature, dust and ageing → daily energy. Inverse:
+ * from monitoring data (energy, irradiation, temperature) and the cleaning log, recover the
+ * soiling rate and the degradation rate (least squares, or a PINN with the soiling ODE in
+ * its loss), then choose a cleaning interval. Maths in src/lib/eng/pv.ts and
+ * src/lib/eng/pinn-pv.ts. Synthetic 100 MWp plant.
  */
 import Equation from '../viz/Equation.astro';
-import { APPLIANCES } from '../../lib/eng/nilm';
 interface Props { lang?: 'en' | 'es'; hidden?: boolean }
 const { lang = 'en', hidden = false } = Astro.props;
 const es = lang === 'es';
-const names: Record<string, string> = es
-  ? { fridge: 'Refrigerador', lights: 'Iluminación', tv: 'Televisor', washer: 'Lavadora', kettle: 'Hervidor', oven: 'Horno' }
-  : { fridge: 'Fridge', lights: 'Lighting', tv: 'TV', washer: 'Washing machine', kettle: 'Kettle', oven: 'Oven' };
 const T = es
   ? {
-      fwd: 'Directo', inv: 'Inverso',
-      fi: [': los aparatos de una casa se encienden y apagan durante el día; el medidor inteligente registra solo la suma de sus potencias. ', ': a partir de esa única curva, deducir qué aparato estaba encendido en cada minuto.'],
-      house: 'Aparatos en la casa', noise: 'Ruido del medidor', prior: 'Información a priori',
-      pDur: 'duraciones típicas de cada aparato', pFlat: 'la misma penalización para todos',
-      run: 'desagregar la curva', newDay: 'nuevo día',
-      pMeter: '(a) Medidor inteligente: lo que se mide', pTrue: '(b) Consumo real por aparato (oculto)', pEst: '(c) Estimado solo a partir del medidor',
-      pending: 'Pulse «desagregar la curva»', hours: 'hora del día', kw: 'kW',
-      thA: 'Aparato', thP: 'Potencia', thT: 'Real', thE: 'Estimado',
-      rdAcc: 'Estados correctos', rdE: 'energía bien asignada', rdTime: 'tiempo de cálculo',
-      rdAmb: 'El hervidor y el horno consumen lo mismo (2 kW): sin información sobre su duración, la potencia sola no permite distinguirlos.',
-      rdOk: 'Las duraciones típicas (minutos para el hervidor, casi una hora para el horno) resuelven la ambigüedad.',
-      rdIdle: 'La curva del medidor es todo lo que ve el algoritmo.',
-      cap: 'La desagregación de consumo (monitoreo no intrusivo de cargas) estima el consumo de cada aparato con un solo medidor, sin sensores adicionales. Aquí cada aparato es una cadena de Markov de dos estados cuyas probabilidades de cambio codifican sus duraciones típicas; la combinación de los seis (64 estados conjuntos) se decodifica con el algoritmo de Viterbi. Dos aparatos con la misma potencia no se distinguen por la potencia, sino por lo que se sabe de ellos: es la misma lección de identificabilidad que en los demás ejemplos. Día sintético con firmas de potencia idealizadas.',
+      fwd: 'Directo', fwdText: 'a partir de la radiación, la temperatura, el polvo que se acumula sobre los paneles y su envejecimiento, calcular la energía diaria de una planta fotovoltaica de 100 MWp en el desierto.',
+      inv: 'Inverso', invText: 'a partir de los datos de monitoreo y del registro de limpiezas, estimar la tasa de ensuciamiento y la degradación, que no se pueden medir directamente en toda la planta.',
+      mFwd: 'directo: simular la planta', mInv: 'inverso: diagnosticar la planta',
+      rate: 'Tasa de ensuciamiento', interval: 'Limpieza de paneles cada', none: 'Sin limpiezas en los dos años', deg: 'Degradación', noise: 'Ruido de medición',
+      method: 'Método', classic: 'mínimos cuadrados', newD: 'nuevos datos', train: 'entrenar la PINN', stop: 'detener',
+      cost: 'Costo por limpieza', price: 'Precio de la energía',
+      pE: '(a) Energía diaria', pSR: '(b) Índice de desempeño y razón de ensuciamiento', pPI: '(a) Índice de desempeño: datos y modelo ajustado', pSRe: '(b) Razón de ensuciamiento: estimada y verdadera',
+      pPinn: '(a) Índice de desempeño: datos y PINN', pHist: '(b) Parámetros durante el entrenamiento', pDec: '(c) Frecuencia de limpieza: costo anual',
+      day: 'día', mwh: 'MWh/día', pi: 'índice', it: 'iteración', val: 'valor', days: 'intervalo entre limpiezas (días)', kusd: 'miles de USD/año',
+      leg: { clean: 'planta limpia (modelo)', meas: 'energía medida', sr: 'razón de ensuciamiento', pi: 'índice de desempeño (datos)', fit: 'modelo ajustado', est: 'estimada', truth: 'verdadera', pinn: 'PINN', r: 'r (%/día)', d: 'degradación (%/año)', total: 'costo total', opt: 'óptimo', cur: 'intervalo actual' },
+      unitDay: '%/día', unitYr: '%/año', dUnit: 'días', kU: 'mil USD',
+      rd: {
+        fwd: 'Energía en dos años', lost: 'pérdida por ensuciamiento', cleans: 'limpiezas',
+        r: 'Tasa de ensuciamiento', d: 'degradación', truth: 'verdadero', lostE: 'energía perdida por ensuciamiento', jumps: 'limpiezas visibles como saltos en los datos', of: 'de',
+        conf: 'Sin limpiezas, los datos solo determinan la caída total', confEnd: 'el ensuciamiento y la degradación no se pueden separar',
+        pinnIdle: 'Pulse «entrenar la PINN»: parte de r = 0,10 %/día y degradación 0,30 %/año.', data: 'pérdida de datos', ode: 'residuo de la EDO', srErr: 'error de la razón de ensuciamiento (RMS)',
+        pinnConf: 'Sin limpiezas, la PINN solo fija la caída total; el reparto entre ensuciamiento y degradación depende del punto de partida.',
+        opt: 'Con la tasa estimada conviene limpiar cada', costs: 'costo anual', current: 'el intervalo actual de', more: 'cuesta', perYr: 'mil USD/año más', best: 'es prácticamente óptimo', needR: 'Primero hay que estimar la tasa de ensuciamiento: sin limpiezas no se puede separar de la degradación.',
+      },
+      lossLabel: 'La PINN minimiza',
+      cap: 'En una planta fotovoltaica nadie mide directamente cuánto polvo hay sobre cientos de miles de paneles, ni cuánto se han degradado: se infiere a partir del monitoreo (energía, radiación y temperatura) y del registro de limpiezas. Cada limpieza devuelve el índice de desempeño casi a su valor limpio; la pendiente entre limpiezas da la tasa de ensuciamiento y la tendencia de los valores recién limpios, la degradación. Sin limpiezas ambos efectos hacen caer el índice de la misma forma y no se pueden separar: la misma lección de identificabilidad que en las otras pestañas. La tasa estimada decide la frecuencia de limpieza. Planta sintética de 100 MWp, dos años de datos diarios.',
+      pinnCap: 'PINN: una red representa la historia del ensuciamiento, con cada limpieza del registro como un reinicio; la ecuación dSR/dt = −r·SR está en la pérdida, y r y la degradación se entrenan junto con la red. A la red nunca se le dice que el ensuciamiento es exponencial: lo impone la ecuación.',
     }
   : {
-      fwd: 'Forward', inv: 'Inverse',
-      fi: [': the appliances of a house switch on and off during the day; the smart meter records only the sum of their power. ', ': from that single curve, infer which appliance was on at every minute.'],
-      house: 'Appliances in the house', noise: 'Meter noise', prior: 'Prior information',
-      pDur: 'typical duration of each appliance', pFlat: 'the same penalty for all',
-      run: 'disaggregate the curve', newDay: 'new day',
-      pMeter: '(a) Smart meter: what is measured', pTrue: '(b) True use per appliance (hidden)', pEst: '(c) Estimated from the meter alone',
-      pending: 'Press “disaggregate the curve”', hours: 'time of day', kw: 'kW',
-      thA: 'Appliance', thP: 'Power', thT: 'True', thE: 'Estimated',
-      rdAcc: 'Correct states', rdE: 'energy correctly assigned', rdTime: 'computed in',
-      rdAmb: 'The kettle and the oven draw the same power (2 kW): without information on their durations, power alone cannot tell them apart.',
-      rdOk: 'Typical durations (minutes for the kettle, about an hour for the oven) resolve the ambiguity.',
-      rdIdle: 'The meter curve is all the algorithm sees.',
-      cap: 'Energy disaggregation (non-intrusive load monitoring) estimates the consumption of each appliance from a single meter, without extra sensors. Here each appliance is a two-state Markov chain whose switching probabilities encode its typical durations; the six chains together (64 joint states) are decoded with the Viterbi algorithm. Two appliances with the same power are not told apart by power but by what is known about them: the same identifiability lesson as in the other examples. Synthetic day with idealised power signatures.',
+      fwd: 'Forward', fwdText: 'from irradiation, temperature, the dust that settles on the modules and their ageing, compute the daily energy of a 100 MWp PV plant in the desert.',
+      inv: 'Inverse', invText: 'from the monitoring data and the cleaning log, estimate the soiling rate and the degradation, which cannot be measured directly across a whole plant.',
+      mFwd: 'forward: simulate the plant', mInv: 'inverse: diagnose the plant',
+      rate: 'Soiling rate', interval: 'Module cleaning every', none: 'No cleanings in the two years', deg: 'Degradation', noise: 'Measurement noise',
+      method: 'Method', classic: 'least squares', newD: 'new data', train: 'train the PINN', stop: 'stop',
+      cost: 'Cost per cleaning', price: 'Energy price',
+      pE: '(a) Daily energy', pSR: '(b) Performance index and soiling ratio', pPI: '(a) Performance index: data and fitted model', pSRe: '(b) Soiling ratio: estimated and true',
+      pPinn: '(a) Performance index: data and PINN', pHist: '(b) Parameters during training', pDec: '(c) Cleaning frequency: annual cost',
+      day: 'day', mwh: 'MWh/day', pi: 'index', it: 'iteration', val: 'value', days: 'days between cleanings', kusd: 'thousand USD/year',
+      leg: { clean: 'clean plant (model)', meas: 'measured energy', sr: 'soiling ratio', pi: 'performance index (data)', fit: 'fitted model', est: 'estimated', truth: 'true', pinn: 'PINN', r: 'r (%/day)', d: 'degradation (%/yr)', total: 'total cost', opt: 'optimum', cur: 'current interval' },
+      unitDay: '%/day', unitYr: '%/yr', dUnit: 'days', kU: 'kUSD',
+      rd: {
+        fwd: 'Energy in two years', lost: 'lost to soiling', cleans: 'cleanings',
+        r: 'Soiling rate', d: 'degradation', truth: 'true', lostE: 'energy lost to soiling', jumps: 'cleanings visible as jumps in the data', of: 'of',
+        conf: 'Without cleanings the data determine only the total decline', confEnd: 'soiling and degradation cannot be separated',
+        pinnIdle: 'Press “train the PINN”: it starts from r = 0.10 %/day and degradation 0.30 %/yr.', data: 'data loss', ode: 'ODE residual', srErr: 'soiling-ratio error (RMS)',
+        pinnConf: 'Without cleanings the PINN fixes only the total decline; how it splits it between soiling and degradation depends on where it starts.',
+        opt: 'With the estimated rate, clean every', costs: 'annual cost', current: 'the current interval of', more: 'costs', perYr: 'kUSD/yr more', best: 'is practically optimal', needR: 'Estimate the soiling rate first: without cleanings it cannot be separated from degradation.',
+      },
+      lossLabel: 'The PINN minimises',
+      cap: 'Nobody measures directly how much dust lies on hundreds of thousands of modules, or how much they have degraded: both are inferred from the monitoring data (energy, irradiation and temperature) and the cleaning log. Each cleaning brings the performance index back close to its clean value; the slope between cleanings gives the soiling rate, and the trend of the freshly cleaned values gives the degradation. Without cleanings both effects make the index fall in the same way and cannot be separated: the same identifiability lesson as in the other tabs. The estimated rate then sets the cleaning frequency. Synthetic 100 MWp plant, two years of daily data.',
+      pinnCap: 'PINN: a network represents the soiling history, with every cleaning in the log as a reset; the equation dSR/dt = −r·SR sits in the loss, and r and the degradation are trained together with the network. The network is never told that soiling is exponential: the equation makes it so.',
     };
-const client = { lang, names, T };
 ---
-<div class="eng-tab el" data-eng-tab="electrical" hidden={hidden} data-el-text={JSON.stringify(client)}>
-  <p class="eng-fi"><em>{T.fwd}</em>{T.fi[0]}<em>{T.inv}</em>{T.fi[1]}</p>
+<div class="eng-tab pvt" data-eng-tab="electrical" data-pv-text={JSON.stringify(T)} hidden={hidden}>
+  <p class="eng-fi"><em>{T.fwd}</em>: {T.fwdText} <em>{T.inv}</em>: {T.invText}</p>
 
-  <fieldset class="el__house">
-    <legend>{T.house}</legend>
-    {APPLIANCES.map((a, i) => (
-      <label class="el__app"><input type="checkbox" data-el-app={i} checked /> <i class="el__sw" style={`background:${a.colour}`}></i>{names[a.id]} <span class="el__w">{a.power >= 1000 ? `${a.power / 1000} kW` : `${a.power} W`}</span></label>
-    ))}
-  </fieldset>
+  <div class="seg pvt__modes" role="group" aria-label={es ? 'Modo' : 'Mode'}>
+    <button type="button" data-pv-mode="fwd" aria-pressed="true">{T.mFwd}</button>
+    <button type="button" data-pv-mode="inv" aria-pressed="false">{T.mInv}</button>
+  </div>
 
-  <canvas class="el__canvas" data-el-canvas role="img" aria-label={`${T.pMeter}; ${T.pTrue}; ${T.pEst}`}></canvas>
-
-  <div class="el__controls">
-    <div class="control">
-      <div class="control__head"><label for={`el-noise-${lang}`}>{T.noise}</label><output data-el-nout>40 W</output></div>
-      <input id={`el-noise-${lang}`} data-el-noise type="range" min="0" max="120" step="5" value="40" />
+  <div class="pvt__grid">
+    <div class="pvt__cell">
+      <p class="panel-title" data-pv-t1>{T.pE}</p>
+      <div class="pvt__plot" data-pv-p1></div>
+      <p class="pvt__key" data-pv-k1></p>
     </div>
-    <div class="control">
-      <span class="control__head">{T.prior}</span>
-      <div class="seg" role="group" aria-label={T.prior}>
-        <button type="button" data-el-prior="dur" aria-pressed="true">{T.pDur}</button>
-        <button type="button" data-el-prior="flat" aria-pressed="false">{T.pFlat}</button>
+    <div class="pvt__cell">
+      <p class="panel-title" data-pv-t2>{T.pSR}</p>
+      <div class="pvt__plot" data-pv-p2></div>
+      <p class="pvt__key" data-pv-k2></p>
+    </div>
+  </div>
+
+  <div class="pvt__controls">
+    <div class="control"><div class="control__head"><label for={`pv-r-${lang}`}>{T.rate}</label><output data-pv-or>—</output></div><input id={`pv-r-${lang}`} data-pv-rate type="range" min="0.05" max="0.5" step="0.01" value="0.2" /></div>
+    <div class="control"><div class="control__head"><label for={`pv-n-${lang}`}>{T.interval}</label><output data-pv-on>—</output></div><input id={`pv-n-${lang}`} data-pv-int type="range" min="7" max="180" step="1" value="30" /></div>
+    <div class="control"><div class="control__head"><label for={`pv-d-${lang}`}>{T.deg}</label><output data-pv-od>—</output></div><input id={`pv-d-${lang}`} data-pv-deg type="range" min="0" max="2" step="0.05" value="0.7" /></div>
+    <div class="control"><div class="control__head"><label for={`pv-e-${lang}`}>{T.noise}</label><output data-pv-oe>—</output></div><input id={`pv-e-${lang}`} data-pv-noise type="range" min="0" max="2" step="0.1" value="0.7" /></div>
+    <label class="meta pvt__check"><input type="checkbox" data-pv-none /> {T.none}</label>
+    <div class="control" data-pv-invui hidden><span class="control__head">{T.method}</span>
+      <div class="seg" role="group" aria-label={T.method}><button type="button" data-pv-m="classic" aria-pressed="true">{T.classic}</button><button type="button" data-pv-m="pinn" aria-pressed="false">PINN</button></div>
+    </div>
+    <p class="pvt__btns"><button type="button" class="btn" data-pv-train hidden>{T.train}</button> <button type="button" class="btn" data-pv-new>{T.newD}</button></p>
+  </div>
+
+  <Equation tex={es
+    ? String.raw`\begin{gathered} E(t) = E_{\text{limpia}}(t)\; \mathrm{SR}(t)\,\big(1 - R_d\, t\big) \\ \frac{\mathrm{d}\,\mathrm{SR}}{\mathrm{d}t} = -r\,\mathrm{SR}\ \ \text{entre limpiezas} \\ \mathrm{SR} = 1\ \text{al limpiar} \end{gathered}`
+    : String.raw`\begin{gathered} E(t) = E_{\text{clean}}(t)\; \mathrm{SR}(t)\,\big(1 - R_d\, t\big) \\ \frac{\mathrm{d}\,\mathrm{SR}}{\mathrm{d}t} = -r\,\mathrm{SR}\ \ \text{between cleanings} \\ \mathrm{SR} = 1\ \text{after a cleaning} \end{gathered}`} />
+  <p class="meta pvt__loss" data-pv-pinnui hidden>{T.lossLabel} <Equation display={false} tex={String.raw`\mathcal{L}(\theta, r, R_d) = \overline{\big(\mathrm{SR}_\theta (1 - R_d t) - \mathrm{PI}\big)^2} + \lambda\, \overline{\Big(\tfrac{\mathrm{d}\ln \mathrm{SR}_\theta}{\mathrm{d}t} + r\Big)^2}`} /></p>
+  <p class="lab__readout" data-pv-read aria-live="polite"></p>
+
+  <div class="pvt__decision" data-pv-dec hidden>
+    <p class="panel-title">{T.pDec}</p>
+    <div class="pvt__decgrid">
+      <div class="pvt__plot pvt__plot--dec" data-pv-p3></div>
+      <div class="pvt__deccontrols">
+        <div class="control"><div class="control__head"><label for={`pv-c-${lang}`}>{T.cost}</label><output data-pv-oc>—</output></div><input id={`pv-c-${lang}`} data-pv-cost type="range" min="10" max="150" step="5" value="40" /></div>
+        <div class="control"><div class="control__head"><label for={`pv-p-${lang}`}>{T.price}</label><output data-pv-op>—</output></div><input id={`pv-p-${lang}`} data-pv-price type="range" min="20" max="100" step="1" value="45" /></div>
+        <p class="pvt__key" data-pv-k3></p>
       </div>
     </div>
-    <p class="el__btns"><button type="button" class="btn" data-el-run>{T.run}</button> <button type="button" class="btn" data-el-new>{T.newDay}</button></p>
+    <p class="lab__readout" data-pv-dread aria-live="polite"></p>
   </div>
 
-  <table class="el__table">
-    <thead><tr><th>{T.thA}</th><th class="n">{T.thP}</th><th class="n">{T.thT} (kWh)</th><th class="n">{T.thE} (kWh)</th></tr></thead>
-    <tbody data-el-rows></tbody>
-  </table>
-
-  <div class="eng-eqs">
-    <Equation tex={String.raw`P(t) = P_0 + \sum_i P_i\, s_i(t) + \varepsilon(t)`} />
-    <Equation tex={String.raw`s_i(t)\in\{0,1\}`} />
-    <Equation tex={String.raw`\hat{s} = \arg\max_{s}\; p\big(s \mid P\big)`} />
-  </div>
-  <p class="lab__readout" data-el-read aria-live="polite">{T.rdIdle}</p>
-  <p class="eng-cap">{T.cap}</p>
+  <p class="eng-cap">{T.cap} {T.pinnCap}</p>
 </div>
 
 <script>
-  import { APPLIANCES, MINUTES, BASE_LOAD, syntheticDay, meter, disaggregate, energies, accuracy, energyAccuracy } from '../../lib/eng/nilm';
-  import { cssVar } from '../../lib/plot';
+  import { LinePlot, type Series } from '../../lib/plot';
+  import { simulate, fitSoiling, detectCleanings, soilingSeries, soilingLoss, annualCost, optimalInterval, DAYS, type PlantData, type ClassicFit } from '../../lib/eng/pv';
+  import { initPvPinn, pvLossGrad, pvAdam, rateOf, degradationOf, pinnSoiling, type PvPinn } from '../../lib/eng/pinn-pv';
+
+  const P_H = 16, P_STEPS = 2500, P_LR = 0.02, FRAME_MS = 7;
 
   function init(root: HTMLElement) {
-    const { lang, names, T } = JSON.parse(root.dataset.elText!);
-    const es = lang === 'es';
-    const nf = (v: number, d = 2) => (es ? v.toFixed(d).replace('.', ',') : v.toFixed(d));
-    const canvas = root.querySelector<HTMLCanvasElement>('[data-el-canvas]')!;
-    const ctx = canvas.getContext('2d')!;
-    const boxes = [...root.querySelectorAll<HTMLInputElement>('[data-el-app]')];
-    const noiseIn = root.querySelector<HTMLInputElement>('[data-el-noise]')!;
-    const nout = root.querySelector<HTMLOutputElement>('[data-el-nout]')!;
-    const rows = root.querySelector<HTMLElement>('[data-el-rows]')!;
-    const read = root.querySelector<HTMLElement>('[data-el-read]')!;
-
-    let seed = 1, prior: 'dur' | 'flat' = 'dur', ran = false;
-    let present = boxes.map((b) => b.checked);
-    let truth: Uint8Array[] = [], P: Float64Array = new Float64Array(0), est: Uint8Array[] | null = null, ms = 0;
-    let W = 600, H = 420;
-
-    const simulate = () => {
-      truth = syntheticDay(seed, present);
-      P = meter(truth, +noiseIn.value, seed + 100);
-      nout.textContent = `${noiseIn.value} W`;
+    const T = JSON.parse(root.dataset.pvText!);
+    const es = T.mFwd.startsWith('directo');
+    const q = <E extends Element>(s: string) => root.querySelector<E>(s)!;
+    const fmt = (v: number, d = 2) => (es ? v.toFixed(d).replace('.', ',') : v.toFixed(d));
+    const rIn = q<HTMLInputElement>('[data-pv-rate]'), nIn = q<HTMLInputElement>('[data-pv-int]'), dIn = q<HTMLInputElement>('[data-pv-deg]');
+    const eIn = q<HTMLInputElement>('[data-pv-noise]'), noneBox = q<HTMLInputElement>('[data-pv-none]');
+    const cIn = q<HTMLInputElement>('[data-pv-cost]'), pIn = q<HTMLInputElement>('[data-pv-price]');
+    const trainBtn = q<HTMLButtonElement>('[data-pv-train]'), newBtn = q<HTMLButtonElement>('[data-pv-new]');
+    const read = q<HTMLElement>('[data-pv-read]'), dread = q<HTMLElement>('[data-pv-dread]');
+    const p1 = new LinePlot(q<HTMLElement>('[data-pv-p1]'), { width: 420, height: 280, xlabel: T.day, ylabel: T.mwh, title: T.pE, legend: false });
+    const p2 = new LinePlot(q<HTMLElement>('[data-pv-p2]'), { width: 420, height: 280, xlabel: T.day, ylabel: T.pi, title: T.pSR, legend: false });
+    const p3 = new LinePlot(q<HTMLElement>('[data-pv-p3]'), { width: 420, height: 240, xlabel: T.days, ylabel: T.kusd, title: T.pDec, legend: false });
+    const key = (el: HTMLElement, ss: Series[]) => {
+      el.replaceChildren(...ss.filter((x) => x.label).map((x) => {
+        const sp = document.createElement('span'), mk = document.createElement('span');
+        mk.className = x.kind === 'points' ? `pvt__dot ${x.cls.replace('s-', 'c-')}` : `key pvt__line ${x.cls.replace('s-', 'key--')}${x.dash ? ' pvt__dash' : ''}`;
+        if (x.kind === 'points') mk.textContent = '●';
+        sp.append(mk, document.createTextNode(x.label!));
+        return sp;
+      }));
     };
-    const estimate = () => {
-      if (!ran) { est = null; return; }
-      const t0 = performance.now();
-      est = disaggregate(P, +noiseIn.value, present, prior === 'dur');
-      ms = performance.now() - t0;
+    const setText = (sel: string, t: string) => { q<HTMLElement>(sel).textContent = t; };
+    const show = (sel: string, on: boolean) => root.querySelectorAll<HTMLElement>(sel).forEach((e) => (e.hidden = !on));
+
+    let mode: 'fwd' | 'inv' = 'fwd', method: 'classic' | 'pinn' = 'classic';
+    let seed = 3, data: PlantData, fit: ClassicFit, jumps = 0;
+    let pinn: PvPinn | null = null, pIter = 0, praf = 0, pLd = NaN, pLp = NaN, hist: [number, number, number][] = [];
+    const days = Array.from({ length: DAYS }, (_, t) => t);
+    const every = (arr: ArrayLike<number>, k: number) => { const x: number[] = [], y: number[] = []; for (let t = 0; t < DAYS; t += k) { x.push(t); y.push(arr[t]); } return { x, y }; };
+    const truth = () => ({ r: +rIn.value / 100, interval: noneBox.checked ? Infinity : +nIn.value, Rd: +dIn.value / 100, noise: +eIn.value / 100 });
+    const annualMWh = () => { let s = 0; for (let t = 0; t < 365; t++) s += data.Eclean[t] * data.D[t]; return s; };
+
+    const outputs = () => {
+      setText('[data-pv-or]', `${fmt(+rIn.value)} ${T.unitDay}`);
+      setText('[data-pv-on]', noneBox.checked ? '—' : `${nIn.value} ${T.dUnit}`);
+      setText('[data-pv-od]', `${fmt(+dIn.value)} ${T.unitYr}`);
+      setText('[data-pv-oe]', `${fmt(+eIn.value, 1)} %`);
+      setText('[data-pv-oc]', `${cIn.value} ${T.kU}`);
+      setText('[data-pv-op]', `${pIn.value} USD/MWh`);
+      nIn.disabled = noneBox.checked;
     };
 
-    const resize = () => {
-      const w = Math.round(canvas.clientWidth);
-      if (!w) return false;
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
-      W = w; H = Math.round(Math.min(460, Math.max(360, w * 0.72)));
-      canvas.style.height = `${H}px`;
-      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      return true;
+    const newData = () => {
+      stopP(); pinn = null; hist = [];
+      data = simulate(truth(), seed);
+      fit = fitSoiling(data.PI, data.cleanings);
+      jumps = detectCleanings(data.PI).length;
     };
 
-    const draw = () => {
-      const c = { ink: cssVar('--ink'), ink3: cssVar('--ink-3'), rule: cssVar('--rule'), paper: cssVar('--paper'), data: cssVar('--c-data'), font: cssVar('--font-serif') || 'serif' };
-      ctx.clearRect(0, 0, W, H);
-      const L = W < 420 ? 34 : 44, R = 8, top = 6, bottom = 30, gap = 22;
-      const ph = (H - top - bottom - 3 * gap) / 3;
-      const pw = W - L - R;
-      const pmax = 5000;
-      const X = (t: number) => L + (t / MINUTES) * pw;
-      const fs = W < 420 ? 10.5 : 11.5;
-      ctx.font = `${fs}px ${c.font}`;
-      const panel = (k: number, title: string, body: (Y: (p: number) => number) => void) => {
-        const y0 = top + gap + k * (ph + gap);
-        const Y = (p: number) => y0 + ph - (p / pmax) * ph;
-        ctx.fillStyle = c.ink; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-        ctx.fillText(title, L, y0 - 6);
-        ctx.save(); ctx.beginPath(); ctx.rect(L, y0, pw, ph); ctx.clip();
-        body(Y);
-        ctx.restore();
-        ctx.strokeStyle = c.ink; ctx.lineWidth = 0.7; ctx.strokeRect(L + 0.5, y0 + 0.5, pw - 1, ph - 1);
-        ctx.fillStyle = c.ink; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-        for (const p of [0, 2000, 4000]) ctx.fillText(String(p / 1000), L - 5, Y(p));
-        if (k === 1) {
-          ctx.save(); ctx.translate(11, y0 + ph / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = 'center'; ctx.font = `italic ${fs + 1}px ${c.font}`;
-          ctx.fillText(T.kw, 0, 0); ctx.restore(); ctx.font = `${fs}px ${c.font}`;
-        }
-        return y0;
-      };
-      const stacked = (S: Uint8Array[], Y: (p: number) => number) => {
-        const dx = pw / MINUTES + 0.4;
-        for (let t = 0; t < MINUTES; t++) {
-          let acc = 0;
-          ctx.fillStyle = c.rule;
-          ctx.fillRect(X(t), Y(BASE_LOAD), dx, Y(0) - Y(BASE_LOAD));
-          acc = BASE_LOAD;
-          for (let i = 0; i < APPLIANCES.length; i++) {
-            if (!S[i][t]) continue;
-            const p = APPLIANCES[i].power;
-            ctx.fillStyle = APPLIANCES[i].colour;
-            ctx.fillRect(X(t), Y(acc + p), dx, Y(acc) - Y(acc + p));
-            acc += p;
-          }
-        }
-      };
-      const meterLine = (Y: (p: number) => number, colour: string, width: number) => {
-        ctx.strokeStyle = colour; ctx.lineWidth = width; ctx.beginPath();
-        for (let t = 0; t < MINUTES; t++) { const x = X(t), y = Y(P[t]); if (t) ctx.lineTo(x, y); else ctx.moveTo(x, y); }
-        ctx.stroke();
-      };
-      panel(0, T.pMeter, (Y) => meterLine(Y, c.data, 1));
-      panel(1, T.pTrue, (Y) => stacked(truth, Y));
-      const y2 = panel(2, T.pEst, (Y) => {
-        if (est) { stacked(est, Y); meterLine(Y, c.ink, 0.6); }
-      });
-      if (!est) {
-        ctx.fillStyle = c.ink3; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = `italic ${fs + 1}px ${c.font}`;
-        ctx.fillText(T.pending, L + pw / 2, y2 + ph / 2); ctx.font = `${fs}px ${c.font}`;
+    // ---- forward
+    const drawForward = () => {
+      const m = every(data.E, 2), c = every(data.Eclean, 1);
+      const s1: Series[] = [
+        { kind: 'points', x: m.x, y: m.y, cls: 's-data', label: T.leg.meas },
+        { kind: 'line', x: c.x, y: c.y, cls: 's-physics', label: T.leg.clean },
+      ];
+      p1.setLabels(T.day, T.mwh);
+      p1.render(s1, { xlim: [0, DAYS], ylim: [0, 1000] });
+      key(q('[data-pv-k1]'), s1);
+      const pi = every(data.PI, 2);
+      const s2: Series[] = [
+        { kind: 'points', x: pi.x, y: pi.y, cls: 's-data', label: T.leg.pi },
+        { kind: 'line', x: days, y: data.SR, cls: 's-truth', label: T.leg.sr },
+      ];
+      p2.setLabels(T.day, T.pi);
+      p2.render(s2, { xlim: [0, DAYS], ylim: [Math.max(0, Math.min(...data.PI) - 0.03), 1.05] });
+      key(q('[data-pv-k2]'), s2);
+      let tot = 0; for (let t = 0; t < DAYS; t++) tot += data.E[t];
+      const L = soilingLoss(data.Eclean, data.D, data.SR);
+      read.textContent = `${T.rd.fwd}: ${fmt(tot / 1000, 0)} GWh · ${T.rd.lost}: ${fmt(L.lost / 1000, 1)} GWh (${fmt(L.frac * 100, 1)} %) · ${T.rd.cleans}: ${data.cleanings.length - 1}`;
+    };
+
+    // ---- inverse, classical
+    const drawClassic = () => {
+      const tr = truth();
+      const pi = every(data.PI, 2);
+      const s1: Series[] = [{ kind: 'points', x: pi.x, y: pi.y, cls: 's-data', label: T.leg.pi }];
+      const s2: Series[] = [{ kind: 'line', x: days, y: data.SR, cls: 's-truth', label: T.leg.truth }];
+      let txt: string;
+      if (fit.confounded) {
+        const m = days.map((t) => Math.exp(fit.c0 - fit.sum * t));
+        s1.push({ kind: 'line', x: days, y: m, cls: 's-learned', label: T.leg.fit });
+        txt = `${T.rd.conf}, ${fmt(fit.sum * 100, 3)} ${T.unitDay}: ${T.rd.confEnd} (${T.rd.truth}: ${fmt(tr.r * 100, 2)} ${T.unitDay} + ${fmt(tr.Rd * 100, 2)} ${T.unitYr}).`;
+      } else {
+        const sr = soilingSeries(fit.r, data.cleanings);
+        s1.push({ kind: 'line', x: days, y: days.map((t) => Math.exp(fit.c0) * sr[t] * (1 - (fit.Rd * t) / 365)), cls: 's-learned', label: T.leg.fit });
+        s2.push({ kind: 'line', x: days, y: sr, cls: 's-learned', dash: true, label: T.leg.est });
+        const Le = soilingLoss(data.Eclean, data.D, sr), Lt = soilingLoss(data.Eclean, data.D, data.SR);
+        txt = `${T.rd.r} ${fmt(fit.r * 100, 3)} ± ${fmt(fit.seR * 100, 3)} ${T.unitDay} (${T.rd.truth} ${fmt(tr.r * 100, 3)}) · ${T.rd.d} ${fmt(fit.Rd * 100, 2)} ± ${fmt(fit.seRd * 100, 2)} ${T.unitYr} (${T.rd.truth} ${fmt(tr.Rd * 100, 2)}) · ${T.rd.lostE} ${fmt(Le.lost / 1000, 1)} GWh (${fmt(Le.frac * 100, 1)} %; ${T.rd.truth} ${fmt(Lt.lost / 1000, 1)}) · ${T.rd.jumps}: ${Math.max(0, jumps - 1)} ${T.rd.of} ${data.cleanings.length - 1}`;
       }
-      // time axis
-      ctx.fillStyle = c.ink; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-      const step = W < 420 ? 6 : 3;
-      for (let h = 0; h <= 24; h += step) ctx.fillText(`${h}`, X(h * 60), y2 + ph + 5);
-      ctx.font = `italic ${fs + 1}px ${c.font}`;
-      ctx.fillText(T.hours, L + pw / 2, y2 + ph + 17);
+      p1.setLabels(T.day, T.pi);
+      p1.render(s1, { xlim: [0, DAYS], ylim: [Math.max(0, Math.min(...data.PI) - 0.03), 1.05] });
+      key(q('[data-pv-k1]'), s1);
+      p2.setLabels(T.day, T.pi);
+      p2.render(s2, { xlim: [0, DAYS], ylim: [Math.max(0, Math.min(...data.SR) - 0.03), 1.03] });
+      key(q('[data-pv-k2]'), s2);
+      read.textContent = txt;
+      drawDecision(fit.confounded ? NaN : fit.r);
     };
 
-    const table = () => {
-      const et = energies(truth), ee = est ? energies(est) : null;
-      rows.innerHTML = APPLIANCES.map((a, i) => {
-        if (!present[i]) return '';
-        const bad = ee && Math.abs(ee[i] - et[i]) > 0.15 ? ' class="bad"' : '';
-        return `<tr><td><i class="el__sw" style="background:${a.colour}"></i>${names[a.id]}</td><td class="n">${a.power >= 1000 ? nf(a.power / 1000, 0) + ' kW' : a.power + ' W'}</td><td class="n">${nf(et[i])}</td><td class="n"${bad}>${ee ? nf(ee[i]) : '—'}</td></tr>`;
-      }).join('');
-      if (!est) { read.textContent = T.rdIdle; return; }
-      const acc = accuracy(truth, est, present), eacc = energyAccuracy(truth, est);
-      const k = APPLIANCES.findIndex((a) => a.id === 'kettle'), o = APPLIANCES.findIndex((a) => a.id === 'oven');
-      const confused = present[k] && present[o] && Math.abs(ee![k] - et[k]) + Math.abs(ee![o] - et[o]) > 0.5;
-      read.textContent = `${T.rdAcc} ${nf(acc * 100, 1)} % · ${T.rdE} ${nf(eacc * 100, 1)} % · ${T.rdTime} ${Math.max(1, Math.round(ms))} ms. ${confused ? T.rdAmb : prior === 'dur' && present[k] && present[o] ? T.rdOk : ''}`;
+    // ---- inverse, PINN
+    const drawPinn = () => {
+      const tr = truth();
+      const pi = every(data.PI, 2);
+      const s1: Series[] = [
+        { kind: 'points', x: pi.x, y: pi.y, cls: 's-data', label: T.leg.pi },
+        { kind: 'line', x: days, y: data.SR, cls: 's-truth', dash: true, label: `${T.leg.sr} (${T.leg.truth})` },
+      ];
+      let txt = T.rd.pinnIdle, rEst = NaN;
+      if (pinn) {
+        const sr = pinnSoiling(pinn, data.cleanings), d = degradationOf(pinn);
+        s1.push({ kind: 'line', x: days, y: days.map((t) => sr[t] * (1 - (d * t) / 36500)), cls: 's-learned', label: T.leg.pinn });
+        let e = 0; for (let t = 0; t < DAYS; t++) e += (sr[t] - data.SR[t]) ** 2;
+        rEst = rateOf(pinn) / 100;
+        txt = `PINN: ${T.it} ${pIter} · r = ${fmt(rateOf(pinn), 3)} ${T.unitDay} (${T.rd.truth} ${fmt(tr.r * 100, 3)}) · ${T.rd.d} ${fmt(d, 2)} ${T.unitYr} (${T.rd.truth} ${fmt(tr.Rd * 100, 2)}) · ${T.rd.data} ${pLd.toFixed(2)} · ${T.rd.ode} ${pLp.toExponential(1)} · ${T.rd.srErr} ${fmt(Math.sqrt(e / DAYS), 4)}`;
+        if (data.cleanings.length <= 1) { txt += `. ${T.rd.pinnConf}`; rEst = NaN; }
+      }
+      p1.setLabels(T.day, T.pi);
+      p1.render(s1, { xlim: [0, DAYS], ylim: [Math.max(0, Math.min(...data.PI) - 0.03), 1.05] });
+      key(q('[data-pv-k1]'), s1);
+      const h: Series[] = [
+        { kind: 'line', x: [0, P_STEPS], y: [tr.r * 100, tr.r * 100], cls: 's-truth', dash: true, label: `r (${T.leg.truth})` },
+        { kind: 'line', x: [0, P_STEPS], y: [tr.Rd * 100, tr.Rd * 100], cls: 's-muted', dash: true, label: `${T.leg.d} (${T.leg.truth})` },
+      ];
+      if (hist.length) {
+        h.push({ kind: 'line', x: hist.map((z) => z[0]), y: hist.map((z) => z[1]), cls: 's-learned', label: T.leg.r });
+        h.push({ kind: 'line', x: hist.map((z) => z[0]), y: hist.map((z) => z[2]), cls: 's-physics', label: T.leg.d });
+      }
+      p2.setLabels(T.it, T.val);
+      p2.render(h, { xlim: [0, P_STEPS], ylim: [0, Math.max(1, tr.Rd * 100 * 1.4, tr.r * 100 * 1.4, ...hist.map((z) => Math.max(z[1], z[2]) * 1.05))] });
+      key(q('[data-pv-k2]'), h);
+      read.textContent = txt;
+      drawDecision(pinn ? rEst : fit.confounded ? NaN : fit.r);
     };
 
-    const update = (resim = true) => { if (resim) simulate(); estimate(); if (resize()) draw(); table(); };
+    // ---- decision: cleaning interval
+    const drawDecision = (r: number) => {
+      const C = +cIn.value * 1000, price = +pIn.value, E = annualMWh();
+      const Ns = Array.from({ length: 180 }, (_, i) => i + 5);
+      const s: Series[] = [];
+      if (Number.isFinite(r) && r > 0) {
+        const cost = Ns.map((N) => annualCost(N, r, C, price, E) / 1000);
+        const Nopt = optimalInterval(r, C, price, E), cOpt = annualCost(Nopt, r, C, price, E) / 1000;
+        s.push({ kind: 'line', x: Ns, y: cost, cls: 's-learned', label: T.leg.total });
+        s.push({ kind: 'points', x: [Nopt], y: [cOpt], cls: 's-truth', label: `${T.leg.opt}: ${Nopt} ${T.dUnit}` });
+        if (!noneBox.checked) {
+          const Nc = +nIn.value, cC = annualCost(Nc, r, C, price, E) / 1000;
+          s.push({ kind: 'points', x: [Nc], y: [cC], cls: 's-data', label: `${T.leg.cur}: ${Nc} ${T.dUnit}` });
+          const extra = cC - cOpt;
+          dread.textContent = `${T.rd.opt} ${Nopt} ${T.dUnit} (${T.rd.costs} ${fmt(cOpt, 0)} ${T.kU}); ${T.rd.current} ${Nc} ${T.dUnit} ` + (extra < 0.02 * cOpt ? `${T.rd.best}.` : `${T.rd.more} ${fmt(extra, 0)} ${T.rd.perYr}.`);
+        } else dread.textContent = `${T.rd.opt} ${Nopt} ${T.dUnit} (${T.rd.costs} ${fmt(cOpt, 0)} ${T.kU}).`;
+        const top = Math.min(Math.max(...cost), cOpt * 3);
+        p3.render(s, { xlim: [0, 185], ylim: [0, top * 1.05] });
+      } else {
+        dread.textContent = T.rd.needR;
+        p3.render([{ kind: 'line', x: [5, 185], y: [0, 0], cls: 's-muted', dash: true }], { xlim: [0, 185], ylim: [0, 1] });
+      }
+      key(q('[data-pv-k3]'), s);
+    };
 
-    boxes.forEach((b) => b.addEventListener('change', () => { present = boxes.map((x) => x.checked); update(); }));
-    noiseIn.addEventListener('input', () => update());
-    root.querySelectorAll<HTMLButtonElement>('[data-el-prior]').forEach((b) => b.addEventListener('click', () => {
-      prior = b.dataset.elPrior as 'dur' | 'flat';
-      root.querySelectorAll('[data-el-prior]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-      update(false);
-    }));
-    root.querySelector('[data-el-run]')!.addEventListener('click', () => { ran = true; update(false); });
-    root.querySelector('[data-el-new]')!.addEventListener('click', () => { seed++; update(); });
-    window.addEventListener('themechange', () => { if (!root.hidden) draw(); });
-    new ResizeObserver(() => { if (!root.hidden && resize()) draw(); }).observe(canvas);
-    root.addEventListener('eng:show', () => { if (resize()) draw(); });
-    update();
+    // ---- PINN training
+    function stopP() { cancelAnimationFrame(praf); praf = 0; trainBtn.textContent = T.train; }
+    const loopP = () => {
+      if (!pinn) return;
+      if (root.hidden) { stopP(); return; }
+      const t0 = performance.now();
+      while (pIter < P_STEPS && performance.now() - t0 < FRAME_MS) {
+        const res = pvLossGrad(pinn, data.PI, data.cleanings);
+        pLd = res.Ld; pLp = res.Lp;
+        pvAdam(pinn, res.grad, P_LR * (0.1 + 0.45 * (1 + Math.cos((Math.PI * pIter) / P_STEPS))));
+        pIter++;
+        if (pIter % 25 === 0) hist.push([pIter, rateOf(pinn), degradationOf(pinn)]);
+      }
+      drawPinn();
+      if (pIter >= P_STEPS) { stopP(); return; }
+      praf = requestAnimationFrame(loopP);
+    };
+    const trainP = () => {
+      if (praf) { stopP(); return; }
+      pinn = initPvPinn(P_H, 5); pIter = 0; pLd = NaN; pLp = NaN; hist = [[0, rateOf(pinn), degradationOf(pinn)]];
+      trainBtn.textContent = T.stop;
+      praf = requestAnimationFrame(loopP);
+    };
+
+    const layout = () => {
+      root.querySelectorAll<HTMLButtonElement>('[data-pv-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.pvMode === mode)));
+      root.querySelectorAll<HTMLButtonElement>('[data-pv-m]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.pvM === method)));
+      const inv = mode === 'inv', pn = inv && method === 'pinn';
+      show('[data-pv-invui]', inv); show('[data-pv-dec]', inv); show('[data-pv-pinnui]', pn);
+      trainBtn.hidden = !pn;
+      setText('[data-pv-t1]', !inv ? T.pE : pn ? T.pPinn : T.pPI);
+      setText('[data-pv-t2]', !inv ? T.pSR : pn ? T.pHist : T.pSRe);
+    };
+    const redraw = () => { outputs(); layout(); if (mode === 'fwd') drawForward(); else if (method === 'pinn') drawPinn(); else drawClassic(); };
+
+    [rIn, nIn, dIn, eIn].forEach((el) => el.addEventListener('input', () => { newData(); redraw(); }));
+    noneBox.addEventListener('change', () => { newData(); redraw(); });
+    [cIn, pIn].forEach((el) => el.addEventListener('input', () => { outputs(); if (method === 'pinn') drawPinn(); else drawClassic(); }));
+    newBtn.addEventListener('click', () => { seed++; newData(); redraw(); });
+    trainBtn.addEventListener('click', trainP);
+    root.querySelectorAll<HTMLButtonElement>('[data-pv-mode]').forEach((b) => b.addEventListener('click', () => { stopP(); mode = b.dataset.pvMode as 'fwd' | 'inv'; redraw(); }));
+    root.querySelectorAll<HTMLButtonElement>('[data-pv-m]').forEach((b) => b.addEventListener('click', () => { stopP(); method = b.dataset.pvM as 'classic' | 'pinn'; redraw(); }));
+    window.addEventListener('themechange', redraw);
+
+    newData(); redraw();
   }
 
   document.querySelectorAll<HTMLElement>('[data-eng-tab="electrical"]').forEach((root) => {
     let done = false;
-    const start = () => { if (done) return; done = true; init(root); };
-    root.addEventListener('eng:show', start, { once: true });
-    if (!root.hidden) start();
+    const go = () => { if (!done) { done = true; init(root); } };
+    root.addEventListener('eng:show', go);
+    if (!root.hidden) go();
   });
 </script>
 
 <style>
-  .el__house { border: 0; padding: 0; margin: 0 auto var(--s-3); max-width: 40rem; display: flex; flex-wrap: wrap; gap: 0.25rem 1.1rem; justify-content: center; font-size: var(--step--1); }
-  .el__house legend { width: 100%; text-align: center; font-style: italic; color: var(--ink-2); margin-bottom: 0.3rem; padding: 0; }
-  .el__app { display: inline-flex; align-items: center; gap: 0.3em; white-space: nowrap; }
-  .el__w { color: var(--ink-3); font-size: 0.9em; }
-  .el :global(.el__sw) { display: inline-block; width: 0.8em; height: 0.8em; margin-right: 0.3em; vertical-align: -0.05em; }
-  .el__canvas { display: block; width: 100%; max-width: 40rem; margin-inline: auto; }
-  .el__controls { max-width: 40rem; margin: var(--s-4) auto 0; display: grid; gap: var(--s-3); grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); align-items: end; }
-  .el__btns { font-size: var(--step--1); display: flex; flex-wrap: wrap; gap: 0.3em 1em; grid-column: 1 / -1; justify-content: center; }
-  .el__table { max-width: 30rem; margin: var(--s-4) auto 0; }
-  .el__table .n, .el__table :global(td.n) { text-align: right; font-family: var(--font-mono); font-size: 0.92em; }
-  .el__table th.n { font-family: inherit; }
-  .el__table :global(td.bad) { color: var(--c-warn); }
-  .eng-eqs { display: flex; flex-wrap: wrap; justify-content: center; column-gap: var(--s-6); margin-block: var(--s-3); }
-  .eng-eqs :global(.eq) { justify-content: center; margin-block: var(--s-2); max-width: 100%; min-width: 0; }
+  .pvt__modes { display: flex; justify-content: center; margin: 0 auto var(--s-3); }
+  .pvt__grid { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); max-width: 40rem; margin: var(--s-2) auto 0; align-items: start; }
+  .pvt__cell { min-width: 0; }
+  .pvt__plot { min-height: 13rem; min-width: 0; }
+  .pvt__plot--dec { min-height: 11rem; }
+  .pvt__key { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.1em 0.9em; font-size: var(--step--2); color: var(--ink-2); margin-top: 0.2rem; }
+  .pvt__key :global(.pvt__dot) { font-size: 0.8em; margin-right: 0.3em; }
+  .pvt__key :global(.pvt__line) { margin-right: 0.35em; }
+  .pvt__key :global(.key--muted) { background: var(--ink-3); }
+  .pvt__key :global(.pvt__dash) { background: repeating-linear-gradient(90deg, currentColor 0 4px, transparent 4px 7px) !important; }
+  .pvt__key :global(.pvt__dash.key--muted) { color: var(--ink-3); }
+  .pvt__key :global(.pvt__dash.key--truth) { color: var(--c-truth); }
+  .pvt__key :global(.pvt__dash.key--learned) { color: var(--c-learned); }
+  .pvt__key :global(.pvt__dash.key--physics) { color: var(--c-physics); }
+  .pvt__key :global(.c-muted) { color: var(--ink-3); }
+  .pvt__controls { display: grid; gap: var(--s-3) var(--s-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); max-width: 40rem; margin: var(--s-4) auto 0; }
+  .pvt__controls [hidden] { display: none; }
+  .pvt__check { display: flex; gap: 0.4em; align-items: baseline; }
+  .pvt__btns { grid-column: 1 / -1; font-size: var(--step--1); text-align: center; }
+  .pvt__loss { font-size: var(--step--1); text-align: center; max-width: 40rem; margin: var(--s-2) auto 0; overflow-x: auto; }
+  .pvt__loss[hidden], .pvt__decision[hidden] { display: none; }
+  .pvt :global(.eq) { max-width: 40rem; margin-inline: auto; justify-content: center; }
+  .pvt .lab__readout { max-width: 40rem; margin: var(--s-2) auto 0; text-align: center; }
+  .pvt__decision { max-width: 40rem; margin: var(--s-5) auto 0; border-top: 0.5px solid var(--ink-3); padding-top: var(--s-3); }
+  .pvt__decgrid { display: grid; gap: var(--s-4); grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-items: start; }
+  .pvt__deccontrols { display: grid; gap: var(--s-3); align-content: start; }
+  .pvt .eng-cap, .pvt .eng-fi { max-width: 40rem; margin-inline: auto; }
+  .pvt .eng-cap { margin-top: var(--s-3); }
+  @media (max-width: 34rem) { .pvt__decgrid { grid-template-columns: 1fr; } }
 </style>

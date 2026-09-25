@@ -1,9 +1,14 @@
 ---
 /**
- * Computing tab: image deblurring (computational imaging).
- * Forward: a sharp image is blurred by a known point-spread function and noise is added.
- * Inverse: recover it by Fourier deconvolution (inverse filter, Tikhonov/Wiener) or by
- * Richardson–Lucy iterations (src/lib/eng/deblur.ts). The image is drawn in the browser.
+ * Computing tab, two examples behind an "Example" switch.
+ * 1. Image deblurring (computational imaging). Forward: a sharp image is blurred by a
+ *    known point-spread function and noise is added. Inverse: Fourier deconvolution
+ *    (inverse filter, Tikhonov/Wiener), Richardson–Lucy, or a physics-informed neural
+ *    field (src/lib/eng/deblur.ts, pinn-image.ts). The test image (a simplified drawing
+ *    inspired by the crest of Club Deportivo Universidad Católica) is drawn in the browser.
+ * 2. Trustworthy AI: deep ensembles and split conformal prediction on a damped oscillator
+ *    observed with a gap, plain vs physics-informed ensembles (src/lib/eng/trust.ts).
+ *    Lazily initialised on first selection.
  */
 import Equation from '../viz/Equation.astro';
 interface Props { lang?: 'en' | 'es'; hidden?: boolean }
@@ -18,13 +23,28 @@ const T = es
       len: 'Largo del movimiento', ang: 'Ángulo', noise: 'Ruido', method: 'Método',
       mInv: 'filtro inverso', mTik: 'Tikhonov (Wiener)', mRl: 'Richardson–Lucy', mPinn: 'PINN',
       train: 'entrenar la PINN', stop: 'detener', lossLabel: 'La PINN minimiza',
-      rdPinn: 'La red solo ve la foto borrosa a través del modelo de desenfoque; su representación suave actúa como prior.', rdPinnIdle: 'Pulse «entrenar la PINN»: una red de coordenadas f_θ(x, y) de filtros sinusoidales (64 en x y 64 en y) se ajusta a la foto borrosa a través del núcleo h.', rdTikRef: 'Tikhonov con el λ actual',
-      pinnCap: ' Versión PINN: la imagen nítida es una red de coordenadas f_θ(x, y) (filtros sinusoidales multiplicados entre sí, inicializados como características de Fourier aleatorias, con salida sigmoide en [0, 1]) entrenada solo a través del modelo físico de la cámara, ‖h ∗ f_θ − g‖². La red nunca ve la imagen original: su representación de banda limitada es el prior. En este ejemplo suele superar a Tikhonov en PSNR, porque la salida sigmoide favorece imágenes casi en blanco y negro como este texto; con otras escenas esa ventaja puede desaparecer.',
+      rdPinn: 'La red solo ve la foto borrosa a través del modelo de desenfoque; su representación suave actúa como prior.', rdPinnIdle: 'Pulse «entrenar la PINN»: una red de coordenadas f(x, y) de filtros sinusoidales (64 en x y 64 en y) se ajusta a la foto borrosa a través del núcleo h.', rdTikRef: 'Tikhonov con el λ actual',
+      pinnCap: ' Versión PINN: la imagen nítida es una red de coordenadas f(x, y) (filtros sinusoidales multiplicados entre sí, inicializados como características de Fourier aleatorias, con salida sigmoide en [0, 1]) entrenada solo a través del modelo físico de la cámara, ‖h ∗ f_θ − g‖². La red nunca ve la imagen original: su representación de banda limitada es el prior. En este ejemplo suele superar a Tikhonov en PSNR, porque la salida sigmoide favorece imágenes casi en blanco y negro como este escudo; con otras escenas esa ventaja puede desaparecer.',
       lam: 'Regularización log₁₀ λ', run: 'iterar', reveal: 'revelar la original', hide: 'ocultar la original',
       rdBlur: 'foto borrosa', rdRec: 'reconstrucción', rdIt: 'iteración',
       rdInv: 'El filtro inverso divide por |H|, que casi se anula en algunas frecuencias (las franjas oscuras del espectro): el ruido se amplifica sin control.',
       rdTik: 'λ sacrifica resolución a cambio de estabilidad: muy pequeño y reaparece el ruido, muy grande y la imagen queda borrosa.',
       rdRl: 'Richardson–Lucy mantiene la imagen no negativa; iterar demasiado también termina amplificando el ruido.',
+      exLabel: 'Ejemplo', exDeblur: 'restauración de imágenes', exTrust: 'IA confiable',
+      credit: ' Imagen de prueba: un dibujo simplificado inspirado en el escudo del Club Deportivo Universidad Católica.',
+      tr: {
+        fi: [': una red neuronal entrenada predice y a partir de x. ', ': a partir de datos escasos y ruidosos, inferir el modelo y cuánto se puede confiar en cada predicción.'],
+        method: 'Método', mNn: 'red neuronal', mPinn: 'PINN', coverage: 'Cobertura objetivo', noise: 'Ruido de medición', members: 'Mostrar los cinco miembros',
+        train: 'entrenar el conjunto', stop: 'detener', newData: 'nuevos datos',
+        x: 'x (tiempo)', y: 'y (desplazamiento)', plot: 'Predicción y bandas de incertidumbre',
+        leg: { train: 'datos de entrenamiento', calib: 'calibración', truth: 'proceso verdadero', mean: 'media del conjunto', band: 'banda conforme', ood: 'los modelos discrepan' },
+        idle: 'Pulse «entrenar el conjunto»: cinco redes pequeñas, con semillas distintas, se entrenan con los mismos datos. Sin datos en el hueco (x de 3,0 a 6,4) ni más allá de x = 7,4.',
+        it: 'iteración', band: 'banda conforme ±', target: 'objetivo', cov: 'cobertura', covData: 'zona con datos', covGap: 'hueco', covExtra: 'más allá de los datos', ood: 'los modelos discrepan en', ofAxis: 'del eje', gapErr: 'error RMS en el hueco',
+        lessonNn: 'Donde los miembros discrepan (sombreado rojo) no se debe confiar en el modelo; en el hueco incluso coinciden en una curva equivocada: el acuerdo no es una prueba. La garantía conforme solo vale para datos como los de calibración.',
+        lessonPinn: 'La física llena el hueco y la zona sin datos: los miembros coinciden en la curva correcta y la banda conserva su cobertura en todo el eje.',
+        lossLabel: 'Cada miembro minimiza',
+        cap: 'IA confiable significa saber cuándo no confiar en un modelo: cuantificar la incertidumbre, comprobar la cobertura de las bandas y detectar entradas fuera de la distribución de entrenamiento. Un conjunto de redes estima la incertidumbre epistémica por su desacuerdo; la predicción conforme por partición calibra una banda con cobertura garantizada, pero solo para datos intercambiables con los de calibración. En el hueco y más allá de los datos la garantía se pierde, y el desacuerdo es la señal de alarma. Con la versión PINN, la ecuación del oscilador amortiguado está en la pérdida de cada miembro: la física reduce la incertidumbre justo donde faltan datos. Ejemplo sintético.',
+      },
       cap: 'Deconvolución de imágenes: cada píxel de la foto borrosa mezcla muchos píxeles de la escena. En el dominio de Fourier la convolución es un producto, G = H F, así que invertirla parece una simple división; pero H casi se anula en algunas frecuencias y dividir por ellas amplifica el ruido. La regularización (Tikhonov, o detener a tiempo un método iterativo) intercambia resolución por estabilidad: la misma matemática de la tomografía y de los otros ejemplos. La PSNR mide la similitud con la original (más es mejor). Imagen sintética generada en su navegador.',
     }
   : {
@@ -35,18 +55,42 @@ const T = es
       len: 'Motion length', ang: 'Angle', noise: 'Noise', method: 'Method',
       mInv: 'inverse filter', mTik: 'Tikhonov (Wiener)', mRl: 'Richardson–Lucy', mPinn: 'PINN',
       train: 'train the PINN', stop: 'stop', lossLabel: 'The PINN minimises',
-      rdPinn: 'The network sees the blurred photo only through the blur model; its smooth representation acts as the prior.', rdPinnIdle: 'Press “train the PINN”: a coordinate network f_θ(x, y) of sinusoidal filters (64 in x and 64 in y) is fitted to the blurred photo through the kernel h.', rdTikRef: 'Tikhonov at the current λ',
-      pinnCap: ' PINN version: the sharp image is a coordinate network f_θ(x, y) (multiplied sinusoidal filters initialised as random Fourier features, with a sigmoid output in [0, 1]) trained only through the physical model of the camera, ‖h ∗ f_θ − g‖². The network never sees the original image: its band-limited representation is the prior. In this example it usually beats Tikhonov in PSNR, because the sigmoid output favours nearly black-and-white images such as this text; with other scenes that advantage can disappear.',
+      rdPinn: 'The network sees the blurred photo only through the blur model; its smooth representation acts as the prior.', rdPinnIdle: 'Press “train the PINN”: a coordinate network f(x, y) of sinusoidal filters (64 in x and 64 in y) is fitted to the blurred photo through the kernel h.', rdTikRef: 'Tikhonov at the current λ',
+      pinnCap: ' PINN version: the sharp image is a coordinate network f(x, y) (multiplied sinusoidal filters initialised as random Fourier features, with a sigmoid output in [0, 1]) trained only through the physical model of the camera, ‖h ∗ f_θ − g‖². The network never sees the original image: its band-limited representation is the prior. In this example it usually beats Tikhonov in PSNR, because the sigmoid output favours nearly black-and-white images such as this crest; with other scenes that advantage can disappear.',
       lam: 'Regularisation log₁₀ λ', run: 'iterate', reveal: 'reveal the original', hide: 'hide the original',
       rdBlur: 'blurred photo', rdRec: 'reconstruction', rdIt: 'iteration',
       rdInv: 'The inverse filter divides by |H|, which nearly vanishes at some frequencies (the dark bands of the spectrum): the noise is amplified without control.',
       rdTik: 'λ trades resolution for stability: too small and the noise comes back, too large and the image stays blurred.',
       rdRl: 'Richardson–Lucy keeps the image non-negative; iterating too long also ends up amplifying the noise.',
+      exLabel: 'Example', exDeblur: 'image deblurring', exTrust: 'trustworthy AI',
+      credit: ' Test image: a simplified drawing inspired by the crest of Club Deportivo Universidad Católica.',
+      tr: {
+        fi: [': a trained neural network predicts y from x. ', ': from limited, noisy data, infer the model and how much each prediction can be trusted.'],
+        method: 'Method', mNn: 'neural network', mPinn: 'PINN', coverage: 'Target coverage', noise: 'Measurement noise', members: 'Show the five members',
+        train: 'train the ensemble', stop: 'stop', newData: 'new data',
+        x: 'x (time)', y: 'y (displacement)', plot: 'Prediction and uncertainty bands',
+        leg: { train: 'training data', calib: 'calibration', truth: 'true process', mean: 'ensemble mean', band: 'conformal band', ood: 'models disagree' },
+        idle: 'Press “train the ensemble”: five small networks with different seeds are trained on the same data. There are no data in the gap (x from 3.0 to 6.4) or beyond x = 7.4.',
+        it: 'iteration', band: 'conformal band ±', target: 'target', cov: 'coverage', covData: 'observed region', covGap: 'gap', covExtra: 'beyond the data', ood: 'models disagree on', ofAxis: 'of the axis', gapErr: 'RMS error in the gap',
+        lessonNn: 'Where the members disagree (red shading) the model should not be trusted; in the gap they even agree on a wrong curve: agreement is not proof. The conformal guarantee only holds for data like the calibration set.',
+        lessonPinn: 'Physics fills the gap and the range beyond the data: the members agree on the right curve and the band keeps its coverage along the whole axis.',
+        lossLabel: 'Each member minimises',
+        cap: 'Trustworthy AI means knowing when not to trust a model: quantify uncertainty, check the coverage of the bands and detect inputs outside the training distribution. An ensemble of networks estimates epistemic uncertainty from its disagreement; split conformal prediction calibrates a band with guaranteed coverage, but only for data exchangeable with the calibration set. In the gap and beyond the data the guarantee is lost, and disagreement is the warning sign. In the PINN version the damped-oscillator equation is in every member’s loss: physics reduces uncertainty exactly where data are missing. Synthetic example.',
+      },
       cap: 'Image deconvolution: every pixel of the blurred photo mixes many pixels of the scene. In the Fourier domain convolution is a product, G = H F, so undoing it looks like a simple division; but H nearly vanishes at some frequencies and dividing by them amplifies the noise. Regularisation (Tikhonov, or stopping an iterative method in time) trades resolution for stability: the same mathematics as tomography and the other examples. PSNR measures the similarity to the original (higher is better). Synthetic image generated in your browser.',
     };
 const client = { lang, T };
 ---
 <div class="eng-tab cp" data-eng-tab="computing" hidden={hidden} data-cp-text={JSON.stringify(client)}>
+  <div class="cp__ex">
+    <span class="cp__exl">{T.exLabel}:</span>
+    <div class="seg" role="group" aria-label={T.exLabel}>
+      <button type="button" data-cp-ex-btn="deblur" aria-pressed="true">{T.exDeblur}</button>
+      <button type="button" data-cp-ex-btn="trust" aria-pressed="false">{T.exTrust}</button>
+    </div>
+  </div>
+
+  <div data-cp-ex="deblur">
   <p class="eng-fi"><em>{T.fwd}</em>{T.fi[0]}<em>{T.inv}</em>{T.fi[1]}</p>
 
   <div class="cp__panels">
@@ -98,28 +142,98 @@ const client = { lang, T };
   </div>
   <p class="meta cp__loss" data-cp-only="pinn" hidden>{T.lossLabel} <Equation display={false} tex={String.raw`\mathcal{L}(\theta) = \tfrac{1}{N^2}\lVert h * f_\theta - g \rVert^2 + \mu \lVert A \rVert^2`} /></p>
   <p class="lab__readout" data-cp-read aria-live="polite"></p>
-  <p class="eng-cap">{T.cap}{T.pinnCap}</p>
+  <p class="eng-cap">{T.cap}{T.pinnCap}{T.credit}</p>
+  </div>
+
+  <div data-cp-ex="trust" hidden>
+    <p class="eng-fi"><em>{T.fwd}</em>{T.tr.fi[0]}<em>{T.inv}</em>{T.tr.fi[1]}</p>
+    <div class="tr__plot" data-tr-plot></div>
+    <p class="tr__key">
+      <span><span class="tr__dot c-data">●</span>{T.tr.leg.train}</span>
+      <span><span class="tr__dot muted">●</span>{T.tr.leg.calib}</span>
+      <span><span class="key key--truth tr__dash"></span>{T.tr.leg.truth}</span>
+      <span><span class="key key--learned"></span>{T.tr.leg.mean}</span>
+      <span><span class="tr__sw tr__sw--band"></span>{T.tr.leg.band}</span>
+      <span><span class="tr__sw tr__sw--ood"></span>{T.tr.leg.ood}</span>
+    </p>
+    <div class="cp__controls">
+      <div class="control">
+        <span class="control__head">{T.tr.method}</span>
+        <div class="seg" role="group" aria-label={T.tr.method}>
+          <button type="button" data-tr-m="nn" aria-pressed="true">{T.tr.mNn}</button>
+          <button type="button" data-tr-m="pinn" aria-pressed="false">{T.tr.mPinn}</button>
+        </div>
+      </div>
+      <div class="control">
+        <div class="control__head"><label for={`tr-cov-${lang}`}>{T.tr.coverage}</label><output data-tr-covout>90 %</output></div>
+        <input id={`tr-cov-${lang}`} data-tr-cov type="range" min="0.8" max="0.95" step="0.01" value="0.9" />
+      </div>
+      <div class="control">
+        <div class="control__head"><label for={`tr-noise-${lang}`}>{T.tr.noise}</label><output data-tr-nout>0.05</output></div>
+        <input id={`tr-noise-${lang}`} data-tr-noise type="range" min="0.01" max="0.15" step="0.01" value="0.05" />
+      </div>
+      <label class="meta tr__check"><input type="checkbox" data-tr-members checked /> {T.tr.members}</label>
+      <p class="cp__btns">
+        <button type="button" class="btn" data-tr-train>{T.tr.train}</button>
+        <button type="button" class="btn" data-tr-new>{T.tr.newData}</button>
+      </p>
+    </div>
+    <div class="eng-eqs">
+      <Equation tex={String.raw`y'' + 2\zeta\omega\,y' + \omega^2 y = 0`} />
+      <Equation tex={String.raw`C(x) = \bar u(x) \pm \hat q`} />
+      <Equation tex={String.raw`\hat q = Q_{\lceil (n+1)(1-\alpha)\rceil / n}\big\{\lvert y_i - \bar u(x_i)\rvert\big\}`} />
+    </div>
+    <p class="meta cp__loss">{T.tr.lossLabel} <Equation display={false} tex={String.raw`\mathcal{L}(\theta_m) = \overline{(u_{\theta_m} - y_i)^2} + \lambda\,\overline{\big(u_{\theta_m}'' + 2\zeta\omega u_{\theta_m}' + \omega^2 u_{\theta_m}\big)^2}`} /> <span data-tr-lossnote></span></p>
+    <p class="lab__readout" data-tr-read aria-live="polite">{T.tr.idle}</p>
+    <p class="eng-cap">{T.tr.cap}</p>
+  </div>
 </div>
 
 <script>
   import { motionPsf, blur, tikhonov, richardsonLucyStep, psnr, fft2, type Spec } from '../../lib/eng/deblur';
   import { initImageNet, makeImageTrainer } from '../../lib/eng/pinn-image';
+  import * as TR from '../../lib/eng/trust';
+  import { LinePlot, type Series } from '../../lib/plot';
 
   const N = 128, RL_MAX = 120, RL_PER_FRAME = 3, PINN_STEPS = 500, FRAME_MS = 8;
 
-  /** The sharp scene: text, bars and a checker block, drawn once in the browser. */
+  /**
+   * The sharp scene, drawn once in the browser: a simplified shield with a cross and the
+   * letters "UC" (inspired by the crest of Club Deportivo Universidad Católica, not the
+   * official artwork), the forward model, bars and a checker block.
+   */
   function scene(): Float64Array {
     const c = document.createElement('canvas');
     c.width = N; c.height = N;
     const x = c.getContext('2d')!;
     x.fillStyle = '#fff'; x.fillRect(0, 0, N, N);
-    x.fillStyle = '#000'; x.textAlign = 'center'; x.textBaseline = 'middle';
-    x.font = 'bold 30px Georgia, "Times New Roman", serif';
-    x.fillText('UTFSM', N / 2, 26);
-    x.font = 'italic 17px Georgia, "Times New Roman", serif';
-    x.fillText('g = h ∗ f + ε', N / 2, 54);
-    for (let i = 0; i < 9; i++) x.fillRect(12 + i * 6, 74, 3, 40);
-    for (let j = 0; j < 5; j++) for (let i = 0; i < 5; i++) if ((i + j) % 2 === 0) x.fillRect(74 + i * 8, 74 + j * 8, 8, 8);
+    // shield: flat top, straight sides, pointed base
+    const shield = (l: number, t: number, w: number, h: number) => {
+      x.beginPath();
+      x.moveTo(l, t);
+      x.lineTo(l + w, t);
+      x.lineTo(l + w, t + h * 0.55);
+      x.quadraticCurveTo(l + w, t + h * 0.85, l + w / 2, t + h);
+      x.quadraticCurveTo(l, t + h * 0.85, l, t + h * 0.55);
+      x.closePath();
+    };
+    const L0 = 38, T0 = 3, W = 52, H = 66;
+    x.fillStyle = '#111'; shield(L0, T0, W, H); x.fill();
+    x.strokeStyle = '#fff'; x.lineWidth = 2; shield(L0 + 4, T0 + 4, W - 8, H - 8); x.stroke();
+    // cross in the upper field
+    x.fillStyle = '#fff';
+    x.fillRect(L0 + W / 2 - 2.5, T0 + 9, 5, 22);
+    x.fillRect(L0 + W / 2 - 10, T0 + 15, 20, 5);
+    // letters UC below the cross
+    x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.font = 'bold 21px Georgia, "Times New Roman", serif';
+    x.fillText('UC', L0 + W / 2, T0 + 44);
+    // forward model, bars and checker block
+    x.fillStyle = '#000';
+    x.font = 'italic 14px Georgia, "Times New Roman", serif';
+    x.fillText('g = h ∗ f + ε', N / 2, 80);
+    for (let i = 0; i < 9; i++) x.fillRect(12 + i * 6, 92, 3, 32);
+    for (let j = 0; j < 4; j++) for (let i = 0; i < 5; i++) if ((i + j) % 2 === 0) x.fillRect(76 + i * 8, 92 + j * 8, 8, 8);
     const d = x.getImageData(0, 0, N, N).data, f = new Float64Array(N * N);
     for (let i = 0; i < N * N; i++) f[i] = d[4 * i] / 255;
     return f;
@@ -136,6 +250,8 @@ const client = { lang, T };
 
   function init(root: HTMLElement) {
     const { lang, T } = JSON.parse(root.dataset.cpText!);
+    const exBox = root.querySelector<HTMLElement>('[data-cp-ex="deblur"]')!;
+    const off = () => root.hidden || exBox.hidden;
     const nf = (v: number, d = 1) => (lang === 'es' ? v.toFixed(d).replace('.', ',') : v.toFixed(d)).replace('-', '−');
     const q = <E extends Element>(s: string) => root.querySelector<E>(s)!;
     const cObs = q<HTMLCanvasElement>('[data-cp-obs]'), cRec = q<HTMLCanvasElement>('[data-cp-rec]'), cTrue = q<HTMLCanvasElement>('[data-cp-true]');
@@ -182,7 +298,7 @@ const client = { lang, T };
 
     const stopRl = () => { cancelAnimationFrame(raf); raf = 0; };
     const rlLoop = () => {
-      if (!rl || !H || root.hidden) { raf = 0; return; }
+      if (!rl || !H || off()) { raf = 0; return; }
       for (let k = 0; k < RL_PER_FRAME && it < RL_MAX; k++, it++) richardsonLucyStep(H, g, rl);
       paint(cRec, rl);
       report(rl, ` · ${T.rdIt} ${it}`);
@@ -197,7 +313,7 @@ const client = { lang, T };
       report(lastF, ` · ${T.rdIt} ${trainer.iter} · ${T.rdTikRef}: ${nf(tikRef)} dB`);
     };
     const pinnLoop = () => {
-      if (!training || !trainer || root.hidden) { stopPinn(); return; }
+      if (!training || !trainer || off()) { stopPinn(); return; }
       const t0 = performance.now();
       do { const r = trainer.step(); lastF = r.f; lastData = r.data; } while (performance.now() - t0 < FRAME_MS && trainer.iter < PINN_STEPS);
       paint(cRec, lastF!);
@@ -254,10 +370,121 @@ const client = { lang, T };
     all();
   }
 
+  /* ------------------------------------------------ trustworthy AI example */
+
+  function initTrust(root: HTMLElement) {
+    const { lang, T: TT } = JSON.parse(root.dataset.cpText!);
+    const T = TT.tr;
+    const box = root.querySelector<HTMLElement>('[data-cp-ex="trust"]')!;
+    const q = <E extends Element>(s: string) => box.querySelector<E>(s)!;
+    const nf = (v: number, d = 2) => (lang === 'es' ? v.toFixed(d).replace('.', ',') : v.toFixed(d)).replace('-', '−');
+    const pct = (v: number) => `${Math.round(v * 100)} %`;
+    const covIn = q<HTMLInputElement>('[data-tr-cov]'), noiseIn = q<HTMLInputElement>('[data-tr-noise]');
+    const membersBox = q<HTMLInputElement>('[data-tr-members]'), trainBtn = q<HTMLButtonElement>('[data-tr-train]'), newBtn = q<HTMLButtonElement>('[data-tr-new]');
+    const read = q<HTMLElement>('[data-tr-read]'), lossNote = q<HTMLElement>('[data-tr-lossnote]');
+    const plot = new LinePlot(q<HTMLElement>('[data-tr-plot]'), { width: 640, height: 300, xlabel: T.x, ylabel: T.y, title: T.plot, legend: false });
+    const xs = Array.from({ length: 241 }, (_, i) => (i / 240) * TR.L);
+    const truthLine = xs.map(TR.truth);
+
+    let method: 'nn' | 'pinn' = 'nn', seed = 3, data = TR.makeData(seed, +noiseIn.value);
+    let ens: ReturnType<typeof TR.makeEnsemble> | null = null, iter = 0, total = TR.NN_STEPS, running = false, trainedOnce = false, raf = 0, lastDraw = 0;
+    const gapErr: Partial<Record<'nn' | 'pinn', number>> = {};
+    const off = () => root.hidden || box.hidden;
+
+    const draw = () => {
+      const series: Series[] = [];
+      let msg = T.idle;
+      if (ens) {
+        const st = TR.ensembleStats(ens.nets, xs);
+        // batch evaluations: calibration, test and error grids
+        const muCal = TR.ensembleStats(ens.nets, data.calib.map((s) => s.x)).mean;
+        const testX = data.test.map((s) => s.x), muTest = TR.ensembleStats(ens.nets, testX).mean;
+        const lookup = new Map<number, number>();
+        testX.forEach((x, i) => lookup.set(x, muTest[i]));
+        const mu = (x: number) => lookup.get(x) ?? TR.ensembleStats(ens!.nets, [x]).mean[0];
+        const qh = TR.conformalQuantile(data.calib.map((s, i) => Math.abs(s.y - muCal[i])), +covIn.value);
+        // out-of-distribution shading where the members disagree
+        const thr = TR.oodThreshold(xs, st.sd);
+        let flagged = 0;
+        for (let i = 0; i < xs.length; ) {
+          if (st.sd[i] <= thr) { i++; continue; }
+          let j = i;
+          while (j < xs.length && st.sd[j] > thr) j++;
+          flagged += j - i;
+          const seg = xs.slice(Math.max(0, i - 1), Math.min(xs.length, j + 1));
+          series.push({ kind: 'band', x: seg, y: seg.map(() => -5), y2: seg.map(() => 5), cls: 's-warn' });
+          i = j;
+        }
+        series.push({ kind: 'band', x: xs, y: Array.from(st.mean, (m) => m - qh), y2: Array.from(st.mean, (m) => m + qh), cls: 's-learned' });
+        if (membersBox.checked) st.members.forEach((m) => series.push({ kind: 'line', x: xs, y: m, cls: 's-muted' }));
+        series.push({ kind: 'line', x: xs, y: truthLine, cls: 's-truth', dash: true });
+        series.push({ kind: 'line', x: xs, y: st.mean, cls: 's-learned' });
+        const cov = TR.coverageByRegion(data.test, mu, qh);
+        const e = iter >= total || !running ? TR.rmsInRegion((x) => TR.ensembleStats(ens!.nets, [x]).mean[0], 'gap') : NaN;
+        if (iter >= total) gapErr[method] = e;
+        const cmp = (['nn', 'pinn'] as const).filter((k) => gapErr[k] !== undefined).map((k) => `${k === 'nn' ? T.mNn : T.mPinn} ${nf(gapErr[k]!, 3)}`).join(' · ');
+        msg = `${method === 'nn' ? T.mNn : T.mPinn} · ${T.it} ${iter}/${total} · ${T.band}${nf(qh, 3)} (${T.target} ${pct(+covIn.value)}) · ${T.cov}: ${T.covData} ${pct(cov.data)}, ${T.covGap} ${pct(cov.gap)}, ${T.covExtra} ${pct(cov.extra)} · ${T.ood} ${pct(flagged / xs.length)} ${T.ofAxis}${cmp ? ` · ${T.gapErr}: ${cmp}` : ''}.${iter >= total ? ' ' + (method === 'nn' ? T.lessonNn : T.lessonPinn) : ''}`;
+      } else {
+        series.push({ kind: 'line', x: xs, y: truthLine, cls: 's-truth', dash: true });
+      }
+      series.push({ kind: 'points', x: data.calib.map((s) => s.x), y: data.calib.map((s) => s.y), cls: 's-muted' });
+      series.push({ kind: 'points', x: data.train.map((s) => s.x), y: data.train.map((s) => s.y), cls: 's-data' });
+      read.textContent = msg;
+      plot.render(series, { xlim: [0, TR.L], ylim: [-1.3, 1.5] });
+    };
+
+    const stop = () => { running = false; cancelAnimationFrame(raf); raf = 0; trainBtn.textContent = T.train; };
+    const loop = () => {
+      if (!running || !ens || off()) { stop(); return; }
+      const t0 = performance.now();
+      while (performance.now() - t0 < 7 && iter < total) {
+        const lr = TR.lrAt(iter, total);
+        for (const net of ens.nets) TR.adamT(net, TR.lossGradT(net, data.train, ens.cfg).g, lr);
+        iter++;
+      }
+      // redraw a few times per second while training (drawing costs more than a step)
+      if (iter >= total || t0 - lastDraw > 150) { lastDraw = t0; draw(); }
+      if (iter >= total) { stop(); return; }
+      raf = requestAnimationFrame(loop);
+    };
+    const train = () => {
+      stop();
+      ens = TR.makeEnsemble(method === 'pinn');
+      total = method === 'pinn' ? TR.PINN_STEPS : TR.NN_STEPS;
+      iter = 0; running = true; trainedOnce = true; trainBtn.textContent = T.stop;
+      raf = requestAnimationFrame(loop);
+    };
+    const reset = () => { stop(); ens = null; iter = 0; if (trainedOnce) train(); else draw(); };
+    const setNote = () => { lossNote.textContent = method === 'pinn' ? `(λ = ${nf(TR.PHYS_WEIGHT, 1)})` : `(λ = 0)`; };
+
+    box.querySelectorAll<HTMLButtonElement>('[data-tr-m]').forEach((b) => b.addEventListener('click', () => {
+      method = b.dataset.trM as typeof method;
+      box.querySelectorAll('[data-tr-m]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      setNote(); reset();
+    }));
+    covIn.addEventListener('input', () => { q('[data-tr-covout]').textContent = pct(+covIn.value); if (!running) draw(); });
+    noiseIn.addEventListener('input', () => { q('[data-tr-nout]').textContent = nf(+noiseIn.value); data = TR.makeData(seed, +noiseIn.value); delete gapErr.nn; delete gapErr.pinn; reset(); });
+    membersBox.addEventListener('change', () => { if (!running) draw(); });
+    trainBtn.addEventListener('click', () => (running ? stop() : train()));
+    newBtn.addEventListener('click', () => { seed += 1; data = TR.makeData(seed, +noiseIn.value); delete gapErr.nn; delete gapErr.pinn; reset(); });
+    window.addEventListener('themechange', () => { if (!off()) draw(); });
+    q('[data-tr-nout]').textContent = nf(+noiseIn.value);
+    setNote(); draw();
+    return { resume: () => { if (ens && iter < total && !running && trainedOnce) { running = true; trainBtn.textContent = T.stop; raf = requestAnimationFrame(loop); } else draw(); } };
+  }
+
   document.querySelectorAll<HTMLElement>('[data-eng-tab="computing"]').forEach((root) => {
-    let done = false;
+    let done = false, trust: ReturnType<typeof initTrust> | null = null;
+    const exOf = () => root.querySelector<HTMLButtonElement>('[data-cp-ex-btn][aria-pressed="true"]')!.dataset.cpExBtn;
     const start = () => { if (done) return; done = true; init(root); };
-    root.addEventListener('eng:show', start, { once: true });
+    root.querySelectorAll<HTMLButtonElement>('[data-cp-ex-btn]').forEach((b) => b.addEventListener('click', () => {
+      const ex = b.dataset.cpExBtn!;
+      root.querySelectorAll('[data-cp-ex-btn]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      root.querySelectorAll<HTMLElement>('[data-cp-ex]').forEach((e) => (e.hidden = e.dataset.cpEx !== ex));
+      if (ex === 'trust') { if (!trust) trust = initTrust(root); else trust.resume(); }
+      else root.dispatchEvent(new CustomEvent('eng:show'));
+    }));
+    root.addEventListener('eng:show', () => { if (exOf() === 'trust') { if (!trust) trust = initTrust(root); else trust.resume(); } else start(); });
     if (!root.hidden) start();
   });
 </script>
@@ -280,6 +507,18 @@ const client = { lang, T };
   .cp__loss { text-align: center; font-size: var(--step--1); margin-top: var(--s-2); overflow-x: auto; }
   .eng-eqs { display: flex; flex-wrap: wrap; justify-content: center; column-gap: var(--s-6); margin-block: var(--s-3); }
   .eng-eqs :global(.eq) { justify-content: center; margin-block: var(--s-2); max-width: 100%; min-width: 0; }
+  .cp__ex { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 0.2em 0.8em; margin-bottom: var(--s-4); font-size: var(--step--1); }
+  .cp__exl { font-style: italic; color: var(--ink-2); }
+  [data-cp-ex][hidden] { display: none; }
+  .tr__plot { max-width: 40rem; margin-inline: auto; min-height: 14rem; }
+  .tr__key { max-width: 40rem; margin: var(--s-2) auto 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.2em 1.1em; font-size: var(--step--2); color: var(--ink-2); }
+  .tr__key > span { white-space: nowrap; }
+  .tr__dot { margin-right: 0.3em; font-size: 0.9em; }
+  .tr__dash { background: repeating-linear-gradient(90deg, var(--c-truth) 0 4px, transparent 4px 7px); }
+  .tr__sw { display: inline-block; width: 0.9em; height: 0.7em; vertical-align: middle; margin-right: 0.3em; }
+  .tr__sw--band { background: var(--c-band); }
+  .tr__sw--ood { background: color-mix(in srgb, var(--c-warn) 14%, transparent); }
+  .tr__check { display: flex; gap: 0.4em; align-items: baseline; }
   @media (max-width: 34rem) {
     .cp__panels { gap: var(--s-2); }
     .cp__method { grid-column: auto; }
