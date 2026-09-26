@@ -1,0 +1,26 @@
+---
+/**
+ * Collapsible answer for an exercise in a Learn module:
+ * <li>Question… <Answer lang={lang}>Explanation…</Answer></li>
+ */
+interface Props { lang?: 'en' | 'es' }
+const { lang = 'en' } = Astro.props;
+const es = lang === 'es';
+---
+<details class="answer">
+  <summary><span class="answer__show">{es ? 'Mostrar respuesta' : 'Show answer'}</span><span class="answer__hide">{es ? 'Ocultar respuesta' : 'Hide answer'}</span></summary>
+  <div class="answer__body"><slot /></div>
+</details>
+
+<style>
+  .answer { margin-top: 0.35rem; }
+  .answer summary { list-style: none; cursor: pointer; display: inline-block; font-size: var(--step--1); color: var(--accent); }
+  .answer summary::-webkit-details-marker { display: none; }
+  .answer summary::before { content: '['; color: var(--ink-3); }
+  .answer summary::after { content: ']'; color: var(--ink-3); }
+  .answer summary:hover span { text-decoration: underline; }
+  .answer .answer__hide, .answer[open] .answer__show { display: none; }
+  .answer[open] .answer__hide { display: inline; }
+  .answer__body { margin-top: 0.35rem; padding-left: 0.9rem; border-left: 1px solid var(--rule-strong); color: var(--ink-2); font-size: var(--step--1); line-height: 1.5; }
+  .answer__body :global(p + p) { margin-top: 0.4em; }
+</style>

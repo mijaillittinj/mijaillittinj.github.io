@@ -2,6 +2,7 @@
 import LearnModule from '../../../../layouts/LearnModule.astro';
 import Equation from '../../../../components/viz/Equation.astro';
 import McmcExplorer from '../../../../components/viz/McmcExplorer.astro';
+import Answer from '../../../../components/ui/Answer.astro';
 import { url } from '../../../../i18n/utils';
 ---
 <LearnModule slug="uncertainty/bayesian-mcmc" description="Interactive Bayesian calibration of Newton's law of cooling with a Metropolis Markov chain Monte Carlo sampler: chain trace, posterior samples, credible intervals and posterior predictive band.">
@@ -22,11 +23,16 @@ import { url } from '../../../../i18n/utils';
   <div class="try">
     <h3>Exercises</h3>
     <ol>
-      <li>Run the sampler. The chain starts far away (τ = 30 min, T∞ = 50 °C). How many iterations does it need to reach the high-probability region? This is the <em>burn-in</em>, which is discarded.</li>
-      <li>Set the proposal width very small (log₁₀ w = −2), then very large (+1.5). Watch the acceptance rate and the trace. Why are both extremes inefficient? Values of about 20–50 % are usually a good target.</li>
-      <li>Keep only readings up to 5 min. The posterior samples form a long, tilted cloud: <em>τ</em> and <em>T</em>∞ are correlated. Why can a slow cooling towards a low ambient look like a fast cooling towards a high one when the experiment is short?</li>
-      <li>Extend the readings to 40 min and compare the width of the credible intervals. Which parameter benefited most from the longer experiment?</li>
-      <li>Increase the noise. Does the 95 % band on the data plot still contain the true curve? It should most of the time, but not always: that is what 95 % means.</li>
+      <li>Run the sampler. The chain starts far away (τ = 30 min, T∞ = 50 °C). How many iterations does it need to reach the high-probability region? This is the <em>burn-in</em>, which is discarded.
+        <Answer lang="en"><p>With the defaults the chain reaches the cloud around τ ≈ 9 min and T∞ ≈ 22 °C after roughly a hundred iterations, and the trace then settles into a noisy band. Samples taken before that point describe the starting guess, not the data, so they are dropped. The lab discards the first 20 % of the chain (at most 1000 samples), which is on the safe side.</p></Answer></li>
+      <li>Set the proposal width very small (log₁₀ w = −2), then very large (+1.5). Watch the acceptance rate and the trace. Why are both extremes inefficient? Values of about 20–50 % are usually a good target.
+        <Answer lang="en"><p>With very small steps almost every proposal is accepted (about 90 %), but each move is tiny: the chain crawls and may not even reach the high-probability region in 20 000 iterations. With very large steps almost every proposal lands in an improbable place and is rejected (acceptance near 0 %), so the chain stays at the same point for long stretches, visible as flat segments in the trace. In both cases consecutive samples are nearly identical and carry little new information. The default step gives about 40 %.</p></Answer></li>
+      <li>Keep only readings up to 5 min. The posterior samples form a long, tilted cloud: <em>τ</em> and <em>T</em>∞ are correlated. Why can a slow cooling towards a low ambient look like a fast cooling towards a high one when the experiment is short?
+        <Answer lang="en"><p>At the start of the experiment the curve is almost a straight line whose slope is (T₀ − T∞)/τ. A lower ambient temperature (larger T₀ − T∞) combined with a larger τ gives the same slope, so the early readings cannot tell the two apart. With readings up to 5 min the correlation between τ and T∞ is about −0.98 and T∞ is only known to lie somewhere between about 1 and 35 °C. Only readings near the final plateau measure T∞ directly.</p></Answer></li>
+      <li>Extend the readings to 40 min and compare the width of the credible intervals. Which parameter benefited most from the longer experiment?
+        <Answer lang="en"><p>T∞. Going from 15 to 40 min narrows its 95 % interval from about 11 °C wide to about 3 °C, while the interval for τ shrinks from about 2.7 to 1.6 min. The late readings sit on the plateau, which is set by T∞ alone, and they also break the correlation between the two parameters.</p></Answer></li>
+      <li>Increase the noise. Does the 95 % band on the data plot still contain the true curve? It should most of the time, but not always: that is what 95 % means.
+        <Answer lang="en"><p>The band widens as the noise grows, because more parameter values are compatible with the readings. For most data sets it still contains the true curve, but not at every time and not for every data set: a 95 % band is expected to miss the truth about 5 % of the time. Press “New data” a few times to see this.</p></Answer></li>
     </ol>
   </div>
 

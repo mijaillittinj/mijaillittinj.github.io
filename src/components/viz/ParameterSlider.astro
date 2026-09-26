@@ -1,10 +1,11 @@
 ---
 /** Labelled range input with live numeric readout. Islands listen to `input` events on `name`. */
-interface Props { name: string; label: string; min: number; max: number; step: number; value: number; unit?: string; format?: 'fixed2' | 'fixed3' | 'exp' | 'int'; hint?: string }
-const { name, label, min, max, step, value, unit = '', format = 'fixed2', hint } = Astro.props;
+interface Props { name: string; label: string; min: number; max: number; step: number; value: number; unit?: string; format?: 'fixed2' | 'fixed3' | 'exp' | 'int'; hint?: string; lang?: 'en' | 'es' }
+// `lang` is optional: without it the page language (<html lang>) decides; Spanish uses a decimal comma.
+const { name, label, min, max, step, value, unit = '', format = 'fixed2', hint, lang } = Astro.props;
 const id = `p-${name}-${Math.random().toString(36).slice(2, 7)}`;
 ---
-<div class="control" data-param={name} data-format={format} data-unit={unit}>
+<div class="control" data-param={name} data-format={format} data-unit={unit} data-lang={lang}>
   <div class="control__head">
     <label for={id}>{label}</label>
     <output for={id}>{value}{unit}</output>
@@ -17,7 +18,12 @@ const id = `p-${name}-${Math.random().toString(36).slice(2, 7)}`;
   document.querySelectorAll<HTMLElement>('[data-param]').forEach((c) => {
     const input = c.querySelector('input')!;
     const out = c.querySelector('output')!;
-    const upd = () => { out.textContent = f(+input.value, c.dataset.format!) + (c.dataset.unit ?? ''); };
+    const lang = c.dataset.lang ?? c.closest('[lang]')?.getAttribute('lang') ?? 'en';
+    const comma = lang.startsWith('es');
+    const upd = () => {
+      const txt = f(+input.value, c.dataset.format!);
+      out.textContent = (comma ? txt.replace('.', ',') : txt) + (c.dataset.unit ?? '');
+    };
     input.addEventListener('input', upd);
     upd();
   });

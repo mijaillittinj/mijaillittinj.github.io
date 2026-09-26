@@ -1,0 +1,45 @@
+---
+import LearnModule from '../../../../../layouts/LearnModule.astro';
+import Equation from '../../../../../components/viz/Equation.astro';
+import SvdExplorer from '../../../../../components/viz/SvdExplorer.astro';
+import Answer from '../../../../../components/ui/Answer.astro';
+import { localized } from '../../../../../i18n/utils';
+---
+<LearnModule lang="es" slug="inverse-problems/svd-noise-amplification" description="Descomposición en valores singulares interactiva de un operador de desenfoque: gráfico de Picard, SVD truncada, filtrado de Tikhonov y curva L, para ver por qué la inversión amplifica el ruido y cómo la regularización lo filtra.">
+  <div class="prose">
+    <h2>Desenfocar es fácil; enfocar de vuelta, no</h2>
+    <p>Una cámara desenfocada, un termómetro de respuesta lenta o el calor que se difunde a través de una pared actúan como un <em>desenfoque</em>: cada medición es un promedio ponderado de la señal desconocida a su alrededor. En una grilla, esto es un producto de matrices, <em>g = A f + ε</em>. Calcular <em>g</em> a partir de <em>f</em> es estable; el problema empieza al volver atrás. La descomposición en valores singulares (SVD), que escribe cualquier matriz como una suma de componentes independientes, cada una con su propia ganancia σ<sub>i</sub>, muestra por qué.</p>
+    <Equation tex={String.raw`A = U \Sigma V^{\mathsf T} = \sum_{i=1}^{n} \sigma_i\, u_i v_i^{\mathsf T}, \qquad \sigma_1 \ge \sigma_2 \ge \dots \ge \sigma_n \ge 0 .`} />
+    <p>Los vectores singulares derechos <em>v<sub>i</sub></em> son patrones de la señal (suaves para <em>i</em> pequeño, oscilantes para <em>i</em> grande); el operador multiplica cada uno por <em>σ<sub>i</sub></em> y lo lleva al patrón <em>u<sub>i</sub></em> de los datos. Un desenfoque atenúa con fuerza los patrones oscilantes, así que los valores singulares caen en muchos órdenes de magnitud.</p>
+    <h2>La inversa ingenua divide por números diminutos</h2>
+    <p>Invertir la descomposición da la solución como una suma sobre los mismos patrones:</p>
+    <Equation tex={String.raw`f^{\dagger} = \sum_{i=1}^{n} \frac{u_i^{\mathsf T} g}{\sigma_i}\, v_i = f + \sum_{i=1}^{n} \frac{u_i^{\mathsf T} \varepsilon}{\sigma_i}\, v_i .`} />
+    <p>El término de ruido <em>u<sub>i</sub><sup>T</sup>ε</em> tiene aproximadamente el mismo tamaño para todo <em>i</em>, pero se divide por <em>σ<sub>i</sub></em>. Para las últimas componentes, eso significa multiplicar el ruido por 10<sup>10</sup> o más. El <em>gráfico de Picard</em> muestra esta competencia: mientras los coeficientes de los datos |<em>u<sub>i</sub><sup>T</sup>g</em>| decaen más rápido que los valores singulares, la señal se puede recuperar; donde se estancan en el nivel del ruido, el cociente explota.</p>
+  </div>
+
+  <SvdExplorer lang="es" />
+
+  <div class="try">
+    <h3>Ejercicios</h3>
+    <ol>
+      <li>Ponga el ruido en 10⁻⁸ y mueva <em>k</em> de 1 a 64. ¿Dónde dejan los coeficientes de los datos (ámbar) de seguir a los valores singulares y se aplanan? Compare ese índice con el valor de <em>k</em> que da el menor error.
+        <Answer lang="es"><p>Con este nivel de ruido, los coeficientes de los datos siguen a los valores singulares hasta aproximadamente <em>i</em> ≈ 45–55 y luego se estancan en el nivel del ruido. El menor error (cerca de 8 %) se alcanza alrededor de <em>k</em> ≈ 55, cerca de donde se aplanan. Conservar componentes más allá de ese punto agrega términos que son sobre todo ruido dividido por valores singulares diminutos, y el error explota.</p></Answer></li>
+      <li>Suba el ruido a 10⁻². ¿Cuántas componentes se pueden conservar ahora? ¿Por qué más ruido significa una reconstrucción más suave (con menos detalle)?
+        <Answer lang="es"><p>Con 10⁻², la mejor elección baja a cerca de <em>k</em> ≈ 24 y el error sube a cerca de 23 %. Un nivel de ruido más alto oculta más coeficientes de los datos, así que se puede confiar en menos componentes. Las componentes descartadas son las oscilantes, que llevan el detalle fino, de modo que la reconstrucción queda más suave.</p></Answer></li>
+      <li>Aumente el ancho del desenfoque. Los valores singulares caen más rápido. ¿Qué pasa con los bordes abruptos del pulso rectangular y con la joroba angosta?
+        <Answer lang="es"><p>Con un ancho de desenfoque de 0,06, el número de condición llega a cerca de 10¹⁸ y solo se pueden conservar unas 19 componentes (error cercano a 26 %): los bordes del pulso rectangular se redondean y la joroba angosta se aplana, porque las componentes que los describen se pierden en el ruido. Con un desenfoque angosto (0,015) sobreviven las 64 componentes y el error baja a cerca de 2 %.</p></Answer></li>
+      <li>Cambie a Tikhonov y mueva λ. Observe cómo el punto violeta recorre la curva L. ¿Qué parte de la curva corresponde a un suavizado excesivo y cuál a la amplificación del ruido? ¿Es la esquina una buena elección?
+        <Answer lang="es"><p>Un λ pequeño pone el punto en la rama vertical: el residuo no puede bajar del nivel del ruido, mientras la norma de la solución crece enormemente (amplificación del ruido). Un λ grande lo pone en la rama horizontal: la solución es pequeña y suave, pero ya no ajusta los datos (suavizado excesivo). La esquina equilibra ambos efectos y suele quedar cerca del mejor λ, pero es una regla heurística; el principio de discrepancia es una alternativa cuando se conoce el nivel del ruido.</p></Answer></li>
+      <li>Tikhonov no corta componentes: las atenúa de forma suave con el factor de filtro de abajo. Compárelo con un truncamiento en el <em>k</em> tal que σ<sub>k</sub> ≈ λ.
+        <Answer lang="es"><p>El factor de filtro σ²/(σ² + λ²) vale casi 1 cuando σ ≫ λ y casi 0 cuando σ ≪ λ, así que Tikhonov se comporta como un truncamiento en el índice donde σ<sub>k</sub> ≈ λ, con una transición suave en vez de un corte abrupto. Con ruido 10⁻³, el mejor λ de Tikhonov (cerca de 0,008) corresponde a σ<sub>k</sub> ≈ λ en <em>k</em> ≈ 29, y el mejor truncamiento es <em>k</em> = 30: los errores son casi iguales (cerca de 17 %).</p></Answer></li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>Regularizar es filtrar</h2>
+    <p>Ambos métodos conservan las componentes bien determinadas y suprimen el resto. La SVD truncada usa un corte abrupto; Tikhonov, que minimiza ‖<em>Af − g</em>‖² + λ²‖<em>f</em>‖², usa factores de filtro suaves:</p>
+    <Equation tex={String.raw`f_\lambda = \sum_{i=1}^{n} \varphi_i\, \frac{u_i^{\mathsf T} g}{\sigma_i}\, v_i, \qquad \varphi_i^{\mathrm{TSVD}} = \begin{cases} 1 & i \le k \\ 0 & i > k \end{cases}, \qquad \varphi_i^{\mathrm{Tik}} = \frac{\sigma_i^2}{\sigma_i^2 + \lambda^2} .`} />
+    <p>La <em>curva L</em> grafica el tamaño de la solución contra el tamaño del residuo para cada λ. Muy poca regularización da una solución enorme y oscilante que ajusta el ruido (la rama vertical); demasiada da una solución pequeña y sobresuavizada que no ajusta los datos (la rama horizontal). La esquina es un compromiso habitual, aunque no infalible. Otra regla, el principio de discrepancia, elige λ de modo que el residuo iguale el nivel de ruido esperado, que aparece en el resultado.</p>
+    <p>El mismo análisis explica el <a href={localized('/learn/inverse-problems/abel-transform/', 'es')}>módulo de la transformada de Abel</a>, donde el operador es una proyección en vez de un desenfoque, y es la razón por la que las redes informadas por la física necesitan una función de pérdida bien planteada (vea <a href={localized('/learn/machine-learning/physics-informed-learning/', 'es')}>el módulo de aprendizaje informado por la física</a>).</p>
+  </div>
+</LearnModule>

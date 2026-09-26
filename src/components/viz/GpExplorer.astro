@@ -1,0 +1,234 @@
+---
+/**
+ * Gaussian-process regression lab: click to add or remove measurements, change the kernel
+ * and its hyperparameters, fit them by maximising the marginal likelihood, draw animated
+ * posterior samples, and follow the "next best measurement" (maximum posterior variance).
+ */
+interface Props { lang?: 'en' | 'es' }
+const { lang = 'en' } = Astro.props;
+const es = lang === 'es';
+const T = es
+  ? {
+      kernel: 'Núcleo', rbf: 'RBF (gaussiano)', mat: 'Matérn 5/2',
+      ell: 'Escala de longitud ℓ', sf: 'Amplitud σ<sub>f</sub>', sn: 'Ruido σ<sub>n</sub>',
+      samples: 'Mostrar funciones muestreadas del posterior', truth: 'Mostrar la función oculta',
+      fit: 'ajustar los hiperparámetros', stop: 'detener', add: 'medir donde sugiere el modelo', reset: 'datos iniciales',
+      hint: 'Haga clic en el gráfico para agregar una medición; clic sobre un punto para quitarlo.',
+      title: 'Mediciones, media del posterior y banda de ±2σ',
+      keyData: 'mediciones', keyMean: 'media del posterior', keyBand: 'banda de ±2σ', keySamp: 'muestras del posterior', keyTruth: 'función oculta', keyNext: 'siguiente medición sugerida',
+      rd: { n: 'mediciones', lml: 'log-verosimilitud marginal', next: 'σ máxima', at: 'en x =', fitting: 'ajustando' },
+    }
+  : {
+      kernel: 'Kernel', rbf: 'RBF (Gaussian)', mat: 'Matérn 5/2',
+      ell: 'Length scale ℓ', sf: 'Amplitude σ<sub>f</sub>', sn: 'Noise σ<sub>n</sub>',
+      samples: 'Show functions sampled from the posterior', truth: 'Show the hidden function',
+      fit: 'fit the hyperparameters', stop: 'stop', add: 'measure where the model suggests', reset: 'initial data',
+      hint: 'Click on the plot to add a measurement; click on a point to remove it.',
+      title: 'Measurements, posterior mean and ±2σ band',
+      keyData: 'measurements', keyMean: 'posterior mean', keyBand: '±2σ band', keySamp: 'posterior samples', keyTruth: 'hidden function', keyNext: 'suggested next measurement',
+      rd: { n: 'measurements', lml: 'log marginal likelihood', next: 'largest σ', at: 'at x =', fitting: 'fitting' },
+    };
+---
+<div class="lab" data-gp data-text={JSON.stringify(T)}>
+  <div class="lab__grid">
+    <div class="lab__controls">
+      <div class="control">
+        <span class="control__head">{T.kernel}</span>
+        <div class="seg" role="group" aria-label={T.kernel}>
+          <button type="button" data-gp-k="rbf" aria-pressed="true">{T.rbf}</button>
+          <button type="button" data-gp-k="matern52" aria-pressed="false">{T.mat}</button>
+        </div>
+      </div>
+      <div class="control"><div class="control__head"><label for={`gp-l-${lang}`}>{T.ell}</label><output data-gp-lo></output></div><input id={`gp-l-${lang}`} data-gp-l type="range" min="-0.8" max="0.9" step="0.01" value="0" /></div>
+      <div class="control"><div class="control__head"><label for={`gp-f-${lang}`} set:html={T.sf} /><output data-gp-fo></output></div><input id={`gp-f-${lang}`} data-gp-f type="range" min="0.2" max="3" step="0.05" value="1" /></div>
+      <div class="control"><div class="control__head"><label for={`gp-n-${lang}`} set:html={T.sn} /><output data-gp-no></output></div><input id={`gp-n-${lang}`} data-gp-n type="range" min="-2" max="0" step="0.02" value="-1" /></div>
+      <label class="meta gp__chk"><input type="checkbox" data-gp-samp checked /> {T.samples}</label>
+      <label class="meta gp__chk"><input type="checkbox" data-gp-truth /> {T.truth}</label>
+      <p class="gp__btns"><button type="button" class="btn" data-gp-fit>{T.fit}</button> <button type="button" class="btn" data-gp-add>{T.add}</button> <button type="button" class="btn" data-gp-reset>{T.reset}</button></p>
+    </div>
+    <div>
+      <p class="panel-title">{T.title}</p>
+      <canvas class="gp__canvas" data-gp-c width="860" height="400" role="img" aria-label={T.title}></canvas>
+      <p class="meta gp__key">
+        <span><span class="key key--data"></span>{T.keyData}</span>
+        <span><span class="key key--learned"></span>{T.keyMean}</span>
+        <span><span class="gp__swatch"></span>{T.keyBand}</span>
+        <span><span class="gp__samp"></span>{T.keySamp}</span>
+        <span><span class="key key--truth"></span>{T.keyTruth}</span>
+        <span><span class="gp__next"></span>{T.keyNext}</span>
+      </p>
+      <p class="meta gp__hint">{T.hint}</p>
+      <p class="lab__readout gp__read" data-gp-read aria-live="polite">&nbsp;</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { posterior, posteriorCov, cholesky, logMarginal, fitStep, truth, initialData, bounds, type Hyper, type KernelKind } from '../../lib/gp';
+  import { cssVar } from '../../lib/plot';
+  import { rng as rngL } from '../../lib/linalg';
+
+  const X0 = 0, X1 = 10, Y0 = -3, Y1 = 3, M = 100;
+
+  document.querySelectorAll<HTMLElement>('[data-gp]').forEach((root) => {
+    const io = new IntersectionObserver((es) => { visible = es.some((e) => e.isIntersecting); if (visible && !started) { started = true; init(); } if (visible) kick(); }, { rootMargin: '200px' });
+    let visible = false, started = false, kick = () => {};
+    io.observe(root);
+
+    function init() {
+      const T = JSON.parse(root.dataset.text!);
+      const $ = <E extends Element>(s: string) => root.querySelector<E>(s)!;
+      const canvas = $<HTMLCanvasElement>('[data-gp-c]'), ctx = canvas.getContext('2d')!;
+      const lIn = $<HTMLInputElement>('[data-gp-l]'), fIn = $<HTMLInputElement>('[data-gp-f]'), nIn = $<HTMLInputElement>('[data-gp-n]');
+      const sampBox = $<HTMLInputElement>('[data-gp-samp]'), truthBox = $<HTMLInputElement>('[data-gp-truth]');
+      const fitBtn = $<HTMLButtonElement>('[data-gp-fit]'), read = $<HTMLElement>('[data-gp-read]');
+      let kind: KernelKind = 'rbf';
+      let data = initialData(3, 0.1);
+      const noiseTrue = 0.1, Rm = rngL(17);
+      const grid = Float64Array.from({ length: M }, (_, i) => X0 + ((X1 - X0) * i) / (M - 1));
+      // three fixed pairs of standard-normal vectors; samples rotate smoothly between them
+      const Rz = rngL(9);
+      const Z = Array.from({ length: 3 }, () => [Float64Array.from({ length: M }, () => Rz.normal()), Float64Array.from({ length: M }, () => Rz.normal())]);
+      let post = { mean: new Float64Array(M), sd: new Float64Array(M) }, Lc: Float64Array | null = null, lml = 0;
+      let phase = 0, fitting = false, fitIter = 0, fitState = { m: [0, 0, 0], v: [0, 0, 0], t: 0 }, raf = 0;
+
+      const hyp = (): Hyper => ({ logEll: Math.log(10 ** +lIn.value), logSf2: 2 * Math.log(+fIn.value), logSn2: 2 * Math.log(10 ** +nIn.value) });
+      const setHyp = (h: Hyper) => {
+        lIn.value = String(Math.log10(Math.exp(h.logEll)));
+        fIn.value = String(Math.sqrt(Math.exp(h.logSf2)));
+        nIn.value = String(Math.log10(Math.sqrt(Math.exp(h.logSn2))));
+      };
+      const outputs = () => {
+        $<HTMLOutputElement>('[data-gp-lo]').textContent = (10 ** +lIn.value).toFixed(2);
+        $<HTMLOutputElement>('[data-gp-fo]').textContent = (+fIn.value).toFixed(2);
+        $<HTMLOutputElement>('[data-gp-no]').textContent = (10 ** +nIn.value).toFixed(3);
+      };
+      const recompute = () => {
+        const h = hyp();
+        post = posterior(kind, data.xs, data.ys, grid, h);
+        lml = logMarginal(kind, data.xs, data.ys, h).lml;
+        const C = posteriorCov(kind, data.xs, data.ys, grid, h);
+        const jit = 1e-6 * Math.exp(h.logSf2);
+        for (let i = 0; i < M; i++) C[i * M + i] += jit;
+        Lc = cholesky(C, M);
+      };
+
+      // canvas geometry
+      const PAD = { l: 44, r: 12, t: 12, b: 34 };
+      const W = () => canvas.width, H = () => canvas.height;
+      const px = (x: number) => PAD.l + ((x - X0) / (X1 - X0)) * (W() - PAD.l - PAD.r);
+      const py = (y: number) => PAD.t + ((Y1 - y) / (Y1 - Y0)) * (H() - PAD.t - PAD.b);
+      const nextIdx = () => { let b = 0; for (let i = 1; i < M; i++) if (post.sd[i] > post.sd[b]) b = i; return b; };
+
+      const draw = () => {
+        const w = W(), h = H();
+        ctx.fillStyle = cssVar('--paper'); ctx.fillRect(0, 0, w, h);
+        ctx.font = `22px ${cssVar('--font-serif') || 'serif'}`;
+        // axes
+        ctx.strokeStyle = cssVar('--ink'); ctx.lineWidth = 1.2;
+        ctx.strokeRect(PAD.l, PAD.t, w - PAD.l - PAD.r, h - PAD.t - PAD.b);
+        ctx.fillStyle = cssVar('--ink'); ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+        for (let x = 0; x <= 10; x += 2) { ctx.fillText(String(x), px(x), h - PAD.b + 6); }
+        ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+        for (let y = -3; y <= 3; y += 1.5) ctx.fillText(String(y), PAD.l - 6, py(y));
+        ctx.save(); ctx.beginPath(); ctx.rect(PAD.l, PAD.t, w - PAD.l - PAD.r, h - PAD.t - PAD.b); ctx.clip();
+        // band
+        ctx.fillStyle = cssVar('--c-band');
+        ctx.beginPath();
+        for (let i = 0; i < M; i++) { const y = post.mean[i] + 2 * post.sd[i]; i ? ctx.lineTo(px(grid[i]), py(y)) : ctx.moveTo(px(grid[i]), py(y)); }
+        for (let i = M - 1; i >= 0; i--) ctx.lineTo(px(grid[i]), py(post.mean[i] - 2 * post.sd[i]));
+        ctx.closePath(); ctx.fill();
+        const line = (ys: ArrayLike<number>, color: string, lw: number, alpha = 1, dash: number[] = []) => {
+          ctx.globalAlpha = alpha; ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.setLineDash(dash);
+          ctx.beginPath(); for (let i = 0; i < M; i++) i ? ctx.lineTo(px(grid[i]), py(ys[i])) : ctx.moveTo(px(grid[i]), py(ys[i])); ctx.stroke();
+          ctx.globalAlpha = 1; ctx.setLineDash([]);
+        };
+        if (sampBox.checked && Lc) {
+          const c = Math.cos(phase), s = Math.sin(phase);
+          for (const [z1, z2] of Z) {
+            const f = new Float64Array(M);
+            for (let i = 0; i < M; i++) { let v = 0; for (let k = 0; k <= i; k++) v += Lc[i * M + k] * (c * z1[k] + s * z2[k]); f[i] = post.mean[i] + v; }
+            line(f, cssVar('--c-learned'), 1.4, 0.45);
+          }
+        }
+        if (truthBox.checked) line(grid.map(truth), cssVar('--c-truth'), 2, 1, [8, 6]);
+        line(post.mean, cssVar('--c-learned'), 3);
+        // suggested next measurement
+        const b = nextIdx();
+        ctx.strokeStyle = cssVar('--ink-2'); ctx.setLineDash([4, 5]); ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(px(grid[b]), PAD.t); ctx.lineTo(px(grid[b]), h - PAD.b); ctx.stroke(); ctx.setLineDash([]);
+        // data
+        ctx.fillStyle = cssVar('--c-data'); ctx.strokeStyle = cssVar('--paper'); ctx.lineWidth = 1.5;
+        data.xs.forEach((x, i) => { ctx.beginPath(); ctx.arc(px(x), py(data.ys[i]), 6, 0, 2 * Math.PI); ctx.fill(); ctx.stroke(); });
+        ctx.restore();
+        const hh = hyp();
+        read.innerHTML = `${data.xs.length} ${T.rd.n} · ${T.rd.lml} ${Number.isFinite(lml) ? lml.toFixed(2) : '—'} · ℓ = ${Math.exp(hh.logEll).toFixed(2)}, σ<sub>f</sub> = ${Math.sqrt(Math.exp(hh.logSf2)).toFixed(2)}, σ<sub>n</sub> = ${Math.sqrt(Math.exp(hh.logSn2)).toFixed(3)} · ${T.rd.next} ${post.sd[b].toFixed(2)} ${T.rd.at} ${grid[b].toFixed(1)}${fitting ? ` · ${T.rd.fitting} (${fitIter})` : ''}`;
+      };
+
+      const loop = () => {
+        raf = 0;
+        if (!visible) return;
+        let again = false;
+        if (fitting) {
+          const h = hyp();
+          for (let k = 0; k < 4 && fitIter < 400; k++, fitIter++) fitStep(kind, data.xs, data.ys, h, fitState, 0.04);
+          setHyp(h); outputs(); recompute();
+          if (fitIter >= 400) stopFit(); else again = true;
+        }
+        if (sampBox.checked) { phase += 0.02; again = true; }
+        draw();
+        if (again) raf = requestAnimationFrame(loop);
+      };
+      kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
+      const stopFit = () => { fitting = false; fitBtn.textContent = T.fit; };
+      const changed = () => { outputs(); recompute(); kick(); draw(); };
+
+      fitBtn.addEventListener('click', () => {
+        if (fitting) { stopFit(); return; }
+        if (data.xs.length < 2) return;
+        fitting = true; fitIter = 0; fitState = { m: [0, 0, 0], v: [0, 0, 0], t: 0 }; fitBtn.textContent = T.stop; kick();
+      });
+      $('[data-gp-add]').addEventListener('click', () => {
+        const x = grid[nextIdx()];
+        data.xs.push(x); data.ys.push(truth(x) + noiseTrue * Rm.normal());
+        changed();
+      });
+      $('[data-gp-reset]').addEventListener('click', () => { stopFit(); data = initialData(3, 0.1); changed(); });
+      root.querySelectorAll<HTMLButtonElement>('[data-gp-k]').forEach((b) => b.addEventListener('click', () => {
+        kind = b.dataset.gpK as KernelKind;
+        root.querySelectorAll('[data-gp-k]').forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
+        changed();
+      }));
+      [lIn, fIn, nIn].forEach((el) => el.addEventListener('input', () => { stopFit(); changed(); }));
+      [sampBox, truthBox].forEach((el) => el.addEventListener('change', () => { kick(); draw(); }));
+      canvas.addEventListener('pointerdown', (e) => {
+        const r = canvas.getBoundingClientRect();
+        const sx = ((e.clientX - r.left) / r.width) * W(), sy = ((e.clientY - r.top) / r.height) * H();
+        // remove a point if clicked close to it
+        const hit = data.xs.findIndex((x, i) => Math.hypot(px(x) - sx, py(data.ys[i]) - sy) < 16);
+        if (hit >= 0) { data.xs.splice(hit, 1); data.ys.splice(hit, 1); changed(); return; }
+        const x = X0 + ((sx - PAD.l) / (W() - PAD.l - PAD.r)) * (X1 - X0);
+        const y = Y1 - ((sy - PAD.t) / (H() - PAD.t - PAD.b)) * (Y1 - Y0);
+        if (x < X0 || x > X1 || y < Y0 || y > Y1) return;
+        data.xs.push(x); data.ys.push(y); changed();
+      });
+      window.addEventListener('themechange', draw);
+      void bounds;
+      changed();
+    }
+  });
+</script>
+
+<style>
+  .gp__canvas { width: 100%; height: auto; aspect-ratio: 860 / 400; display: block; cursor: crosshair; touch-action: manipulation; }
+  .gp__key { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.2rem 1rem; margin-top: var(--s-2); font-size: var(--step--2); }
+  .gp__key > span { display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap; }
+  .gp__key .key { margin: 0; }
+  .gp__swatch { display: inline-block; width: 0.9em; height: 0.6em; background: var(--c-band); }
+  .gp__samp { display: inline-block; width: 0.9em; height: 0; border-top: 1.5px solid var(--c-learned); opacity: 0.5; }
+  .gp__next { display: inline-block; width: 0; height: 0.9em; border-left: 1.5px dashed var(--ink-2); }
+  .gp__hint { text-align: center; margin-top: var(--s-1); }
+  .gp__read { text-align: center; margin-top: var(--s-2); }
+  .gp__chk { display: flex; gap: 0.4em; align-items: baseline; }
+  .gp__btns { display: flex; flex-wrap: wrap; gap: 0.3rem 0.8rem; font-size: var(--step--1); }
+</style>

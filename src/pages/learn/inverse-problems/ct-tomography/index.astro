@@ -1,0 +1,48 @@
+---
+import LearnModule from '../../../../layouts/LearnModule.astro';
+import Equation from '../../../../components/viz/Equation.astro';
+import CtExplorer from '../../../../components/viz/CtExplorer.astro';
+import Answer from '../../../../components/ui/Answer.astro';
+import { url } from '../../../../i18n/utils';
+---
+<LearnModule slug="inverse-problems/ct-tomography" lang="en" description="Interactive computed tomography: watch a scanner build a sinogram, then reconstruct the image by back-projection, filtered back-projection and an iterative method, with few views, noise and a limited angular range.">
+  <div class="prose">
+    <h2>Shadows taken from many directions</h2>
+    <p>A CT scanner sends X-rays through the body along many parallel lines and measures how much of each beam arrives on the other side. Tissue absorbs part of the beam, and by the Beer–Lambert law the logarithm of the transmitted fraction equals the integral of the attenuation coefficient <em>μ</em> along the ray. One sweep of rays gives a <em>projection</em>, a one-dimensional shadow of the slice. The scanner then rotates and repeats. Stacking the projections row by row, one row per angle, gives the <em>sinogram</em>: a single point in the body traces a sine curve in it, hence the name.</p>
+    <Equation tex={String.raw`p_\theta(s) = \int_{-\infty}^{\infty} \mu(x, y)\,\mathrm{d}t, \qquad x = s\cos\theta - t\sin\theta, \qquad y = s\sin\theta + t\cos\theta .`} />
+    <p>This is the Radon transform (Radon, 1917). Computing the sinogram from the image is the forward problem. Recovering the image from the sinogram is the inverse problem, and it is what the scanner's computer solves for every slice.</p>
+    <h2>Smearing the shadows back is not enough</h2>
+    <p>The simplest idea is <em>back-projection</em>: spread each measured value back along its ray and add the contributions from all angles. Every bright point then becomes a star of lines, and the image comes out as the true one blurred by a halo that fades like 1/<em>r</em>. The reason is visible in Fourier space. The <em>Fourier slice theorem</em> states that the one-dimensional Fourier transform of a projection equals a line through the origin of the two-dimensional Fourier transform of the image. All the lines cross at the origin, so low spatial frequencies are measured many times and high frequencies rarely. Multiplying each projection's spectrum by |<em>ω</em>|, the <em>ramp filter</em>, restores the balance before back-projecting:</p>
+    <Equation tex={String.raw`\mu(x, y) = \int_0^{\pi} q_\theta(x\cos\theta + y\sin\theta)\,\mathrm{d}\theta, \qquad q_\theta = p_\theta * h, \qquad \hat h(\omega) = |\omega| .`} />
+    <p>This is <em>filtered back-projection</em> (FBP), the standard algorithm of clinical CT for decades. The ramp grows without bound at high frequencies, where measurement noise lives, so practical filters roll it off; the Shepp–Logan filter multiplies it by a sinc.</p>
+  </div>
+
+  <CtExplorer lang="en" />
+
+  <div class="try">
+    <h3>Exercises</h3>
+    <ol>
+      <li>Switch the reconstruction to plain back-projection and compare it with filtered back-projection. What does the missing filter do to the image, and to the PSNR in the readout?
+        <Answer lang="en"><p>Back-projection gives a blurred, low-contrast image (PSNR about 13 dB, against about 19.5 dB for filtered back-projection with the default 30 projections). Each measurement is spread evenly along its ray, so every point turns into a star of lines whose density falls off as 1/<em>r</em>. In Fourier terms, low frequencies are counted many times because every projection passes through the origin of the spectrum; the ramp filter |ω| removes exactly that excess weighting.</p></Answer></li>
+      <li>With filtered back-projection, reduce the number of projections to 8. Then switch to the iterative method (SIRT) and let it run.
+        <Answer lang="en"><p>With 8 views, filtered back-projection produces strong streaks along the 8 directions and the PSNR drops to about 10 dB. SIRT reaches about 19 dB after 300 iterations. It only tries to reproduce the measured projections, instead of assuming the missing ones are zero, and the non-negativity constraint (attenuation cannot be negative) removes the dark undershoots that make up the streaks. Adding prior knowledge about the object is what makes few-view and low-dose CT possible.</p></Answer></li>
+      <li>Go back to 30 projections and filtered back-projection, and raise the detector noise to 8 %. Compare the ramp and Shepp–Logan filters.
+        <Answer lang="en"><p>The ramp filter gives a grainy image (about 12 dB); the Shepp–Logan filter gives a smoother one (about 13 dB). Noise is spread over all frequencies, while the object's information is concentrated at low frequencies, so the ramp amplifies mostly noise at the top of the spectrum. Rolling the filter off trades a little resolution for much less noise: it is a form of regularisation, as in the SVD module.</p></Answer></li>
+      <li>Keep 8 % noise and switch to SIRT. Watch the plot of PSNR against iteration.
+        <Answer lang="en"><p>The PSNR rises to about 18 dB around iteration 50 and then falls to about 16 dB by iteration 300. Early iterations recover the large-scale structure, which the data determine well; later iterations start fitting the noise. This behaviour is called <em>semi-convergence</em>: the number of iterations acts as a regularisation parameter, and stopping early plays the same role as choosing λ in Tikhonov regularisation.</p></Answer></li>
+      <li>Set the angular range to 100° (a limited-angle scan) and try several numbers of projections. Can any method recover the full image?
+        <Answer lang="en"><p>No. Even with many projections the PSNR stays around 15 dB with filtered back-projection and about 18 dB with SIRT, and edges aligned with the missing directions stay blurred or elongated. By the Fourier slice theorem, a whole wedge of the image's spectrum is never measured, and no linear method can recover it. This "missing wedge" limits breast tomosynthesis, electron tomography and any set-up where the object cannot be viewed from all sides.</p></Answer></li>
+      <li>Choose the pipe with a crack, an example of industrial non-destructive testing. Compare 8, 30 and 90 projections. When does the crack become visible?
+        <Answer lang="en"><p>With 8 projections the wall and the inclusions are visible but streaks hide the crack. With 30 the crack starts to appear, and with 90 it is clear (PSNR about 21.5 dB with filtered back-projection). Thin features need many angles: a common rule of thumb is about (π/2) × (number of detector pixels) views for full resolution, around 150 here. Fewer views blur exactly the fine details an inspection is looking for.</p></Answer></li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>Iterative reconstruction</h2>
+    <p>Iterative methods treat the scanner as a large linear system <em>A x = b</em>: <em>x</em> holds the pixel values, <em>b</em> the measured ray integrals, and each row of <em>A</em> says how much each pixel contributes to one ray. The simultaneous iterative reconstruction technique (SIRT) corrects the image with the back-projected residual, normalised by the number of rays through each pixel and the number of pixels on each ray:</p>
+    <Equation tex={String.raw`x^{(k+1)} = \max\!\big(0,\; x^{(k)} + C\,A^{\mathsf T} R\, r^{(k)}\big), \qquad r^{(k)} = b - A\,x^{(k)}, \qquad R = \mathrm{diag}\Big(\tfrac{1}{\sum_j a_{ij}}\Big),\; C = \mathrm{diag}\Big(\tfrac{1}{\sum_i a_{ij}}\Big).`} />
+    <p>Each iteration costs one projection and one back-projection, so iterative methods are slower than filtered back-projection. In exchange they accept any geometry, few or unevenly spaced views and constraints such as non-negativity. Modern low-dose scanners combine them with statistical noise models and learned priors.</p>
+    <h2>Where it is used</h2>
+    <p>Medical CT, industrial inspection of welds, castings and batteries, synchrotron micro-tomography of materials, and seismic tomography of the Earth's interior all rely on the same mathematics. When the object is axisymmetric, a single projection is enough and the Radon transform reduces to the Abel transform: see the <a href={url('/learn/inverse-problems/abel-transform/')}>Abel transform module</a>. The noise amplification and the role of regularisation are analysed in the <a href={url('/learn/inverse-problems/svd-noise-amplification/')}>SVD module</a>.</p>
+  </div>
+</LearnModule>

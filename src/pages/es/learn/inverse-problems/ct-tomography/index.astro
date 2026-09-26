@@ -1,0 +1,48 @@
+---
+import LearnModule from '../../../../../layouts/LearnModule.astro';
+import Equation from '../../../../../components/viz/Equation.astro';
+import CtExplorer from '../../../../../components/viz/CtExplorer.astro';
+import Answer from '../../../../../components/ui/Answer.astro';
+import { localized } from '../../../../../i18n/utils';
+---
+<LearnModule slug="inverse-problems/ct-tomography" lang="es" description="Tomografía computarizada interactiva: vea cómo un escáner construye el sinograma y reconstruya la imagen por retroproyección, retroproyección filtrada y un método iterativo, con pocas vistas, ruido y rango angular limitado.">
+  <div class="prose">
+    <h2>Sombras tomadas desde muchas direcciones</h2>
+    <p>Un escáner de tomografía computarizada (TC) envía rayos X a través del cuerpo a lo largo de muchas líneas paralelas y mide cuánto de cada haz llega al otro lado. Los tejidos absorben parte del haz y, por la ley de Beer–Lambert, el logaritmo de la fracción transmitida es igual a la integral del coeficiente de atenuación <em>μ</em> a lo largo del rayo. Un barrido de rayos entrega una <em>proyección</em>, una sombra unidimensional del corte. Luego el escáner gira y repite. Al apilar las proyecciones, una fila por ángulo, se obtiene el <em>sinograma</em>: un solo punto del cuerpo dibuja en él una curva sinusoidal, de ahí su nombre.</p>
+    <Equation tex={String.raw`p_\theta(s) = \int_{-\infty}^{\infty} \mu(x, y)\,\mathrm{d}t, \qquad x = s\cos\theta - t\sin\theta, \qquad y = s\sin\theta + t\cos\theta .`} />
+    <p>Esta es la transformada de Radon (Radon, 1917). Calcular el sinograma a partir de la imagen es el problema directo. Recuperar la imagen a partir del sinograma es el problema inverso, y es lo que resuelve el computador del escáner para cada corte.</p>
+    <h2>Devolver las sombras no basta</h2>
+    <p>La idea más simple es la <em>retroproyección</em>: repartir cada valor medido a lo largo de su rayo y sumar las contribuciones de todos los ángulos. Cada punto brillante se convierte entonces en una estrella de líneas, y la imagen resulta ser la verdadera desenfocada por un halo que decae como 1/<em>r</em>. La razón se ve en el espacio de Fourier. El <em>teorema de la sección de Fourier</em> dice que la transformada de Fourier unidimensional de una proyección es igual a una recta que pasa por el origen de la transformada bidimensional de la imagen. Todas las rectas se cruzan en el origen, así que las frecuencias espaciales bajas se miden muchas veces y las altas pocas. Multiplicar el espectro de cada proyección por |<em>ω</em>|, el <em>filtro rampa</em>, restablece el equilibrio antes de retroproyectar:</p>
+    <Equation tex={String.raw`\mu(x, y) = \int_0^{\pi} q_\theta(x\cos\theta + y\sin\theta)\,\mathrm{d}\theta, \qquad q_\theta = p_\theta * h, \qquad \hat h(\omega) = |\omega| .`} />
+    <p>Esta es la <em>retroproyección filtrada</em> (FBP), el algoritmo estándar de la TC clínica durante décadas. La rampa crece sin límite en las frecuencias altas, donde está el ruido de medición, por lo que los filtros prácticos la atenúan; el filtro de Shepp–Logan la multiplica por una función sinc.</p>
+  </div>
+
+  <CtExplorer lang="es" />
+
+  <div class="try">
+    <h3>Ejercicios</h3>
+    <ol>
+      <li>Cambie la reconstrucción a retroproyección simple y compárela con la retroproyección filtrada. ¿Qué le hace a la imagen, y al PSNR de la lectura, la falta del filtro?
+        <Answer lang="es"><p>La retroproyección entrega una imagen borrosa y de bajo contraste (PSNR cercano a 13 dB, frente a unos 19,5 dB de la retroproyección filtrada con las 30 proyecciones por defecto). Cada medición se reparte por igual a lo largo de su rayo, así que cada punto se convierte en una estrella de líneas cuya densidad decae como 1/<em>r</em>. En términos de Fourier, las frecuencias bajas se cuentan muchas veces porque todas las proyecciones pasan por el origen del espectro; el filtro rampa |ω| elimina justamente ese exceso de peso.</p></Answer></li>
+      <li>Con retroproyección filtrada, reduzca el número de proyecciones a 8. Luego cambie al método iterativo (SIRT) y déjelo avanzar.
+        <Answer lang="es"><p>Con 8 vistas, la retroproyección filtrada produce rayas marcadas en las 8 direcciones y el PSNR baja a unos 10 dB. SIRT llega a unos 19 dB tras 300 iteraciones. Solo intenta reproducir las proyecciones medidas, en vez de suponer que las que faltan valen cero, y la restricción de no negatividad (la atenuación no puede ser negativa) elimina los valores negativos que forman las rayas. Agregar conocimiento previo sobre el objeto es lo que hace posible la TC con pocas vistas y con baja dosis.</p></Answer></li>
+      <li>Vuelva a 30 proyecciones y retroproyección filtrada, y suba el ruido del detector a 8 %. Compare los filtros rampa y Shepp–Logan.
+        <Answer lang="es"><p>El filtro rampa da una imagen granulada (unos 12 dB); el de Shepp–Logan, una más suave (unos 13 dB). El ruido se reparte en todas las frecuencias, mientras que la información del objeto se concentra en las bajas, así que en la parte alta del espectro la rampa amplifica sobre todo ruido. Atenuar el filtro cambia un poco de resolución por mucho menos ruido: es una forma de regularización, como en el módulo de la SVD.</p></Answer></li>
+      <li>Mantenga el 8 % de ruido y cambie a SIRT. Observe el gráfico del PSNR según la iteración.
+        <Answer lang="es"><p>El PSNR sube hasta unos 18 dB cerca de la iteración 50 y luego baja a unos 16 dB en la iteración 300. Las primeras iteraciones recuperan la estructura de gran escala, que los datos determinan bien; las siguientes empiezan a ajustar el ruido. Este comportamiento se llama <em>semiconvergencia</em>: el número de iteraciones actúa como parámetro de regularización, y detenerse antes cumple el mismo papel que elegir λ en la regularización de Tikhonov.</p></Answer></li>
+      <li>Fije el rango angular en 100° (un escaneo de ángulo limitado) y pruebe varios números de proyecciones. ¿Algún método recupera la imagen completa?
+        <Answer lang="es"><p>No. Incluso con muchas proyecciones, el PSNR se queda cerca de 15 dB con retroproyección filtrada y de 18 dB con SIRT, y los bordes alineados con las direcciones que faltan siguen borrosos o estirados. Por el teorema de la sección de Fourier, una cuña completa del espectro de la imagen nunca se mide, y ningún método lineal puede recuperarla. Esta "cuña faltante" limita la tomosíntesis mamaria, la tomografía electrónica y cualquier montaje en que el objeto no se puede observar desde todos los lados.</p></Answer></li>
+      <li>Elija la tubería con grieta, un ejemplo de ensayo no destructivo industrial. Compare 8, 30 y 90 proyecciones. ¿Cuándo se hace visible la grieta?
+        <Answer lang="es"><p>Con 8 proyecciones se ven la pared y las inclusiones, pero las rayas ocultan la grieta. Con 30 empieza a aparecer, y con 90 es clara (PSNR cercano a 21,5 dB con retroproyección filtrada). Los detalles delgados necesitan muchos ángulos: una regla práctica habitual es usar unas (π/2) × (número de píxeles del detector) vistas para la resolución completa, unas 150 aquí. Con menos vistas se pierden precisamente los detalles finos que busca una inspección.</p></Answer></li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>Reconstrucción iterativa</h2>
+    <p>Los métodos iterativos tratan el escáner como un gran sistema lineal <em>A x = b</em>: <em>x</em> contiene los valores de los píxeles, <em>b</em> las integrales medidas y cada fila de <em>A</em> indica cuánto aporta cada píxel a un rayo. La técnica de reconstrucción iterativa simultánea (SIRT) corrige la imagen con el residuo retroproyectado, normalizado por el número de rayos que cruzan cada píxel y el número de píxeles de cada rayo:</p>
+    <Equation tex={String.raw`x^{(k+1)} = \max\!\big(0,\; x^{(k)} + C\,A^{\mathsf T} R\, r^{(k)}\big), \qquad r^{(k)} = b - A\,x^{(k)}, \qquad R = \mathrm{diag}\Big(\tfrac{1}{\sum_j a_{ij}}\Big),\; C = \mathrm{diag}\Big(\tfrac{1}{\sum_i a_{ij}}\Big).`} />
+    <p>Cada iteración cuesta una proyección y una retroproyección, así que los métodos iterativos son más lentos que la retroproyección filtrada. A cambio aceptan cualquier geometría, pocas vistas o vistas irregulares, y restricciones como la no negatividad. Los escáneres modernos de baja dosis los combinan con modelos estadísticos del ruido y con información previa aprendida.</p>
+    <h2>Dónde se usa</h2>
+    <p>La TC médica, la inspección industrial de soldaduras, piezas fundidas y baterías, la microtomografía de sincrotrón de materiales y la tomografía sísmica del interior de la Tierra se basan en la misma matemática. Cuando el objeto tiene simetría axial basta una sola proyección y la transformada de Radon se reduce a la transformada de Abel: vea el <a href={localized('/learn/inverse-problems/abel-transform/', 'es')}>módulo de la transformada de Abel</a>. La amplificación del ruido y el papel de la regularización se analizan en el <a href={localized('/learn/inverse-problems/svd-noise-amplification/', 'es')}>módulo de la SVD</a>.</p>
+  </div>
+</LearnModule>

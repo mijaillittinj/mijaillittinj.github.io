@@ -7,23 +7,26 @@
  * Static fallback: the caption and the 2D field figure elsewhere on the page.
  */
 import { url } from '../../i18n/utils';
-interface Props { base: string; field: string; caption?: string; id?: string }
-const { base, field, caption, id = 'td' } = Astro.props;
+interface Props { base: string; field: string; caption?: string; id?: string; lang?: 'en' | 'es' }
+const { base, field, caption, id = 'td', lang = 'en' } = Astro.props;
+const S = lang === 'es'
+  ? { aria: 'Integral a lo largo de la línea de visión del campo de revolución, para la elevación de observación elegida', el: 'Elevación de observación', elNote: '0° corresponde a una cámara lateral: la imagen es la proyección de Abel del campo.', cut: 'Quitar la mitad delantera', cutNote: 'mostrar solo la mitad trasera (y &gt; 0)', note: 'Vista de lado, cada píxel suma el campo a lo largo de una cuerda. Los bordes brillantes son el máximo fuera del eje visto de forma tangencial, no un máximo del campo en esa posición.' }
+  : { aria: 'Line-of-sight integral of the revolved field at the selected viewing elevation', el: 'Viewing elevation', elNote: '0° is a side-on camera: the image is the Abel projection of the field.', cut: 'Cut away the front half', cutNote: 'show only the rear half (y &gt; 0)', note: 'Side-on, every pixel sums the field along a chord. The bright edges are the off-axis maximum seen tangentially, not a maximum of the field at that position.' };
 ---
 <figure class="td" data-td data-base={url(base)} data-field={field}>
   <div class="td__grid">
-    <div class="td__view"><canvas class="canvas-field" data-c width="220" height="260" role="img" aria-label="Line-of-sight integral of the revolved field at the selected viewing elevation"></canvas></div>
+    <div class="td__view"><canvas class="canvas-field" data-c width="220" height="260" role="img" aria-label={S.aria}></canvas></div>
     <div class="td__ctrl">
       <div class="control">
-        <div class="control__head"><label for={`${id}-el`}>Viewing elevation</label><output data-elout>0°</output></div>
+        <div class="control__head"><label for={`${id}-el`}>{S.el}</label><output data-elout>0°</output></div>
         <input id={`${id}-el`} type="range" min="0" max="80" step="1" value="0" data-el />
-        <small class="muted">0° is a side-on camera: the image is the Abel projection of the field.</small>
+        <small class="muted">{S.elNote}</small>
       </div>
       <div class="control">
-        <div class="control__head"><label for={`${id}-cut`}>Cut away the front half</label></div>
-        <label class="meta"><input type="checkbox" data-cut /> show only the rear half (y &gt; 0)</label>
+        <div class="control__head"><label for={`${id}-cut`}>{S.cut}</label></div>
+        <label class="meta"><input type="checkbox" data-cut /> <Fragment set:html={S.cutNote} /></label>
       </div>
-      <p class="lab__readout" data-note>Side-on, every pixel sums the field along a chord. The bright edges are the off-axis maximum seen tangentially, not a maximum of the field at that position.</p>
+      <p class="lab__readout" data-note>{S.note}</p>
     </div>
   </div>
   {caption && <figcaption set:html={caption} />}

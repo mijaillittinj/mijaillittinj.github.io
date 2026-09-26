@@ -5,37 +5,67 @@
  * and with Tikhonov regularisation, and see the spread over repeated noise draws.
  */
 import ParameterSlider from './ParameterSlider.astro';
+interface Props { lang?: 'en' | 'es' }
+const { lang = 'en' } = Astro.props;
+const T = lang === 'es'
+  ? {
+      comma: true,
+      profile: 'Perfil radial f(r)', gaussian: 'Máximo en el eje', annular: 'Anillo fuera del eje', twozone: 'Dos zonas',
+      a: 'Forma: posición / ancho', b: 'Forma: ancho del anillo / suavidad del borde',
+      noise: 'Ruido de medición (% del máximo)', lam: 'Regularización log₁₀ λ', lamHint: 'Peso de la penalización de suavidad ‖Df‖².',
+      band: 'Mostrar la dispersión en 30 realizaciones del ruido', direct: 'Mostrar la inversión directa',
+      pDisk: 'Sección transversal (lo que buscamos)', pProj: 'Proyección (lo que medimos)', pRec: 'Reconstrucción (lo que inferimos)',
+      diskAria: 'Sección transversal del campo axisimétrico',
+      xProj: 'desplazamiento del rayo y', xRec: 'radio r',
+      exact: 'proyección exacta', noisy: 'datos con ruido', bandL: 'regularizada ±2σ (30 realizaciones)', truth: 'f(r) verdadera', directL: 'inversión directa', reg: 'regularizada',
+      err: 'Error (RMS, relativo al máximo)', dir: 'directa', regR: 'regularizada',
+      hurt: ' Aquí la regularización empeora el resultado: λ es demasiado grande y aplana estructura real.',
+      helps: ' La penalización elimina la mayor parte del ruido amplificado.',
+    }
+  : {
+      profile: 'Radial profile f(r)', gaussian: 'Peak on axis', annular: 'Off-axis ring', twozone: 'Two zones',
+      a: 'Shape: position / width', b: 'Shape: ring width / edge softness',
+      noise: 'Measurement noise (% of max)', lam: 'Regularisation log₁₀ λ', lamHint: 'Weight of the smoothness penalty ‖Df‖².',
+      band: 'Show spread over 30 noise draws', direct: 'Show direct inversion',
+      pDisk: 'Cross-section (what we want)', pProj: 'Projection (what we measure)', pRec: 'Reconstruction (what we infer)',
+      diskAria: 'Cross-section of the axisymmetric field',
+      xProj: 'ray offset y', xRec: 'radius r',
+      exact: 'exact projection', noisy: 'noisy data', bandL: 'regularised ±2σ (30 draws)', truth: 'true f(r)', directL: 'direct inversion', reg: 'regularised',
+      err: 'Error (RMS, relative to peak)', dir: 'direct', regR: 'regularised',
+      hurt: ' Here regularisation hurts: λ is too large and flattens real structure.',
+      helps: ' The penalty removes most of the amplified noise.',
+    };
 ---
-<div class="lab" data-abel>
+<div class="lab" data-abel data-t={JSON.stringify(T)}>
   <div class="lab__grid">
     <div class="lab__controls">
       <div class="control">
-        <span class="control__head">Radial profile f(r)</span>
-        <div class="seg" role="group" aria-label="Radial profile">
-          <button type="button" data-kind="gaussian" aria-pressed="false">Peak on axis</button>
-          <button type="button" data-kind="annular" aria-pressed="true">Off-axis ring</button>
-          <button type="button" data-kind="two-zone" aria-pressed="false">Two zones</button>
+        <span class="control__head">{T.profile}</span>
+        <div class="seg" role="group" aria-label={T.profile}>
+          <button type="button" data-kind="gaussian" aria-pressed="false">{T.gaussian}</button>
+          <button type="button" data-kind="annular" aria-pressed="true">{T.annular}</button>
+          <button type="button" data-kind="two-zone" aria-pressed="false">{T.twozone}</button>
         </div>
       </div>
-      <ParameterSlider name="a" label="Shape: position / width" min={0} max={1} step={0.01} value={0.5} />
-      <ParameterSlider name="b" label="Shape: sharpness" min={0} max={1} step={0.01} value={0.4} />
-      <ParameterSlider name="noise" label="Measurement noise (% of max)" min={0} max={6} step={0.1} value={2} format="fixed2" unit=" %" />
-      <ParameterSlider name="lam" label="Regularisation log₁₀ λ" min={-3} max={4} step={0.1} value={1} hint="Weight of the smoothness penalty ‖Df‖²." />
-      <label class="meta"><input type="checkbox" data-band checked /> Show spread over 30 noise draws</label>
-      <label class="meta"><input type="checkbox" data-direct checked /> Show direct inversion</label>
+      <ParameterSlider name="a" label={T.a} min={0} max={1} step={0.01} value={0.5} />
+      <ParameterSlider name="b" label={T.b} min={0} max={1} step={0.01} value={0.4} />
+      <ParameterSlider name="noise" label={T.noise} min={0} max={6} step={0.1} value={2} format="fixed2" unit=" %" />
+      <ParameterSlider name="lam" label={T.lam} min={-3} max={4} step={0.1} value={1} hint={T.lamHint} />
+      <label class="meta"><input type="checkbox" data-band checked /> {T.band}</label>
+      <label class="meta"><input type="checkbox" data-direct checked /> {T.direct}</label>
       <p class="lab__readout" data-read aria-live="polite"></p>
     </div>
     <div class="lab__plots">
       <div>
-        <p class="panel-title">Cross-section (what we want)</p>
-        <canvas class="canvas-field disk" data-disk width="240" height="240" aria-label="Cross-section of the axisymmetric field" role="img"></canvas>
+        <p class="panel-title">{T.pDisk}</p>
+        <canvas class="canvas-field disk" data-disk width="240" height="240" aria-label={T.diskAria} role="img"></canvas>
       </div>
       <div>
-        <p class="panel-title">Projection (what we measure)</p>
+        <p class="panel-title">{T.pProj}</p>
         <div data-proj></div>
       </div>
       <div class="wide">
-        <p class="panel-title">Reconstruction (what we infer)</p>
+        <p class="panel-title">{T.pRec}</p>
         <div data-rec></div>
       </div>
     </div>
@@ -49,15 +79,18 @@ import ParameterSlider from './ParameterSlider.astro';
   import { LinePlot, drawField, viridis } from '../../lib/plot';
 
   document.querySelectorAll<HTMLElement>('[data-abel]').forEach((root) => {
+    const T = JSON.parse(root.dataset.t!);
+    // Spanish readouts use a decimal comma
+    const dec = (t: string) => (T.comma ? t.replace(/(\d)\.(\d)/g, '$1,$2') : t);
     const n = 60;
     const L = chordMatrix(n);
     const rc = Float64Array.from({ length: n }, (_, i) => (i + 0.5) / n); // annulus centres
     const yr = Float64Array.from({ length: n }, (_, i) => i / n);         // ray offsets
     const val = (name: string) => +root.querySelector<HTMLInputElement>(`[name="${name}"]`)!.value;
     let kind: ProfileKind = 'annular';
-    const pProj = new LinePlot(root.querySelector('[data-proj]')!, { width: 420, height: 260, xlabel: 'ray offset y', ylabel: 'P(y)', title: 'Projection' , legend: false});
+    const pProj = new LinePlot(root.querySelector('[data-proj]')!, { width: 420, height: 260, xlabel: T.xProj, ylabel: 'P(y)', title: T.pProj, legend: false});
     const pProjR = keyed(pProj, root.querySelector('[data-proj]')!);
-    const pRec = new LinePlot(root.querySelector('[data-rec]')!, { width: 860, height: 300, xlabel: 'radius r', ylabel: 'f(r)', title: 'Reconstruction' , legend: false});
+    const pRec = new LinePlot(root.querySelector('[data-rec]')!, { width: 860, height: 300, xlabel: T.xRec, ylabel: 'f(r)', title: T.pRec, legend: false});
     const pRecR = keyed(pRec, root.querySelector('[data-rec]')!);
     const disk = root.querySelector<HTMLCanvasElement>('[data-disk]')!;
     const read = root.querySelector<HTMLElement>('[data-read]')!;
@@ -102,18 +135,18 @@ import ParameterSlider from './ParameterSlider.astro';
       }
       drawDisk(f);
       pProjR([
-        { kind: 'line', x: yr, y: p, cls: 's-physics', label: 'exact projection' },
-        { kind: 'points', x: yr, y: pn, cls: 's-data', label: 'noisy data' },
+        { kind: 'line', x: yr, y: p, cls: 's-physics', label: T.exact },
+        { kind: 'points', x: yr, y: pn, cls: 's-data', label: T.noisy },
       ], { xlim: [0, 1] });
       const series: Parameters<typeof pRec.render>[0] = [];
-      if (bandBox.checked && sig > 0) series.push({ kind: 'band', x: rc, y: lo, y2: hi, cls: 's-learned', label: 'regularised ±2σ (30 draws)' });
-      series.push({ kind: 'line', x: rc, y: f, cls: 's-truth', label: 'true f(r)' });
-      if (directBox.checked) series.push({ kind: 'line', x: rc, y: fd, cls: 's-warn', label: 'direct inversion' });
-      series.push({ kind: 'line', x: rc, y: ft, cls: 's-learned', label: 'regularised' });
+      if (bandBox.checked && sig > 0) series.push({ kind: 'band', x: rc, y: lo, y2: hi, cls: 's-learned', label: T.bandL });
+      series.push({ kind: 'line', x: rc, y: f, cls: 's-truth', label: T.truth });
+      if (directBox.checked) series.push({ kind: 'line', x: rc, y: fd, cls: 's-warn', label: T.directL });
+      series.push({ kind: 'line', x: rc, y: ft, cls: 's-learned', label: T.reg });
       pRecR(series, { xlim: [0, 1], ylim: [-0.4, 1.5] });
       const eD = rms(fd, f), eT = rms(ft, f);
-      read.innerHTML = `Error (RMS, relative to peak): direct <strong>${(100 * eD).toFixed(1)} %</strong>, regularised <strong>${(100 * eT).toFixed(1)} %</strong>.` +
-        (eT > eD ? ' Here regularisation hurts: λ is too large and flattens real structure.' : eD > 3 * eT ? ' The penalty removes most of the amplified noise.' : '');
+      read.innerHTML = dec(`${T.err}: ${T.dir} <strong>${(100 * eD).toFixed(1)} %</strong>, ${T.regR} <strong>${(100 * eT).toFixed(1)} %</strong>.` +
+        (eT > eD ? T.hurt : eD > 3 * eT ? T.helps : ''));
     };
 
     root.querySelectorAll<HTMLButtonElement>('[data-kind]').forEach((btn) => btn.addEventListener('click', () => {

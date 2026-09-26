@@ -1,0 +1,181 @@
+---
+import Base from '../../layouts/Base.astro';
+import Equation from '../viz/Equation.astro';
+import ScientificFigure from '../viz/ScientificFigure.astro';
+import FieldExplorer from '../viz/FieldExplorer.astro';
+import ThreeDField from '../viz/ThreeDField.astro';
+import PubItem from '../ui/PubItem.astro';
+import CitationMeta from '../ui/CitationMeta.astro';
+import { byId, citation, bibtex } from '../../data/publications';
+import { url, localized } from '../../i18n/utils';
+import type { Lang } from '../../i18n/ui';
+import fieldsFig from '../../assets/figures/carbon2026-fields.png';
+import compFig from '../../assets/figures/carbon2026-composition.png';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const L = (k: string) => localized(k, lang);
+const EN = {"title": "Physics-informed retrieval of soot properties (Carbon 2026)", "desc": "Explainer for Littin et al., Carbon 2026: a physics-informed neural network jointly inverts attenuation, emission and multi-angle scattering measurements to retrieve temperature, volume fraction, aggregate size and composition fields.", "credit": "Figure regenerated for this site from the author’s data. Source: Littin et al., Carbon 250 (2026) 121296, CC BY 4.0.", "pubs": "Publications", "explained": "Paper explained", "h1": "Joint inversion of three optical diagnostics with a physics-informed network", "lede": "Three optical measurements of the same flame are inverted together by one neural network, so that the recovered soot properties agree with every measurement and with the physics that links them. This page explains the problem, the method and the results for readers outside combustion.", "oa": "Open access · CC BY 4.0", "read": "Read the paper (DOI)", "pres": "Interactive presentation", "codeData": "Code and data", "summary": "Summary", "s1": "Light shone through a flame and light emitted or scattered by it depend on the same hidden quantities: how much soot is present, how hot it is, how large its aggregates are and what it is made of. Each measurement is usually inverted on its own, with its own calibration, and the answers do not quite agree.", "s2": "In this work a single neural network takes a position <em>(r, z)</em> in the flame and returns all the hidden quantities there. It is not trained on labels, because none exist. It is trained so that, when its outputs are passed through light-scattering theory and Planck’s law, they reproduce every measurement at every wavelength at the same time. The instrument calibration factors are solved for along the way.", "s3": "Nothing in the formulation is specific to flames: it applies whenever several instruments observe the same state through known physics. The paper demonstrates it on one axisymmetric laminar flame.", "f1alt": "Three maps of a laminar flame cross-section between 20 and 38 mm above the burner: soot volume fraction peaking near the wings at about 7.8 ppm, temperature between 1710 and 1880 K with higher values on the wings, and graphitic fraction rising towards the upper wings.", "f1cap": "Fields retrieved by the network in a laminar ethylene flame, mirrored about the axis: (a) soot volume fraction <em>f<sub>s</sub></em>, (b) soot temperature <em>T</em>, (c) graphitic fraction <em>f<sub>G</sub></em>. White regions are where not all diagnostics have signal, so no retrieval is attempted.", "why": "Why separate inversions disagree", "w1": "Three techniques were applied to an axisymmetric ethylene flame at five wavelengths between 405 and 750 nm. Line-of-sight attenuation (LOSA) measures extinction in absolute terms. Spectral soot emission (SSE) measures radiated light, which depends on temperature. Multi-angle light scattering (MALS) is sensitive to aggregate size. Each camera image is first converted into local coefficients by Abel inversion with the spline-based method (SAT).", "w2": "The local coefficients are related by the Rayleigh–Debye–Gans theory for fractal aggregates:", "w3": "Here <em>f<sub>s</sub></em> is the soot volume fraction, <em>E(m)</em> and <em>F(m)</em> are absorption and scattering functions of the refractive index <em>m</em>, and <em>B</em> is the Planck function. Forward scattering <em>κ<sub>vv</sub>(0°)</em> also carries the aggregate volume moment; the angular dependence of scattering, integrated over angles, gives <em>κ<sub>sca</sub></em>. When absorption is deduced from emission and scattering from MALS independently, their sum does not match the extinction measured by LOSA. The errors of one diagnostic propagate into the next. There are about fifteen measured quantities for about eight unknown fields, and they are not mutually consistent.", "method": "Method: from images to fields", "chain": "Processing chain", "m1": "<strong>Measure.</strong> LOSA, SSE and MALS at five wavelengths and five angles; line-of-sight images.", "m2": "<strong>Reconstruct.</strong> Abel inversion with trapping correction (SAT) gives local <em>κ<sub>ext</sub></em>, <em>κ<sub>vv</sub></em> and <em>J</em>.", "m3": "<strong>Represent.</strong> A network maps <em>(r, z)</em> to <em>f<sub>s</sub>, T, V<sub>agg</sub>, f<sub>O</sub>, f<sub>G</sub>, f<sub>A</sub></em> and calibration gains <em>γ</em>.", "m4": "<strong>Predict.</strong> RDG-FA and Planck’s law turn those outputs into predicted coefficients.", "m5": "<strong>Reconcile.</strong> The misfit to all measurements is minimised at once.", "mp1": "The network has ten fully connected layers of twenty neurons with tanh activations. Its outputs are bounded by construction: a softmax keeps the organic, graphitic and amorphous fractions positive with unit sum, and sigmoids keep <em>f<sub>s</sub></em>, <em>T</em> and aggregate volume in physical ranges. The refractive index is not a free output. It follows from the composition through the dispersion model of Bescond et al., replaced during training by a small surrogate network that reproduces it within 0.1%.", "mp2": "The loss is a sum of normalised misfits, one per measured quantity, with the absolute LOSA extinction fixing the overall scale:", "mp3": "Because emission and scattering must add up to the absolute extinction at every wavelength, the wavelength-dependent gains <em>γ<sub>J</sub><sup>λ</sup></em> and <em>γ<sub>s</sub><sup>λ</sup></em> of the emission and scattering channels are determined by the data. This is what makes the method calibration-free. Training uses Adam with a learning rate of 10<sup>−4</sup> and takes about six minutes on one GPU.", "fields": "The retrieved fields", "fi1": "Choose a field and move the pointer over the map to read the local value; the plot shows the radial profile at the selected height. The data are the network outputs behind the published figures, downsampled for the web.", "fl": ["Volume fraction", "Temperature", "Organic", "Amorphous", "Graphitic", "Aggregate volume", "E(m), 532 nm", "E(m), 1064 nm"], "f2cap": "<span class='fig-num'>Figure 2.</span>Retrieved fields in the measured region of the flame, mirrored about the axis, with the radial profile at the selected height. Units: ppm for volume fraction, K for temperature, 10<sup>6</sup>&nbsp;nm<sup>3</sup> for the aggregate volume moment ⟨V<sup>2</sup>⟩/⟨V⟩. The organic, amorphous and graphitic fractions sum to one. E(m) is the absorption function of the soot refractive index.", "cam": "What the camera actually sees", "cam1": "The reconstructed field can be revolved around the axis and viewed again. At zero elevation the image is the line-of-sight integral that a side-on camera records, which is what step 2 of the method has to undo. Tilting the view reveals the hollow, ring-shaped structure that the projection hides.", "f3cap": "<span class='fig-num'>Figure 3.</span>Line-of-sight integral of the revolved soot volume fraction, computed in the browser for the chosen viewing elevation. Only heights where the full radial profile was retrieved are shown.", "results": "Results", "r": ["<strong>Validation.</strong> On synthetic flames generated with the CoFlame code, the network recovered temperature, volume fraction and composition with mean relative errors of about 4 to 6% without noise. Errors stayed bounded and localised with multiplicative noise and with parts of the data removed.", "<strong>Consistency.</strong> On the experimental flame, extinction reconstructed from emission and scattering now matches the measured extinction, with the largest deviation (about 5%) at 480 nm. The inferred gains were 0.65 to 0.8 for scattering and 0.73 to 1.28 for emission.", "<strong>Agreement with the literature.</strong> Radial profiles of volume fraction and temperature at 30 mm above the burner are consistent with published data, and the temperatures agree with two-colour pyrometry and CARS measurements reported in the literature.", "<strong>A new quantity.</strong> Adding scattering to the inversion makes the amorphous fraction observable. The maps show a transition from organic soot near the base, to amorphous along the centre, to graphitic on the hot wings."], "f4alt": "Ternary colour map of soot composition: blue (organic) near the bottom centre, reddish (amorphous) along the centre, and green (graphitic) along the outer wings.", "f4cap": "Soot composition as a colour mixture of the three fractions, with the paper’s convention: blue for organic, green for graphitic, red for amorphous carbon.", "sig": "Significance and limitations", "sg1": "When diagnostics are analysed separately, their results are combined afterwards and inconsistencies have to be explained case by case. Writing the shared physics into a single loss turns reconciliation into an optimisation problem with a clear objective, and it lets the data correct the calibration instead of the other way round. For combustion this gives maps of soot optical index and composition that were not available before. For inverse problems more generally it is an example of inference without labels, where the physical model takes the place of a training set.", "sg2": "The method has limitations. RDG-FA is an approximation for these aggregates, the composition fractions are an effective description rather than a chemical analysis, and the paper does not quantify the uncertainty of the retrieved fields, and it does not determine the smallest set of wavelengths that would be sufficient.", "res": "Resources", "rPaper": "Paper", "rPaperT": "(open access, CC BY 4.0). Preprint:", "rSlides": "Slides", "rSlidesT": "Interactive HTML presentation", "rSlidesN": "(about 15 minutes; press <kbd>S</kbd> for speaker view).", "rCode": "Reconstruction code", "rCodeT": ", the spline-based Abel transform used in step 2.", "rPinn": "PINN code", "rPinnT": "Available upon request.", "rData": "Data on this page", "rDataT1": "Network outputs on a 160 × 100 grid (", "rMeta": "metadata", "rDataT2": "), derived from the published results and shared under CC BY 4.0.", "related": "Related publications"};
+const ES = {"title": "Recuperación de propiedades del hollín informada por la física (Carbon 2026)", "desc": "Explicación de Littin et al., Carbon 2026: una red neuronal informada por la física invierte en conjunto mediciones de atenuación, emisión y dispersión en varios ángulos para recuperar campos de temperatura, fracción volumétrica, tamaño de agregados y composición.", "credit": "Figura regenerada para este sitio a partir de los datos del autor. Fuente: Littin et al., Carbon 250 (2026) 121296, CC BY 4.0.", "pubs": "Publicaciones", "explained": "Artículo explicado", "h1": "Inversión conjunta de tres diagnósticos ópticos con una red informada por la física", "lede": "Tres mediciones ópticas de la misma llama se invierten en conjunto con una sola red neuronal, de modo que las propiedades del hollín recuperadas concuerdan con cada medición y con la física que las relaciona. Esta página explica el problema, el método y los resultados para lectores fuera del área de la combustión.", "oa": "Acceso abierto · CC BY 4.0", "read": "Leer el artículo (DOI)", "pres": "Presentación interactiva (en inglés)", "codeData": "Código y datos", "summary": "Resumen", "s1": "La luz que atraviesa una llama y la luz que esta emite o dispersa dependen de las mismas magnitudes ocultas: cuánto hollín hay, qué tan caliente está, qué tamaño tienen sus agregados y de qué está hecho. Normalmente cada medición se invierte por separado, con su propia calibración, y las respuestas no terminan de coincidir.", "s2": "En este trabajo una sola red neuronal recibe una posición <em>(r, z)</em> en la llama y entrega ahí todas las magnitudes ocultas. No se entrena con etiquetas, porque no existen. Se entrena de modo que, cuando sus salidas pasan por la teoría de dispersión de la luz y la ley de Planck, reproduzcan al mismo tiempo cada medición en cada longitud de onda. Los factores de calibración de los instrumentos se obtienen en el camino.", "s3": "Nada en la formulación es propio de las llamas: sirve siempre que varios instrumentos observan el mismo estado a través de una física conocida. El artículo lo demuestra en una llama laminar axisimétrica.", "f1alt": "Tres mapas de un corte de una llama laminar entre 20 y 38 mm sobre el quemador: la fracción volumétrica de hollín, con un máximo cerca de las alas de unos 7,8 ppm; la temperatura, entre 1710 y 1880 K, más alta en las alas; y la fracción grafítica, que aumenta hacia las alas superiores.", "f1cap": "Campos recuperados por la red en una llama laminar de etileno, reflejados respecto del eje: (a) fracción volumétrica de hollín <em>f<sub>s</sub></em>, (b) temperatura del hollín <em>T</em>, (c) fracción grafítica <em>f<sub>G</sub></em>. Las zonas en blanco son aquellas donde no todos los diagnósticos tienen señal, por lo que no se intenta recuperar nada.", "why": "Por qué las inversiones separadas no coinciden", "w1": "Se aplicaron tres técnicas a una llama axisimétrica de etileno en cinco longitudes de onda entre 405 y 750 nm. La atenuación a lo largo de la línea de visión (LOSA) mide la extinción en términos absolutos. La emisión espectral del hollín (SSE) mide la luz radiada, que depende de la temperatura. La dispersión de luz en varios ángulos (MALS) es sensible al tamaño de los agregados. Cada imagen de cámara se convierte primero en coeficientes locales mediante una inversión de Abel con el método basado en splines (SAT).", "w2": "Los coeficientes locales se relacionan mediante la teoría de Rayleigh–Debye–Gans para agregados fractales:", "w3": "Aquí <em>f<sub>s</sub></em> es la fracción volumétrica de hollín, <em>E(m)</em> y <em>F(m)</em> son funciones de absorción y de dispersión del índice de refracción <em>m</em>, y <em>B</em> es la función de Planck. La dispersión hacia adelante <em>κ<sub>vv</sub>(0°)</em> también contiene el momento del volumen de los agregados; la dependencia angular de la dispersión, integrada en los ángulos, entrega <em>κ<sub>sca</sub></em>. Cuando la absorción se deduce de la emisión y la dispersión de MALS por separado, su suma no coincide con la extinción medida por LOSA. Los errores de un diagnóstico se propagan al siguiente. Hay unas quince magnitudes medidas para unos ocho campos desconocidos, y no son consistentes entre sí.", "method": "Método: de las imágenes a los campos", "chain": "Cadena de procesamiento", "m1": "<strong>Medir.</strong> LOSA, SSE y MALS en cinco longitudes de onda y cinco ángulos; imágenes integradas a lo largo de la línea de visión.", "m2": "<strong>Reconstruir.</strong> La inversión de Abel con corrección de atrapamiento (SAT) entrega <em>κ<sub>ext</sub></em>, <em>κ<sub>vv</sub></em> y <em>J</em> locales.", "m3": "<strong>Representar.</strong> Una red transforma <em>(r, z)</em> en <em>f<sub>s</sub>, T, V<sub>agg</sub>, f<sub>O</sub>, f<sub>G</sub>, f<sub>A</sub></em> y en las ganancias de calibración <em>γ</em>.", "m4": "<strong>Predecir.</strong> RDG-FA y la ley de Planck convierten esas salidas en coeficientes predichos.", "m5": "<strong>Conciliar.</strong> El desajuste con todas las mediciones se minimiza a la vez.", "mp1": "La red tiene diez capas totalmente conectadas de veinte neuronas con activaciones tanh. Sus salidas están acotadas por construcción: una función softmax mantiene las fracciones orgánica, grafítica y amorfa positivas y con suma uno, y funciones sigmoides mantienen <em>f<sub>s</sub></em>, <em>T</em> y el volumen de los agregados en rangos físicos. El índice de refracción no es una salida libre. Se obtiene de la composición mediante el modelo de dispersión de Bescond et al., reemplazado durante el entrenamiento por una pequeña red sustituta que lo reproduce con un error menor a 0,1 %.", "mp2": "La función de pérdida es una suma de desajustes normalizados, uno por cada magnitud medida, donde la extinción absoluta de LOSA fija la escala global:", "mp3": "Como la emisión y la dispersión deben sumar la extinción absoluta en cada longitud de onda, las ganancias <em>γ<sub>J</sub><sup>λ</sup></em> y <em>γ<sub>s</sub><sup>λ</sup></em> de los canales de emisión y de dispersión, que dependen de la longitud de onda, quedan determinadas por los datos. Esto es lo que hace que el método no requiera calibración. El entrenamiento usa Adam con una tasa de aprendizaje de 10<sup>−4</sup> y toma unos seis minutos en una GPU.", "fields": "Los campos recuperados", "fi1": "Elija un campo y mueva el puntero sobre el mapa para leer el valor local; el gráfico muestra el perfil radial a la altura seleccionada. Los datos son las salidas de la red detrás de las figuras publicadas, submuestreadas para la web.", "fl": ["Fracción volumétrica", "Temperatura", "Orgánica", "Amorfa", "Grafítica", "Volumen de agregados", "E(m), 532 nm", "E(m), 1064 nm"], "f2cap": "<span class='fig-num'>Figura 2.</span>Campos recuperados en la región medida de la llama, reflejados respecto del eje, con el perfil radial a la altura seleccionada. Unidades: ppm para la fracción volumétrica, K para la temperatura y 10<sup>6</sup>&nbsp;nm<sup>3</sup> para el momento del volumen de los agregados ⟨V<sup>2</sup>⟩/⟨V⟩. Las fracciones orgánica, amorfa y grafítica suman uno. E(m) es la función de absorción del índice de refracción del hollín.", "cam": "Lo que realmente ve la cámara", "cam1": "El campo reconstruido se puede hacer girar en torno al eje y observar de nuevo. Con elevación cero, la imagen es la integral a lo largo de la línea de visión que registra una cámara lateral, que es justamente lo que debe deshacer el paso 2 del método. Al inclinar la vista aparece la estructura hueca, en forma de anillo, que la proyección oculta.", "f3cap": "<span class='fig-num'>Figura 3.</span>Integral a lo largo de la línea de visión de la fracción volumétrica de hollín de revolución, calculada en el navegador para la elevación de observación elegida. Solo se muestran las alturas donde se recuperó el perfil radial completo.", "results": "Resultados", "r": ["<strong>Validación.</strong> En llamas sintéticas generadas con el código CoFlame, la red recuperó la temperatura, la fracción volumétrica y la composición con errores relativos medios de un 4 a 6 % sin ruido. Los errores se mantuvieron acotados y localizados con ruido multiplicativo y al eliminar partes de los datos.", "<strong>Consistencia.</strong> En la llama experimental, la extinción reconstruida a partir de la emisión y la dispersión ahora coincide con la extinción medida, con la mayor desviación (cerca de 5 %) en 480 nm. Las ganancias obtenidas fueron de 0,65 a 0,8 para la dispersión y de 0,73 a 1,28 para la emisión.", "<strong>Concordancia con la literatura.</strong> Los perfiles radiales de fracción volumétrica y temperatura a 30 mm sobre el quemador son consistentes con datos publicados, y las temperaturas concuerdan con mediciones de pirometría de dos colores y de CARS reportadas en la literatura.", "<strong>Una magnitud nueva.</strong> Agregar la dispersión a la inversión hace observable la fracción amorfa. Los mapas muestran una transición desde hollín orgánico cerca de la base, a amorfo a lo largo del centro, y a grafítico en las alas calientes."], "f4alt": "Mapa de color ternario de la composición del hollín: azul (orgánico) cerca del centro inferior, rojizo (amorfo) a lo largo del centro y verde (grafítico) a lo largo de las alas exteriores.", "f4cap": "Composición del hollín como mezcla de colores de las tres fracciones, con la convención del artículo: azul para el carbono orgánico, verde para el grafítico y rojo para el amorfo.", "sig": "Alcance y limitaciones", "sg1": "Cuando los diagnósticos se analizan por separado, sus resultados se combinan después y las inconsistencias deben explicarse caso a caso. Escribir la física común en una sola función de pérdida convierte la conciliación en un problema de optimización con un objetivo claro, y permite que los datos corrijan la calibración y no al revés. En combustión, esto entrega mapas del índice óptico y de la composición del hollín que antes no estaban disponibles. Para los problemas inversos en general, es un ejemplo de inferencia sin etiquetas, donde el modelo físico ocupa el lugar de un conjunto de entrenamiento.", "sg2": "El método tiene limitaciones. RDG-FA es una aproximación para estos agregados, las fracciones de composición son una descripción efectiva y no un análisis químico, el artículo no cuantifica la incertidumbre de los campos recuperados y tampoco determina el conjunto mínimo de longitudes de onda que bastaría.", "res": "Recursos", "rPaper": "Artículo", "rPaperT": "(acceso abierto, CC BY 4.0). Preprint:", "rSlides": "Diapositivas", "rSlidesT": "Presentación HTML interactiva", "rSlidesN": "(en inglés, unos 15 minutos; presione <kbd>S</kbd> para la vista del presentador).", "rCode": "Código de reconstrucción", "rCodeT": ", la transformada de Abel basada en splines usada en el paso 2.", "rPinn": "Código de la PINN", "rPinnT": "Disponible a solicitud.", "rData": "Datos de esta página", "rDataT1": "Salidas de la red en una grilla de 160 × 100 (", "rMeta": "metadatos", "rDataT2": "), derivadas de los resultados publicados y compartidas bajo CC BY 4.0.", "related": "Publicaciones relacionadas"};
+const T = lang === 'es' ? ES : EN;
+
+const p = byId('littin2026carbon')!;
+const related = ['littin2024sat', 'littin2025scatt', 'littin2026saf', 'yap2026dual'].map((id) => byId(id)!);
+const fieldKeys = ['fs', 'T', 'fO', 'fA', 'fG', 'V2', 'Em532', 'Em1064'];
+const jsonld = [{
+  '@context': 'https://schema.org',
+  '@type': 'ScholarlyArticle',
+  headline: p.title,
+  author: p.authors.map((name) => ({ '@type': 'Person', name })),
+  datePublished: '2026-01-22',
+  isPartOf: { '@type': 'Periodical', name: 'Carbon' },
+  identifier: { '@type': 'PropertyValue', propertyID: 'DOI', value: p.doi },
+  sameAs: `https://doi.org/${p.doi}`,
+  license: 'https://creativecommons.org/licenses/by/4.0/',
+}];
+---
+<Base title={T.title} math ogType="article" jsonld={jsonld} description={T.desc}>
+  <Fragment slot="head"><CitationMeta pub={p} /></Fragment>
+
+  <header class="page-head frame">
+    <p class="eyebrow"><a href={L('/publications/')}>{T.pubs}</a> · {T.explained} · Carbon 2026</p>
+    <h1 class="title">{T.h1}</h1>
+    <p class="lede abstract">{T.lede}</p>
+    <p class="meta cite"><span lang="en">{citation(p)}</span> <span class="tag tag--established">{T.oa}</span></p>
+    <ul class="links head-links">
+      <li><a href={`https://doi.org/${p.doi}`}>{T.read}</a></li>
+      <li><a href={url('/talks/carbon-2026/')}>{T.pres}</a></li>
+      <li><a href="#resources">{T.codeData}</a></li>
+      <li><a href={url(`/publications/bibtex/${p.id}.bib`)} download>BibTeX</a></li>
+    </ul>
+  </header>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="row__label">{T.summary}</h2>
+      <div class="prose short">
+        <p set:html={T.s1} />
+        <p set:html={T.s2} />
+        <p set:html={T.s3} />
+      </div>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <ScientificFigure src={fieldsFig} number={1} lang={lang} alt={T.f1alt} caption={T.f1cap} credit={T.credit} />
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="row__label">{T.why}</h2>
+      <div class="prose">
+        <p set:html={T.w1} />
+        <p set:html={T.w2} />
+        <Equation tex={String.raw`\kappa_{abs}(\lambda) = \frac{6\pi f_s\, E(m)}{\lambda}, \qquad \kappa_{vv}(\lambda,0^\circ) = \frac{9\pi^2}{\lambda^4}\, f_s\, \frac{\overline{V_{agg}^2}}{\overline{V_{agg}}}\, F(m)`} />
+        <Equation tex={String.raw`\kappa_{ext} = \kappa_{abs} + \kappa_{sca}, \qquad J(\lambda) = \kappa_{abs}(\lambda)\, B(T,\lambda)`} />
+        <p set:html={T.w3} />
+      </div>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="row__label">{T.method}</h2>
+      <div>
+        <ol class="pipe" aria-label={T.chain}>
+          <li set:html={T.m1} />
+          <li set:html={T.m2} />
+          <li set:html={T.m3} />
+          <li set:html={T.m4} />
+          <li set:html={T.m5} />
+        </ol>
+        <div class="prose">
+          <p set:html={T.mp1} />
+          <p set:html={T.mp2} />
+          <Equation tex={String.raw`\mathcal{L} = \mathcal{L}_{ext} + \mathcal{L}_{\kappa_{vv}(0^\circ)} + \mathcal{L}_{sca} + \mathcal{L}_{J}, \qquad \mathcal{L}_X = \frac{1}{N_\lambda N_p}\sum_{i=1}^{N_\lambda}\sum_{j=1}^{N_p} \frac{\big(X^{pred}_{i,j} - X^{meas}_{i,j}\big)^2}{\big(\max_j |X^{meas}_{i,j}|\big)^2}`} />
+          <p set:html={T.mp3} />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="row__label">{T.fields}</h2>
+      <div>
+        <p class="prose">{T.fi1}</p>
+        <FieldExplorer base="/data/carbon2026/" id="c26" lang={lang} fields={fieldKeys.map((key, i) => ({ key, label: T.fl[i] }))} caption={T.f2cap} />
+        <h3 class="h3">{T.cam}</h3>
+        <p class="prose">{T.cam1}</p>
+        <ThreeDField base="/data/carbon2026/" field="fs" id="c26td" lang={lang} caption={T.f3cap} />
+      </div>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="row__label">{T.results}</h2>
+      <div class="prose">
+        <ul>
+          {T.r.map((x) => <li set:html={x} />)}
+        </ul>
+      </div>
+    </div>
+    <ScientificFigure src={compFig} number={4} lang={lang} alt={T.f4alt} caption={T.f4cap} credit={T.credit} sizes="(min-width: 40rem) 30rem, 100vw" />
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="row__label">{T.sig}</h2>
+      <div class="prose">
+        <p>{T.sg1}</p>
+        <p>{T.sg2}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section frame" id="resources">
+    <div class="row">
+      <h2 class="row__label">{T.res}</h2>
+      <div>
+        <table class="res">
+          <tbody>
+            <tr><th scope="row">{T.rPaper}</th><td><a href={`https://doi.org/${p.doi}`}>doi:{p.doi}</a> {T.rPaperT} <a href="https://doi.org/10.2139/ssrn.5726644">SSRN 5726644</a>.</td></tr>
+            <tr><th scope="row">{T.rSlides}</th><td><a href={url('/talks/carbon-2026/')}>{T.rSlidesT}</a> <Fragment set:html={T.rSlidesN} /></td></tr>
+            <tr><th scope="row">{T.rCode}</th><td><a href={L('/software/pysat-abel/')}>pysat-abel</a>{T.rCodeT}</td></tr>
+            <tr><th scope="row">{T.rPinn}</th><td>{T.rPinnT}</td></tr>
+            <tr><th scope="row">{T.rData}</th><td>{T.rDataT1}<a href={url('/data/carbon2026/meta.json')}>{T.rMeta}</a>{T.rDataT2}</td></tr>
+          </tbody>
+        </table>
+        <details class="bib">
+          <summary class="meta">BibTeX</summary>
+          <pre><code>{bibtex(p)}</code></pre>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="row__label">{T.related}</h2>
+      <div>{related.map((r) => <PubItem pub={r} compact headingLevel="h3" lang={lang} />)}</div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .title { max-width: 20ch; }
+  .cite { margin-top: var(--s-4); max-width: 52rem; }
+  .head-links { margin-top: var(--s-3); }
+  .head-links li + li::before { content: none; }
+  .head-links li:not(:last-child)::after { content: '·'; color: var(--ink-3); padding: 0 0.5em; }
+  .short { font-size: var(--step-1); line-height: 1.55; }
+  .short p { color: var(--ink); }
+  .h2 { font-size: var(--step-3); }
+  .h3 { font-size: var(--step-0); margin-top: var(--s-6); }
+  .pipe { padding-left: 1.6em; margin: var(--s-2) 0 var(--s-4); max-width: var(--measure); }
+  .pipe li { margin-top: 0.25em; }
+  .pipe li::marker { font-weight: 700; }
+  .res th { width: 11rem; font-weight: 600; }
+  .bib { margin-top: var(--s-4); }
+  .bib summary { cursor: pointer; }
+</style>

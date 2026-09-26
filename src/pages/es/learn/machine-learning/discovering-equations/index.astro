@@ -1,0 +1,43 @@
+---
+import LearnModule from '../../../../../layouts/LearnModule.astro';
+import Equation from '../../../../../components/viz/Equation.astro';
+import SindyExplorer from '../../../../../components/viz/SindyExplorer.astro';
+import Answer from '../../../../../components/ui/Answer.astro';
+import { localized } from '../../../../../i18n/utils';
+---
+<LearnModule slug="machine-learning/discovering-equations" lang="es" description="Recupere las ecuaciones diferenciales de un oscilador, un péndulo, un sistema depredador–presa y el sistema de Lorenz a partir de trayectorias con ruido, mediante regresión dispersa (SINDy), en el navegador.">
+  <div class="prose">
+    <h2>De las mediciones a una ley</h2>
+    <p>Kepler dedicó años a buscar una regla simple detrás de las posiciones planetarias medidas por Tycho Brahe. Hoy la misma pregunta se le puede hacer a un computador: dadas mediciones de cómo cambia un sistema en el tiempo, ¿qué ecuación corta las produce? El aprendizaje automático suele responder con una caja negra que predice bien pero no explica nada. El método de este módulo entrega una ecuación que un científico puede leer.</p>
+    <p>Se supone que el sistema sigue una ecuación diferencial d<i>x</i>/d<i>t</i> = <i>f</i>(<i>x</i>), donde <i>x</i> es el estado (por ejemplo, un ángulo y una velocidad angular). La idea de la <em>identificación dispersa de dinámica no lineal</em> (SINDy; Brunton, Proctor y Kutz, <em>PNAS</em> 113, 2016) es escribir <i>f</i> como combinación de términos candidatos y conservar solo los pocos que hacen falta.</p>
+    <h2>Una biblioteca de términos candidatos y un ajuste disperso</h2>
+    <p>Cada estado medido aporta una fila de la matriz de biblioteca Θ, cuyas columnas son los términos candidatos evaluados en los datos (1, <i>x</i>, <i>y</i>, <i>x</i>², <i>xy</i>, sin <i>x</i>, …). Las derivadas se estiman a partir de las muestras. Los coeficientes desconocidos Ξ resuelven entonces la ecuación siguiente, donde <em>dispersa</em> significa que casi todos los coeficientes valen exactamente cero:</p>
+    <Equation tex={String.raw`\dot{X} \approx \Theta(X)\,\Xi, \qquad \Xi \text{ dispersa.}`} />
+    <p>La dispersión se impone con <em>mínimos cuadrados con umbral secuencial</em>: se ajustan todos los coeficientes por mínimos cuadrados, se anulan los menores que un umbral λ, se vuelve a ajustar con los términos restantes y se repite hasta que nada cambia. El umbral cumple el papel de la navaja de Occam: un término debe ganarse su lugar explicando una parte clara de los datos.</p>
+  </div>
+
+  <SindyExplorer lang="es" />
+
+  <div class="try">
+    <h3>Ejercicios</h3>
+    <ol>
+      <li>Con los valores por defecto (depredador–presa, 2 % de ruido, λ = 0,1, todos los datos), compare las ecuaciones descubiertas con las verdaderas. ¿Cuántos de los diez términos de la biblioteca sobreviven?
+        <Answer lang="es"><p>Sobreviven exactamente los cuatro términos verdaderos: d<i>x</i>/d<i>t</i> = 1,00 <i>x</i> − 0,50 <i>xy</i> y d<i>y</i>/d<i>t</i> = −0,60 <i>y</i> + 0,20 <i>xy</i>, con errores de coeficiente menores que 1 %. Las presas crecen por sí solas y son comidas cuando encuentran depredadores; los depredadores mueren por sí solos y crecen al comer. Los otros ocho candidatos quedan en cero, de modo que el resultado es a la vez exacto y legible.</p></Answer></li>
+      <li>Baje el umbral al mínimo (log₁₀ λ = −3). Luego súbalo lentamente por encima de 0,2. ¿Qué ocurre en cada caso y por qué?
+        <Answer lang="es"><p>Con λ = 0,001 sobreviven casi todos los candidatos (aparecen ocho términos espurios con coeficientes pequeños, como −0,10 o 0,06). Ajustan el ruido: el modelo sigue reproduciendo los datos, pero ya no es la ley simple. Por encima de λ ≈ 0,2 se elimina el término real 0,20 <i>xy</i>, y sin él la ecuación de los depredadores no se puede ajustar, así que colapsa a cero y el modelo simulado se dispara. El umbral debe quedar entre el tamaño de los coeficientes inducidos por el ruido y el del menor coeficiente real.</p></Answer></li>
+      <li>Suba el ruido a 30 % y luego active el suavizado. ¿Qué cambia?
+        <Answer lang="es"><p>Con 30 % de ruido y sin suavizado aparecen cuatro términos espurios y el mayor error de coeficiente es de alrededor de 40 %. El punto débil es la derivada: una diferencia finita divide el ruido por el intervalo de muestreo, así que la d<i>x</i>/d<i>t</i> estimada es mucho más ruidosa que <i>x</i>. El suavizado (un ajuste cuadrático local sobre cinco puntos) reduce ese ruido; aquí elimina los términos espurios y baja el error a cerca de 8 %. Suavizar demasiado sesgaría las derivadas, así que el suavizado es un compromiso, como toda regularización.</p></Answer></li>
+      <li>Elija el péndulo amortiguado. Con la amplitud por defecto, SINDy encuentra −3,98 sin <i>x</i>. Reduzca ahora la amplitud inicial a 0,1. ¿Qué falla?
+        <Answer lang="es"><p>Para ángulos pequeños sin <i>x</i> ≈ <i>x</i>, de modo que las columnas <i>x</i> y sin <i>x</i> son casi idénticas en los datos. El ajuste ya no puede distinguirlas y reparte la fuerza restauradora entre ambas con coeficientes grandes y de signo opuesto (por ejemplo −5,14 <i>x</i> + 1,16 sin <i>x</i>), además de términos espurios. La ecuación todavía predice oscilaciones pequeñas, pero la física se pierde. Es un problema de identificabilidad, no del algoritmo: solo las oscilaciones grandes contienen la información que distingue sin <i>x</i> de <i>x</i>.</p></Answer></li>
+      <li>Elija depredador–presa, fije el ruido en 10 % y reduzca la cantidad de datos de 100 % a 25 %. Luego pruebe con 50 %.
+        <Answer lang="es"><p>Con 25 % del registro (poco más de un ciclo) aparecen dos términos espurios en la ecuación de las presas; con 50 % se recuperan de nuevo los cuatro términos verdaderos con errores de cerca de 2 %. Con pocos datos, las columnas candidatas se parecen más en el tramo corto y el ruido puede quedar absorbido por términos equivocados. Más datos, que cubran estados distintos del sistema, hacen distinguibles los términos.</p></Answer></li>
+      <li>Elija el sistema de Lorenz con 0,5 % de ruido. Los coeficientes descubiertos están a pocos por ciento de los verdaderos y, sin embargo, la trayectoria del modelo descubierto se separa de los datos después de un tiempo. ¿Por qué?
+        <Answer lang="es"><p>El sistema de Lorenz es caótico: dos trayectorias que parten casi juntas se separan exponencialmente rápido. Cualquier error pequeño en los coeficientes (aquí cerca de 4 %, sobre todo por las diferencias finitas) actúa como una pequeña perturbación, y la trayectoria simulada se aparta de la medida al cabo de unas cuatro unidades de tiempo, aunque las ecuaciones sean esencialmente correctas. Para sistemas caóticos, la prueba adecuada de un modelo descubierto son sus ecuaciones y su estadística a largo plazo, no la coincidencia punto a punto. Lo mismo limita los pronósticos del tiempo; vea el <a href={localized('/learn/uncertainty/chaos-data-assimilation/', 'es')}>módulo sobre caos y asimilación de datos</a>.</p></Answer></li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>Dónde se usa</h2>
+    <p>La regresión dispersa de este tipo se ha usado para recuperar modelos de flujos de fluidos, redes de reacciones químicas, dinámica de plasmas y osciladores biológicos, y para construir modelos compactos para control. Funciona mejor cuando los términos correctos están en la biblioteca, cuando los datos cubren estados variados y cuando las derivadas se pueden estimar bien. Cuando no es así, otra vía es incluir una ecuación conocida en el entrenamiento de una red neuronal, como en el <a href={localized('/learn/machine-learning/physics-informed-learning/', 'es')}>módulo de aprendizaje informado por la física</a>.</p>
+  </div>
+</LearnModule>

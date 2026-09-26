@@ -1,0 +1,107 @@
+---
+/** Learn index, bilingual. Routes: src/pages/learn/index.astro and src/pages/es/learn/index.astro. */
+import Base from '../../layouts/Base.astro';
+import { modules, moduleText, categoryText, type LearnCategory } from '../../data/learn';
+import { localized } from '../../i18n/utils';
+import type { Lang } from '../../i18n/ui';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const es = lang === 'es';
+const order: LearnCategory[] = ['inverse-problems', 'optimization', 'machine-learning', 'numerical-methods', 'thermal-systems', 'uncertainty'];
+const live = modules.filter((m) => m.status === 'live');
+// only topics that have at least one published module
+const topics = order.filter((c) => live.some((m) => m.category === c));
+const href = (slug: string) => localized(`/learn/${slug}/`, lang);
+const T = es
+  ? {
+      title: 'Aprender', eyebrow: 'Aprender',
+      description: 'Módulos de aprendizaje abiertos e interactivos sobre problemas inversos, optimización, aprendizaje automático e incertidumbre. Todo se ejecuta en el navegador.',
+      h1: 'Lecciones interactivas sobre métodos computacionales',
+      lede: 'Lecciones breves sobre los métodos detrás de mi investigación y mi docencia: problemas inversos, optimización, aprendizaje automático e incertidumbre. Cada una se construye en torno a un modelo pequeño que se puede modificar mientras se lee, con las ecuaciones al lado, y termina con ejercicios cuyas respuestas se pueden desplegar. Están escritas para estudiantes y científicos de cualquier área, se ejecutan en el navegador sin instalar nada y se comparten bajo licencia CC BY 4.0 para que puedan reutilizarse en otros cursos.',
+      modules: 'Módulos', byTopic: 'Por tema', instructors: 'Para docentes', min: 'min',
+      instructorsText: 'Cada módulo es una sola página que se puede enlazar desde el sitio de un curso o proyectar en clase. Los cálculos son código TypeScript breve y comentado, sin bibliotecas externas, de modo que el código se puede leer junto con la lección. Las correcciones y sugerencias por correo son bienvenidas.',
+    }
+  : {
+      title: 'Learn', eyebrow: 'Learn',
+      description: 'Open, interactive learning modules on inverse problems, optimisation, machine learning and uncertainty. Everything runs in the browser.',
+      h1: 'Interactive lessons on computational methods',
+      lede: 'Short lessons on the methods behind my research and teaching: inverse problems, optimisation, machine learning and uncertainty. Each one is built around a small model that you can change while reading, with the equations next to it, and ends with exercises whose answers can be revealed. They are written for students and scientists from any field, run in the browser without installing anything, and are shared under CC BY 4.0 for reuse in other courses.',
+      modules: 'Modules', byTopic: 'By topic', instructors: 'For instructors', min: 'min',
+      instructorsText: 'Each module is a single page that can be linked from a course site or projected in class. The calculations are short, commented TypeScript without external libraries, so the code can be read alongside the lesson. Corrections and suggestions are welcome by email.',
+    };
+---
+<Base title={T.title} description={T.description}>
+  <header class="page-head frame">
+    <p class="eyebrow">{T.eyebrow}</p>
+    <h1>{T.h1}</h1>
+    <p class="lede">{T.lede}</p>
+  </header>
+
+  <section class="section frame">
+    <div class="row">
+      <p class="label row__label">{T.modules}</p>
+      <ol class="featured">
+        {live.map((m, i) => {
+          const t = moduleText(m, lang);
+          return (
+            <li>
+              <span class="n">{String(i + 1).padStart(2, '0')}</span>
+              <div>
+                <p class="label">{categoryText(m.category, lang).title} · ~{m.minutes} {T.min}</p>
+                <h2><a href={href(m.slug)}>{t.title}</a></h2>
+                <p class="q">{t.question}</p>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <p class="label row__label">{T.byTopic}</p>
+      <div class="cats">
+        {topics.map((c) => {
+          const ct = categoryText(c, lang);
+          return (
+            <section class="cat" aria-labelledby={`cat-${c}`}>
+              <h2 id={`cat-${c}`} class="cat__h">{ct.title}</h2>
+              <p class="meta">{ct.blurb}</p>
+              <ul>
+                {live.filter((m) => m.category === c).map((m) => (
+                  <li><a href={href(m.slug)}>{moduleText(m, lang).title}</a></li>
+                ))}
+              </ul>
+            </section>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <p class="label row__label">{T.instructors}</p>
+      <div class="prose">
+        <p>{T.instructorsText}</p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .featured { list-style: none; padding: 0; }
+  .featured li { display: grid; grid-template-columns: 3rem minmax(0, 1fr); gap: var(--s-4); padding-block: var(--s-5); border-top: 1px solid var(--rule); }
+  .featured li:first-child { border-top: 0; padding-top: 0; }
+  .n { font-family: var(--font-sans); font-size: var(--step-1); color: var(--ink-3); }
+  .featured h2 { font-size: var(--step-2); margin-top: var(--s-1); }
+  .featured h2 a { color: var(--ink); text-decoration: none; }
+  .featured h2 a:hover { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px; }
+  .q { margin-top: var(--s-2); color: var(--ink-2); max-width: 42rem; }
+  .cats { display: grid; gap: var(--s-6); grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
+  .cat { border-top: 2px solid var(--ink); padding-top: var(--s-3); }
+  .cat__h { font-size: var(--step-1); }
+  .cat ul { list-style: none; padding: 0; margin-top: var(--s-3); font-family: var(--font-sans); font-size: var(--step--1); }
+  .cat li { padding-block: 0.4rem; border-bottom: 1px solid var(--rule); }
+</style>

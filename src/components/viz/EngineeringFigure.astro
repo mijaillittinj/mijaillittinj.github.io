@@ -13,15 +13,16 @@ import MiningTab from '../apps/MiningTab.astro';
 import ElectricalTab from '../apps/ElectricalTab.astro';
 import ComputingTab from '../apps/ComputingTab.astro';
 import FinanceTab from '../apps/FinanceTab.astro';
+import FireTab from '../apps/FireTab.astro';
 interface Props { lang?: 'en' | 'es' }
 const { lang = 'en' } = Astro.props;
 const es = lang === 'es';
 const tabs = es
-  ? [['mechanical', 'Mecánica y energía', 'tomografía de llamas'], ['chemical', 'Química', 'cinética de reacciones'], ['civil', 'Civil', 'localización de sismos'], ['electrical', 'Eléctrica', 'plantas solares'], ['industrial', 'Industrial', 'rutas de reparto'], ['finance', 'Finanzas', 'valoración de opciones'], ['mining', 'Minas', 'exploración gravimétrica'], ['computing', 'Computación', 'imágenes e IA confiable']]
-  : [['mechanical', 'Mechanical & energy', 'flame tomography'], ['chemical', 'Chemical', 'reaction kinetics'], ['civil', 'Civil', 'locating earthquakes'], ['electrical', 'Electrical', 'solar plants'], ['industrial', 'Industrial', 'delivery routing'], ['finance', 'Finance', 'option pricing'], ['mining', 'Mining', 'gravity exploration'], ['computing', 'Computing', 'imaging and trustworthy AI']];
+  ? [['mechanical', 'Mecánica y energía', 'tomografía de llamas'], ['chemical', 'Química', 'cinética de reacciones'], ['civil', 'Civil', 'localización de sismos'], ['fire', 'Incendios forestales', 'juego contra el fuego'], ['electrical', 'Eléctrica', 'plantas solares'], ['industrial', 'Industrial', 'rutas de reparto'], ['finance', 'Finanzas', 'valoración de opciones'], ['mining', 'Minas', 'exploración gravimétrica'], ['computing', 'Computación', 'imágenes e IA confiable']]
+  : [['mechanical', 'Mechanical & energy', 'flame tomography'], ['chemical', 'Chemical', 'reaction kinetics'], ['civil', 'Civil', 'locating earthquakes'], ['fire', 'Fire safety', 'forest fire game'], ['electrical', 'Electrical', 'solar plants'], ['industrial', 'Industrial', 'delivery routing'], ['finance', 'Finance', 'option pricing'], ['mining', 'Mining', 'gravity exploration'], ['computing', 'Computing', 'imaging and trustworthy AI']];
 const T = es
-  ? { label: 'Área de la ingeniería', fig: 'Figura 1.', cap: 'Problemas directos e inversos en ocho áreas de la ingeniería. Un problema directo predice las mediciones a partir de causas conocidas; un problema inverso recorre el camino contrario, desde mediciones indirectas y ruidosas hasta las causas que no se pueden observar. En la mayoría de las pestañas el problema inverso se puede resolver con un método clásico o con una PINN (red neuronal informada por la física), una red entrenada para que además cumpla las ecuaciones que gobiernan el sistema. Todos los cálculos se hacen en su navegador. La pestaña de la llama usa una simulación CoFlame de una llama de laboratorio; las demás usan datos sintéticos.' }
-  : { label: 'Engineering field', fig: 'Figure 1.', cap: 'Forward and inverse problems in eight fields of engineering. A forward problem predicts measurements from known causes; an inverse problem works backwards, from indirect and noisy measurements to causes that cannot be observed. In most tabs the inverse problem can be solved with a classical method or with a PINN (physics-informed neural network), a neural network trained so that it also satisfies the governing equations. All computations run in your browser. The flame tab uses a CoFlame simulation of a laboratory flame; the other tabs use synthetic data.' };
+  ? { label: 'Área de la ingeniería', fig: 'Figura 1.', cap: 'Problemas directos e inversos en nueve áreas de la ingeniería. Un problema directo predice las mediciones a partir de causas conocidas; un problema inverso recorre el camino contrario, desde mediciones indirectas y ruidosas hasta las causas que no se pueden observar. En la mayoría de las pestañas el problema inverso se puede resolver con un método clásico o con una PINN (red neuronal informada por la física), una red entrenada para que además cumpla las ecuaciones que gobiernan el sistema. Todos los cálculos se hacen en su navegador. La pestaña de la llama usa una simulación CoFlame de una llama de laboratorio; las demás usan datos sintéticos.' }
+  : { label: 'Engineering field', fig: 'Figure 1.', cap: 'Forward and inverse problems in nine fields of engineering. A forward problem predicts measurements from known causes; an inverse problem works backwards, from indirect and noisy measurements to causes that cannot be observed. In most tabs the inverse problem can be solved with a classical method or with a PINN (physics-informed neural network), a neural network trained so that it also satisfies the governing equations. All computations run in your browser. The flame tab uses a CoFlame simulation of a laboratory flame; the other tabs use synthetic data.' };
 ---
 <figure class="eng wideblock" data-eng>
   <div class="eng__tabs" role="tablist" aria-label={T.label}>
@@ -35,6 +36,7 @@ const T = es
     <div role="tabpanel" id={`eng-panel-mechanical-${lang}`} aria-labelledby={`eng-tab-mechanical-${lang}`} data-eng-panel="mechanical"><MechanicalTab lang={lang} hidden={false} /></div>
     <div role="tabpanel" id={`eng-panel-chemical-${lang}`} aria-labelledby={`eng-tab-chemical-${lang}`} data-eng-panel="chemical" hidden><ChemicalTab lang={lang} hidden /></div>
     <div role="tabpanel" id={`eng-panel-civil-${lang}`} aria-labelledby={`eng-tab-civil-${lang}`} data-eng-panel="civil" hidden><CivilTab lang={lang} hidden /></div>
+    <div role="tabpanel" id={`eng-panel-fire-${lang}`} aria-labelledby={`eng-tab-fire-${lang}`} data-eng-panel="fire" hidden><FireTab lang={lang} hidden /></div>
     <div role="tabpanel" id={`eng-panel-electrical-${lang}`} aria-labelledby={`eng-tab-electrical-${lang}`} data-eng-panel="electrical" hidden><ElectricalTab lang={lang} hidden /></div>
     <div role="tabpanel" id={`eng-panel-industrial-${lang}`} aria-labelledby={`eng-tab-industrial-${lang}`} data-eng-panel="industrial" hidden><IndustrialTab lang={lang} hidden /></div>
     <div role="tabpanel" id={`eng-panel-finance-${lang}`} aria-labelledby={`eng-tab-finance-${lang}`} data-eng-panel="finance" hidden><FinanceTab lang={lang} hidden /></div>
@@ -82,7 +84,7 @@ const T = es
   .eng { margin-block: var(--s-4) var(--s-2); }
   .eng__tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.1rem 1.4rem; border-bottom: 0.5px solid var(--ink-3); padding-bottom: var(--s-2); margin-bottom: var(--s-4); }
   .eng__tabs button { border: 0; background: none; padding: 0.2rem 0; display: grid; justify-items: center; line-height: 1.2; color: var(--accent); cursor: pointer; }
-  @media (min-width: 34.01rem) { .eng__tabs { display: grid; grid-template-columns: repeat(4, auto); justify-content: center; gap: 0.35rem 2.2rem; } }
+  @media (min-width: 34.01rem) { .eng__tabs { display: grid; grid-template-columns: repeat(3, auto); justify-content: center; gap: 0.35rem 3rem; } }
   .eng__name { font-size: var(--step-0); }
   .eng__what { font-size: var(--step--2); font-style: italic; color: var(--ink-3); }
   .eng__tabs button:hover .eng__name { text-decoration: underline; }

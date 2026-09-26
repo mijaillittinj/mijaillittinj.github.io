@@ -1,21 +1,21 @@
 /**
  * Bilingual infrastructure.
- * English is the primary language. Spanish pages live under /es/ and exist only
- * where they have been written by hand (see `translatedRoutes`). Pages without a
- * Spanish version link to the English page from Spanish navigation.
+ * English is the primary language. Spanish pages live under /es/ (see `translatedRoutes`,
+ * detected from the files). Pages without a Spanish version link to the English page.
  */
 export const languages = { en: 'English', es: 'Español' } as const;
 export type Lang = keyof typeof languages;
 export const defaultLang: Lang = 'en';
 
-/** Route keys (English path without base, with trailing slash) that have a Spanish version. */
-export const translatedRoutes = new Set<string>([
-  '/',
-  '/research/',
-  '/teaching/',
-  '/teaching/thermal-systems-design/',
-  '/teaching/interactive/',
-]);
+/**
+ * Route keys (English path without base, with trailing slash) that have a Spanish version.
+ * Detected automatically from the pages under src/pages/es/, so adding a Spanish page is
+ * enough to make the language switch and the Spanish navigation point to it.
+ */
+const esPages = Object.keys(import.meta.glob('../pages/es/**/index.astro'));
+export const translatedRoutes = new Set<string>(
+  esPages.map((f) => f.replace('../pages/es', '').replace(/index\.astro$/, '') || '/'),
+);
 
 export const ui = {
   en: {

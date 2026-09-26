@@ -4,25 +4,45 @@
  * 2σ covariance ellipse, animated; measurement and process noise sliders.
  */
 import ParameterSlider from './ParameterSlider.astro';
+interface Props { lang?: 'en' | 'es' }
+const { lang = 'en' } = Astro.props;
+const es = lang === 'es';
+const T = es
+  ? {
+      r: 'Ruido del GPS σ (m)', q: 'Ruido de proceso en el filtro, log₁₀ q', qHint: 'Cuánto espera el filtro que acelere el dron.',
+      meas: 'Mostrar las posiciones GPS', ell: 'Mostrar la elipse de incertidumbre 2σ', play: 'Reproducir', pause: 'Pausa', restart: 'Reiniciar',
+      pMap: 'Campo de visión, 100 m × 100 m', mapAria: 'Trayectoria del dron, posiciones GPS y estimación de Kalman', kTrue: 'trayectoria verdadera', kGps: 'posiciones GPS', kKf: 'estimación de Kalman',
+      pErr: 'Error de posición en el tiempo', xT: 'tiempo (s)', yE: 'error (m)', gps: 'posición GPS', kf: 'estimación de Kalman',
+      idle: 'Pulse «Reproducir». El filtro parte de la primera posición GPS con velocidad desconocida.',
+      rms: 'error RMS después de los primeros 10 s', gain: 'ganancia en la posición', ofFix: 'de cada nueva medición', ellipse: 'elipse 2σ',
+    }
+  : {
+      r: 'GPS noise σ (m)', q: 'Process noise in the filter, log₁₀ q', qHint: 'How much the filter expects the drone to accelerate.',
+      meas: 'Show GPS fixes', ell: 'Show the 2σ uncertainty ellipse', play: 'Play', pause: 'Pause', restart: 'Restart',
+      pMap: 'Field of view, 100 m × 100 m', mapAria: 'Drone trajectory, GPS fixes and Kalman estimate', kTrue: 'true path', kGps: 'GPS fixes', kKf: 'Kalman estimate',
+      pErr: 'Position error over time', xT: 'time (s)', yE: 'error (m)', gps: 'GPS fix', kf: 'Kalman estimate',
+      idle: 'Press Play. The filter starts from the first GPS fix with an unknown velocity.',
+      rms: 'RMS error after the first 10 s', gain: 'gain on the position', ofFix: 'of each new fix', ellipse: '2σ ellipse',
+    };
 ---
-<div class="lab" data-kalman>
+<div class="lab" data-kalman data-lang={lang} data-text={JSON.stringify(T)}>
   <div class="lab__grid">
     <div class="lab__controls">
-      <ParameterSlider name="r" label="GPS noise σ (m)" min={0.5} max={8} step={0.5} value={3} unit=" m" />
-      <ParameterSlider name="q" label="Process noise in the filter, log₁₀ q" min={-5} max={1} step={0.1} value={-1.5} hint="How much the filter expects the drone to accelerate." />
-      <label class="meta"><input type="checkbox" data-kf-meas checked /> Show GPS fixes</label>
-      <label class="meta"><input type="checkbox" data-kf-ell checked /> Show the 2σ uncertainty ellipse</label>
-      <p class="meta"><button type="button" class="btn btn--primary" data-kf-play>Play</button> <button type="button" class="btn" data-kf-restart>Restart</button></p>
+      <ParameterSlider name="r" label={T.r} min={0.5} max={8} step={0.5} value={3} unit=" m" />
+      <ParameterSlider name="q" label={T.q} min={-5} max={1} step={0.1} value={-1.5} hint={T.qHint} />
+      <label class="meta"><input type="checkbox" data-kf-meas checked /> {T.meas}</label>
+      <label class="meta"><input type="checkbox" data-kf-ell checked /> {T.ell}</label>
+      <p class="meta"><button type="button" class="btn btn--primary" data-kf-play>{T.play}</button> <button type="button" class="btn" data-kf-restart>{T.restart}</button></p>
       <p class="lab__readout" data-kf-read aria-live="polite"></p>
     </div>
     <div class="lab__plots">
       <div class="wide kf__mapwrap">
-        <p class="panel-title">Field of view, 100 m × 100 m</p>
-        <canvas class="kf__map" data-kf-map width="600" height="600" role="img" aria-label="Drone trajectory, GPS fixes and Kalman estimate"></canvas>
-        <p class="meta kf__key"><span class="key key--truth"></span>true path <span class="key key--data"></span>GPS fixes <span class="key key--learned"></span>Kalman estimate</p>
+        <p class="panel-title">{T.pMap}</p>
+        <canvas class="kf__map" data-kf-map width="600" height="600" role="img" aria-label={T.mapAria}></canvas>
+        <p class="meta kf__key"><span class="key key--truth"></span>{T.kTrue} <span class="key key--data"></span>{T.kGps} <span class="key key--learned"></span>{T.kKf}</p>
       </div>
       <div class="wide">
-        <p class="panel-title">Position error over time</p>
+        <p class="panel-title">{T.pErr}</p>
         <div class="kf__plot" data-kf-err></div>
       </div>
     </div>
@@ -36,10 +56,12 @@ import ParameterSlider from './ParameterSlider.astro';
 
   document.querySelectorAll<HTMLElement>('[data-kalman]').forEach((root) => {
     const $ = <T extends Element>(s: string) => root.querySelector<T>(s)!;
+    const L = JSON.parse(root.dataset.text!);
+    const n = (v: string) => (root.dataset.lang === 'es' ? v.replace('.', ',') : v);
     const val = (name: string) => +$<HTMLInputElement>(`[name="${name}"]`).value;
     const canvas = $<HTMLCanvasElement>('[data-kf-map]');
     const ctx = canvas.getContext('2d')!;
-    const pErr = new LinePlot($('[data-kf-err]'), { width: 860, height: 220, xlabel: 'time (s)', ylabel: 'error (m)', title: 'Error' , legend: false});
+    const pErr = new LinePlot($('[data-kf-err]'), { width: 860, height: 220, xlabel: L.xT, ylabel: L.yE, title: L.pErr , legend: false});
     const pErrR = keyed(pErr, $('[data-kf-err]'));
     const read = $<HTMLElement>('[data-kf-read]');
     const btn = $<HTMLButtonElement>('[data-kf-play]');
@@ -105,27 +127,27 @@ import ParameterSlider from './ParameterSlider.astro';
 
       const ts = eM.map((_, i) => i * dt);
       pErrR([
-        { kind: 'line', x: ts, y: eM, cls: 's-data', label: 'GPS fix' },
-        { kind: 'line', x: ts, y: eK, cls: 's-learned', label: 'Kalman estimate' },
+        { kind: 'line', x: ts, y: eM, cls: 's-data', label: L.gps },
+        { kind: 'line', x: ts, y: eK, cls: 's-learned', label: L.kf },
       ], { xlim: [0, (N - 1) * dt], ylim: [0, Math.max(4 * val('r'), 5)] });
 
       const rmsd = (a: number[]) => Math.sqrt(a.slice(10).reduce((s, v) => s + v * v, 0) / Math.max(1, a.length - 10));
-      read.innerHTML = k < 12 ? 'Press Play. The filter starts from the first GPS fix with an unknown velocity.' :
-        `RMS error after the first 10 s: GPS <strong>${rmsd(eM).toFixed(2)} m</strong>, Kalman <strong>${rmsd(eK).toFixed(2)} m</strong>. ` +
-        `Current gain on the position ≈ <strong>${(gain * 100).toFixed(0)} %</strong> of each new fix; 2σ ellipse ${(2 * Math.sqrt(kf.P[0])).toFixed(1)} m.`;
+      read.innerHTML = k < 12 ? L.idle :
+        `${L.rms}: GPS <strong>${n(rmsd(eM).toFixed(2))} m</strong>, Kalman <strong>${n(rmsd(eK).toFixed(2))} m</strong> · ` +
+        `${L.gain} ≈ <strong>${(gain * 100).toFixed(0)} %</strong> ${L.ofFix} · ${L.ellipse} ${n((2 * Math.sqrt(kf.P[0])).toFixed(1))} m`;
     };
 
     const loop = () => {
       if (!running) return;
-      if (++frame % 2 === 0) { if (!advance()) { running = false; btn.textContent = 'Play'; } draw(); }
+      if (++frame % 2 === 0) { if (!advance()) { running = false; btn.textContent = L.play; } draw(); }
       if (running) requestAnimationFrame(loop);
     };
     btn.addEventListener('click', () => {
-      if (running) { running = false; btn.textContent = 'Play'; return; }
+      if (running) { running = false; btn.textContent = L.play; return; }
       if (k >= N - 1) restart();
-      running = true; btn.textContent = 'Pause'; requestAnimationFrame(loop);
+      running = true; btn.textContent = L.pause; requestAnimationFrame(loop);
     });
-    $('[data-kf-restart]').addEventListener('click', () => { running = false; btn.textContent = 'Play'; restart(); });
+    $('[data-kf-restart]').addEventListener('click', () => { running = false; btn.textContent = L.play; restart(); });
     // changing a noise setting replays the run so far with the new settings (same random draws)
     const replay = () => { const upto = k; restart(); while (k < upto && advance()); draw(); };
     ['r', 'q'].forEach((nm) => $(`[name="${nm}"]`).addEventListener('input', replay));

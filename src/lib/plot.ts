@@ -138,6 +138,12 @@ export function fmt(v: number): string {
   return String(+v.toPrecision(3));
 }
 
+/** Tick label in the page language (decimal comma on Spanish pages). */
+function tick(v: number): string {
+  const s = fmt(v);
+  return typeof document !== 'undefined' && document.documentElement.lang.startsWith('es') ? s.replace('.', ',') : s;
+}
+
 export interface Series {
   kind: 'line' | 'points' | 'band' | 'step';
   x: ArrayLike<number>;
@@ -238,7 +244,7 @@ export class LinePlot {
     for (const v of niceTicks(x0, x1, 5)) {
       el('line', { x1: X(v), x2: X(v), y1: m.t, y2: m.t + ph, class: 'grid' }, axes);
       const t = el('text', { x: X(v), y: m.t + ph + 16, 'text-anchor': 'middle', class: 'tick' }, axes);
-      t.textContent = fmt(v);
+      t.textContent = tick(v);
     }
     const yt = logy
       ? Array.from({ length: Math.floor(y1) - Math.ceil(y0) + 1 }, (_, k) => Math.ceil(y0) + k)
@@ -248,7 +254,7 @@ export class LinePlot {
       if (k % ytStep) return;
       el('line', { x1: m.l, x2: m.l + pw, y1: Yraw(v), y2: Yraw(v), class: 'grid' }, axes);
       const t = el('text', { x: m.l - 6, y: Yraw(v) + 4, 'text-anchor': 'end', class: 'tick' }, axes);
-      t.textContent = logy ? `1e${v}` : fmt(v);
+      t.textContent = logy ? `1e${v}` : tick(v);
     });
     el('rect', { x: m.l, y: m.t, width: pw, height: ph, class: 'plotframe' }, axes);
     if (this.o.xlabel) { const t = el('text', { x: m.l + pw / 2, y: H - 6, 'text-anchor': 'middle', class: 'axlabel' }, axes); t.textContent = this.o.xlabel; }

@@ -15,8 +15,9 @@ interface Props {
   wide?: boolean;
   bare?: boolean;
   sizes?: string;
+  lang?: 'en' | 'es';
 }
-const { src, alt = '', number, caption, credit, wide = false, bare = false, sizes = '(min-width: 76rem) 76rem, 100vw' } = Astro.props;
+const { src, alt = '', number, caption, credit, wide = false, bare = false, sizes = '(min-width: 76rem) 76rem, 100vw', lang = 'en' } = Astro.props;
 ---
 <figure class:list={['figure', { 'figure--wide': wide, 'figure--bare': bare }]}>
   <div class="figure__media">
@@ -24,7 +25,7 @@ const { src, alt = '', number, caption, credit, wide = false, bare = false, size
   </div>
   {(caption || number || credit || Astro.slots.has('caption')) && (
     <figcaption>
-      {number && <span class="fig-num">Figure {number}.</span>}
+      {number && <span class="fig-num">{lang === 'es' ? 'Figura' : 'Figure'} {number}.</span>}
       {caption && <Fragment set:html={caption} />}
       <slot name="caption" />
       {credit && <span class="credit">{credit}</span>}

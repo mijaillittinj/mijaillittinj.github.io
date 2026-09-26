@@ -1,0 +1,43 @@
+---
+import LearnModule from '../../../../../layouts/LearnModule.astro';
+import Equation from '../../../../../components/viz/Equation.astro';
+import KalmanExplorer from '../../../../../components/viz/KalmanExplorer.astro';
+import Answer from '../../../../../components/ui/Answer.astro';
+import { localized } from '../../../../../i18n/utils';
+---
+<LearnModule lang="es" slug="uncertainty/kalman-filter" description="Siga un dron a partir de posiciones GPS con ruido usando un filtro de Kalman: etapas de predicción y actualización, elipse de covarianza, ruido de medición y de proceso, y el equilibrio entre modelo y datos.">
+  <div class="prose">
+    <h2>Dos fuentes de información imperfectas</h2>
+    <p>Un dron informa su posición por GPS una vez por segundo, con errores de algunos metros. También sabemos algo sobre cómo se mueven los drones: no saltan y su velocidad cambia de a poco. El filtro de Kalman combina ambas cosas, un <em>modelo</em> y los <em>datos</em>, y pondera cada uno según cuánto se puede confiar en él.</p>
+    <p>El estado es la posición y la velocidad, <em>s</em> = (<em>x</em>, <em>y</em>, <em>v<sub>x</sub></em>, <em>v<sub>y</sub></em>). El modelo supone que la velocidad es aproximadamente constante, salvo aceleraciones aleatorias de intensidad <em>q</em>; el GPS mide la posición con un ruido de desviación estándar <em>r</em>:</p>
+    <Equation tex={String.raw`s_{k} = F s_{k-1} + w_k,\quad w_k \sim \mathcal N(0, Q(q)), \qquad z_k = H s_k + v_k,\quad v_k \sim \mathcal N(0, r^2 I).`} />
+    <h2>Predecir y luego corregir</h2>
+    <p>Cada paso de tiempo tiene dos etapas. La <em>predicción</em> avanza la estimación con el modelo e infla su covarianza <em>P</em>, porque el modelo es imperfecto. La <em>actualización</em> compara la predicción con la nueva posición GPS y se mueve una parte del camino hacia ella:</p>
+    <Equation tex={String.raw`\hat s_k^- = F \hat s_{k-1}, \quad P_k^- = F P_{k-1} F^{\mathsf T} + Q; \qquad K_k = P_k^- H^{\mathsf T}\big(H P_k^- H^{\mathsf T} + r^2 I\big)^{-1},`} />
+    <Equation tex={String.raw`\hat s_k = \hat s_k^- + K_k\,\big(z_k - H \hat s_k^-\big), \qquad P_k = (I - K_k H)\, P_k^- .`} />
+    <p>La <em>ganancia de Kalman</em> <em>K</em> decide cuánto moverse: cerca de 1 cuando la predicción es incierta comparada con la medición, cerca de 0 cuando la medición es la más ruidosa de las dos. Para un modelo lineal con ruido gaussiano, esta es la mejor estimación posible en el sentido del error cuadrático medio.</p>
+  </div>
+
+  <KalmanExplorer lang="es" />
+
+  <div class="try">
+    <h3>Ejercicios</h3>
+    <ol>
+      <li>Pulse «Reproducir» con los valores por defecto. Compare el error RMS de las posiciones GPS con el del filtro. ¿En qué parte de la trayectoria es menos preciso el filtro?
+        <Answer lang="es"><p>Las posiciones GPS tienen un error RMS de poco más de 4 m y el filtro de unos 2,2 m, aproximadamente la mitad. El filtro es menos preciso en los primeros segundos, cuando todavía no conoce la velocidad y su elipse es grande, y en las curvas más cerradas, donde el modelo de velocidad constante se atrasa respecto del movimiento real.</p></Answer></li>
+      <li>Baje el ruido de proceso a log₁₀ q = −5. Ahora el filtro cree que el dron vuela en línea recta. ¿Qué pasa en las curvas? Es un modelo que confía demasiado en sí mismo.
+        <Answer lang="es"><p>La estimación sigue recta y se pasa de largo en cada curva; el error RMS sube a unos 20 m, mucho peor que el GPS solo. La ganancia cae a alrededor de 4 %, de modo que las nuevas posiciones casi se ignoran. La elipse se reduce a cerca de 1 m mientras el error real es de unos 20 m: el filtro está equivocado y muy seguro de sí mismo.</p></Answer></li>
+      <li>Súbalo a +1. ¿Qué pasa con la estimación y con la ganancia que muestra la lectura?
+        <Answer lang="es"><p>La ganancia sube a alrededor de 77 %, así que la estimación salta hacia cada nueva posición y hereda la mayor parte de su ruido; el error RMS aumenta a unos 3,6 m, cerca del GPS sin filtrar. Ahora el filtro confía mucho más en los datos que en el modelo.</p></Answer></li>
+      <li>Busque el valor de <em>q</em> que minimiza el error y luego duplique el ruido del GPS. ¿Cambia el mejor <em>q</em>? ¿Cómo se relaciona el tamaño de la elipse con el error real?
+        <Answer lang="es"><p>El error es mínimo cerca de log₁₀ q ≈ −1,5 (unos 2,2 m). Con el ruido del GPS duplicado a 6 m el mejor valor sigue siendo casi el mismo (el error es entonces de unos 3,9 m), porque q describe cómo acelera realmente el dron y no el sensor; el filtro ajusta su ganancia al nuevo r por sí solo. Con una buena elección, la elipse 2σ (unos 3 m en cada dirección) es coherente con el error típico; con un q equivocado, como en el ejercicio 2, no lo es.</p></Answer></li>
+      <li>La elipse se achica rápido después de las primeras posiciones y luego mantiene más o menos el mismo tamaño. ¿Por qué no sigue achicándose indefinidamente?
+        <Answer lang="es"><p>Cada predicción agrega incertidumbre, porque el modelo admite aceleraciones aleatorias (el término Q), y cada actualización quita parte de ella, porque llega una nueva posición. Tras unos pocos pasos ambos efectos se equilibran y la covarianza se estabiliza. Solo seguiría achicándose si el modelo fuera perfecto (q = 0). Con un q muy pequeño la elipse efectivamente sigue achicándose, mientras el error real crece.</p></Answer></li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>Dónde se usa</h2>
+    <p>Los filtros de Kalman funcionan en sistemas de navegación, aviones, teléfonos y controladores industriales. El mismo esquema, un modelo directo más datos ponderados por su incertidumbre, es el núcleo de la asimilación de datos en el pronóstico del tiempo y del <a href={localized('/learn/uncertainty/bayesian-mcmc/', 'es')}>módulo de inferencia bayesiana</a>: el filtro es el teorema de Bayes aplicado de forma recursiva, una medición a la vez, cuando todo es lineal y gaussiano. El equilibrio entre confiar en el modelo y confiar en los datos es el mismo compromiso que fija el parámetro de regularización en el <a href={localized('/learn/inverse-problems/svd-noise-amplification/', 'es')}>módulo de la SVD</a>.</p>
+  </div>
+</LearnModule>

@@ -2,8 +2,8 @@
 import Base from '../../layouts/Base.astro';
 import PubItem from '../ui/PubItem.astro';
 import Equation from '../viz/Equation.astro';
-import { byId, visiblePublications, domainLabels, type DomainId } from '../../data/publications';
-import { url } from '../../i18n/utils';
+import { byId, visiblePublications, domainLabels, domainLabelsEs, type DomainId } from '../../data/publications';
+import { localized } from '../../i18n/utils';
 import type { Lang } from '../../i18n/ui';
 
 interface Props { lang: Lang }
@@ -72,7 +72,7 @@ const themes: Theme[] = [
     papers: ['littin2026carbon', 'littin2026saf', 'yap2026dual', 'gutierrez2026maturity'],
     resources: [
       { label: es ? 'Artículo explicado: Carbon 2026' : 'Paper explained: Carbon 2026', href: '/publications/carbon-2026/' },
-      { label: es ? 'Presentación interactiva' : 'Interactive presentation', href: '/talks/carbon-2026/' },
+      { label: es ? 'Presentación interactiva (en inglés)' : 'Interactive presentation', href: '/talks/carbon-2026/' },
       { label: es ? 'Módulo interactivo: aprendizaje informado por la física' : 'Interactive module: physics-informed learning', href: '/learn/machine-learning/physics-informed-learning/' },
     ],
   },
@@ -168,11 +168,11 @@ const T = es
         {t.papers.length > 0 && (
           <div class="theme__papers">
             <p class="runin"><strong>{T.p}.</strong></p>
-            {t.papers.map((id) => byId(id)).filter(Boolean).map((p) => <PubItem pub={p!} compact />)}
+            {t.papers.map((id) => byId(id)).filter(Boolean).map((p) => <PubItem pub={p!} compact lang={lang} />)}
           </div>
         )}
         {t.resources.length > 0 && (
-          <p class="theme__res"><strong>{T.r}.</strong> {t.resources.map((r, i) => <>{i > 0 && ' · '}<a href={url(r.href)}>{r.label}</a></>)}</p>
+          <p class="theme__res"><strong>{T.r}.</strong> {t.resources.map((r, i) => <>{i > 0 && ' · '}<a href={localized(r.href.split("#")[0], lang) + (r.href.includes("#") ? "#" + r.href.split("#")[1] : "")}>{r.label}</a></>)}</p>
         )}
       </div>
     </section>
@@ -184,7 +184,7 @@ const T = es
       <p class="prose">{T.domText}</p>
       <ul class="domains">
         {domains.map((d) => (
-          <li><a href={url(`/publications/?domain=${d}`)}>{domainLabels[d]}</a> <span class="meta">({domainCount(d)} {T.papersIn})</span></li>
+          <li><a href={`${localized('/publications/', lang)}?domain=${d}`}>{es ? domainLabelsEs[d] : domainLabels[d]}</a> <span class="meta">({domainCount(d)} {T.papersIn})</span></li>
         ))}
       </ul>
     </div>

@@ -1,11 +1,14 @@
 ---
 import Base from './Base.astro';
-import { modules, categories } from '../data/learn';
-import { url } from '../i18n/utils';
-interface Props { slug: string; description: string }
-const { slug, description } = Astro.props;
-const m = modules.find((x) => x.slug === slug)!;
-const cat = categories[m.category];
+import { modules, moduleText, categoryText } from '../data/learn';
+import { url, localized } from '../i18n/utils';
+interface Props { slug: string; description: string; lang?: 'en' | 'es' }
+const { slug, description, lang = 'en' } = Astro.props;
+const es = lang === 'es';
+const m0 = modules.find((x) => x.slug === slug)!;
+const mt = moduleText(m0, lang);
+const m = { ...m0, ...mt };
+const cat = categoryText(m0.category, lang);
 const jsonld = [{
   '@context': 'https://schema.org',
   '@type': 'LearningResource',
@@ -13,7 +16,7 @@ const jsonld = [{
   description,
   educationalLevel: 'Undergraduate / early graduate',
   learningResourceType: 'Interactive simulation',
-  inLanguage: 'en',
+  inLanguage: lang,
   isAccessibleForFree: true,
   author: { '@type': 'Person', name: 'Mijail Littin' },
   license: 'https://creativecommons.org/licenses/by/4.0/',
@@ -21,17 +24,17 @@ const jsonld = [{
 ---
 <Base title={m.title} description={description} math jsonld={jsonld} ogType="article">
   <header class="page-head frame">
-    <p class="eyebrow"><a href={url('/learn/')}>Learn</a> · {cat.title}</p>
+    <p class="eyebrow"><a href={localized('/learn/', lang)}>{es ? 'Aprender' : 'Learn'}</a> · {cat.title}</p>
     <h1 class="lm-title">{m.title}</h1>
     <p class="lede abstract">{m.question}</p>
-    <p class="meta lm-meta">About {m.minutes} minutes · runs in the browser · CC BY 4.0</p>
+    <p class="meta lm-meta">{es ? `Unos ${m.minutes} minutos · se ejecuta en el navegador · CC BY 4.0` : `About ${m.minutes} minutes · runs in the browser · CC BY 4.0`}</p>
   </header>
   <article class="frame lm">
     <slot />
     {m.related && m.related.length > 0 && (
       <aside class="lm-related">
-        <p class="label">Connected material</p>
-        <ul class="links">{m.related.map((r) => <li><a href={url(r.href)}>{r.label}</a></li>)}</ul>
+        <p class="label">{es ? 'Material relacionado' : 'Connected material'}</p>
+        <ul class="links">{m.related.map((r) => <li><a href={r.href.startsWith('/') ? localized(r.href, lang) : r.href}>{r.label}</a></li>)}</ul>
       </aside>
     )}
   </article>

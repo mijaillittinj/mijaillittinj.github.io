@@ -1,0 +1,44 @@
+---
+import LearnModule from '../../../../layouts/LearnModule.astro';
+import Equation from '../../../../components/viz/Equation.astro';
+import ClassifierExplorer from '../../../../components/viz/ClassifierExplorer.astro';
+import Answer from '../../../../components/ui/Answer.astro';
+import { url } from '../../../../i18n/utils';
+---
+<LearnModule slug="machine-learning/decision-boundaries" lang="en" description="Train a small neural network to separate two classes of points in the plane and watch its decision boundary bend: linear models, hidden layers, feature engineering, overfitting and overconfidence far from the data.">
+  <div class="prose">
+    <h2>Drawing a line between two classes</h2>
+    <p>A classifier receives a point, for example the two measurements (<i>x</i>, <i>y</i>) of a sample, and decides whether it belongs to class A or class B. A neural network does this by computing a single number <i>z</i> from the inputs and turning it into a probability with the logistic function:</p>
+    <Equation tex={String.raw`P(\text{B} \mid x, y) = \sigma(z) = \frac{1}{1 + e^{-z}}, \qquad z = \text{network}(x, y).`} />
+    <p>The <em>decision boundary</em> is the curve where this probability equals one half. Without hidden layers, <i>z</i> is a weighted sum of the inputs and the boundary is a straight line. Each hidden layer applies a nonlinear function (tanh or ReLU) to weighted sums, which lets the boundary bend.</p>
+    <h2>Training: make the right class probable</h2>
+    <p>The weights are chosen to minimise the <em>cross-entropy</em>, the average of −log of the probability that the network assigns to the correct class. It is small when the network is confident and right, and very large when it is confident and wrong:</p>
+    <Equation tex={String.raw`\begin{aligned}\mathcal{L} = -\frac{1}{N}\sum_{n} \Big[&c_n \log p_n \\ &+ (1 - c_n)\log(1 - p_n)\Big],\end{aligned} \qquad c_n \in \{0, 1\}.`} />
+    <p>The lab below trains the network live with the Adam optimiser. The coloured background shows the probability of each class (the deeper the colour, the more confident the network), the black curve is the decision boundary, and the dashed square marks the region where the data live. Test accuracy is measured on 400 points that the network never sees during training.</p>
+  </div>
+
+  <ClassifierExplorer lang="en" />
+
+  <div class="try">
+    <h3>Exercises</h3>
+    <ol>
+      <li>With the circles dataset, select 0 hidden layers. What accuracy does the network reach, and why?
+        <Answer lang="en"><p>About 53 %, no better than guessing. With no hidden layer the boundary is a straight line, and no straight line separates a ring of points from the points in its centre. With one hidden layer of 8 neurons (the default) the boundary closes into a loop and the test accuracy reaches about 98 %.</p></Answer></li>
+      <li>Keep 0 hidden layers but tick the inputs <i>x</i>² and <i>y</i>². What happens? Then choose XOR, where points in opposite quadrants share a class, and try adding the input <i>xy</i> instead.
+        <Answer lang="en"><p>With <i>x</i>² and <i>y</i>² the linear model separates the circles perfectly (100 % test accuracy with only five parameters), because a circle <i>x</i>² + <i>y</i>² = <i>r</i>² is a straight line in those variables. For XOR the useful feature is the product <i>xy</i>, whose sign gives the class; with it a linear model goes from about 58 % to 92 %. Choosing good inputs, called feature engineering, can replace depth. Hidden layers learn such features automatically when you do not know them in advance.</p></Answer></li>
+      <li>Choose the spiral. Compare 1 hidden layer of 8 neurons with 2 hidden layers of 16 neurons. Let each run finish.
+        <Answer lang="en"><p>The small network reaches about 95 % on the training points and 87 % on the test points; the boundary cannot wind around the spiral arms everywhere. With two layers of 16 neurons (337 parameters instead of 33) the training accuracy reaches 100 % and the test accuracy about 91 %. Deeper and wider networks can represent more complicated boundaries, at the cost of more parameters and a greater risk of fitting noise.</p></Answer></li>
+      <li>Choose moons, set the training points to 16 and the noise to 0.25, and use 2 hidden layers of 24 neurons. Compare training and test accuracy, and look at the loss curves. Then tick weight decay.
+        <Answer lang="en"><p>The network classifies all 16 training points correctly but only about 83 % of the test points, and the test cross-entropy rises while the training loss goes to zero: it has memorised the noise (overfitting) with 697 parameters for 16 points. With weight decay, which penalises large weights, the test accuracy stays about the same (around 80 %), but the test cross-entropy falls from about 2.3 to about 0.9. The boundary becomes smoother and the probabilities less extreme, so the network is less often confidently wrong. Regularisation mainly improves how much its confidence can be trusted.</p></Answer></li>
+      <li>With the default circles, look at the corners of the picture, far outside the dashed square. What does the network say there, and should we believe it?
+        <Answer lang="en"><p>The corners are coloured deeply: the readout shows a mean confidence close to 100 % far from the data. The network has never seen a point there, yet it assigns one class with near certainty, because the logistic output saturates as the inputs grow. A probability from a classifier is not a measure of how much it knows. Methods that do report this, such as <a href={url('/learn/uncertainty/gaussian-processes/')}>Gaussian processes</a> or ensembles with conformal prediction (the trustworthy-AI example in the <a href={url('/#computing')}>computing tab of the home page</a>), are needed when decisions depend on it.</p></Answer></li>
+      <li>Click a few points of class B inside the region of class A, with a large network. How does the boundary react?
+        <Answer lang="en"><p>Training resumes and a flexible network bends the boundary to enclose the new points, often forming small islands around them. Whether that is right depends on whether the points are real features or mislabelled outliers; the network cannot tell. Weight decay or a smaller network keeps the boundary simpler and treats isolated points as noise.</p></Answer></li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>Where it is used</h2>
+    <p>The same principle, with many more inputs and layers, classifies images, sounds, spectra, medical signals and defects in industrial inspection. The lessons of this small example carry over directly: the model can only draw boundaries its architecture allows, it needs regularisation when data are few, and its probabilities must be checked before they are used as confidence. A related regression example, with the error curves in detail, is the <a href={url('/learn/machine-learning/neural-network-from-scratch/')}>neural network from scratch module</a>.</p>
+  </div>
+</LearnModule>

@@ -2,6 +2,7 @@
 import LearnModule from '../../../../layouts/LearnModule.astro';
 import Equation from '../../../../components/viz/Equation.astro';
 import GradientDescentExplorer from '../../../../components/viz/GradientDescentExplorer.astro';
+import Answer from '../../../../components/ui/Answer.astro';
 import { url } from '../../../../i18n/utils';
 ---
 <LearnModule slug="optimization/gradient-descent" description="Interactive gradient descent, momentum and Adam on quadratic, Rosenbrock and Himmelblau loss landscapes: step size, conditioning and stability.">
@@ -17,11 +18,16 @@ import { url } from '../../../../i18n/utils';
   <div class="try">
     <h3>Exercises</h3>
     <ol>
-      <li>On the quadratic valley with κ = 20 (κ measures how elongated the valley is; see below), raise α slowly. At what value does gradient descent start to zig-zag, and when does it diverge? Compare with the limit 2/κ printed under the loss plot.</li>
-      <li>Keep α just below the limit and increase κ. Why does convergence along the long, flat direction slow down even though the method is stable?</li>
-      <li>Turn on momentum with β = 0.8. It reaches the minimum in far fewer steps with the same α. Look at the path: what is momentum averaging out?</li>
-      <li>Switch to Himmelblau and click several starting points. Which minimum you land in depends on where you start. What does that mean for training a network from a random initialisation?</li>
-      <li>Try Adam on Rosenbrock with a large step. Adam rescales each coordinate by a running estimate of the gradient size. When does that help and when does it make the final approach noisy?</li>
+      <li>On the quadratic valley with κ = 20 (κ measures how elongated the valley is; see below), raise α slowly. At what value does gradient descent start to zig-zag, and when does it diverge? Compare with the limit 2/κ printed under the loss plot.
+        <Answer lang="en"><p>Along <em>y</em> each step multiplies the error by 1 − ακ. Once α exceeds 1/κ = 0.05 this factor is negative, so the path overshoots and zig-zags across the valley. Above 2/κ = 0.1 its magnitude exceeds 1 and the oscillation grows until the iteration diverges, exactly at the printed limit.</p></Answer></li>
+      <li>Keep α just below the limit and increase κ. Why does convergence along the long, flat direction slow down even though the method is stable?
+        <Answer lang="en"><p>The step size is capped by the steep direction (α &lt; 2/κ), but along the flat direction the error only shrinks by a factor 1 − α per step. A larger κ forces a smaller α, so progress along <em>x</em> slows: with α at 95 % of the limit, reaching f &lt; 10⁻⁶ takes about 74 steps for κ = 5 and about 195 for κ = 50. The condition number, not the stability, sets the cost.</p></Answer></li>
+      <li>Turn on momentum with β = 0.8. It reaches the minimum in far fewer steps with the same α. Look at the path: what is momentum averaging out?
+        <Answer lang="en"><p>With the default α, momentum reaches f &lt; 10⁻⁶ in about 69 steps against about 147 for plain gradient descent. The velocity is a running average of past gradients: the components that flip sign from step to step (across the valley) cancel, while the component that always points along the valley accumulates. Momentum averages out the zig-zag.</p></Answer></li>
+      <li>Switch to Himmelblau and click several starting points. Which minimum you land in depends on where you start. What does that mean for training a network from a random initialisation?
+        <Answer lang="en"><p>Each starting point falls into the basin of one of the four minima: the default start ends near (−2.81, 3.13), a start at (1, 1) ends at (3, 2) and one at (1, −1) ends near (3.58, −1.85). A local method only finds the minimum of the basin it starts in. Training a neural network is the same: different random initialisations give different trained networks, which is why results are usually checked over several seeds.</p></Answer></li>
+      <li>Try Adam on Rosenbrock with a large step. Adam rescales each coordinate by a running estimate of the gradient size. When does that help and when does it make the final approach noisy?
+        <Answer lang="en"><p>Because Adam divides by the gradient size, its steps have roughly the size α in every coordinate, whatever the local steepness. Far from the minimum this is an advantage: at log₁₀ α = −1.5 plain gradient descent diverges on Rosenbrock while Adam converges. Near the minimum the steps do not shrink with the gradient, so the loss keeps jumping up and down (between about 10⁻¹³ and 10⁻⁹ at log₁₀ α = −0.5) instead of decreasing smoothly. In practice the step size is reduced during training.</p></Answer></li>
     </ol>
   </div>
 

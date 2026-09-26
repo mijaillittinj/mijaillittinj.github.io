@@ -5,15 +5,15 @@
  * it never autoplays and shows controls. A transcript is always available.
  */
 import { url } from '../../i18n/utils';
-interface Props { name: string; transcript: string; label: string; width?: number; loop?: boolean }
-const { name, transcript, label, width = 1280, loop = false } = Astro.props;
+interface Props { name: string; transcript: string; label: string; width?: number; loop?: boolean; lang?: 'en' | 'es' }
+const { name, transcript, label, width = 1280, loop = false, lang = 'en' } = Astro.props;
 ---
 <figure class="manim" data-manim>
   <video muted playsinline preload="none" poster={url(`/media/${name}-poster.webp`)} width={width} height={Math.round(width * 9 / 16)} aria-label={label} loop={loop} data-interactive>
     <source src={url(`/media/${name}.webm`)} type="video/webm" />
     <source src={url(`/media/${name}.mp4`)} type="video/mp4" />
   </video>
-  <details class="manim__tr"><summary>Transcript of the animation</summary><p>{transcript}</p></details>
+  <details class="manim__tr"><summary>{lang === 'es' ? 'Transcripción de la animación' : 'Transcript of the animation'}</summary><p>{transcript}</p></details>
 </figure>
 <script>
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;

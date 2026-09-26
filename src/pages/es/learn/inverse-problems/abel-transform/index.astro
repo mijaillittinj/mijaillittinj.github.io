@@ -1,0 +1,65 @@
+---
+import LearnModule from '../../../../../layouts/LearnModule.astro';
+import Equation from '../../../../../components/viz/Equation.astro';
+import AbelExplorer from '../../../../../components/viz/AbelExplorer.astro';
+import ManimScene from '../../../../../components/slides/ManimScene.astro';
+import EquationDerivation from '../../../../../components/viz/EquationDerivation.astro';
+import Answer from '../../../../../components/ui/Answer.astro';
+import { localized } from '../../../../../i18n/utils';
+---
+<LearnModule lang="es" slug="inverse-problems/abel-transform" description="Introducción interactiva a la transformada de Abel y su inversión: proyección a lo largo de la línea de visión de un campo axisimétrico, amplificación del ruido en la inversión directa y regularización de Tikhonov.">
+  <div class="prose">
+    <h2>Una cámara ve sumas, no puntos</h2>
+    <p>Muchos objetos de la ingeniería son redondos: chorros, llamas, plasmas, tuberías, algunos tejidos biológicos. Cuando una cámara mira un objeto así de costado, cada píxel no registra el valor en un punto, sino la suma de todo lo que hay a lo largo de la línea de visión que atraviesa el objeto. Para un objeto simétrico respecto de su eje, descrito por un perfil radial <em>f(r)</em>, la señal registrada a una distancia lateral <em>y</em> del eje es</p>
+    <Equation tex={String.raw`P(y) = 2\int_{y}^{R} \frac{f(r)\, r}{\sqrt{r^2 - y^2}}\, dr .`} />
+    <p>Esta es la <em>transformada de Abel</em>. Recuperar <em>f(r)</em> a partir de <em>P(y)</em> es un problema inverso. La animación muestra la idea: un rayo recorre el objeto, y cada rayo suma todos los anillos que atraviesa.</p>
+  </div>
+  <div class="anim"><ManimScene lang="es" name="abel-projection" label="Animación de la integración a lo largo de la línea de visión en un campo axisimétrico y de la inversión desde afuera hacia adentro"
+    transcript="Un campo axisimétrico se muestra como anillos concéntricos, con el máximo en un anillo fuera del eje. Un rayo horizontal recorre el objeto desde el borde hasta el centro y se traza la proyección P(y). La proyección es la integral de Abel. Para invertirla, primero se obtiene el anillo exterior a partir del rayo exterior, y luego cada anillo interior después de restar los anillos que lo rodean. Los errores se acumulan hacia el eje." /></div>
+
+  <div class="prose">
+    <h2>Discretizar y luego invertir</h2>
+    <p>Dividimos el disco en <em>N</em> anillos delgados de valor constante <em>f<sub>j</sub></em>. Un rayo a distancia <em>y<sub>i</sub></em> cruza el anillo <em>j</em> a lo largo de una cuerda de longitud conocida <em>L<sub>ij</sub></em>, de modo que el modelo directo se convierte en un producto de matrices.</p>
+    <EquationDerivation lang="es" title="De la integral a la matriz" steps={[
+      { tex: String.raw`P(y_i) \approx \sum_{j} L_{ij}\, f_j`, note: 'Cada medición es una suma ponderada de los valores de los anillos; el peso es la longitud de la cuerda dentro del anillo.' },
+      { tex: String.raw`L_{ij} = 2\Big(\sqrt{r_{j+1}^2 - y_i^2} - \sqrt{\max(r_j, y_i)^2 - y_i^2}\Big), \quad j \ge i`, note: 'Un rayo solo cruza los anillos que están más afuera que su propia distancia al eje, así que L es triangular superior.' },
+      { tex: String.raw`f_{N} = \frac{P_N}{L_{NN}},\quad f_{j} = \frac{1}{L_{jj}}\Big(P_j - \sum_{k>j} L_{jk} f_k\Big)`, note: 'Sustitución hacia atrás: se resuelve primero el anillo exterior y luego se avanza hacia adentro. Por eso se llama pelado de cebolla.' },
+      { tex: String.raw`\delta f_j \;\text{hereda}\; \delta P_j \;\text{y cada}\; \delta f_{k>j}`, note: 'Cada valor interior reutiliza todos los exteriores, así que el ruido de medición se acumula hacia el eje.' },
+    ]} />
+    <p>Sin ruido, el pelado de cebolla es exacto. Con ruido deja de serlo, y el error crece hacia el centro, donde las cuerdas son cortas y se acumulan muchos errores anteriores. Esto es lo que significa que un problema esté <em>mal condicionado</em>: cambios pequeños en los datos producen cambios grandes en la respuesta.</p>
+
+    <h2>Regularización: preferir respuestas plausibles</h2>
+    <p>En vez de resolver <em>Lf = P</em> exactamente, buscamos el perfil que ajusta los datos <em>y</em> no es demasiado irregular:</p>
+    <Equation tex={String.raw`\hat f = \arg\min_f \; \lVert L f - P \rVert^2 + \lambda \lVert D f \rVert^2 ,`} />
+    <p>donde <em>D</em> calcula segundas diferencias, una curvatura discreta. El parámetro <em>λ</em> fija el compromiso. Si es muy pequeño, el ruido vuelve; si es muy grande, se suavizan detalles reales. La transformada de Abel basada en splines que se usa en investigación (<a href={localized('/software/pysat-abel/', 'es')}>pysat-abel</a>) sigue la misma lógica con un spline en lugar de anillos, e incluye en el modelo directo la atenuación de la luz dentro del objeto.</p>
+  </div>
+
+  <AbelExplorer lang="es" />
+
+  <div class="try">
+    <h3>Ejercicios</h3>
+    <ol>
+      <li>Ponga el ruido en 0. ¿Es exacta la inversión directa? Ahora suba el ruido a 1 %. ¿Dónde aparece primero el error, cerca del eje o cerca del borde? ¿Por qué?
+        <Answer lang="es"><p>Sin ruido, la inversión directa es exacta salvo errores de redondeo: el pelado de cebolla resuelve exactamente el sistema triangular <em>Lf = P</em>. Con 1 % de ruido, el error es mayor cerca del eje (hasta cerca de 0,17 del máximo en los anillos más interiores, frente a unas centésimas cerca del borde). Cada anillo interior se calcula después de restar todos los anillos exteriores, así que hereda sus errores; además, cerca del eje las cuerdas que atraviesan el anillo son cortas, de modo que un error pequeño en <em>P</em> se divide por un número pequeño.</p></Answer></li>
+      <li>Con 2 % de ruido, mueva λ desde 10⁻³ hasta 10⁴ y observe el error. Dibuje el error en función de λ. ¿Dónde está el mínimo y qué ocurre a cada lado?
+        <Answer lang="es"><p>Para el perfil por defecto, el error baja desde cerca de 10 % en λ = 10⁻³ (similar a la inversión directa) hasta un mínimo de cerca de 1 % alrededor de λ ≈ 30, y luego vuelve a subir a cerca de 10 % en λ = 10³ y 19 % en λ = 10⁴. La curva tiene forma de U: a la izquierda la penalización es demasiado débil y domina el ruido (varianza); a la derecha es demasiado fuerte y aplana el perfil (sesgo). El mejor λ equilibra ambos efectos y depende del nivel de ruido.</p></Answer></li>
+      <li>Elija «Anillo fuera del eje» y lleve el control del ancho del anillo a 0, el anillo más angosto. ¿Puede la regularización conservar la altura del máximo? ¿Cuál es el precio de la suavidad?
+        <Answer lang="es"><p>No con el λ = 10 por defecto: el máximo reconstruido cae a cerca de 0,86 de la altura verdadera, y a cerca de 0,68 con λ = 100, porque la penalización de curvatura trata un máximo angosto como si fuera ruido. Un λ menor (cerca de 1) recupera casi todo el máximo, pero entonces pasa más ruido. La suavidad cuesta resolución: cuanto más angosto es el detalle real, menor es el λ que tolera y más ruido hay que aceptar.</p></Answer></li>
+      <li>Active la dispersión en 30 realizaciones del ruido. La banda sombreada muestra cuánto cambia la respuesta si se repite el experimento. ¿Es la incertidumbre igual en todos los radios?
+        <Answer lang="es"><p>No. Con la configuración por defecto, la desviación estándar es de cerca de 0,04 cerca del eje y de cerca de 0,015 a radio intermedio y cerca del borde, así que la banda es más ancha en el centro. El centro solo se ve a través de cuerdas cortas que además cruzan todos los anillos exteriores, por lo que es la parte peor determinada del perfil. Esto es típico de la inversión de Abel y explica por qué los valores reconstruidos en el eje merecen la mayor cautela.</p></Answer></li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>Lo que hay que retener</h2>
+    <ul>
+      <li>Un problema inverso necesita un <em>modelo directo</em> (aquí, la matriz de longitudes de cuerda) y algo que <em>estabilice</em> la inversión (aquí, la penalización de curvatura).</li>
+      <li>La regularización cambia varianza (ruido) por sesgo (suavizado excesivo). El mejor λ depende del nivel de ruido y de cuán abrupto es el perfil verdadero.</li>
+      <li>La misma estructura, ajuste a los datos más conocimiento previo, aparece en tomografía, restauración de imágenes y aprendizaje informado por la física. El <a href={localized('/learn/machine-learning/physics-informed-learning/', 'es')}>módulo siguiente</a> reemplaza la penalización de suavidad por una ley física.</li>
+    </ul>
+  </div>
+</LearnModule>
+
+<style>
+  .anim { max-width: 46rem; margin-block: var(--s-5); }
+</style>

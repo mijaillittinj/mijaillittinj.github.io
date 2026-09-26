@@ -7,8 +7,9 @@ import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { splitTop } from '../../lib/texsplit';
 interface Step { tex: string; note: string }
-interface Props { steps: Step[]; title?: string }
-const { steps, title } = Astro.props;
+interface Props { steps: Step[]; title?: string; lang?: 'en' | 'es' }
+const { steps, title, lang = 'en' } = Astro.props;
+const es = lang === 'es';
 const render = (t: string) => katex.renderToString(t, { displayMode: true, throwOnError: false, output: 'htmlAndMathml', strict: 'ignore' });
 const rendered = steps.map((s) => ({ ...s, pieces: splitTop(s.tex).map(render) }));
 ---
@@ -23,8 +24,8 @@ const rendered = steps.map((s) => ({ ...s, pieces: splitTop(s.tex).map(render) }
     ))}
   </ol>
   <div class="deriv__ctrl no-print">
-    <button type="button" class="btn" data-next>Next step</button>
-    <button type="button" class="btn" data-all>Show all</button>
+    <button type="button" class="btn" data-next>{es ? 'Paso siguiente' : 'Next step'}</button>
+    <button type="button" class="btn" data-all>{es ? 'Mostrar todo' : 'Show all'}</button>
     <span class="meta" data-count></span>
   </div>
 </div>
