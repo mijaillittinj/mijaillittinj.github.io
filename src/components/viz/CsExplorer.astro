@@ -17,7 +17,7 @@ const T = es
       pTime: '(a) Señal en el tiempo', pFreq: '(b) Coeficientes de frecuencia (DCT)', pMap: '(c) Tasa de éxito según M y K',
       truth: 'señal verdadera', samples: 'mediciones', rec: 'reconstrucción', cTrue: 'coeficientes verdaderos', cRec: 'coeficientes estimados',
       t: 'tiempo (muestra)', k: 'frecuencia k', amp: 'amplitud',
-      mapX: 'mediciones M →', mapY: '↑ tonos K', mapNote: 'Blanco: recuperación exacta en todos los ensayos; negro: nunca. Curva: M = 2K ln(N/K). Punto: la configuración actual.',
+      mapX: 'mediciones M →', mapY: '↑ tonos K', mapNote: 'Blanco significa recuperación exacta en todos los ensayos y negro, nunca. La curva es M = 2K ln(N/K) y el punto marca la configuración actual.',
       err: 'error relativo de la señal', of: 'de', it: 'iteración', mapHint: 'pulse «calcular el mapa de éxito»',
     }
   : {
@@ -27,7 +27,7 @@ const T = es
       pTime: '(a) Signal in time', pFreq: '(b) Frequency coefficients (DCT)', pMap: '(c) Success rate by M and K',
       truth: 'true signal', samples: 'measurements', rec: 'reconstruction', cTrue: 'true coefficients', cRec: 'estimated coefficients',
       t: 'time (sample)', k: 'frequency k', amp: 'amplitude',
-      mapX: 'measurements M →', mapY: '↑ tones K', mapNote: 'White: exact recovery in every trial; black: never. Curve: M = 2K ln(N/K). Dot: the current setting.',
+      mapX: 'measurements M →', mapY: '↑ tones K', mapNote: 'White means exact recovery in every trial and black means never. The curve is M = 2K ln(N/K), and the dot marks the current setting.',
       err: 'relative signal error', of: 'of', it: 'iteration', mapHint: 'press “compute the success map”',
     };
 ---

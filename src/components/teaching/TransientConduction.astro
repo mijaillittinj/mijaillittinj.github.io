@@ -11,22 +11,22 @@ const S = es
       prof: 'Perfil de temperatura a través de la pared', hist: 'Temperatura en el tiempo',
       xx: 'posición ξ = x/L (0 = centro, 1 = superficie)', yt: 'θ', xf: 'Fo', lc: 'centro', ls: 'superficie', lm: 'media', ll: 'modelo concentrado',
       at: 'Fo =',
-      ok: 'Bi < 0,1: la temperatura es casi uniforme y el modelo concentrado basta.',
-      mid: '0,1 ≤ Bi < 1: aparece un gradiente interno; el modelo concentrado empieza a fallar.',
-      bad: 'Bi ≥ 1: domina la resistencia interna; hay que resolver el perfil completo.',
+      ok: 'Con Bi < 0,1 la temperatura es casi uniforme y el modelo concentrado basta.',
+      mid: 'Con 0,1 ≤ Bi < 1 aparece un gradiente interno y el modelo concentrado empieza a fallar.',
+      bad: 'Con Bi ≥ 1 domina la resistencia interna y hay que resolver el perfil completo.',
       read: ['Bi', 'θ centro', 'θ superficie', 'θ concentrado'],
-      cap: 'Enfriamiento de una pared plana de semiespesor L, inicialmente a temperatura uniforme, con convección en ambas caras. θ es la temperatura adimensional (1 al inicio, 0 cuando la pared alcanza la temperatura del fluido) y el número de Fourier Fo mide el tiempo en unidades del tiempo de difusión L²/α. Las curvas de color son la solución numérica (diferencias finitas implícitas); las líneas discontinuas son el modelo de capacitancia concentrada, θ = exp(−Bi·Fo), que supone la misma temperatura en todo el sólido. El número de Biot compara la resistencia a la conducción dentro de la pared con la resistencia a la convección fuera de ella: con Bi pequeño ambos modelos coinciden; con Bi grande el centro queda mucho más caliente que la superficie.',
+      cap: 'Enfriamiento de una pared plana de semiespesor L, inicialmente a temperatura uniforme, con convección en ambas caras. θ es la temperatura adimensional (1 al inicio, 0 cuando la pared alcanza la temperatura del fluido) y el número de Fourier Fo mide el tiempo en unidades del tiempo de difusión L²/α. Las curvas de color son la solución numérica, calculada con diferencias finitas implícitas. Las líneas discontinuas son el modelo de capacitancia concentrada, θ = exp(−Bi·Fo), que supone la misma temperatura en todo el sólido. El número de Biot compara la resistencia a la conducción dentro de la pared con la resistencia a la convección fuera de ella. Con Bi pequeño ambos modelos coinciden, y con Bi grande el centro queda mucho más caliente que la superficie.',
     }
   : {
       Bi: 'Biot number, log₁₀ Bi', Fo: 'Final time, Fourier number Fo',
       prof: 'Temperature profile across the wall', hist: 'Temperature over time',
       xx: 'position ξ = x/L (0 = centre, 1 = surface)', yt: 'θ', xf: 'Fo', lc: 'centre', ls: 'surface', lm: 'mean', ll: 'lumped model',
       at: 'Fo =',
-      ok: 'Bi < 0.1: the temperature is nearly uniform and the lumped model is enough.',
-      mid: '0.1 ≤ Bi < 1: an internal gradient appears; the lumped model starts to fail.',
-      bad: 'Bi ≥ 1: internal resistance dominates; the full profile must be solved.',
+      ok: 'With Bi < 0.1 the temperature is nearly uniform and the lumped model is enough.',
+      mid: 'With 0.1 ≤ Bi < 1 an internal gradient appears and the lumped model starts to fail.',
+      bad: 'With Bi ≥ 1 internal resistance dominates and the full profile must be solved.',
       read: ['Bi', 'θ centre', 'θ surface', 'θ lumped'],
-      cap: 'Cooling of a plane wall of half-thickness L, initially at uniform temperature, with convection on both faces. θ is the dimensionless temperature (1 at the start, 0 when the wall reaches the fluid temperature), and the Fourier number Fo measures time in units of the diffusion time L²/α. The coloured curves are the numerical solution (implicit finite differences); the dashed lines are the lumped-capacitance model, θ = exp(−Bi·Fo), which assumes the same temperature throughout the solid. The Biot number compares the resistance to conduction inside the wall with the resistance to convection outside it: for small Bi the two models agree; for large Bi the centre stays much hotter than the surface.',
+      cap: 'Cooling of a plane wall of half-thickness L, initially at uniform temperature, with convection on both faces. θ is the dimensionless temperature (1 at the start, 0 when the wall reaches the fluid temperature), and the Fourier number Fo measures time in units of the diffusion time L²/α. The coloured curves are the numerical solution, computed with implicit finite differences. The dashed lines are the lumped-capacitance model, θ = exp(−Bi·Fo), which assumes the same temperature throughout the solid. The Biot number compares the resistance to conduction inside the wall with the resistance to convection outside it. For small Bi the two models agree, and for large Bi the centre stays much hotter than the surface.',
     };
 ---
 <figure class="lab" data-t-wall data-s={JSON.stringify(S)}>

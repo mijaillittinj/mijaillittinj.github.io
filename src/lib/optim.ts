@@ -54,7 +54,7 @@ export const objectives: Objective[] = [
     minima: [[3, 2], [-2.805118, 3.131312], [-3.77931, -3.283186], [3.584428, -1.848126]],
     logLevels: true,
     logAlpha: -2.3,
-    note: 'Non-convex with four global minima. Which one you reach depends on the starting point and on the step size: the answer of a local method is not unique.',
+    note: 'Non-convex with four global minima. Which one you reach depends on the starting point and on the step size, so the answer of a local method is not unique.',
   },
 ];
 

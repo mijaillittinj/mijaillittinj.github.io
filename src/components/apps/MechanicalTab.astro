@@ -15,7 +15,7 @@ const { lang = 'en', hidden = false } = Astro.props;
 const es = lang === 'es';
 const T = es
   ? {
-      fi: ['calcular lo que ve una cámara que mira a través de una llama axisimétrica: en cada píxel, la luz emitida por el hollín a lo largo de la línea de visión, parte de la cual se reabsorbe antes de salir de la llama (atrapamiento de señal).', 'recuperar, a partir de esa imagen, la emisión local en cada radio, una sección horizontal a la vez.'],
+      fi: ['Calcular lo que ve una cámara que mira a través de una llama axisimétrica. Cada píxel suma la luz emitida por el hollín a lo largo de la línea de visión, y parte de esa luz se reabsorbe antes de salir de la llama. Ese efecto se llama atrapamiento de señal.', 'Recuperar, a partir de esa imagen, la emisión local en cada radio, una sección horizontal a la vez.'],
       obs: 'Imagen de la cámara', lat: 'Emisión local J', obsSub: 'señal integrada en la línea de visión', latSub: 'simulación CoFlame, radio ampliado ×2,5', op: 'integral de línea con absorción',
       section: 'Altura de la sección', noise: 'Ruido de medición', tau: 'Espesor óptico en el eje', lam: 'Suavizado, log₁₀ λ', knots: 'Tramos del spline',
       ign: 'Mostrar SAT sin corrección del atrapamiento', direct: 'Mostrar la inversión directa (pelado de cebolla)',
@@ -24,13 +24,13 @@ const T = es
       method: 'Método', train: 'entrenar la PINN', stop: 'detener', lossLabel: 'La PINN minimiza',
       cap: [
         'La llama es una llama laminar de etileno (quemador de Gülder) calculada con',
-        '; la emisión local se obtiene de su fracción volumétrica de hollín y su temperatura con la ley de Planck a 660 nm. Mueva la línea de sección o los controles: el gráfico compara el perfil verdadero con las reconstrucciones. La inversión directa amplifica el ruido, por eso la transformada de Abel basada en splines (SAT; Littin et al., Fuel 2024, publicada como',
-        ') ajusta un spline suave e incluye la absorción en el modelo. Sin la corrección del atrapamiento, la emisión cerca del eje se subestima, y el error crece con el espesor óptico (alrededor de 0,2 en esta llama a 660 nm). La opción PINN corresponde al enfoque ANNAbel',
-        ', que también considera el atrapamiento: una pequeña red neuronal describe J(r) y se entrena solo a través de la señal medida y del modelo de línea de visión con absorción.',
+        '. La emisión local se obtiene de la fracción volumétrica de hollín y de la temperatura simuladas, con la ley de Planck a 660 nm. Al mover la línea de sección o los controles, el gráfico compara el perfil verdadero con las reconstrucciones. La inversión directa amplifica el ruido. Por eso la transformada de Abel basada en splines (SAT, de Littin et al., Fuel 2024, publicada como',
+        ') ajusta un spline suave e incluye la absorción en el modelo. Sin la corrección del atrapamiento, la emisión cerca del eje se subestima, y el error crece con el espesor óptico, que en esta llama es de alrededor de 0,2 a 660 nm. La opción PINN corresponde al enfoque ANNAbel',
+        ', que también considera el atrapamiento. Una pequeña red neuronal describe J(r) y se entrena solo a través de la señal medida y del modelo de línea de visión con absorción.',
       ],
     }
   : {
-      fi: ['compute what a camera sees when it looks through an axisymmetric flame: at each pixel, the light emitted by soot along the line of sight, part of which is reabsorbed before it leaves the flame (signal trapping).', 'recover the local emission at each radius from that image, one horizontal section at a time.'],
+      fi: ['Compute what a camera sees when it looks through an axisymmetric flame. Each pixel adds up the light emitted by soot along the line of sight, and part of that light is reabsorbed before it leaves the flame. This effect is called signal trapping.', 'Recover the local emission at each radius from that image, one horizontal section at a time.'],
       obs: 'Camera image', lat: 'Local emission J', obsSub: 'line-of-sight signal', latSub: 'CoFlame simulation, radius stretched ×2.5', op: 'line-of-sight integral with absorption',
       section: 'Section height', noise: 'Measurement noise', tau: 'Optical depth on the axis', lam: 'Smoothing, log₁₀ λ', knots: 'Spline segments',
       ign: 'Show SAT without the trapping correction', direct: 'Show the direct inversion (onion peeling)',
@@ -39,18 +39,18 @@ const T = es
       method: 'Method', train: 'train the PINN', stop: 'stop', lossLabel: 'The PINN minimises',
       cap: [
         'The flame is a laminar ethylene flame (Gülder burner) computed with',
-        '; its local emission follows from the simulated soot volume fraction and temperature through Planck’s law at 660 nm. Move the section line or the sliders: the plot compares the true profile with the reconstructions. Direct inversion amplifies noise, so the spline-based Abel transform (SAT; Littin et al., Fuel 2024, released as',
-        ') fits a smooth spline and includes absorption in the model. Without the trapping correction, the emission near the axis is underestimated, and the error grows with optical depth (about 0.2 for this flame at 660 nm). The PINN option is the ANNAbel approach',
-        ', which also accounts for trapping: a small neural network describes J(r) and is trained only through the measured signal and the absorbing line-of-sight model.',
+        '. Its local emission follows from the simulated soot volume fraction and temperature through Planck’s law at 660 nm. When you move the section line or the sliders, the plot compares the true profile with the reconstructions. Direct inversion amplifies noise, so the spline-based Abel transform (SAT, from Littin et al., Fuel 2024, released as',
+        ') fits a smooth spline and includes absorption in the model. Without the trapping correction the emission near the axis is underestimated, and the error grows with optical depth, which is about 0.2 for this flame at 660 nm. The PINN option is the ANNAbel approach',
+        ', which also accounts for trapping. A small neural network describes J(r) and is trained only through the measured signal and the absorbing line-of-sight model.',
       ],
     };
 const client = { T };
 ---
 <div class="eng-tab" data-eng-tab="mechanical" hidden={hidden} data-base={url('/data/coflame-gulder/')} data-text={JSON.stringify(client)}>
-  <p class="eng-fi"><em>{es ? 'Directo' : 'Forward'}</em>: {T.fi[0]} <em>{es ? 'Inverso' : 'Inverse'}</em>: {T.fi[1]}</p>
+  <p class="eng-fi"><em>{es ? 'Problema directo.' : 'Forward problem.'}</em> {T.fi[0]} <em>{es ? 'Problema inverso.' : 'Inverse problem.'}</em> {T.fi[1]}</p>
 
   <div class="eng-switches">
-    <div class="eng-switch"><span>{T.method}:</span>
+    <div class="eng-switch"><span>{T.method}</span>
       <div class="seg" role="group" aria-label={T.method}><button type="button" data-mt-m="sat" aria-pressed="true">SAT</button><button type="button" data-mt-m="pinn" aria-pressed="false">PINN</button></div>
     </div>
   </div>
@@ -190,11 +190,11 @@ const client = { T };
         { kind: 'points', x: px, y: py, cls: 's-data', label: T.leg.obs },
         { kind: 'line', x: xmm, y: Array.from(f, (v) => v / fm), cls: 's-truth', label: T.leg.truth },
       ];
-      let msg = `${T.rd.sat}: ${T.rd.err} ${rms(sat, f, fm).toFixed(1)} % ${T.rd.ofPeak}`;
+      let msg = `${T.rd.sat} ${T.rd.err} ${rms(sat, f, fm).toFixed(1)} % ${T.rd.ofPeak}`;
       if (ignBox.checked) {
         const ign = satSolve(L, g, B, lam);
         series.push({ kind: 'line', x: xmm, y: Array.from(ign, (v) => v / fm), cls: 's-muted', dash: true, label: T.leg.ign });
-        msg += ` · ${T.rd.ign}: ${rms(ign, f, fm).toFixed(1)} %`;
+        msg += ` · ${T.rd.ign} ${rms(ign, f, fm).toFixed(1)} %`;
       }
       if (dirBox.checked) {
         const d = solveUpper(L, g);
@@ -206,11 +206,11 @@ const client = { T };
         if (net) {
           const pf = evalFlameNet(net, rr);
           series.push({ kind: 'line', x: xmm, y: Array.from(pf, (v) => v / fm), cls: 's-learned', label: T.leg.pinn });
-          read.textContent = `${T.rd.pinn}: ${T.rd.it} ${iter} · ${T.rd.mis} ${pLoss.toExponential(1)} · ${T.rd.err} ${rms(pf, f, fm).toFixed(1)} % ${T.rd.ofPeak} · SAT ${rms(sat, f, fm).toFixed(1)} %`;
+          read.textContent = `${T.rd.pinn} ${T.rd.it} ${iter} · ${T.rd.mis} ${pLoss.toExponential(1)} · ${T.rd.err} ${rms(pf, f, fm).toFixed(1)} % ${T.rd.ofPeak} · SAT ${rms(sat, f, fm).toFixed(1)} %`;
         } else read.textContent = T.rd.idle;
       } else {
         series.push({ kind: 'line', x: xmm, y: Array.from(sat, (v) => v / fm), cls: 's-learned', label: T.leg.sat });
-        read.textContent = `${msg} · ${T.rd.depth}: ${tauAxis.toFixed(2)}`;
+        read.textContent = `${msg} · ${T.rd.depth} ${tauAxis.toFixed(2)}`;
       }
       plot.render(series, { ylim: [-0.15, 1.3], xlim: [0, meta.r_mm[1]] });
     };

@@ -23,16 +23,16 @@ const T = es
   ? {
       title: 'Publicaciones', eyebrow: 'Artículos con revisión por pares', h1: 'Publicaciones',
       desc: 'Publicaciones con revisión por pares de Mijail Littin sobre problemas inversos, redes neuronales informadas por la física, diagnósticos ópticos y radiación térmica, con DOI, enlaces de acceso abierto y BibTeX.',
-      lede: `${nPub} artículos en revistas, publicados o en prensa, y ${nAcc} aceptados; ${nFirst} como primer autor y ${nML} con redes neuronales o aprendizaje automático. Cada entrada tiene un resumen breve escrito para lectores de otras áreas, un enlace a la versión de la editorial y, cuando la licencia lo permite, un enlace al texto completo en acceso abierto. La lista se puede filtrar por tema o por área de aplicación. Los títulos se mantienen en inglés, como fueron publicados.`,
+      lede: `${nPub} artículos en revistas, publicados o en prensa, y ${nAcc} aceptados. De ellos, ${nFirst} como primer autor y ${nML} con redes neuronales o aprendizaje automático. Cada entrada tiene un resumen breve escrito para lectores de otras áreas, un enlace a la versión de la editorial y, cuando la licencia lo permite, un enlace al texto completo en acceso abierto. La lista se puede filtrar por tema o por área de aplicación. Los títulos se mantienen en inglés, como fueron publicados.`,
       filters: 'Filtros', topic: 'Tema', allTopics: 'Todos los temas', domain: 'Área', allDomains: 'Todas las áreas',
       first: 'Primer autor', ml: 'Redes neuronales / AA', shown: 'mostrados',
       theses: 'Tesis', phd: 'Tesis de doctorado', msc: 'Tesis de magíster', notes: 'Notas',
-      thesisNote: 'Defendida el 11 de diciembre de 2025. Dirección: J. Yon y A. Fuentes.',
+      thesisNote: 'Defendida el 11 de diciembre de 2025. Dirigida por J. Yon y A. Fuentes.',
     }
   : {
       title: 'Publications', eyebrow: 'Peer-reviewed articles', h1: 'Publications',
       desc: 'Peer-reviewed publications of Mijail Littin on inverse problems, physics-informed neural networks, optical diagnostics and thermal radiation, with DOIs, open-access links and BibTeX.',
-      lede: `${nPub} journal articles published or in press and ${nAcc} accepted; ${nFirst} as first author and ${nML} using neural networks or machine learning. Each entry has a short summary written for readers outside the field, a link to the publisher’s version and, when the licence allows it, a link to the open-access full text. The lists can be filtered by topic or by application domain.`,
+      lede: `${nPub} journal articles published or in press and ${nAcc} accepted. Of these, ${nFirst} are first-author papers and ${nML} use neural networks or machine learning. Each entry has a short summary written for readers outside the field, a link to the publisher’s version and, when the licence allows it, a link to the open-access full text. The lists can be filtered by topic or by application domain.`,
       filters: 'Filters', topic: 'Topic', allTopics: 'All topics', domain: 'Domain', allDomains: 'All domains',
       first: 'First author', ml: 'Neural networks / ML', shown: 'shown',
       theses: 'Theses', phd: 'PhD thesis', msc: 'MSc thesis', notes: 'Notes',
@@ -99,11 +99,11 @@ const T = es
       <h2 class="row__label nonum">{T.notes}</h2>
       <div class="prose meta">
         {es ? (
-          <p>Solo se listan artículos publicados y aceptados. La lista se actualiza automáticamente a partir del registro de <a href="https://orcid.org/0000-0002-5577-5060">ORCID</a> y de Crossref (último cambio detectado el {autoSyncDate}); un artículo recién encontrado aparece antes de que se escriba su resumen. Las listas de autores siguen las versiones publicadas. Los resúmenes están escritos para este sitio y no son los resúmenes de las editoriales. Las presentaciones en congresos están en el <a href={cv}>CV (PDF, en inglés)</a>.</p>
+          <p>Solo se listan artículos publicados y aceptados. La lista se actualiza automáticamente a partir del registro de <a href="https://orcid.org/0000-0002-5577-5060">ORCID</a> y de Crossref (último cambio detectado el {autoSyncDate}). Un artículo recién encontrado aparece antes de que se escriba su resumen. Las listas de autores siguen las versiones publicadas. Los resúmenes están escritos para este sitio y no son los resúmenes de las editoriales. Las presentaciones en congresos están en el <a href={cv}>CV (PDF, en inglés)</a>.</p>
         ) : (
-          <p>Only published and accepted papers are listed. The list is updated automatically from the <a href="https://orcid.org/0000-0002-5577-5060">ORCID</a> record and Crossref (last change detected on {autoSyncDate}); a newly found paper appears before its summary is written. Author lists follow the published versions. The summaries are written for this site and are not the publishers’ abstracts. Conference contributions are listed in the <a href={cv}>CV</a>.</p>
+          <p>Only published and accepted papers are listed. The list is updated automatically from the <a href="https://orcid.org/0000-0002-5577-5060">ORCID</a> record and Crossref (last change detected on {autoSyncDate}). A newly found paper appears before its summary is written. Author lists follow the published versions. The summaries are written for this site and are not the publishers’ abstracts. Conference contributions are listed in the <a href={cv}>CV</a>.</p>
         )}
-        <p>{es ? 'Perfiles' : 'Profiles'}: <a href="https://orcid.org/0000-0002-5577-5060">ORCID 0000-0002-5577-5060</a> · <a href="https://www.scopus.com/authid/detail.uri?authorId=58550141200">Scopus 58550141200</a>.</p>
+        <p>{es ? 'Perfiles de autor en' : 'Author profiles on'} <a href="https://orcid.org/0000-0002-5577-5060">ORCID (0000-0002-5577-5060)</a> {es ? 'y' : 'and'} <a href="https://www.scopus.com/authid/detail.uri?authorId=58550141200">Scopus (58550141200)</a>.</p>
       </div>
     </div>
   </section>

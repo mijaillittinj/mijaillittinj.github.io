@@ -10,7 +10,7 @@ const T = lang === 'es'
   ? {
       comma: true,
       blur: 'Ancho del desenfoque (fracción del dominio)', noise: 'Nivel de ruido log₁₀(σ / máx g)', reg: 'Regularización', regAria: 'Método de regularización',
-      tsvd: 'SVD truncada', tik: 'Tikhonov', k: 'SVD truncada: número de componentes k', lam: 'Tikhonov: log₁₀ λ',
+      tsvd: 'SVD truncada', tik: 'Tikhonov', k: 'Número de componentes k (SVD truncada)', lam: 'log₁₀ λ (Tikhonov)',
       pPic: 'Valores singulares y gráfico de Picard', pL: 'Curva L (Tikhonov)', pRec: 'Señal, datos desenfocados y reconstrucción',
       xPic: 'índice i', tPic: 'Gráfico de Picard', tL: 'Curva L', xRec: 'posición x', yRec: 'valor', tRec: 'Reconstrucción',
       allLam: 'Tikhonov, todos los λ', current: 'elección actual', truth: 'señal verdadera f', data: 'datos desenfocados y con ruido g',
@@ -18,7 +18,7 @@ const T = lang === 'es'
     }
   : {
       blur: 'Blur width (fraction of the domain)', noise: 'Noise level log₁₀(σ / max g)', reg: 'Regularisation', regAria: 'Regularisation method',
-      tsvd: 'Truncated SVD', tik: 'Tikhonov', k: 'TSVD: number of components k', lam: 'Tikhonov: log₁₀ λ',
+      tsvd: 'Truncated SVD', tik: 'Tikhonov', k: 'Number of components k (truncated SVD)', lam: 'log₁₀ λ (Tikhonov)',
       pPic: 'Singular values and Picard plot', pL: 'L-curve (Tikhonov)', pRec: 'Signal, blurred data and reconstruction',
       xPic: 'index i', tPic: 'Picard plot', tL: 'L-curve', xRec: 'position x', yRec: 'value', tRec: 'Reconstruction',
       allLam: 'Tikhonov, all λ', current: 'current choice', truth: 'true signal f', data: 'blurred, noisy data g',

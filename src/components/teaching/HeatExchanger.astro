@@ -11,7 +11,7 @@ const S = es
       Th: 'Entrada caliente Th,in', Tc: 'Entrada fría Tc,in', Cmin: 'Capacidad térmica Cmin',
       plot: 'Efectividad en función del tamaño', xn: 'NTU = UA/Cmin', ye: 'ε',
       lcf: 'contraflujo', lpf: 'flujo paralelo', lcur: 'diseño actual', lcurp: 'diseño actual',
-      read: ['ε contraflujo', 'ε paralelo', 'calor transferido (contraflujo)', 'salidas en contraflujo', 'salidas en paralelo', 'caliente', 'fría'],
+      read: ['ε contraflujo', 'ε paralelo', 'calor transferido (contraflujo)', 'salidas en contraflujo', 'salidas en flujo paralelo', 'caliente', 'fría'],
       assume: 'Se supone que el fluido caliente tiene la menor capacidad térmica, Ch = Cmin.',
       cap: 'Efectividad de un intercambiador de calor según el método ε–NTU. La efectividad ε es el calor transferido dividido por el máximo físicamente posible, C<sub>min</sub>(T<sub>h,in</sub> − T<sub>c,in</sub>), donde C es el caudal másico por el calor específico de cada fluido. El número de unidades de transferencia, NTU = UA/C<sub>min</sub>, mide el tamaño del equipo (U es el coeficiente global de transferencia y A el área). Aumentar el área da rendimientos decrecientes, y el contraflujo siempre supera al flujo paralelo, cuya efectividad nunca pasa de 1/(1 + C<sub>r</sub>). Al diseñar, esta curva se combina con el costo del área para elegir el tamaño.',
     }
@@ -65,7 +65,7 @@ const S = es
       ], { xlim: [0, 5], ylim: [0, 1.02] });
       const dT = Th - Tc;
       const out = (e: number) => `${S.read[5]} <strong>${(Th - e * dT).toFixed(1)}</strong> °C, ${S.read[6]} <strong>${(Tc + e * Cr * dT).toFixed(1)}</strong> °C`;
-      read.innerHTML = `ε = <strong>${ec.toFixed(3)}</strong> ${S.read[0].replace('ε ', '')} · <strong>${ep.toFixed(3)}</strong> ${S.read[1].replace('ε ', '')}<br>${S.read[2]} <strong>${fmt(ec * Cmin * dT)}</strong> kW<br>${S.read[3]}: ${out(ec)}<br>${S.read[4]}: ${out(ep)}`;
+      read.innerHTML = `ε = <strong>${ec.toFixed(3)}</strong> ${S.read[0].replace('ε ', '')} · <strong>${ep.toFixed(3)}</strong> ${S.read[1].replace('ε ', '')}<br>${S.read[2]} <strong>${fmt(ec * Cmin * dT)}</strong> kW<br>${S.read[3]} · ${out(ec)}<br>${S.read[4]} · ${out(ep)}`;
     };
     root.querySelectorAll('input[type=range]').forEach((i) => i.addEventListener('input', update));
     update();

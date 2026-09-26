@@ -11,14 +11,14 @@ const S = es
       play: 'animar el vaciado', stop: 'detener', plot: 'Nivel del agua en el tiempo', sketch: 'Estanque',
       xt: 't (s)', yh: 'h (m)', lh: 'nivel h(t)', lnow: 'instante de la animación', lv: 'velocidad de salida',
       read: ['tiempo de vaciado', 'caudal inicial', 'velocidad inicial del chorro'],
-      cap: 'Vaciado de un estanque cilíndrico por un orificio en el fondo. La ecuación de Bernoulli entre la superficie libre y el chorro da la velocidad de salida, √(2gh), y la conservación de masa relaciona el caudal que sale con la bajada del nivel. Como la velocidad del chorro disminuye con la raíz de la altura, el nivel baja cada vez más lento: la mitad inferior del estanque tarda más en vaciarse que la superior. El coeficiente de descarga C<sub>d</sub> (menor que 1) reúne las pérdidas por fricción y la contracción del chorro al salir por el orificio.',
+      cap: 'Vaciado de un estanque cilíndrico por un orificio en el fondo. La ecuación de Bernoulli entre la superficie libre y el chorro da la velocidad de salida, √(2gh), y la conservación de masa relaciona el caudal que sale con la bajada del nivel. Como la velocidad del chorro disminuye con la raíz de la altura, el nivel baja cada vez más lento. La mitad inferior del estanque tarda más en vaciarse que la superior. El coeficiente de descarga C<sub>d</sub> (menor que 1) reúne las pérdidas por fricción y la contracción del chorro al salir por el orificio.',
     }
   : {
       Dt: 'Tank diameter Dt', d: 'Orifice diameter d', h0: 'Initial height h₀', Cd: 'Discharge coefficient Cd',
       play: 'animate the draining', stop: 'stop', plot: 'Water level over time', sketch: 'Tank',
       xt: 't (s)', yh: 'h (m)', lh: 'level h(t)', lnow: 'animated instant', lv: 'outflow velocity',
       read: ['drain time', 'initial flow rate', 'initial jet velocity'],
-      cap: 'Draining a cylindrical tank through an orifice in its base. Bernoulli’s equation between the free surface and the jet gives the outflow velocity, √(2gh), and mass conservation links the outflow to the falling level. Because the jet velocity decreases with the square root of the height, the level falls more and more slowly: the lower half of the tank takes longer to empty than the upper half. The discharge coefficient C<sub>d</sub> (below 1) accounts for friction losses and for the contraction of the jet as it leaves the orifice.',
+      cap: 'Draining a cylindrical tank through an orifice in its base. Bernoulli’s equation between the free surface and the jet gives the outflow velocity, √(2gh), and mass conservation links the outflow to the falling level. Because the jet velocity decreases with the square root of the height, the level falls more and more slowly. The lower half of the tank takes longer to empty than the upper half. The discharge coefficient C<sub>d</sub> (below 1) accounts for friction losses and for the contraction of the jet as it leaves the orifice.',
     };
 ---
 <figure class="lab" data-t-tank data-s={JSON.stringify(S)}>

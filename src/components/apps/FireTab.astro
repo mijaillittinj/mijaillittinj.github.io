@@ -13,50 +13,54 @@ const { lang = 'en', hidden = false } = Astro.props;
 const es = lang === 'es';
 const T = es
   ? {
-      fwd: 'Directo', game: 'Juego',
-      fi: [': a partir del combustible, el viento y un punto de ignición, simular cómo avanza un incendio sobre el terreno. ', ': el fuego elige el peor punto de inicio y la peor dirección del viento; los brigadistas eligen dónde construir una longitud limitada de cortafuegos para que el peor daño posible sea el menor.'],
-      mode: 'Modo', mPlay: 'jugar: usted dirige a los brigadistas', mGame: 'juego minimax',
-      view: 'Plan', vRobust: 'robusto (minimax)', vNaive: 'ingenuo (anillo alrededor del pueblo)',
+      fwd: 'Problema directo.', game: 'Juego.',
+      fi: [' A partir del combustible, el viento y el punto de inicio, simular cómo avanza un incendio. ', ' El fuego elige el peor punto de inicio y la peor dirección del viento. Los brigadistas eligen dónde construir una longitud limitada de cortafuegos para que ese peor caso sea lo más pequeño posible.'],
+      mode: 'Modo', mPlay: 'jugar como jefe de brigada', mGame: 'juego minimax',
       speed: 'Velocidad del viento', dir: 'Viento desde', budget: 'Cortafuegos disponibles',
       start: 'encender el fuego', pause: 'pausa', resume: 'continuar', newFire: 'nuevo incendio', clear: 'quitar cortafuegos',
-      run: 'resolver el juego', stop: 'detener', replay: 'repetir el peor incendio',
-      map: 'Mapa de 4,8 km × 4,8 km: bosque, pastizal, río, lago, camino y pueblo',
-      hintPlay: 'Haga clic o arrastre sobre el mapa para construir cortafuegos mientras el fuego avanza.',
-      hintGame: 'Círculos: puntos de ignición posibles. Estrella y flecha: el peor escenario para el plan mostrado.',
+      next: 'siguiente ronda', all: 'jugar hasta el final', stop: 'detener', replay: 'ver ese incendio', restart: 'empezar de nuevo',
+      map: 'Mapa de 4,8 km × 4,8 km con bosque, pastizal, río, lago, camino y pueblo',
+      hintPlay: 'Haga clic o arrastre sobre el mapa para construir cortafuegos por delante del fuego.',
+      hintGame: 'Las letras A a F marcan dónde puede partir el fuego. La estrella y la flecha muestran la respuesta del fuego al plan del mapa.',
       status: 'Estado del incendio', tNow: 'tiempo', burned: 'superficie quemada', houses: 'casas perdidas', left: 'cortafuegos restantes',
-      plot: 'Peor daño por ronda', xRound: 'ronda', yDmg: 'daño (ha equivalentes)',
-      kBest: 'mejor plan: peor caso entre todos los escenarios', kKnown: 'plan de la ronda: peor caso entre los escenarios ya conocidos', kNaive: 'plan ingenuo',
-      table: ['', 'Peor caso', 'Casas perdidas', 'Promedio'], rNaive: 'Plan ingenuo', rRobust: 'Plan minimax',
+      gameH: 'Tabla del juego', plan: 'Plan', worstCol: 'peor', ring: 'Anillo', roundRow: 'Ronda',
+      gameLegend: 'Cada fila es un plan de los brigadistas y cada columna un lugar donde puede partir el fuego, con su peor viento. El fuego elige la peor celda de cada fila (recuadrada en rojo). Los brigadistas se quedan con la fila cuyo peor caso es menor (en negrita y enmarcada). Haga clic en una fila para verla en el mapa.',
+      plot: 'Peor caso por ronda', xRound: 'ronda', yDmg: 'daño (ha eq.)',
+      kBest: 'mejor plan hasta ahora', kTrial: 'plan probado en la ronda', kNaive: 'anillo alrededor del pueblo',
+      cmpH: 'Comparación entre los 48 escenarios', table: ['', 'Peor caso', 'Casas perdidas', 'Promedio'], rNaive: 'Anillo alrededor del pueblo', rRobust: 'Plan minimax',
       legend: [['forest', 'bosque'], ['grass', 'pastizal'], ['water', 'agua'], ['bare', 'camino'], ['house', 'casa'], ['burning', 'frente de fuego'], ['burned', 'quemado'], ['break', 'cortafuegos']],
-      dmgUnit: 'ha eq.', ha: 'ha', of: 'de', h: 'h',
+      of: 'de',
       rdIdle: 'Pulse «encender el fuego» y construya cortafuegos por delante del frente.',
-      rdDone: ' · equilibrio: el fuego ya no encuentra un escenario peor',
-      lossLabel: 'Jugada de los brigadistas:',
-      lossNote: 'un modelo sustituto (regresión ridge) aprendido de planes simulados ordena los segmentos candidatos; cada plan se comprueba luego con el simulador completo.',
-      cap: 'El mapa representa 4,8 km × 4,8 km de bosque y pastizal, con un río que termina en un lago, un camino y un pueblo de doce casas. En modo directo el fuego parte de un punto y avanza según el combustible y el viento (más rápido en el pastizal y a favor del viento); usted construye cortafuegos, franjas sin combustible, haciendo clic por delante del frente. En el juego minimax los papeles se invierten: el fuego, como adversario, elige entre 48 escenarios (6 puntos de ignición posibles × 8 direcciones del viento) el que causa más daño, y los brigadistas eligen dónde poner cinco segmentos de cortafuegos para minimizar ese peor caso. Se resuelve por turnos: el fuego responde al plan actual con su peor escenario y los brigadistas mejoran el plan frente a todos los escenarios encontrados hasta ese momento. Es la misma idea del entrenamiento adversarial en aprendizaje automático, donde un modelo se entrena contra su oponente más fuerte. El daño cuenta las hectáreas quemadas en 4 horas y cada casa perdida como 40 ha. El plan ingenuo, un anillo alrededor del pueblo, protege bien frente a algunos escenarios y mal frente a otros; el plan minimax reduce el peor caso. En Chile los incendios forestales son un problema recurrente, pero este es un paisaje sintético con reglas de propagación simples, no una herramienta operacional.',
+      storyIdle: 'Pulse «siguiente ronda» para empezar. La tabla del juego suma una fila por ronda.',
+      winds: ['norte', 'noreste', 'este', 'sureste', 'sur', 'suroeste', 'oeste', 'noroeste'],
+      searchH: 'Cómo buscan los brigadistas.',
+      search: 'En cada ronda un modelo estadístico rápido, una regresión ridge entrenada con 60 distribuciones de cortafuegos al azar y los incendios que producen, ordena las posiciones posibles. Cada plan que sugiere se comprueba después con el simulador completo.',
+      cap: 'El mapa representa 4,8 km × 4,8 km de bosque y pastizal, con un río que termina en un lago, un camino y un pueblo de doce casas. El fuego avanza más rápido en el pastizal y a favor del viento. En el modo de juego libre usted enciende el fuego y dibuja cortafuegos, franjas sin combustible, por delante del frente. En el juego minimax pulse «siguiente ronda» para ver cómo se turnan los dos bandos. El fuego elige entre 48 escenarios, seis puntos de inicio y ocho direcciones del viento. Los brigadistas disponen de cinco segmentos de cortafuegos de 500 m. El daño suma las hectáreas quemadas en 4 horas y 40 ha por cada casa perdida. Un anillo alrededor del pueblo lo protege bien de algunos incendios y mal de otros. El plan minimax baja el peor caso, y aquí también el promedio. Entrenar un modelo contra su oponente más fuerte es también la idea del entrenamiento adversarial en aprendizaje automático. Los incendios forestales son un problema recurrente en Chile, pero este es un paisaje sintético con reglas de propagación simples y no una herramienta operacional.',
     }
   : {
-      fwd: 'Forward', game: 'Game',
-      fi: [': from the fuel, the wind and an ignition point, simulate how a fire spreads across the landscape. ', ': the fire chooses the worst starting point and wind direction; the firefighters choose where to build a limited length of firebreak so that the worst possible damage is as small as possible.'],
-      mode: 'Mode', mPlay: 'play: you lead the firefighters', mGame: 'minimax game',
-      view: 'Plan', vRobust: 'robust (minimax)', vNaive: 'naive (ring around the village)',
+      fwd: 'Forward problem.', game: 'Game.',
+      fi: [' From the fuel, the wind and the point where it starts, simulate how a fire spreads. ', ' The fire picks the worst starting point and wind direction. The firefighters pick where to build a limited length of firebreak so that this worst case is as small as possible.'],
+      mode: 'Mode', mPlay: 'play as fire chief', mGame: 'minimax game',
       speed: 'Wind speed', dir: 'Wind from', budget: 'Firebreak available',
       start: 'light the fire', pause: 'pause', resume: 'resume', newFire: 'new fire', clear: 'remove firebreaks',
-      run: 'solve the game', stop: 'stop', replay: 'replay the worst fire',
-      map: 'Map of 4.8 km × 4.8 km: forest, grassland, river, lake, road and village',
-      hintPlay: 'Click or drag on the map to build firebreaks while the fire advances.',
-      hintGame: 'Circles: possible ignition points. Star and arrow: the worst scenario for the plan shown.',
+      next: 'next round', all: 'play to the end', stop: 'stop', replay: 'show that fire', restart: 'start again',
+      map: 'Map of 4.8 km × 4.8 km with forest, grassland, river, lake, road and village',
+      hintPlay: 'Click or drag on the map to build firebreaks ahead of the fire.',
+      hintGame: 'Letters A to F mark where the fire can start. The star and arrow show the fire’s reply to the plan on the map.',
       status: 'Fire status', tNow: 'time', burned: 'area burned', houses: 'houses lost', left: 'firebreak left',
-      plot: 'Worst damage per round', xRound: 'round', yDmg: 'damage (ha equivalent)',
-      kBest: 'best plan: worst case over all scenarios', kKnown: 'round plan: worst case over the scenarios found so far', kNaive: 'naive plan',
-      table: ['', 'Worst case', 'Houses lost', 'Mean'], rNaive: 'Naive plan', rRobust: 'Minimax plan',
+      gameH: 'Game table', plan: 'Plan', worstCol: 'worst', ring: 'Ring', roundRow: 'Round',
+      gameLegend: 'Each row is a firefighter plan and each column a place where the fire can start, with its worst wind. The fire picks the worst cell of each row (outlined in red). The firefighters keep the row whose worst case is smallest (bold and framed). Click a row to see it on the map.',
+      plot: 'Worst case per round', xRound: 'round', yDmg: 'damage (ha eq.)',
+      kBest: 'best plan so far', kTrial: 'plan tried in the round', kNaive: 'ring around the village',
+      cmpH: 'Comparison over all 48 scenarios', table: ['', 'Worst case', 'Houses lost', 'Average'], rNaive: 'Ring around the village', rRobust: 'Minimax plan',
       legend: [['forest', 'forest'], ['grass', 'grassland'], ['water', 'water'], ['bare', 'road'], ['house', 'house'], ['burning', 'fire front'], ['burned', 'burned'], ['break', 'firebreak']],
-      dmgUnit: 'ha eq.', ha: 'ha', of: 'of', h: 'h',
+      of: 'of',
       rdIdle: 'Press “light the fire” and build firebreaks ahead of the front.',
-      rdDone: ' · equilibrium: the fire finds no worse scenario',
-      lossLabel: 'Firefighters’ move:',
-      lossNote: 'a surrogate model (ridge regression) learned from simulated plans ranks the candidate segments; each plan is then checked with the full simulator.',
-      cap: 'The map covers 4.8 km × 4.8 km of forest and grassland, with a river that ends in a lake, a road and a village of twelve houses. In forward mode the fire starts at one point and spreads according to the fuel and the wind (faster in grassland and downwind); you build firebreaks, strips cleared of fuel, by clicking ahead of the front. In the minimax game the roles are reversed: the fire, as an adversary, chooses among 48 scenarios (6 possible ignition points × 8 wind directions) the one that causes most damage, and the firefighters choose where to place five firebreak segments to minimise that worst case. It is solved in turns: the fire answers the current plan with its worst scenario, and the firefighters improve the plan against every scenario found so far. This is the same idea as adversarial training in machine learning, where a model is trained against its strongest opponent. The damage counts the hectares burned in 4 hours, with each house lost counted as 40 ha. The naive plan, a ring around the village, protects well against some scenarios and badly against others; the minimax plan lowers the worst case. Wildfires are a recurrent problem in Chile, but this is a synthetic landscape with simple spread rules, not an operational tool.',
+      storyIdle: 'Press “next round” to start. The game table gains one row per round.',
+      winds: ['north', 'north-east', 'east', 'south-east', 'south', 'south-west', 'west', 'north-west'],
+      searchH: 'How the firefighters search.',
+      search: 'In each round a fast statistical model, a ridge regression trained on 60 random firebreak layouts and the fires they lead to, ranks the possible positions. Every plan it suggests is then checked with the full fire simulator.',
+      cap: 'The map shows 4.8 km × 4.8 km of forest and grassland, with a river that ends in a lake, a road and a village of twelve houses. The fire runs faster through grassland and with the wind. In play mode you light the fire and draw firebreaks, strips cleared of fuel, ahead of the front. In the minimax game press “next round” to watch the two sides take turns. The fire chooses among 48 scenarios, six starting points and eight wind directions. The firefighters have five firebreak segments of 500 m. Damage counts the hectares burned in 4 hours plus 40 ha for each house lost. A ring around the village protects it well against some fires and badly against others. The minimax plan lowers the worst case, and here it also lowers the average. Training a model against its strongest opponent is also the idea behind adversarial training in machine learning. Wildfires are a recurring problem in Chile, but this is a synthetic landscape with simple spread rules and not an operational tool.',
     };
 const client = { lang, T };
 ---
@@ -64,21 +68,17 @@ const client = { lang, T };
   <p class="eng-fi"><em>{T.fwd}</em>{T.fi[0]}<em>{T.game}</em>{T.fi[1]}</p>
 
   <div class="eng-switches">
-    <div class="eng-switch"><span>{T.mode}:</span>
+    <div class="eng-switch"><span>{T.mode}</span>
       <div class="seg" role="group" aria-label={T.mode}>
         <button type="button" data-fr-mode="play" aria-pressed="true">{T.mPlay}</button>
         <button type="button" data-fr-mode="game" aria-pressed="false">{T.mGame}</button>
       </div>
     </div>
-    <div class="eng-switch" data-fr-only="game" hidden><span>{T.view}:</span>
-      <div class="seg" role="group" aria-label={T.view}>
-        <button type="button" data-fr-view="robust" aria-pressed="true">{T.vRobust}</button>
-        <button type="button" data-fr-view="naive" aria-pressed="false">{T.vNaive}</button>
-      </div>
-    </div>
   </div>
 
-  <div class="fr__grid">
+  <p class="fr__story" data-fr-only="game" data-fr-story aria-live="polite" hidden>{T.storyIdle}</p>
+
+  <div class="fr__grid" data-fr-grid>
     <div class="fr__mapwrap">
       <canvas class="fr__canvas" data-fr-canvas role="img" aria-label={T.map}></canvas>
       <p class="fr__hint meta" data-fr-hint>{T.hintPlay}</p>
@@ -97,16 +97,32 @@ const client = { lang, T };
         </dl>
       </div>
       <div data-fr-only="game" hidden>
-        <p class="fr__h">{T.plot}</p>
-        <div class="fr__plot" data-fr-plot></div>
-        <table class="fr__table">
-          <thead><tr>{T.table.map((h) => <th scope="col">{h}</th>)}</tr></thead>
-          <tbody>
-            <tr><th scope="row">{T.rNaive}</th><td data-fr-tb="nw">–</td><td data-fr-tb="nh">–</td><td data-fr-tb="nm">–</td></tr>
-            <tr><th scope="row">{T.rRobust}</th><td data-fr-tb="rw">–</td><td data-fr-tb="rh">–</td><td data-fr-tb="rm">–</td></tr>
-          </tbody>
-        </table>
+        <p class="fr__h">{T.gameH}</p>
+        <div class="fr__gamebox">
+          <table class="fr__game">
+            <thead><tr><th scope="col">{T.plan}</th>{['A', 'B', 'C', 'D', 'E', 'F'].map((l) => <th scope="col">{l}</th>)}<th scope="col">{T.worstCol}</th></tr></thead>
+            <tbody data-fr-gbody></tbody>
+          </table>
+        </div>
+        <p class="fr__glegend">{T.gameLegend}</p>
       </div>
+    </div>
+  </div>
+
+  <div class="fr__below" data-fr-only="game" hidden>
+    <div>
+      <p class="fr__h">{T.plot}</p>
+      <div class="fr__plot" data-fr-plot></div>
+    </div>
+    <div>
+      <p class="fr__h">{T.cmpH}</p>
+      <table class="fr__table">
+        <thead><tr>{T.table.map((h) => <th scope="col">{h}</th>)}</tr></thead>
+        <tbody>
+          <tr><th scope="row">{T.rNaive}</th><td data-fr-tb="nw">–</td><td data-fr-tb="nh">–</td><td data-fr-tb="nm">–</td></tr>
+          <tr><th scope="row">{T.rRobust}</th><td data-fr-tb="rw">–</td><td data-fr-tb="rh">–</td><td data-fr-tb="rm">–</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
@@ -128,21 +144,23 @@ const client = { lang, T };
     <button type="button" class="btn" data-fr-start data-fr-only="play">{T.start}</button>
     <button type="button" class="btn" data-fr-new data-fr-only="play">{T.newFire}</button>
     <button type="button" class="btn" data-fr-clear data-fr-only="play">{T.clear}</button>
-    <button type="button" class="btn" data-fr-run data-fr-only="game" hidden>{T.run}</button>
+    <button type="button" class="btn" data-fr-next data-fr-only="game" hidden>{T.next}</button>
+    <button type="button" class="btn" data-fr-all data-fr-only="game" hidden>{T.all}</button>
     <button type="button" class="btn" data-fr-replay data-fr-only="game" hidden>{T.replay}</button>
+    <button type="button" class="btn" data-fr-restart data-fr-only="game" hidden>{T.restart}</button>
   </p>
 
   <div class="eng-eqs">
     <Equation tex={String.raw`\min_{b \in \mathcal{B}}\; \max_{s \in \mathcal{S}}\; D(b, s), \qquad D = A_{\mathrm{burned}} + w_h\, N_{\mathrm{houses}}`} />
     <Equation tex={String.raw`R_{ij} = R_0(f_j)\, e^{c_1 V}\, e^{c_2 V (\cos\theta_{ij} - 1)}`} />
   </div>
-  <p class="eng-loss" data-fr-only="game" hidden>{T.lossLabel} <Equation display={false} tex={String.raw`\hat D(b) = w_0 + \textstyle\sum_k w_k\, x_k(b)`} />; {T.lossNote}</p>
+  <p class="eng-loss" data-fr-only="game" hidden><em>{T.searchH}</em> {T.search}</p>
   <p class="lab__readout" data-fr-read aria-live="polite"></p>
   <p class="eng-cap">{T.cap}</p>
 </div>
 
 <script>
-  import { N, Fuel, makeLandscape, arrivalTimes, damage, allScenarios, worstCase, naivePlan, planMask, minimaxGame, windVector, type Scenario, type Segment, type GameRound, HOUSE_WEIGHT } from '../../lib/eng/fire';
+  import { N, Fuel, makeLandscape, arrivalTimes, damage, allScenarios, worstCase, naivePlan, planMask, minimaxGame, minimaxTable, windVector, type Scenario, type Segment, type GameRound, type Damage, HOUSE_WEIGHT } from '../../lib/eng/fire';
   import { LinePlot, cssVar, type Series } from '../../lib/plot';
   import { keyed } from '../../lib/legendkey';
 
@@ -163,7 +181,9 @@ const client = { lang, T };
     const read = q<HTMLElement>('[data-fr-read]');
     const hint = q<HTMLElement>('[data-fr-hint]');
     const vIn = q<HTMLInputElement>('[data-fr-v]'), dIn = q<HTMLInputElement>('[data-fr-d]'), bIn = q<HTMLInputElement>('[data-fr-b]');
-    const startBtn = q<HTMLButtonElement>('[data-fr-start]'), runBtn = q<HTMLButtonElement>('[data-fr-run]');
+    const startBtn = q<HTMLButtonElement>('[data-fr-start]');
+    const nextBtn = q<HTMLButtonElement>('[data-fr-next]'), allBtn = q<HTMLButtonElement>('[data-fr-all]');
+    const story = q<HTMLElement>('[data-fr-story]'), gbody = q<HTMLElement>('[data-fr-gbody]');
     const L = makeLandscape(7);
     const S = allScenarios(L);
     const nHouses = L.houses.length;
@@ -176,9 +196,12 @@ const client = { lang, T };
     let blocked = new Uint8Array(N * N), used = 0;
     let t: Float64Array | null = null, now = 0, running = false, finished = false, raf = 0, lastTs = 0;
     let base0 = { burned: 0, houses: 0 };
-    // game state
-    let gen: Generator<GameRound | null> | null = null, grun = false, graf = 0;
+    // game state: one table row per distinct plan the firefighters propose
+    interface Row { label: string; plan: Segment[]; row: number[]; scen: Scenario; dmg: Damage }
+    let gen: Generator<GameRound | null> | null = null, grun = false, graf = 0, autoplay = false, finishing = false, gameOver = false;
     const rounds: GameRound[] = [];
+    const rows: Row[] = [];
+    let selected = -1;
     let naive = { plan: [] as Segment[], wc: null as ReturnType<typeof worstCase> | null };
     let robust: { plan: Segment[]; wc: ReturnType<typeof worstCase> } | null = null;
     let shown: { mask: Uint8Array; scen: Scenario; t: Float64Array } | null = null;
@@ -249,7 +272,15 @@ const client = { lang, T };
         } else { ctx.beginPath(); ctx.arc(cx, cy, r, 0, 2 * Math.PI); ctx.stroke(); }
       };
       if (mode === 'game') {
-        for (const i of L.ignitions) mark(i, false, P.warn);
+        ctx.font = `600 ${Math.max(11, c * 1.5)}px ${cssVar('--font-serif') || 'serif'}`;
+        ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+        L.ignitions.forEach((i, j) => {
+          mark(i, false, P.warn);
+          const lx = ((i % N) + 1.6) * c, ly = (((i / N) | 0) + 0.5) * c;
+          ctx.fillStyle = P.paper; ctx.globalAlpha = 0.85; ctx.fillRect(lx - c * 0.25, ly - c * 0.9, c * 1.6, c * 1.8); ctx.globalAlpha = 1;
+          ctx.fillStyle = P.warn; ctx.fillText('ABCDEF'[j] ?? '', lx, ly);
+        });
+        ctx.textBaseline = 'alphabetic';
         if (shown) mark(shown.scen.ignition, true, P.warn);
       } else mark(ign, true, P.warn);
       // wind arrow (top-right)
@@ -276,8 +307,8 @@ const client = { lang, T };
       const set = (k: string, v: string) => { q<HTMLElement>(`[data-fr-st="${k}"]`).textContent = v; };
       set('t', `${num(Math.min(now, H))} h`); set('b', `${d.burned} ha`); set('h', `${d.houses} ${T.of} ${nHouses}`); set('l', `${BUDGET_CELLS - used} ${T.of} ${BUDGET_CELLS}`);
       if (finished) read.textContent = es
-        ? `incendio controlado a las ${H} h: ${d.burned} ha quemadas y ${d.houses} casas perdidas · sin cortafuegos: ${base0.burned} ha y ${base0.houses} casas`
-        : `fire controlled at ${H} h: ${d.burned} ha burned and ${d.houses} houses lost · without firebreaks: ${base0.burned} ha and ${base0.houses} houses`;
+        ? `incendio controlado a las ${H} h · ${d.burned} ha quemadas · ${d.houses} casas perdidas · sin cortafuegos ${base0.burned} ha y ${base0.houses} casas`
+        : `fire controlled at ${H} h · ${d.burned} ha burned · ${d.houses} houses lost · without firebreaks ${base0.burned} ha and ${base0.houses} houses`;
       else read.textContent = es
         ? `t = ${num(Math.min(now, H))} h de ${H} h · quemado ${d.burned} ha · casas perdidas ${d.houses} de ${nHouses} · cortafuegos restantes ${BUDGET_CELLS - used} de ${BUDGET_CELLS} celdas`
         : `t = ${num(Math.min(now, H))} h of ${H} h · burned ${d.burned} ha · houses lost ${d.houses} of ${nHouses} · firebreak left ${BUDGET_CELLS - used} of ${BUDGET_CELLS} cells`;
@@ -372,9 +403,12 @@ const client = { lang, T };
     });
 
     /* ------------------------------------------------ game mode */
-    const plot = new LinePlot(q<HTMLElement>('[data-fr-plot]'), { width: 360, height: 230, xlabel: T.xRound, ylabel: T.yDmg, title: T.plot, legend: false });
+    const plot = new LinePlot(q<HTMLElement>('[data-fr-plot]'), { width: 360, height: 220, xlabel: T.xRound, ylabel: T.yDmg, title: T.plot, legend: false });
     const renderPlot = keyed(plot, q<HTMLElement>('[data-fr-plot]'));
     const nSeg = () => +bIn.value;
+    const letter = (sc: Scenario) => 'ABCDEF'[L.ignitions.indexOf(sc.ignition)] ?? '?';
+    const windName = (sc: Scenario) => T.winds[Math.round(sc.windFrom / 45) % 8];
+    const houses = (h: number) => es ? (h === 0 ? 'ninguna casa' : h === 1 ? '1 casa' : `${h} casas`) : (h === 0 ? 'no houses' : h === 1 ? '1 house' : `${h} houses`);
     const showPlan = (plan: Segment[], scen: Scenario) => {
       const mask = planMask(L, plan);
       shown = { mask, scen, t: arrivalTimes(L, mask, [{ i: scen.ignition, t: 0 }], +vIn.value, scen.windFrom, H + 1) };
@@ -383,63 +417,145 @@ const client = { lang, T };
     const fillTable = () => {
       const set = (k: string, v: string) => { q<HTMLElement>(`[data-fr-tb="${k}"]`).textContent = v; };
       if (naive.wc) { set('nw', String(naive.wc.damage.value)); set('nh', String(naive.wc.damage.houses)); set('nm', num(naive.wc.mean, 0)); }
-      if (robust) { set('rw', String(robust.wc.damage.value)); set('rh', String(robust.wc.damage.houses)); set('rm', num(robust.wc.mean, 0)); }
+      if (robust && gameOver) { set('rw', String(robust.wc.damage.value)); set('rh', String(robust.wc.damage.houses)); set('rm', num(robust.wc.mean, 0)); }
       else { set('rw', '–'); set('rh', '–'); set('rm', '–'); }
+    };
+    // the game table: outline each row's worst cell, bold the row with the smallest worst case
+    const renderGame = () => {
+      const tb = minimaxTable(rows.map((r) => r.row));
+      const top = Math.max(1, ...rows.flatMap((r) => r.row));
+      gbody.replaceChildren(...rows.map((r, i) => {
+        const tr = document.createElement('tr');
+        if (i === tb.best) tr.classList.add('is-best');
+        if (i === selected) tr.classList.add('is-sel');
+        tr.tabIndex = 0;
+        tr.addEventListener('click', () => selectRow(i));
+        tr.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectRow(i); } });
+        const th = document.createElement('th'); th.scope = 'row'; th.textContent = r.label; tr.append(th);
+        r.row.forEach((v, j) => {
+          const td = document.createElement('td');
+          td.textContent = String(v);
+          td.style.background = `color-mix(in srgb, var(--c-data) ${Math.round(8 + 50 * (v / top))}%, transparent)`;
+          if (j === tb.argmax[i]) td.classList.add('is-max');
+          tr.append(td);
+        });
+        const w = document.createElement('td'); w.className = 'fr__wc'; w.textContent = String(tb.rowMax[i]); tr.append(w);
+        return tr;
+      }));
+    };
+    const selectRow = (i: number) => {
+      if (!rows[i]) return;
+      selected = i;
+      showPlan(rows[i].plan, rows[i].scen);
+      renderGame(); draw();
     };
     const plotRounds = () => {
       const xs = rounds.map((r) => r.round);
       const series: Series[] = [];
-      if (naive.wc) series.push({ kind: 'line', x: [0, Math.max(1, xs[xs.length - 1] ?? 1)], y: [naive.wc.damage.value, naive.wc.damage.value], cls: 's-muted', dash: true, label: T.kNaive });
-      const known = rounds.filter((r) => r.round > 0);
-      if (known.length) series.push({ kind: 'points', x: known.map((r) => r.round), y: known.map((r) => r.knownDamage), cls: 's-physics', label: T.kKnown });
+      const xmax = Math.max(4, (xs[xs.length - 1] ?? 0) + 1);
+      if (naive.wc) series.push({ kind: 'line', x: [0, xmax], y: [naive.wc.damage.value, naive.wc.damage.value], cls: 's-muted', dash: true, label: T.kNaive });
+      const tried = rounds.filter((r) => r.round > 0);
+      if (tried.length) series.push({ kind: 'points', x: tried.map((r) => r.round), y: tried.map((r) => r.trialDamage.value), cls: 's-physics', label: T.kTrial });
       if (rounds.length) {
-        series.push({ kind: 'line', x: xs, y: rounds.map((r) => r.worstDamage.value), cls: 's-learned', label: T.kBest });
+        series.push({ kind: 'step', x: xs, y: rounds.map((r) => r.worstDamage.value), cls: 's-learned', label: T.kBest });
         series.push({ kind: 'points', x: xs, y: rounds.map((r) => r.worstDamage.value), cls: 's-learned' });
       }
-      const top = Math.max(100, ...series.flatMap((s) => Array.from(s.y as number[]))) * 1.12;
-      renderPlot(series, { xlim: [0, Math.max(4, (xs[xs.length - 1] ?? 0) + 1)], ylim: [0, top] });
+      const top = Math.max(100, ...series.flatMap((sr) => Array.from(sr.y as number[]))) * 1.12;
+      renderPlot(series, { xlim: [0, xmax], ylim: [0, top] });
+    };
+    const readout = (v: GameRound) => {
+      read.textContent = es
+        ? `ronda ${v.round} · peor caso del mejor plan ${v.worstDamage.value} ha eq. · casas perdidas ${v.worstDamage.houses} · escenarios encontrados por el fuego ${v.known.length} de ${S.length}`
+        : `round ${v.round} · worst case of the best plan ${v.worstDamage.value} ha eq. · houses lost ${v.worstDamage.houses} · scenarios found by the fire ${v.known.length} of ${S.length}`;
+    };
+    const narrate = (v: GameRound) => {
+      const d = v.trialDamage, sc = v.trialScenario;
+      if (v.round === 0) {
+        story.textContent = es
+          ? `Inicio. Los brigadistas parten con un anillo de cortafuegos alrededor del pueblo. La mejor respuesta del fuego es partir en ${letter(sc)} con viento del ${windName(sc)}, que quema ${d.value} ha eq. y ${houses(d.houses)}.`
+          : `Start. The firefighters begin with a ring of firebreaks around the village. The fire’s best reply is to start at ${letter(sc)} with wind from the ${windName(sc)}, which costs ${d.value} ha eq. and ${houses(d.houses)}.`;
+      } else if (v.improved) {
+        const prev = rows.length > 1 ? rows[rows.length - 2].scen : null;
+        const same = !!prev && prev.ignition === sc.ignition && prev.windFrom === sc.windFrom;
+        const move = v.round === 1
+          ? (es ? 'Los brigadistas mueven sus cortafuegos para cortar el paso a ese incendio.' : 'The firefighters move their firebreaks to cut off that fire.')
+          : (es ? 'Los brigadistas ajustan el plan frente a todos los inicios y vientos que el fuego ha probado.' : 'The firefighters adjust the plan against every start and wind the fire has tried so far.');
+        const reply = same
+          ? (es ? `La mejor respuesta del fuego sigue siendo ${letter(sc)} con viento del ${windName(sc)}, pero ahora quema menos, y el peor caso baja a ${d.value} ha eq.` : `The fire’s best reply is still ${letter(sc)} with wind from the ${windName(sc)}, but it now burns less, and the worst case falls to ${d.value} ha eq.`)
+          : (es ? `El fuego encuentra una nueva peor respuesta, ${letter(sc)} con viento del ${windName(sc)}, y el peor caso baja a ${d.value} ha eq.` : `The fire finds a new best reply, ${letter(sc)} with wind from the ${windName(sc)}, and the worst case falls to ${d.value} ha eq.`);
+        story.textContent = `${es ? 'Ronda' : 'Round'} ${v.round}. ${move} ${reply}`
+          + (d.houses > 0 ? (es ? ` Todavía se pierden ${houses(d.houses)}.` : ` It still reaches ${houses(d.houses)}.`) : '');
+      }
+    };
+    const narrateEnd = (v: GameRound) => {
+      story.textContent = es
+        ? `Ronda ${v.round}. Ninguna nueva distribución baja el peor caso de ${v.worstDamage.value} ha eq. El juego se estabilizó, y la fila enmarcada es el plan robusto.`
+        : `Round ${v.round}. No new layout lowers the worst case below ${v.worstDamage.value} ha eq. The game has settled, and the framed row is the robust plan.`;
+    };
+    const setButtons = () => {
+      nextBtn.disabled = gameOver || grun;
+      allBtn.textContent = grun && autoplay ? T.stop : T.all;
+      allBtn.disabled = gameOver;
     };
     const gameReset = () => {
       stopGame();
-      rounds.length = 0; robust = null; gen = null;
+      rounds.length = 0; rows.length = 0; selected = -1; robust = null; gameOver = false; finishing = false;
+      gen = minimaxGame(L, params(), nSeg(), 1, 6);
       naive = { plan: naivePlan(nSeg()), wc: null };
       naive.wc = worstCase(L, naive.plan, S, params());
-      setView('naive', false);
       showPlan(naive.plan, naive.wc.worst);
-      fillTable(); plotRounds(); draw();
+      story.textContent = T.storyIdle;
       read.textContent = es
-        ? `plan ingenuo: peor caso ${naive.wc.damage.value} ha eq. (${naive.wc.damage.houses} casas perdidas) · pulse «resolver el juego»`
-        : `naive plan: worst case ${naive.wc.damage.value} ha eq. (${naive.wc.damage.houses} houses lost) · press “solve the game”`;
+        ? `anillo alrededor del pueblo · peor caso ${naive.wc.damage.value} ha eq. · casas perdidas ${naive.wc.damage.houses}`
+        : `ring around the village · worst case ${naive.wc.damage.value} ha eq. · houses lost ${naive.wc.damage.houses}`;
+      renderGame(); fillTable(); plotRounds(); setButtons(); draw();
     };
-    const stopGame = () => { grun = false; cancelAnimationFrame(graf); runBtn.textContent = T.run; };
+    const stopGame = () => { grun = false; autoplay = false; cancelAnimationFrame(graf); setButtons(); };
+    // accept one round from the solver; returns true when the step shown to the reader is complete
+    const accept = (v: GameRound): boolean => {
+      rounds.push(v);
+      robust = { plan: v.plan, wc: worstCase(L, v.plan, S, params()) };
+      if (v.improved) {
+        rows.push({ label: v.round === 0 ? T.ring : `${T.roundRow} ${v.round}`, plan: v.trialPlan, row: v.trialRow, scen: v.trialScenario, dmg: v.trialDamage });
+        selected = rows.length - 1;
+        showPlan(v.trialPlan, v.trialScenario);
+        narrate(v);
+      } else finishing = true; // no improvement: finish silently, then report once
+      readout(v);
+      if (v.done) {
+        gameOver = true; finishing = false;
+        selected = minimaxTable(rows.map((r) => r.row)).best;
+        showPlan(rows[selected].plan, rows[selected].scen);
+        narrateEnd(v);
+      }
+      renderGame(); fillTable(); plotRounds(); draw();
+      return !finishing;
+    };
     const gtick = () => {
       if (!grun || !gen) return;
       if (!visible()) { stopGame(); return; }
       const t0 = performance.now();
+      let stepDone = false;
       while (performance.now() - t0 < 7) {
         const r = gen.next();
-        if (r.done) { grun = false; break; }
-        const v = r.value;
-        if (!v) continue;
-        rounds.push(v);
-        robust = { plan: v.plan, wc: worstCase(L, v.plan, S, params()) };
-        setView('robust', false);
-        showPlan(v.plan, v.worst);
-        fillTable(); plotRounds(); draw();
-        read.textContent = (es
-          ? `ronda ${v.round} · peor caso del mejor plan ${v.worstDamage.value} ha eq. (${v.worstDamage.burned} ha quemadas, ${v.worstDamage.houses} casas) · escenarios encontrados por el fuego: ${v.known.length} de ${S.length}`
-          : `round ${v.round} · worst case of the best plan ${v.worstDamage.value} ha eq. (${v.worstDamage.burned} ha burned, ${v.worstDamage.houses} houses) · scenarios found by the fire: ${v.known.length} of ${S.length}`) + (v.done ? T.rdDone : '');
-        if (v.done) { grun = false; break; }
-        break; // one round per frame at most, so each round is visible
+        if (r.done) { gameOver = true; stepDone = true; break; }
+        if (!r.value) continue;
+        stepDone = accept(r.value) || gameOver;
+        break;
       }
-      if (grun) graf = requestAnimationFrame(gtick); else runBtn.textContent = T.run;
-    };
-    runBtn.addEventListener('click', () => {
-      if (grun) { stopGame(); return; }
-      if (!gen || (rounds.length && rounds[rounds.length - 1].done)) { rounds.length = 0; robust = null; gen = minimaxGame(L, params(), nSeg(), 1); }
-      grun = true; runBtn.textContent = T.stop;
+      if (gameOver || (stepDone && !autoplay)) { stopGame(); return; }
+      setButtons();
       graf = requestAnimationFrame(gtick);
-    });
+    };
+    const runSteps = (auto: boolean) => {
+      if (gameOver) return;
+      if (!gen) gameReset();
+      autoplay = auto; grun = true; setButtons();
+      graf = requestAnimationFrame(gtick);
+    };
+    nextBtn.addEventListener('click', () => runSteps(false));
+    allBtn.addEventListener('click', () => { if (grun && autoplay) stopGame(); else runSteps(true); });
+    q<HTMLButtonElement>('[data-fr-restart]').addEventListener('click', () => { naive.wc = null; gameReset(); });
     const replay = () => {
       if (!shown) return;
       cancelAnimationFrame(rraf);
@@ -454,14 +570,6 @@ const client = { lang, T };
       rraf = requestAnimationFrame(step);
     };
     q<HTMLButtonElement>('[data-fr-replay]').addEventListener('click', replay);
-    const setView = (v: 'robust' | 'naive', apply = true) => {
-      root.querySelectorAll<HTMLButtonElement>('[data-fr-view]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.frView === v)));
-      if (!apply) return;
-      if (v === 'robust' && robust) showPlan(robust.plan, robust.wc.worst);
-      else if (naive.wc) showPlan(naive.plan, naive.wc.worst);
-      draw();
-    };
-    root.querySelectorAll<HTMLButtonElement>('[data-fr-view]').forEach((b) => b.addEventListener('click', () => setView(b.dataset.frView as 'robust' | 'naive')));
 
     /* ------------------------------------------------ mode and controls */
     const setMode = (m: 'play' | 'game') => {
@@ -471,7 +579,7 @@ const client = { lang, T };
       hint.textContent = m === 'play' ? T.hintPlay : T.hintGame;
       canvas.style.cursor = m === 'play' ? 'crosshair' : 'default';
       if (m === 'play') { stopGame(); cancelAnimationFrame(rraf); replayNow = Infinity; status(); }
-      else { stopPlay(); startBtn.textContent = T.start; if (!naive.wc) gameReset(); else { plotRounds(); fillTable(); } }
+      else { stopPlay(); startBtn.textContent = T.start; if (!naive.wc) gameReset(); else { plotRounds(); fillTable(); renderGame(); setButtons(); } }
       draw();
     };
     root.querySelectorAll<HTMLButtonElement>('[data-fr-mode]').forEach((b) => b.addEventListener('click', () => setMode(b.dataset.frMode as 'play' | 'game')));
@@ -488,7 +596,7 @@ const client = { lang, T };
     dIn.addEventListener('input', () => { outputs(); if (t && !finished) recompute(); draw(); status(); });
     bIn.addEventListener('input', () => { outputs(); naive.wc = null; gameReset(); });
 
-    window.addEventListener('themechange', () => { draw(); plotRounds(); });
+    window.addEventListener('themechange', () => { draw(); plotRounds(); renderGame(); });
     new ResizeObserver(() => { if (resize()) draw(); }).observe(canvas);
     root.addEventListener('eng:show', () => { if (resize()) draw(); });
 
@@ -505,7 +613,22 @@ const client = { lang, T };
 </script>
 
 <style>
-  .fr__grid { display: grid; gap: var(--s-4); grid-template-columns: minmax(0, 1fr) minmax(0, 15rem); align-items: start; max-width: 42rem; margin-inline: auto; }
+  .fr__grid { display: grid; gap: var(--s-4); grid-template-columns: minmax(0, 1fr) minmax(0, 17.5rem); align-items: start; max-width: 42rem; margin-inline: auto; }
+  .fr__story { max-width: 40rem; margin: 0 auto var(--s-3); padding: 0.55rem 0.8rem; border-left: 2px solid var(--c-learned); font-size: var(--step--1); line-height: 1.5; min-height: 4.6em; }
+  .fr__gamebox { overflow-x: auto; }
+  .fr__game { width: 100%; border-collapse: collapse; font-size: var(--step--2); font-family: var(--font-mono); border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
+  .fr__game :global(th), .fr__game :global(td) { padding: 0.28em 0.3em; text-align: right; white-space: nowrap; }
+  .fr__game thead :global(th) { font-family: var(--font-serif); font-weight: 400; font-style: italic; border-bottom: 0.5px solid var(--ink); }
+  .fr__game tbody :global(th) { font-family: var(--font-serif); font-weight: 400; text-align: left; }
+  .fr__game tbody :global(tr) { cursor: pointer; }
+  .fr__game tbody :global(tr:hover th) { color: var(--accent); }
+  .fr__game :global(td.is-max) { outline: 2px solid var(--c-warn); outline-offset: -2px; }
+  .fr__game :global(td.fr__wc) { border-left: 0.5px solid var(--ink-3); }
+  .fr__game :global(tr.is-best th), .fr__game :global(tr.is-best td) { font-weight: 700; }
+  .fr__game :global(tr.is-best) { outline: 1.5px solid var(--c-learned); outline-offset: -1px; }
+  .fr__game :global(tr.is-sel th::before) { content: '▸ '; color: var(--c-learned); }
+  .fr__glegend { margin-top: var(--s-2); font-size: var(--step--2); color: var(--ink-2); line-height: 1.45; }
+  .fr__below { display: grid; gap: var(--s-4); grid-template-columns: minmax(0, 1fr) minmax(0, 17.5rem); align-items: start; max-width: 42rem; margin: var(--s-4) auto 0; }
   .fr__canvas { width: 100%; aspect-ratio: 1; display: block; touch-action: none; outline: 0.5px solid var(--ink-3); }
   .fr__hint { margin-top: var(--s-1); font-style: italic; font-size: var(--step--2); text-align: center; }
   .fr__legend { list-style: none; padding: 0; margin: 0.3rem 0 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.1rem 0.8rem; font-size: var(--step--2); color: var(--ink-2); }
@@ -536,10 +659,15 @@ const client = { lang, T };
   .fr :global(.plot-key) { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.15rem 0.9rem; margin-top: 0.2rem; font-size: var(--step--2); color: var(--ink-2); line-height: 1.3; }
   .fr :global(.plot-key span) { display: inline-flex; align-items: center; gap: 0.35rem; }
   .fr :global(.plot-key svg) { width: 18px; height: 10px; flex: none; overflow: visible; }
-  .fr__table { margin-top: var(--s-3); font-size: var(--step--2); }
+  .fr__table { font-size: var(--step--2); }
   .fr__table th, .fr__table td { padding: 0.2em 0.4em 0.2em 0; }
   .fr__table td { text-align: right; font-family: var(--font-mono); }
   @media (max-width: 40rem) {
-    .fr__grid { grid-template-columns: 1fr; }
+    .fr__grid, .fr__below { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 26rem) {
+    .fr__game { font-size: 0.72rem; }
+    .fr__game :global(th), .fr__game :global(td) { padding: 0.28em 0.16em; }
+    .fr__game :global(tr.is-sel th::before) { content: '▸'; }
   }
 </style>

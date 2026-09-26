@@ -375,7 +375,7 @@ export const theses = [
     institution: 'Normandie Université / INSA Rouen Normandie (CORIA, UMR 6614 CNRS)',
     year: 2025,
     doi: '10.70675/0d4a7bfaz5f21z4970zae63zb2bfe79c5a5f',
-    note: 'Defended 11 December 2025. Supervision: J. Yon and A. Fuentes.',
+    note: 'Defended on 11 December 2025, supervised by J. Yon and A. Fuentes.',
   },
   {
     id: 'littin2024msc',

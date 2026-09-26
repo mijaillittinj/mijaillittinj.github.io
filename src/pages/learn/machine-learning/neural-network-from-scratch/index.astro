@@ -6,15 +6,15 @@ import MlpExplorer from '../../../../components/viz/MlpExplorer.astro';
 import Answer from '../../../../components/ui/Answer.astro';
 import { url } from '../../../../i18n/utils';
 ---
-<LearnModule slug="machine-learning/neural-network-from-scratch" description="Train a small neural network in the browser with hand-written backpropagation and Adam: fitting, overfitting, validation error, weight decay and early stopping.">
+<LearnModule slug="machine-learning/neural-network-from-scratch" description="Train a small neural network in the browser with hand-written backpropagation and Adam, and see how fitting, overfitting, weight decay and early stopping affect the validation error.">
   <div class="prose">
     <h2>A function with many adjustable knobs</h2>
-    <p>The simplest kind of neural network, the multilayer perceptron, is a chain of simple steps. Each layer multiplies its input by a weight matrix, adds a bias and applies a nonlinear function, here tanh:</p>
+    <p>The simplest kind of neural network, the multilayer perceptron, is a chain of simple steps. Each layer multiplies its input by a weight matrix, adds a bias and applies a nonlinear function, here tanh.</p>
     <Equation tex={String.raw`h^{(0)} = x, \qquad h^{(\ell)} = \tanh\!\big(W^{(\ell)} h^{(\ell-1)} + b^{(\ell)}\big), \qquad \hat y = W^{(L+1)} h^{(L)} + b^{(L+1)} .`} />
     <p>Training means choosing all the weights so that the network’s outputs match the training data, usually by minimising the mean squared error with a gradient method such as Adam (see the <a href={url('/learn/optimization/gradient-descent/')}>gradient descent module</a>).</p>
     <h2>Backpropagation is the chain rule, applied backwards</h2>
     <EquationDerivation title="Gradients layer by layer" steps={[
-      { tex: String.raw`\mathcal{L} = \frac{1}{N}\sum_{n} (\hat y_n - y_n)^2, \qquad \delta^{(L+1)} = \frac{\partial \mathcal{L}}{\partial \hat y} = \frac{2}{N}(\hat y - y)`, note: 'Start at the output: the sensitivity of the loss to the prediction.' },
+      { tex: String.raw`\mathcal{L} = \frac{1}{N}\sum_{n} (\hat y_n - y_n)^2, \qquad \delta^{(L+1)} = \frac{\partial \mathcal{L}}{\partial \hat y} = \frac{2}{N}(\hat y - y)`, note: 'Start at the output, with the sensitivity of the loss to the prediction.' },
       { tex: String.raw`\frac{\partial \mathcal{L}}{\partial W^{(\ell)}} = \delta^{(\ell)}\, {h^{(\ell-1)}}^{\mathsf T}, \qquad \frac{\partial \mathcal{L}}{\partial b^{(\ell)}} = \delta^{(\ell)}`, note: 'Each weight gradient is the local error times the input that the weight multiplied.' },
       { tex: String.raw`\delta^{(\ell-1)} = \big({W^{(\ell)}}^{\mathsf T} \delta^{(\ell)}\big) \odot \big(1 - {h^{(\ell-1)}}^2\big)`, note: 'Pass the error back through the weights and through the derivative of tanh.' },
     ]} />
@@ -26,22 +26,22 @@ import { url } from '../../../../i18n/utils';
   <div class="try">
     <h3>Exercises</h3>
     <ol>
-      <li>Train with the default settings (2 layers × 24 neurons, 12 points). The training error keeps falling while the validation error turns around and rises. That is <em>overfitting</em>: the network memorises the noise.
-        <Answer lang="en"><p>The network has 673 parameters for 12 points, so it can pass through every point: the training error falls to about 10⁻¹⁴. The validation error reaches its minimum, about 4 × 10⁻², near iteration 200–250, and then rises to about 7 × 10⁻² as the curve bends to follow the noise between the training points.</p></Answer></li>
+      <li>Train with the default settings (2 layers × 24 neurons, 12 points). The training error keeps falling while the validation error turns around and rises. This is <em>overfitting</em>, where the network memorises the noise.
+        <Answer lang="en"><p>The network has 673 parameters for 12 points, so it can pass through every point, and the training error falls to about 10⁻¹⁴. The validation error reaches its minimum, about 4 × 10⁻², near iteration 200–250, and then rises to about 7 × 10⁻² as the curve bends to follow the noise between the training points.</p></Answer></li>
       <li>Increase the training points to 60 without changing the network. Why does the gap between training and validation error close?
         <Answer lang="en"><p>With 60 points the network can no longer pass through all of them with a smooth curve, so it averages the noise out. The training error stays near 1.3 × 10⁻² and the validation error near 2.7 × 10⁻², close to the noise floor σ² ≈ 2.3 × 10⁻², which no model can beat. More data constrain the same flexible model.</p></Answer></li>
       <li>With 12 points, reduce the width step by step down to 2 neurons, training to the end each time. Which width gives the lowest final validation error? What does its curve look like?
-        <Answer lang="en"><p>With only 12 noisy points the smallest network wins: 2 neurons per layer (13 parameters) ends with a validation error of about 3.9 × 10⁻², while widths from 3 to 24 end between 7 and 10 × 10⁻², because given enough iterations they all fit the noise. The small network cannot follow every wiggle of the true function (<em>underfitting</em>), but with so few points that bias costs less than the variance of a flexible model. The best complexity depends on how much data there is.</p></Answer></li>
+        <Answer lang="en"><p>With only 12 noisy points the smallest network wins. With 2 neurons per layer, or 13 parameters, it ends with a validation error of about 3.9 × 10⁻². Widths from 3 to 24 end between 7 and 10 × 10⁻², because given enough iterations they all fit the noise. The small network cannot follow every wiggle of the true function, which is called <em>underfitting</em>. With so few points, that bias costs less than the variance of a flexible model. The best complexity depends on how much data there is.</p></Answer></li>
       <li>Turn on early stopping and train again. Which iteration is kept? Then try weight decay instead. Both are forms of <em>regularisation</em>, the same idea as in the <a href={url('/learn/inverse-problems/svd-noise-amplification/')}>SVD module</a>.
-        <Answer lang="en"><p>Early stopping keeps the weights from about iteration 240, where the validation error was lowest (about 4 × 10⁻²); training halts 600 iterations later without improvement. Weight decay with κ = 10⁻³ stops the training error from collapsing (it stays near 8 × 10⁻³), but here the validation error still climbs to about 8 × 10⁻²: this strength is not enough for this network and data. Regularisation has to be tuned, and the validation set is what tells you how much.</p></Answer></li>
+        <Answer lang="en"><p>Early stopping keeps the weights from about iteration 240, where the validation error was lowest, at about 4 × 10⁻². Training halts 600 iterations later without improvement. Weight decay with κ = 10⁻³ stops the training error from collapsing, which stays near 8 × 10⁻³. The validation error still climbs to about 8 × 10⁻², so this strength is not enough for this network and these data. Regularisation has to be tuned, and the validation set is what tells you how much.</p></Answer></li>
       <li>Set the noise to 0. Can a large network now reach a validation error close to zero? What limits it?
-        <Answer lang="en"><p>Not zero: with 12 noise-free points the validation error levels off near 1.4 × 10⁻³. Between the training points the network is unconstrained, so it can differ from the true function there. With 60 noise-free points it drops to about 3 × 10⁻⁵ and is then limited by the finite training time and network size.</p></Answer></li>
+        <Answer lang="en"><p>Not to zero. With 12 noise-free points the validation error levels off near 1.4 × 10⁻³. Between the training points the network is unconstrained, so it can differ from the true function there. With 60 noise-free points it drops to about 3 × 10⁻⁵ and is then limited by the finite training time and network size.</p></Answer></li>
     </ol>
   </div>
 
   <div class="prose">
     <h2>Generalisation is the real goal</h2>
-    <p>The training error tells you how well the network describes the points it has seen; the validation error, on points it has not seen, estimates how it will behave in use. With more parameters than data, many networks fit the training set perfectly and differ wildly between the points. Weight decay adds ½κ‖<em>W</em>‖² to the loss and favours small weights and smooth functions; early stopping halts training when the validation error stops improving.</p>
-    <p>Physics offers a third way to constrain a flexible model: put the governing equation in the loss. That is the subject of the <a href={url('/learn/machine-learning/physics-informed-learning/')}>physics-informed learning module</a>.</p>
+    <p>The training error tells you how well the network describes the points it has seen. The validation error, measured on points it has not seen, estimates how it will behave in use. With more parameters than data, many networks fit the training set perfectly and differ wildly between the points. Weight decay adds ½κ‖<em>W</em>‖² to the loss and favours small weights and smooth functions. Early stopping halts training when the validation error stops improving.</p>
+    <p>Physics offers a third way to constrain a flexible model, by putting the governing equation in the loss. That is the subject of the <a href={url('/learn/machine-learning/physics-informed-learning/')}>physics-informed learning module</a>.</p>
   </div>
 </LearnModule>

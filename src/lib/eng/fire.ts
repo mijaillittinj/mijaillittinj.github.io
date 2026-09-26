@@ -188,12 +188,28 @@ export function worstCase(L: Landscape, plan: Segment[], scenarios: Scenario[], 
   const m = planMask(L, plan);
   let best = { s: scenarios[0], d: { burned: 0, houses: 0, value: -1 } as Damage };
   let sum = 0;
+  // one entry per ignition point: the damage of its worst wind (a row of the game table)
+  const byIgnition = L.ignitions.map(() => -1), windByIgnition = L.ignitions.map(() => 0);
   for (const s of scenarios) {
     const d = scenarioDamage(L, m, s, p);
     sum += d.value;
     if (d.value > best.d.value) best = { s, d };
+    const j = L.ignitions.indexOf(s.ignition);
+    if (j >= 0 && d.value > byIgnition[j]) { byIgnition[j] = d.value; windByIgnition[j] = s.windFrom; }
   }
-  return { worst: best.s, damage: best.d, mean: sum / scenarios.length };
+  return { worst: best.s, damage: best.d, mean: sum / scenarios.length, byIgnition, windByIgnition };
+}
+
+/**
+ * The game table: rows are firefighter plans, columns the fire's options, cells the damage.
+ * Returns each row's maximum (the fire's best reply to that plan) and the row whose maximum
+ * is smallest (the minimax plan among the rows).
+ */
+export function minimaxTable(rows: number[][]) {
+  const argmax = rows.map((r) => r.reduce((bi, v, i, a) => (v > a[bi] ? i : bi), 0));
+  const rowMax = rows.map((r, i) => r[argmax[i]]);
+  const best = rowMax.reduce((bi, v, i, a) => (v < a[bi] ? i : bi), 0);
+  return { argmax, rowMax, best };
 }
 
 /** Naive plan: firebreak segments ringing the village (same budget). */
@@ -270,6 +286,12 @@ function ridge(X: Uint8Array[], y: number[], m: number, lambda: number): Float64
 
 export interface GameRound {
   round: number;
+  trialPlan: Segment[];     // the plan the firefighters propose this round (a row of the game table)
+  trialRow: number[];       // its damage for each ignition point, worst wind (the table row)
+  trialWinds: number[];     // the worst wind direction for each ignition point
+  trialScenario: Scenario;  // the fire's best reply to the trial plan
+  trialDamage: Damage;      // damage of that reply
+  improved: boolean;        // the trial plan lowered the worst case and became the best plan
   plan: Segment[];          // best plan found so far
   worst: Scenario;          // fire's worst scenario against it
   worstDamage: Damage;      // worst case over ALL scenarios (upper value of the game for this plan)
@@ -299,7 +321,8 @@ export function* minimaxGame(L: Landscape, p: Params, nSeg: number, seed = 1, ma
     out.v = mx;
   }
   const o = { v: 0 };
-  yield { round: 0, plan: best, worst: wc.worst, worstDamage: wc.damage, knownDamage: 0, trialWorst: wc.damage.value, known: [...known], done: false };
+  yield { round: 0, trialPlan: best, trialRow: wc.byIgnition, trialWinds: wc.windByIgnition, trialScenario: wc.worst, trialDamage: wc.damage, improved: true,
+    plan: best, worst: wc.worst, worstDamage: wc.damage, knownDamage: 0, trialWorst: wc.damage.value, known: [...known], done: false };
   const R = rng(seed);
   let stale = 0;
   for (let round = 1; round <= maxRounds; round++) {
@@ -352,7 +375,8 @@ export function* minimaxGame(L: Landscape, p: Params, nSeg: number, seed = 1, ma
     if (isNew) known.push(wcNew.worst);
     stale = isNew || improved ? 0 : stale + 1;
     const done = stale >= 2 || round === maxRounds;
-    yield { round, plan: best, worst: wc.worst, worstDamage: wc.damage, knownDamage: val, trialWorst: wcNew.damage.value, known: [...known], done };
+    yield { round, trialPlan: plan, trialRow: wcNew.byIgnition, trialWinds: wcNew.windByIgnition, trialScenario: wcNew.worst, trialDamage: wcNew.damage, improved,
+      plan: best, worst: wc.worst, worstDamage: wc.damage, knownDamage: val, trialWorst: wcNew.damage.value, known: [...known], done };
     if (done) return;
   }
 }

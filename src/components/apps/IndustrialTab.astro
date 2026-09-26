@@ -11,32 +11,32 @@ const { lang = 'en', hidden = false } = Astro.props;
 const es = lang === 'es';
 const T = es
   ? {
-      fwd: 'Directo', opt: 'Optimización',
-      fi: [': dado el orden en que un camión visita a sus clientes, calcular la longitud y el tiempo de conducción de la ruta. ', ': encontrar el orden que da la ruta más corta. Buscar la mejor respuesta en un espacio enorme es también lo que exige resolver un problema inverso.'],
+      fwd: 'Problema directo.', opt: 'Optimización.',
+      fi: [' Dado el orden en que un camión visita a sus clientes, calcular la longitud y el tiempo de conducción de la ruta. ', ' Encontrar el orden que da la ruta más corta. Resolver un problema inverso exige lo mismo, buscar la mejor respuesta en un espacio enorme.'],
       map: 'Área de servicio de 100 km × 100 km con un depósito y clientes',
-      hint: 'Clic: agregar un cliente · arrastrar: moverlo · doble clic: quitarlo.',
+      hint: 'Haga clic para agregar un cliente, arrástrelo para moverlo y haga doble clic para quitarlo.',
       n: 'Clientes aleatorios', speed: 'Velocidad media del camión',
       random: 'clientes aleatorios', optimise: 'optimizar la ruta', stop: 'detener', clear: 'borrar',
       depot: 'depósito', plot: 'Longitud de la ruta durante el recocido', xl: 'iteración (miles)', yl: 'longitud (km)',
       legSA: 'recocido simulado', legNN: 'vecino más cercano', legSOM: 'red neuronal (SOM)',
       method: 'Método', mSA: 'recocido simulado', mSOM: 'red neuronal (SOM)', train: 'entrenar la red', polish: 'Pulir el resultado con 2-opt',
       plotSOM: 'Longitud de la ruta durante el entrenamiento', xlSOM: 'paso de entrenamiento (miles)',
-      capSOM: 'El mapa autoorganizado (SOM) es una red neuronal pequeña: un anillo cerrado de puntos, las neuronas, se acerca una y otra vez a clientes elegidos al azar, y cada neurona arrastra a sus vecinas, hasta que el anillo pasa por todos los clientes. El orden de las neuronas en el anillo da la ruta (una idea emparentada con la red elástica de Durbin y Willshaw). En general queda a pocos puntos porcentuales del recocido simulado. Es una red neuronal, pero no informada por la física: el ruteo no tiene una ecuación gobernante que incluir en su función de pérdida. Ejemplo sintético.',
-      cap: 'El mapa muestra un depósito y los clientes; la línea es la ruta y el gráfico sigue su longitud. Pulse «optimizar la ruta», o agregue y mueva clientes con el ratón. Encontrar el recorrido cerrado más corto por muchos puntos es el problema del vendedor viajero (TSP). El número de rutas posibles crece factorialmente, unas 10⁴⁶ con 40 clientes (39!/2), así que no se pueden revisar todas; el problema es NP-difícil, es decir, no se conoce un método que resuelva rápido todos los casos. La regla del vecino más cercano (ir siempre al cliente no visitado más próximo) es rápida pero deja cruces. El recocido simulado la mejora invirtiendo tramos de la ruta (movimientos 2-opt) y, al principio, aceptando a veces una ruta más larga, lo que le permite salir de mínimos locales; la «temperatura» T fija cuán a menudo ocurre y se baja gradualmente. Ejemplo sintético.',
+      capSOM: 'El mapa autoorganizado (SOM) es una red neuronal pequeña. Un anillo cerrado de puntos, las neuronas, se acerca una y otra vez a clientes elegidos al azar, y cada neurona arrastra a sus vecinas hasta que el anillo pasa por todos los clientes. El orden de las neuronas en el anillo da la ruta, una idea emparentada con la red elástica de Durbin y Willshaw. En general queda a pocos puntos porcentuales del recocido simulado. Es una red neuronal, pero no está informada por la física, porque el ruteo no tiene una ecuación gobernante que incluir en su función de pérdida. Ejemplo sintético.',
+      cap: 'El mapa muestra un depósito y los clientes. La línea es la ruta y el gráfico sigue su longitud. Pulse «optimizar la ruta», o agregue y mueva clientes con el ratón. Encontrar el recorrido cerrado más corto por muchos puntos es el problema del vendedor viajero (TSP). El número de rutas posibles crece de forma factorial, unas 10⁴⁶ con 40 clientes, así que no se pueden revisar todas. Es un problema NP-difícil, lo que significa que no se conoce un método que resuelva rápido todos los casos. La regla del vecino más cercano consiste en ir siempre al cliente no visitado más próximo. Es rápida, pero deja cruces. El recocido simulado la mejora invirtiendo tramos de la ruta, los llamados movimientos 2-opt. Al principio acepta a veces una ruta más larga, y eso le permite salir de mínimos locales. La «temperatura» T fija cuán a menudo ocurre y se baja poco a poco. Ejemplo sintético.',
     }
   : {
-      fwd: 'Forward', opt: 'Optimisation',
-      fi: [': given the order in which a truck visits its customers, compute the length and driving time of the route. ', ': find the order that gives the shortest route. Searching a huge space for the best answer is also what solving an inverse problem requires.'],
+      fwd: 'Forward problem.', opt: 'Optimisation.',
+      fi: [' Given the order in which a truck visits its customers, compute the length and driving time of the route. ', ' Find the order that gives the shortest route. Solving an inverse problem asks for the same thing, a search for the best answer in a huge space.'],
       map: 'Service area of 100 km × 100 km with a depot and customers',
-      hint: 'Click: add a customer · drag: move it · double-click: remove it.',
+      hint: 'Click to add a customer, drag to move it and double-click to remove it.',
       n: 'Random customers', speed: 'Average truck speed',
       random: 'random customers', optimise: 'optimise the route', stop: 'stop', clear: 'clear',
       depot: 'depot', plot: 'Route length during annealing', xl: 'iteration (thousands)', yl: 'length (km)',
       legSA: 'simulated annealing', legNN: 'nearest neighbour', legSOM: 'neural network (SOM)',
       method: 'Method', mSA: 'simulated annealing', mSOM: 'neural network (SOM)', train: 'train the network', polish: 'Polish the result with 2-opt',
       plotSOM: 'Route length during training', xlSOM: 'training step (thousands)',
-      capSOM: 'The self-organising map (SOM) is a small neural network: a closed ring of points, the neurons, is pulled again and again towards randomly chosen customers, each neuron dragging its neighbours along, until the ring passes through every customer. The order of the neurons along the ring gives the route (an idea related to the Durbin–Willshaw elastic net). It usually ends within a few per cent of simulated annealing. It is a neural network, but not a physics-informed one: routing has no governing equation to include in its loss. Synthetic example.',
-      cap: 'The map shows a depot and the customers; the line is the route and the plot follows its length. Press “optimise the route”, or add and move customers with the mouse. Finding the shortest round trip through many points is the travelling salesman problem (TSP). The number of possible routes grows factorially, about 10⁴⁶ for 40 customers (39!/2), so they cannot all be checked; the problem is NP-hard, meaning that no known method solves every instance quickly. The nearest-neighbour rule (always drive to the closest unvisited customer) is fast but leaves crossings. Simulated annealing improves it by reversing segments of the route (2-opt moves) and, early on, sometimes accepting a longer route, which lets it leave local minima; the “temperature” T sets how often this happens and is lowered gradually. Synthetic example.',
+      capSOM: 'The self-organising map (SOM) is a small neural network. A closed ring of points, the neurons, is pulled again and again towards randomly chosen customers, and each neuron drags its neighbours along until the ring passes through every customer. The order of the neurons along the ring gives the route, an idea related to the Durbin–Willshaw elastic net. It usually ends within a few per cent of simulated annealing. It is a neural network but not a physics-informed one, because routing has no governing equation to put in its loss. Synthetic example.',
+      cap: 'The map shows a depot and the customers. The line is the route and the plot follows its length. Press “optimise the route”, or add and move customers with the mouse. Finding the shortest round trip through many points is the travelling salesman problem (TSP). The number of possible routes grows factorially, to about 10⁴⁶ for 40 customers, so they cannot all be checked. The problem is NP-hard, which means that no known method solves every instance quickly. The nearest-neighbour rule always drives to the closest unvisited customer. It is fast but leaves crossings. Simulated annealing improves the route by reversing segments of it, the so-called 2-opt moves. Early on it sometimes accepts a longer route, which lets it escape local minima. The “temperature” T sets how often this happens and is lowered gradually. Synthetic example.',
     };
 const client = { lang, depot: T.depot, optimise: T.optimise, stop: T.stop, xl: T.xl, yl: T.yl, legSA: T.legSA, legNN: T.legNN, plot: T.plot, legSOM: T.legSOM, train: T.train, plotSOM: T.plotSOM, xlSOM: T.xlSOM };
 ---
@@ -44,7 +44,7 @@ const client = { lang, depot: T.depot, optimise: T.optimise, stop: T.stop, xl: T
   <p class="eng-fi"><em>{T.fwd}</em>{T.fi[0]}<em>{T.opt}</em>{T.fi[1]}</p>
 
   <div class="eng-switches">
-    <div class="eng-switch"><span>{T.method}:</span>
+    <div class="eng-switch"><span>{T.method}</span>
       <div class="seg" role="group" aria-label={T.method}>
         <button type="button" data-r-method="sa" aria-pressed="true">{T.mSA}</button>
         <button type="button" data-r-method="som" aria-pressed="false">{T.mSOM}</button>
