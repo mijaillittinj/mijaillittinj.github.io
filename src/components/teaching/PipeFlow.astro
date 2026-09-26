@@ -8,25 +8,25 @@ const es = lang === 'es';
 const S = es
   ? {
       fluid: 'Fluido', water: 'Agua', air: 'Aire', oil: 'Aceite liviano',
-      V: 'Velocidad media V', D: 'Diámetro D', eps: 'Rugosidad relativa log₁₀(ε/D)',
+      V: 'Velocidad media V', D: 'Diámetro D', eps: 'Rugosidad relativa, log₁₀(ε/D)',
       prof: 'Perfil de velocidad', moody: 'Diagrama de Moody',
-      lam: 'laminar', trans: 'de transición', turb: 'turbulento',
+      lam: 'laminar', trans: 'transición', turb: 'turbulento',
       read: ['Re', 'régimen', 'f', 'Δp/L'],
-      transNote: 'En transición el valor de f es incierto; se muestra el de Colebrook.',
-      cap: 'Flujo completamente desarrollado en una tubería. El número de Reynolds decide el régimen. En régimen laminar el perfil es parabólico y f = 64/Re; en régimen turbulento el perfil es mucho más plano (ley de potencia 1/7) y f depende también de la rugosidad (ecuación de Colebrook, resuelta aquí de forma iterativa). La franja gris marca la transición, 2300 < Re < 4000.',
+      transNote: 'En la transición f es incierto; se muestra el valor de Colebrook.',
+      cap: 'Flujo completamente desarrollado en una tubería recta. El número de Reynolds, Re = ρVD/μ, compara la inercia del fluido con su viscosidad y decide el régimen. En régimen laminar el perfil de velocidad es una parábola y el factor de fricción es f = 64/Re. En régimen turbulento el perfil es mucho más plano (se aproxima con la ley de potencia 1/7) y f depende también de la rugosidad de la pared, según la ecuación de Colebrook, que aquí se resuelve de forma iterativa. En el diagrama de Moody, las líneas discontinuas corresponden a otras rugosidades y la franja gris marca la transición, 2300 < Re < 4000. La caída de presión por metro de tubería, Δp/L, es lo que debe vencer una bomba.',
       xr: 'r/R', yu: 'u/V', xre: 'log₁₀ Re', yf: 'f',
-      lLam: 'laminar', lTurb: 'turbulento (1/7)', lCur: 'caso actual',
+      lLam: 'laminar (parábola)', lTurb: 'turbulento (ley 1/7)', lCur: 'caso actual', lRough: 'otras rugosidades', lThis: 'rugosidad elegida',
     }
   : {
       fluid: 'Fluid', water: 'Water', air: 'Air', oil: 'Light oil',
-      V: 'Mean velocity V', D: 'Diameter D', eps: 'Relative roughness log₁₀(ε/D)',
+      V: 'Mean velocity V', D: 'Diameter D', eps: 'Relative roughness, log₁₀(ε/D)',
       prof: 'Velocity profile', moody: 'Moody diagram',
       lam: 'laminar', trans: 'transitional', turb: 'turbulent',
       read: ['Re', 'regime', 'f', 'Δp/L'],
       transNote: 'In the transition range f is uncertain; the Colebrook value is shown.',
-      cap: 'Fully developed flow in a pipe. The Reynolds number decides the regime. In laminar flow the profile is parabolic and f = 64/Re; in turbulent flow the profile is much flatter (1/7 power law) and f also depends on roughness (Colebrook equation, solved here iteratively). The grey strip marks the transition, 2300 < Re < 4000.',
+      cap: 'Fully developed flow in a straight pipe. The Reynolds number, Re = ρVD/μ, compares the inertia of the fluid with its viscosity and sets the flow regime. In laminar flow the velocity profile is a parabola and the friction factor is f = 64/Re. In turbulent flow the profile is much flatter (approximated here by the 1/7 power law) and f also depends on the roughness of the wall, through the Colebrook equation, solved here iteratively. In the Moody diagram the dashed lines are other roughness values and the grey strip marks the transition, 2300 < Re < 4000. The pressure drop per metre of pipe, Δp/L, is what a pump has to overcome.',
       xr: 'r/R', yu: 'u/V', xre: 'log₁₀ Re', yf: 'f',
-      lLam: 'laminar', lTurb: 'turbulent (1/7)', lCur: 'current case',
+      lLam: 'laminar (parabola)', lTurb: 'turbulent (1/7 law)', lCur: 'current case', lRough: 'other roughness values', lThis: 'chosen roughness',
     };
 ---
 <figure class="lab" data-t-pipe data-s={JSON.stringify(S)}>
@@ -46,24 +46,26 @@ const S = es
       <p class="lab__readout" data-t-read aria-live="polite"></p>
     </div>
     <div class="lab__plots">
-      <div><p class="panel-title">{S.prof}</p><div class="t-plot" data-t-prof></div></div>
-      <div><p class="panel-title">{S.moody}</p><div class="t-plot" data-t-moody></div></div>
+      <div><p class="panel-title">{S.prof}</p><div class="t-plot" data-t-prof></div><div class="t-key" data-t-kprof></div></div>
+      <div><p class="panel-title">{S.moody}</p><div class="t-plot" data-t-moody></div><div class="t-key" data-t-kmoody></div></div>
     </div>
   </div>
   <Equation tex={String.raw`\mathrm{Re}=\frac{\rho V D}{\mu},\qquad \frac{\Delta p}{L}=f\,\frac{\rho V^2}{2D},\qquad \frac{1}{\sqrt f}=-2\log_{10}\!\left(\frac{\varepsilon/D}{3.7}+\frac{2.51}{\mathrm{Re}\sqrt f}\right)`} />
-  <figcaption><span class="fig-num">{es ? 'Figura' : 'Figure'} {n}.</span>{S.cap}</figcaption>
+  <figcaption><span class="fig-num">{es ? 'Figura' : 'Figure'} {n}.</span><Fragment set:html={S.cap} /></figcaption>
 </figure>
 
 <script>
   import { LinePlot, fmt } from '../../lib/plot';
+  import { renderKey } from '../../lib/legendkey';
   import { fluids, reynolds, regime, frictionFactor, fLaminar, fColebrook, dpPerLength, uLaminar, uPowerLaw, RE_LAM, RE_TURB } from '../../lib/teaching';
 
   document.querySelectorAll<HTMLElement>('[data-t-pipe]').forEach((root) => {
     const S = JSON.parse(root.dataset.s!);
     const val = (k: string) => +root.querySelector<HTMLInputElement>(`[name="${k}"]`)!.value;
     let fluid = fluids[0];
-    const pProf = new LinePlot(root.querySelector('[data-t-prof]')!, { width: 420, height: 280, xlabel: S.xr, ylabel: S.yu, title: S.prof });
-    const pMoody = new LinePlot(root.querySelector('[data-t-moody]')!, { width: 420, height: 280, xlabel: S.xre, ylabel: S.yf, logy: true, title: S.moody });
+    const pProf = new LinePlot(root.querySelector('[data-t-prof]')!, { width: 420, height: 280, xlabel: S.xr, ylabel: S.yu, title: S.prof, legend: false });
+    const pMoody = new LinePlot(root.querySelector('[data-t-moody]')!, { width: 420, height: 280, xlabel: S.xre, ylabel: S.yf, logy: true, title: S.moody, legend: false });
+    renderKey(root.querySelector('[data-t-kmoody]')!, [{ label: S.lThis, cls: 's-physics' }, { label: S.lRough, cls: 's-muted', kind: 'dash' }, { label: S.lCur, cls: 's-data', kind: 'point' }]);
     const read = root.querySelector<HTMLElement>('[data-t-read]')!;
     const s = Array.from({ length: 101 }, (_, i) => i / 100);
     const lre = Array.from({ length: 121 }, (_, i) => 2.7 + (i * 5.3) / 120);
@@ -75,7 +77,8 @@ const S = es
       const f = frictionFactor(Re, e);
       const dp = dpPerLength(f, fluid.rho, V, D);
       const regName = reg === 'laminar' ? S.lam : reg === 'transitional' ? S.trans : S.turb;
-      read.innerHTML = `${S.read[0]} = <strong>${Re < 1e4 ? Re.toFixed(0) : Re.toExponential(2)}</strong>, ${S.read[1]}: ${regName}.<br>${S.read[2]} = <strong>${f.toFixed(4)}</strong>, ${S.read[3]} = <strong>${fmt(dp)}</strong> Pa/m.` + (reg === 'transitional' ? `<br>${S.transNote}` : '');
+      read.innerHTML = `${S.read[0]} = <strong>${Re < 1e4 ? Re.toFixed(0) : Re.toExponential(2)}</strong> · ${regName}<br>${S.read[2]} = <strong>${f.toFixed(4)}</strong> · ${S.read[3]} = <strong>${fmt(dp)}</strong> Pa/m` + (reg === 'transitional' ? `<br>${S.transNote}` : '');
+      renderKey(root.querySelector('[data-t-kprof]')!, reg === 'laminar' ? [{ label: S.lLam, cls: 's-physics' }, { label: S.lTurb, cls: 's-muted', kind: 'dash' }] : [{ label: S.lTurb, cls: 's-physics' }, { label: S.lLam, cls: 's-muted', kind: 'dash' }]);
 
       pProf.render([
         { kind: 'line', x: s, y: s.map(uLaminar), cls: reg === 'laminar' ? 's-physics' : 's-muted', label: S.lLam, dash: reg !== 'laminar' },

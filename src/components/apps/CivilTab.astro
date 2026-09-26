@@ -13,22 +13,22 @@ const es = lang === 'es';
 const T = es
   ? {
       fwd: 'Directo', inv: 'Inverso',
-      fi: [': dado el epicentro y la velocidad de las ondas, calcular cuándo llega la onda P a cada estación. ', ': a partir de los tiempos de llegada, con ruido, encontrar dónde y cuándo ocurrió el sismo.'],
+      fi: [': dados el epicentro (el punto de la superficie sobre el sismo) y la velocidad de las ondas, calcular cuándo llega la primera onda sísmica (la onda P) a cada estación. ', ': solo a partir de esos tiempos de llegada, medidos con ruido, encontrar dónde y cuándo ocurrió el sismo.'],
       mode: 'Modo', mFwd: 'directo: ubicar el sismo', mInv: 'inverso: localizar un sismo oculto',
       layout: 'Estaciones', lSpread: 'repartidas', lLine: 'en línea', lCluster: 'agrupadas',
       noise: 'Ruido en los tiempos de llegada', replay: 'repetir las ondas', newq: 'nuevo sismo', reveal: 'revelar', hide: 'ocultar',
       arrivals: 'Tiempos de llegada', map: 'Mapa de 200 km × 200 km con estaciones sismológicas',
-      hint: 'Arrastre las estaciones (triángulos)', hintFwd: ' o el epicentro (estrella); también puede hacer clic en el mapa.', hintInv: '; el mapa de desajuste se recalcula al instante.',
+      hint: 'Arrastre las estaciones (triángulos)', hintFwd: ' o el epicentro (estrella); también puede hacer clic en el mapa.', hintInv: '; el mapa de desajuste se recalcula de inmediato.',
       legEst: 'estimación', legReg: 'región del 95 %', legTrue: 'verdadero',
       method: 'Método', mCls: 'búsqueda del desajuste (clásico)', mPinn: 'PINN',
       train: 'entrenar la PINN', stop: 'detener', legPinn: 'PINN', legIso: 'isócronas de la PINN', legCls: 'clásico',
       lossLabel: 'La PINN minimiza',
-      pinnCap: ' Versión PINN: el tiempo de viaje es una red de coordenadas τ_θ(x, y) (en forma factorizada, con la fuente puntual incluida), y el epicentro y la hora de origen son parámetros entrenables; la ecuación eikonal de propagación de ondas está en la función de pérdida. En un medio homogéneo llega a la misma respuesta que la búsqueda clásica; su interés es que la misma formulación sirve en medios heterogéneos, donde no hay una fórmula cerrada para el tiempo de viaje.',
-      cap: 'Localizar un sismo es un problema inverso clásico: cada estación solo informa un tiempo, y el lugar y la hora de origen se deducen minimizando el desajuste entre los tiempos medidos y los que predice el modelo directo. La geometría de la red lo decide todo: con estaciones que rodean la fuente la región de incertidumbre es pequeña; con estaciones en línea se alarga y aparece una solución espejo igual de buena; con estaciones agrupadas la distancia queda mal determinada. Ejemplo sintético con un medio homogéneo (v = 6 km/s).',
+      pinnCap: ' Opción PINN: una red neuronal describe el tiempo de viaje desde la fuente hasta cualquier punto; la posición de la fuente y la hora de origen se entrenan junto con ella, y la pérdida incluye la ecuación eikonal, que gobierna cómo avanza el frente de onda. En un medio uniforme coincide con la búsqueda clásica; la misma formulación sirve también cuando la velocidad de las ondas varía en el espacio, donde no hay una fórmula sencilla para el tiempo de viaje.',
+      cap: 'El mapa muestra seis estaciones sismológicas en una región de 200 km × 200 km. En modo directo, ubique el epicentro y observe cómo la onda llega a cada estación; las barras indican los tiempos de llegada. En modo inverso el sismo está oculto: su posición y su hora de origen se obtienen minimizando el desajuste entre los tiempos medidos y los predichos, y el sombreado muestra ese desajuste en todo el mapa, junto con la región de confianza del 95 %. La geometría de las estaciones determina la precisión: estaciones alrededor de la fuente dan una región pequeña; estaciones en línea dan una región alargada y una solución espejo igual de buena; estaciones agrupadas dejan mal determinada la distancia. Ejemplo sintético en un medio uniforme (v = 6 km/s).',
     }
   : {
       fwd: 'Forward', inv: 'Inverse',
-      fi: [': given the epicentre and the wave speed, compute when the P wave reaches each station. ', ': from noisy arrival times, find where and when the earthquake happened.'],
+      fi: [': given the epicentre (the point on the surface above the earthquake) and the wave speed, compute when the first seismic wave (the P wave) reaches each station. ', ': from those arrival times alone, measured with noise, find where and when the earthquake happened.'],
       mode: 'Mode', mFwd: 'forward: place the earthquake', mInv: 'inverse: locate a hidden one',
       layout: 'Stations', lSpread: 'spread out', lLine: 'in a line', lCluster: 'clustered',
       noise: 'Noise on arrival times', replay: 'replay the waves', newq: 'new earthquake', reveal: 'reveal', hide: 'hide',
@@ -38,18 +38,26 @@ const T = es
       method: 'Method', mCls: 'misfit search (classical)', mPinn: 'PINN',
       train: 'train the PINN', stop: 'stop', legPinn: 'PINN', legIso: 'PINN isochrones', legCls: 'classical',
       lossLabel: 'The PINN minimises',
-      pinnCap: ' PINN version: the travel time is a coordinate network τ_θ(x, y) (in factored form, with the point source built in), and the epicentre and origin time are trainable parameters; the eikonal equation of wave propagation is in the loss. In a homogeneous medium it reaches the same answer as the classical search; its value is that the same formulation works in heterogeneous media, where no closed-form travel time exists.',
-      cap: 'Locating an earthquake is a classic inverse problem: each station reports only a time, and the place and origin time are found by minimising the misfit between measured times and those predicted by the forward model. The network geometry decides everything: stations that surround the source give a small uncertainty region; stations in a line stretch it and produce an equally good mirror solution; clustered stations leave the distance poorly determined. Synthetic example in a homogeneous medium (v = 6 km/s).',
+      pinnCap: ' PINN option: a neural network describes the travel time from the source to any point; the source position and origin time are trained with it, and the loss includes the eikonal equation, which governs how the wavefront advances. In a uniform medium it agrees with the classical search; the same formulation also applies when the wave speed varies in space, where no simple formula for the travel time exists.',
+      cap: 'The map shows six seismic stations in a 200 km × 200 km region. In forward mode, place the epicentre and watch the wave reach each station; the bars give the arrival times. In inverse mode the earthquake is hidden: its position and origin time are found by minimising the misfit between measured and predicted times, and the shading shows that misfit over the whole map, with the 95 % confidence region. Station geometry sets the accuracy: stations around the source give a small region; stations in a line give an elongated region and an equally good mirror solution; clustered stations leave the distance poorly determined. Synthetic example in a uniform medium (v = 6 km/s).',
     };
 const client = { lang, legEst: T.legEst, legReg: T.legReg, legTrue: T.legTrue, reveal: T.reveal, hide: T.hide, hint: T.hint, hintFwd: T.hintFwd, hintInv: T.hintInv, train: T.train, stop: T.stop, legPinn: T.legPinn, legIso: T.legIso, legCls: T.legCls };
 ---
 <div class="eng-tab q" data-eng-tab="civil" hidden={hidden} data-q-text={JSON.stringify(client)}>
   <p class="eng-fi"><em>{T.fwd}</em>{T.fi[0]}<em>{T.inv}</em>{T.fi[1]}</p>
 
-  <div class="q__top">
-    <div class="seg" role="group" aria-label={T.mode}>
-      <button type="button" data-q-mode="fwd" aria-pressed="true">{T.mFwd}</button>
-      <button type="button" data-q-mode="inv" aria-pressed="false">{T.mInv}</button>
+  <div class="eng-switches">
+    <div class="eng-switch"><span>{T.mode}:</span>
+      <div class="seg" role="group" aria-label={T.mode}>
+        <button type="button" data-q-mode="fwd" aria-pressed="true">{T.mFwd}</button>
+        <button type="button" data-q-mode="inv" aria-pressed="false">{T.mInv}</button>
+      </div>
+    </div>
+    <div class="eng-switch" data-q-only="inv" hidden><span>{T.method}:</span>
+      <div class="seg" role="group" aria-label={T.method}>
+        <button type="button" data-q-method="cls" aria-pressed="true">{T.mCls}</button>
+        <button type="button" data-q-method="pinn" aria-pressed="false">{T.mPinn}</button>
+      </div>
     </div>
   </div>
 
@@ -64,7 +72,7 @@ const client = { lang, legEst: T.legEst, legReg: T.legReg, legTrue: T.legTrue, r
     </div>
   </div>
 
-  <div class="q__controls">
+  <div class="eng-controls">
     <div class="control">
       <span class="control__head">{T.layout}</span>
       <div class="seg" role="group" aria-label={T.layout}>
@@ -77,26 +85,19 @@ const client = { lang, legEst: T.legEst, legReg: T.legReg, legTrue: T.legTrue, r
       <div class="control__head"><label for={`q-noise-${lang}`}>{T.noise}</label><output data-q-nout>0.15 s</output></div>
       <input id={`q-noise-${lang}`} data-q-noise type="range" min="0" max="0.5" step="0.01" value="0.15" />
     </div>
-    <div class="control" data-q-only="inv" hidden>
-      <span class="control__head">{T.method}</span>
-      <div class="seg" role="group" aria-label={T.method}>
-        <button type="button" data-q-method="cls" aria-pressed="true">{T.mCls}</button>
-        <button type="button" data-q-method="pinn" aria-pressed="false">{T.mPinn}</button>
-      </div>
-    </div>
-    <p class="q__btns">
-      <button type="button" class="btn" data-q-replay data-q-only="fwd">{T.replay}</button>
-      <button type="button" class="btn" data-q-train data-q-only="inv" hidden>{T.train}</button>
-      <button type="button" class="btn" data-q-new data-q-only="inv" hidden>{T.newq}</button>
-      <button type="button" class="btn" data-q-reveal data-q-only="inv" hidden>{T.reveal}</button>
-    </p>
   </div>
+  <p class="eng-actions">
+    <button type="button" class="btn" data-q-replay data-q-only="fwd">{T.replay}</button>
+    <button type="button" class="btn" data-q-train data-q-only="inv" hidden>{T.train}</button>
+    <button type="button" class="btn" data-q-new data-q-only="inv" hidden>{T.newq}</button>
+    <button type="button" class="btn" data-q-reveal data-q-only="inv" hidden>{T.reveal}</button>
+  </p>
 
   <div class="eng-eqs">
     <Equation tex={String.raw`t_i = t_0 + \frac{\lVert \mathbf{x}_i - \mathbf{x}_s \rVert}{v}`} />
     <Equation tex={String.raw`(\hat{\mathbf{x}}_s, \hat t_0) = \arg\min \sum_i \big(t_i^{\mathrm{obs}} - t_i\big)^2`} />
   </div>
-  <p class="meta q__loss" data-q-pinnonly hidden>{T.lossLabel} <Equation display={false} tex={String.raw`\mathcal{L} = \frac{1}{N}\sum_i \big(t_0 + \tau_\theta(\mathbf{x}_i) - t_i^{\mathrm{obs}}\big)^2/\sigma^2 + \frac{\lambda}{M}\sum_k \big(v^2 \lVert \nabla \tau_\theta(\mathbf{x}_k) \rVert^2 - 1\big)^2`} /></p>
+  <p class="eng-loss" data-q-pinnonly hidden>{T.lossLabel} <Equation display={false} tex={String.raw`\mathcal{L} = \frac{1}{N}\sum_i \big(t_0 + \tau_\theta(\mathbf{x}_i) - t_i^{\mathrm{obs}}\big)^2/\sigma^2 + \frac{\lambda}{M}\sum_k \big(v^2 \lVert \nabla \tau_\theta(\mathbf{x}_k) \rVert^2 - 1\big)^2`} /></p>
   <p class="lab__readout" data-q-read aria-live="polite"></p>
   <p class="eng-cap">{T.cap}{T.pinnCap}</p>
 </div>
@@ -496,7 +497,6 @@ const client = { lang, legEst: T.legEst, legReg: T.legReg, legTrue: T.legTrue, r
 </script>
 
 <style>
-  .q__top { display: flex; justify-content: center; margin-bottom: var(--s-3); font-size: var(--step--1); }
   .q__grid { display: grid; gap: var(--s-4); grid-template-columns: minmax(0, 1fr) minmax(0, 11rem); align-items: start; max-width: 40rem; margin-inline: auto; }
   .q__canvas { width: 100%; aspect-ratio: 1; display: block; touch-action: none; cursor: crosshair; }
   .q__hint { margin-top: var(--s-1); font-style: italic; font-size: var(--step--2); text-align: center; }
@@ -507,11 +507,6 @@ const client = { lang, legEst: T.legEst, legReg: T.legReg, legTrue: T.legTrue, r
   .q__list :global(.q__bar span) { position: absolute; left: 0; bottom: 0; height: 100%; background: var(--rule); }
   .q__list :global(.q__bar span.on) { background: var(--c-data); }
   .q__list :global(.q__t) { font-family: var(--font-mono); font-size: 0.9em; text-align: right; }
-  .q__controls { max-width: 40rem; margin: var(--s-4) auto 0; display: grid; gap: var(--s-3); grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); align-items: end; }
-  .q__btns { font-size: var(--step--1); display: flex; flex-wrap: wrap; gap: 0.3em 1em; }
-  .q__btns [hidden], .q__controls [hidden] { display: none; }
-  .q__loss { text-align: center; font-size: var(--step--1); margin-top: var(--s-2); max-width: 100%; overflow-x: auto; }
-  .q__loss[hidden] { display: none; }
   .eng-eqs { display: flex; flex-wrap: wrap; justify-content: center; column-gap: var(--s-6); margin-block: var(--s-3); }
   .eng-eqs :global(.eq) { justify-content: center; margin-block: var(--s-2); }
   @media (max-width: 40rem) {

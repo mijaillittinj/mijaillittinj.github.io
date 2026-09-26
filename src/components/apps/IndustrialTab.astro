@@ -12,36 +12,45 @@ const es = lang === 'es';
 const T = es
   ? {
       fwd: 'Directo', opt: 'Optimización',
-      fi: [': dada una ruta, calcular su longitud y su tiempo. ', ': encontrar la ruta que los minimiza, con la misma maquinaria (minimizar una función objetivo) que resuelve los problemas inversos.'],
+      fi: [': dado el orden en que un camión visita a sus clientes, calcular la longitud y el tiempo de conducción de la ruta. ', ': encontrar el orden que da la ruta más corta. Buscar la mejor respuesta en un espacio enorme es también lo que exige resolver un problema inverso.'],
       map: 'Área de servicio de 100 km × 100 km con un depósito y clientes',
-      hint: 'Haga clic para agregar clientes, arrástrelos para moverlos y haga doble clic para quitarlos.',
+      hint: 'Clic: agregar un cliente · arrastrar: moverlo · doble clic: quitarlo.',
       n: 'Clientes aleatorios', speed: 'Velocidad media del camión',
       random: 'clientes aleatorios', optimise: 'optimizar la ruta', stop: 'detener', clear: 'borrar',
       depot: 'depósito', plot: 'Longitud de la ruta durante el recocido', xl: 'iteración (miles)', yl: 'longitud (km)',
       legSA: 'recocido simulado', legNN: 'vecino más cercano', legSOM: 'red neuronal (SOM)',
       method: 'Método', mSA: 'recocido simulado', mSOM: 'red neuronal (SOM)', train: 'entrenar la red', polish: 'Pulir el resultado con 2-opt',
       plotSOM: 'Longitud de la ruta durante el entrenamiento', xlSOM: 'paso de entrenamiento (miles)',
-      capSOM: 'Es una red neuronal, pero no informada por la física: el ruteo no tiene una ecuación gobernante que poner en la función de pérdida. El mapa autoorganizado aprende un anillo de neuronas que se ajusta a los clientes (en la línea de la red elástica de Durbin y Willshaw); es una heurística elegante, en general a pocos puntos porcentuales del recocido simulado.',
-      cap: 'El problema del vendedor viajero es NP-difícil: con 40 clientes hay unas 10⁴⁶ rutas posibles (39!/2), así que no se pueden revisar todas. La ruta del vecino más cercano es rápida pero deja cruces; el recocido simulado propone invertir tramos (movimientos 2-opt) y, mientras la «temperatura» es alta, acepta a veces empeorar para escapar de mínimos locales. Es la misma dificultad de un problema inverso no convexo: minimizar un objetivo en un espacio enorme sin quedar atrapado. Ejemplo sintético.',
+      capSOM: 'El mapa autoorganizado (SOM) es una red neuronal pequeña: un anillo cerrado de puntos, las neuronas, se acerca una y otra vez a clientes elegidos al azar, y cada neurona arrastra a sus vecinas, hasta que el anillo pasa por todos los clientes. El orden de las neuronas en el anillo da la ruta (una idea emparentada con la red elástica de Durbin y Willshaw). En general queda a pocos puntos porcentuales del recocido simulado. Es una red neuronal, pero no informada por la física: el ruteo no tiene una ecuación gobernante que incluir en su función de pérdida. Ejemplo sintético.',
+      cap: 'El mapa muestra un depósito y los clientes; la línea es la ruta y el gráfico sigue su longitud. Pulse «optimizar la ruta», o agregue y mueva clientes con el ratón. Encontrar el recorrido cerrado más corto por muchos puntos es el problema del vendedor viajero (TSP). El número de rutas posibles crece factorialmente, unas 10⁴⁶ con 40 clientes (39!/2), así que no se pueden revisar todas; el problema es NP-difícil, es decir, no se conoce un método que resuelva rápido todos los casos. La regla del vecino más cercano (ir siempre al cliente no visitado más próximo) es rápida pero deja cruces. El recocido simulado la mejora invirtiendo tramos de la ruta (movimientos 2-opt) y, al principio, aceptando a veces una ruta más larga, lo que le permite salir de mínimos locales; la «temperatura» T fija cuán a menudo ocurre y se baja gradualmente. Ejemplo sintético.',
     }
   : {
       fwd: 'Forward', opt: 'Optimisation',
-      fi: [': given a route, compute its length and time. ', ': find the route that minimises them, with the same machinery (minimising an objective) that solves inverse problems.'],
+      fi: [': given the order in which a truck visits its customers, compute the length and driving time of the route. ', ': find the order that gives the shortest route. Searching a huge space for the best answer is also what solving an inverse problem requires.'],
       map: 'Service area of 100 km × 100 km with a depot and customers',
-      hint: 'Click to add customers, drag to move them, double-click to remove them.',
+      hint: 'Click: add a customer · drag: move it · double-click: remove it.',
       n: 'Random customers', speed: 'Average truck speed',
       random: 'random customers', optimise: 'optimise the route', stop: 'stop', clear: 'clear',
       depot: 'depot', plot: 'Route length during annealing', xl: 'iteration (thousands)', yl: 'length (km)',
       legSA: 'simulated annealing', legNN: 'nearest neighbour', legSOM: 'neural network (SOM)',
       method: 'Method', mSA: 'simulated annealing', mSOM: 'neural network (SOM)', train: 'train the network', polish: 'Polish the result with 2-opt',
       plotSOM: 'Route length during training', xlSOM: 'training step (thousands)',
-      capSOM: 'This is a neural network but not a physics-informed one: routing has no governing equation to put in the loss. The self-organising map learns a ring of neurons that fits the customers (in the spirit of the Durbin–Willshaw elastic net), an elegant heuristic that usually lands within a few per cent of annealing.',
-      cap: 'The travelling salesman problem is NP-hard: with 40 customers there are about 10⁴⁶ possible routes (39!/2), so they cannot all be checked. The nearest-neighbour route is fast but leaves crossings; simulated annealing proposes reversing segments (2-opt moves) and, while the “temperature” is high, sometimes accepts a worse route to escape local minima. It is the same difficulty as a non-convex inverse problem: minimising an objective over a huge space without getting trapped. Synthetic example.',
+      capSOM: 'The self-organising map (SOM) is a small neural network: a closed ring of points, the neurons, is pulled again and again towards randomly chosen customers, each neuron dragging its neighbours along, until the ring passes through every customer. The order of the neurons along the ring gives the route (an idea related to the Durbin–Willshaw elastic net). It usually ends within a few per cent of simulated annealing. It is a neural network, but not a physics-informed one: routing has no governing equation to include in its loss. Synthetic example.',
+      cap: 'The map shows a depot and the customers; the line is the route and the plot follows its length. Press “optimise the route”, or add and move customers with the mouse. Finding the shortest round trip through many points is the travelling salesman problem (TSP). The number of possible routes grows factorially, about 10⁴⁶ for 40 customers (39!/2), so they cannot all be checked; the problem is NP-hard, meaning that no known method solves every instance quickly. The nearest-neighbour rule (always drive to the closest unvisited customer) is fast but leaves crossings. Simulated annealing improves it by reversing segments of the route (2-opt moves) and, early on, sometimes accepting a longer route, which lets it leave local minima; the “temperature” T sets how often this happens and is lowered gradually. Synthetic example.',
     };
 const client = { lang, depot: T.depot, optimise: T.optimise, stop: T.stop, xl: T.xl, yl: T.yl, legSA: T.legSA, legNN: T.legNN, plot: T.plot, legSOM: T.legSOM, train: T.train, plotSOM: T.plotSOM, xlSOM: T.xlSOM };
 ---
 <div class="eng-tab r" data-eng-tab="industrial" hidden={hidden} data-r-text={JSON.stringify(client)}>
   <p class="eng-fi"><em>{T.fwd}</em>{T.fi[0]}<em>{T.opt}</em>{T.fi[1]}</p>
+
+  <div class="eng-switches">
+    <div class="eng-switch"><span>{T.method}:</span>
+      <div class="seg" role="group" aria-label={T.method}>
+        <button type="button" data-r-method="sa" aria-pressed="true">{T.mSA}</button>
+        <button type="button" data-r-method="som" aria-pressed="false">{T.mSOM}</button>
+      </div>
+    </div>
+  </div>
 
   <div class="r__grid">
     <div>
@@ -51,19 +60,11 @@ const client = { lang, depot: T.depot, optimise: T.optimise, stop: T.stop, xl: T
     <div class="r__side">
       <p class="r__h" data-r-ph>{T.plot}</p>
       <div class="r__plot" data-r-lplot></div>
+      <p class="r__key" data-r-key></p>
     </div>
   </div>
 
-  <div class="r__method">
-    <span class="r__mlabel">{T.method}:</span>
-    <div class="seg" role="group" aria-label={T.method}>
-      <button type="button" data-r-method="sa" aria-pressed="true">{T.mSA}</button>
-      <button type="button" data-r-method="som" aria-pressed="false">{T.mSOM}</button>
-    </div>
-    <label class="meta r__polish" data-r-polishwrap hidden><input type="checkbox" data-r-polish /> {T.polish}</label>
-  </div>
-
-  <div class="r__controls">
+  <div class="eng-controls">
     <div class="control">
       <div class="control__head"><label for={`r-n-${lang}`}>{T.n}</label><output data-r-nout>40</output></div>
       <input id={`r-n-${lang}`} data-r-n type="range" min="10" max="80" step="1" value="40" />
@@ -72,15 +73,16 @@ const client = { lang, depot: T.depot, optimise: T.optimise, stop: T.stop, xl: T
       <div class="control__head"><label for={`r-v-${lang}`}>{T.speed}</label><output data-r-vout>50 km/h</output></div>
       <input id={`r-v-${lang}`} data-r-v type="range" min="20" max="90" step="5" value="50" />
     </div>
-    <p class="r__btns">
-      <button type="button" class="btn" data-r-opt>{T.optimise}</button>
-      <button type="button" class="btn" data-r-rand>{T.random}</button>
-      <button type="button" class="btn" data-r-clear>{T.clear}</button>
-    </p>
   </div>
+  <div class="eng-checks" data-r-polishwrap hidden><label><input type="checkbox" data-r-polish /> {T.polish}</label></div>
+  <p class="eng-actions">
+    <button type="button" class="btn" data-r-opt>{T.optimise}</button>
+    <button type="button" class="btn" data-r-rand>{T.random}</button>
+    <button type="button" class="btn" data-r-clear>{T.clear}</button>
+  </p>
 
   <div class="eng-eqs">
-    <Equation tex={String.raw`\min_{\pi}\; \sum_{k=1}^{n} \big\lVert \mathbf{x}_{\pi(k)} - \mathbf{x}_{\pi(k+1)} \big\rVert`} />
+    <Equation tex={String.raw`\min_{\pi}\; \textstyle\sum_{k=1}^{n} \big\lVert \mathbf{x}_{\pi(k)} - \mathbf{x}_{\pi(k+1)} \big\rVert`} />
     <div data-r-eq="sa"><Equation tex={String.raw`P(\text{accept}) = \min\!\big(1, e^{-\Delta L / T}\big)`} /></div>
     <div data-r-eq="som" hidden><Equation tex={String.raw`\mathbf{w}_j \leftarrow \mathbf{w}_j + \eta\, e^{-(j-j^*)^2/2\sigma^2}\,(\mathbf{x} - \mathbf{w}_j)`} /></div>
   </div>
@@ -107,7 +109,8 @@ const client = { lang, depot: T.depot, optimise: T.optimise, stop: T.stop, xl: T
     const nout = root.querySelector<HTMLOutputElement>('[data-r-nout]')!;
     const vout = root.querySelector<HTMLOutputElement>('[data-r-vout]')!;
     const optBtn = root.querySelector<HTMLButtonElement>('[data-r-opt]')!;
-    const plot = new LinePlot(root.querySelector<HTMLElement>('[data-r-lplot]')!, { width: 300, height: 230, xlabel: text.xl, ylabel: text.yl, title: text.plot });
+    const plot = new LinePlot(root.querySelector<HTMLElement>('[data-r-lplot]')!, { width: 300, height: 230, xlabel: text.xl, ylabel: text.yl, title: text.plot, legend: false });
+    const keyEl = root.querySelector<HTMLElement>('[data-r-key]')!;
     const num = (v: number, d = 0) => (es ? v.toFixed(d).replace('.', ',') : v.toFixed(d));
 
     let seed = 11;
@@ -213,6 +216,12 @@ const client = { lang, depot: T.depot, optimise: T.optimise, stop: T.stop, xl: T
       const ys = [nnLen, refLen, ...hist.map((h) => h[1])].filter((v) => v > 0);
       const lo = ys.length ? Math.min(...ys) : 0, hi = ys.length ? Math.max(...ys) : 1;
       plot.render(series, { xlim: [0, xmax], ylim: [Math.max(0, lo * 0.9), hi * 1.08 || 1] });
+      keyEl.replaceChildren(...series.filter((x) => x.label).map((x) => {
+        const sp = document.createElement('span'), mk = document.createElement('span');
+        mk.className = `r__sw ${x.cls}${x.dash ? ' r__sw--dash' : ''}`;
+        sp.append(mk, document.createTextNode(x.label!));
+        return sp;
+      }));
     };
 
     const readout = () => {
@@ -362,19 +371,20 @@ const client = { lang, depot: T.depot, optimise: T.optimise, stop: T.stop, xl: T
 </script>
 
 <style>
-  .r__grid { display: grid; gap: var(--s-4); grid-template-columns: minmax(0, 1fr) minmax(0, 15rem); align-items: start; max-width: 40rem; margin-inline: auto; }
+  .r__grid { display: grid; gap: var(--s-4); grid-template-columns: minmax(0, 1fr) minmax(0, 15rem); align-items: center; max-width: 40rem; margin-inline: auto; }
   .r__canvas { width: 100%; aspect-ratio: 1; display: block; touch-action: none; cursor: crosshair; }
   .r__hint { margin-top: var(--s-1); font-style: italic; font-size: var(--step--2); text-align: center; }
   .r__h { font-size: var(--step--1); font-style: italic; margin-bottom: var(--s-2); text-align: center; }
   .r__plot { min-width: 0; }
-  .r__controls { max-width: 40rem; margin: var(--s-4) auto 0; display: grid; gap: var(--s-3); grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); align-items: end; }
-  .r__method { max-width: 40rem; margin: var(--s-4) auto 0; display: flex; flex-wrap: wrap; gap: 0.3em 0.9em; align-items: baseline; justify-content: center; font-size: var(--step--1); }
-  .r__mlabel { font-style: italic; color: var(--ink-2); }
-  .r__polish { display: inline-flex; gap: 0.4em; align-items: baseline; }
-  .r__polish[hidden] { display: none; }
-  .r__btns { font-size: var(--step--1); display: flex; flex-wrap: wrap; gap: 0.3em 1em; grid-column: 1 / -1; justify-content: center; }
-  .eng-eqs { display: flex; flex-wrap: wrap; justify-content: center; column-gap: var(--s-6); margin-block: var(--s-3); }
-  .eng-eqs :global(.eq) { justify-content: center; margin-block: var(--s-2); }
+  .r__key { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.1em 0.9em; font-size: var(--step--2); color: var(--ink-2); margin-top: 0.2rem; }
+  .r__key :global(span) { white-space: nowrap; }
+  .r__key :global(.r__sw) { display: inline-block; width: 1.1em; height: 0; border-top: 1.5px solid; vertical-align: middle; margin-right: 0.35em; }
+  .r__key :global(.r__sw.s-learned) { border-color: var(--c-learned); }
+  .r__key :global(.r__sw.s-muted) { border-color: var(--ink-3); }
+  .r__key :global(.r__sw.s-truth) { border-color: var(--c-truth); }
+  .r__key :global(.r__sw--dash) { border-top-style: dashed; }
+  .r .eng-cap, .r .eng-fi { max-width: 40rem; margin-inline: auto; }
+  .r .lab__readout { max-width: 40rem; margin-inline: auto; text-align: center; }
   @media (max-width: 40rem) {
     .r__grid { grid-template-columns: 1fr; }
   }

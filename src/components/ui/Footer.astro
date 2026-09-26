@@ -1,9 +1,11 @@
 ---
 import { t, type Lang } from '../../i18n/ui';
-import { person, profiles, lastUpdated } from '../../data/site';
+import { person, profiles } from '../../data/site';
 import { url } from '../../i18n/utils';
 interface Props { lang: Lang }
 const { lang } = Astro.props;
+// date of the build (the site is rebuilt on every change and every week)
+const updated = new Date().toISOString().slice(0, 10);
 ---
 
 <footer class="site-footer">
@@ -24,7 +26,7 @@ const { lang } = Astro.props;
       </ul>
     </div>
     <p class="colophon meta">
-      {t(lang, 'footer.colophon')} {t(lang, 'footer.updated')}: <time datetime={lastUpdated}>{lastUpdated}</time>.
+      {t(lang, 'footer.colophon')} {t(lang, 'footer.updated')}: <time datetime={updated}>{updated}</time>.{' '}
       <a href="https://creativecommons.org/licenses/by/4.0/">{t(lang, 'footer.license')}</a>
     </p>
   </div>

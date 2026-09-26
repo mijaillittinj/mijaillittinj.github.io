@@ -146,7 +146,7 @@ button.btn:disabled { color: var(--ink-3); cursor: default; text-decoration: non
 
 .links { font-size: var(--step--1); display: flex; flex-wrap: wrap; gap: 0.1em 0; list-style: none; padding: 0; }
 .links li { margin: 0; }
-.links li + li::before { content: '·'; color: var(--ink-3); padding: 0 0.5em; }
+.links li:not(:last-child)::after { content: '·'; color: var(--ink-3); padding: 0 0.5em; }
 
 /* Status: italic, no colour */
 .tag { font-size: var(--step--1); color: var(--ink-3); }
@@ -210,7 +210,8 @@ select { font-size: var(--step--1); padding: 0.2em 0.4em; border: 0; border-bott
 /* ---------- SVG plots (src/lib/plot.ts) ---------- */
 .lineplot { width: 100%; height: auto; font-family: var(--font-serif); overflow: visible; }
 .lineplot .grid { stroke: none; }
-.lineplot .frame { fill: none; stroke: var(--ink); stroke-width: 0.7; }
+/* plot border: its own class, so it does not inherit the page-column .frame rule (width: 100%) */
+.lineplot .plotframe { fill: none; stroke: var(--ink); stroke-width: 0.7; }
 .lineplot .tick { font-size: 11.5px; fill: var(--ink); }
 .lineplot .axlabel { font-size: 12.5px; fill: var(--ink); font-style: italic; }
 .lineplot .legtext { font-size: 11.5px; fill: var(--ink); }

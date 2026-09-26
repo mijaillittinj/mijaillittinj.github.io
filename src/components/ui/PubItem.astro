@@ -41,4 +41,7 @@ const internal = (h: string) => (h.startsWith('/') ? url(h) : h);
   .pub__status { font-style: italic; color: var(--ink-3); }
   .pub__summary { margin-top: 0.2rem; font-size: var(--step--1); color: var(--ink-2); text-align: justify; }
   .links { margin-top: 0.15rem; font-size: var(--step--2); }
+  /* keep each separator with the link before it, so a wrapped line never starts with a dot */
+  .links li + li::before { content: none; }
+  .links li:not(:last-child)::after { content: '·'; color: var(--ink-3); padding: 0 0.5em; }
 </style>

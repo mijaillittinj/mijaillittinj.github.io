@@ -24,10 +24,10 @@ const T = es
       title: 'Ejemplos interactivos de docencia',
       eyebrow: 'Docencia',
       h1: 'Ejemplos interactivos de mecánica de fluidos y transferencia de calor',
-      lede: 'Estos ejemplos acompañan los cursos ILN221, ILN222 e ILN223 de la UTFSM. Cada uno es un modelo clásico que el estudiante puede manipular: mover un parámetro, ver cómo responde el sistema y comparar con la ecuación. Sirven para construir intuición antes de resolver problemas y para revisar después de clases. Todo se calcula en el navegador.',
+      lede: 'Seis modelos clásicos de mecánica de fluidos y transferencia de calor, preparados para los cursos ILN221, ILN222 e ILN223 de la UTFSM. En cada uno se puede cambiar un parámetro y ver de inmediato cómo responde el sistema, junto a la ecuación que lo describe. Sirven para formarse una intuición antes de resolver ejercicios y para repasar después de clases. Todos los cálculos se hacen en el navegador.',
       back: 'Volver a Docencia',
       how: 'Cómo usarlos',
-      howText: 'Cada figura tiene controles a la izquierda y gráficos a la derecha. Los números en cursiva se actualizan con cada cambio. Una buena forma de estudiar es predecir primero qué va a pasar al mover un control y luego comprobarlo. Las propiedades de los fluidos son valores típicos a unos 20 °C.',
+      howText: 'Cada figura tiene los controles a la izquierda (abajo en un teléfono) y los gráficos a la derecha. Los valores en cursiva se recalculan con cada cambio. Conviene predecir qué va a pasar antes de mover un control y luego comprobarlo. Las propiedades de los fluidos son valores típicos a unos 20 °C.',
       s: { fluids: 'Mecánica de fluidos', heat: 'Transferencia de calor', design: 'Diseño de sistemas térmicos' },
       sub: {
         pipe: 'Flujo en tuberías: régimen, fricción y caída de presión',
@@ -38,9 +38,9 @@ const T = es
         hx: 'Intercambiadores de calor: método ε–NTU',
       },
       intro: {
-        fluids: 'Dos problemas que combinan conservación de masa, energía mecánica y pérdidas por fricción.',
-        heat: 'Los tres modos de transferencia de calor: conducción en régimen transitorio, conducción y convección combinadas, y radiación térmica.',
-        design: 'Del análisis al dimensionamiento: relaciones que se usan para elegir el tamaño de un equipo.',
+        fluids: 'Dos problemas en los que intervienen la conservación de la masa, la energía mecánica del fluido y las pérdidas por fricción.',
+        heat: 'Un ejemplo de cada modo de transferencia de calor: conducción que cambia en el tiempo, conducción combinada con convección, y radiación térmica.',
+        design: 'Del análisis al diseño: cómo se usa una relación física para elegir el tamaño de un equipo.',
       },
       note: 'Los ejemplos son material abierto (CC BY 4.0). Las evaluaciones y pautas de los cursos no se publican.',
     }
@@ -48,10 +48,10 @@ const T = es
       title: 'Interactive teaching examples',
       eyebrow: 'Teaching',
       h1: 'Interactive examples in fluid mechanics and heat transfer',
-      lede: 'These examples accompany the courses ILN221, ILN222 and ILN223 at UTFSM. Each one is a classical model that students can manipulate: change a parameter, watch the system respond and compare with the equation. They are meant to build intuition before solving problems and to review after class. Everything is computed in the browser.',
+      lede: 'Six classical models from fluid mechanics and heat transfer, prepared for the courses ILN221, ILN222 and ILN223 at UTFSM. In each one you can change a parameter and see at once how the system responds, next to the equation that describes it. They help build intuition before solving exercises and are useful for review after class. All calculations run in the browser.',
       back: 'Back to Teaching',
       how: 'How to use them',
-      howText: 'Each figure has controls on the left and plots on the right. The italic readouts update with every change. A good way to study is to predict what will happen before moving a control, then check. Fluid properties are typical values at about 20 °C.',
+      howText: 'Each figure has its controls on the left (below on a phone) and its plots on the right. The values in italics are recomputed with every change. It helps to predict what will happen before moving a control, and then check. Fluid properties are typical values at about 20 °C.',
       s: { fluids: 'Fluid mechanics', heat: 'Heat transfer', design: 'Design of thermal systems' },
       sub: {
         pipe: 'Pipe flow: regime, friction and pressure drop',
@@ -62,9 +62,9 @@ const T = es
         hx: 'Heat exchangers: the ε–NTU method',
       },
       intro: {
-        fluids: 'Two problems that combine mass conservation, mechanical energy and friction losses.',
-        heat: 'The three modes of heat transfer: transient conduction, combined conduction and convection, and thermal radiation.',
-        design: 'From analysis to sizing: relations used to choose the size of a piece of equipment.',
+        fluids: 'Two problems that involve conservation of mass, the mechanical energy of the fluid and friction losses.',
+        heat: 'One example of each mode of heat transfer: conduction that changes over time, conduction combined with convection, and thermal radiation.',
+        design: 'From analysis to design: how a physical relation is used to choose the size of a piece of equipment.',
       },
       note: 'The examples are open material (CC BY 4.0). Course assessments and solutions are not published.',
     };
@@ -143,5 +143,9 @@ const T = es
   .sub { font-size: var(--step-1); margin-top: var(--s-6); }
   .sub span { display: inline-block; min-width: 2.2em; }
   :global(.js .t-plot) { min-height: 13rem; }
+  :global(.plot-key) { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.15rem 1rem; margin-top: 0.2rem; font-size: var(--step--2); color: var(--ink-2); }
+  :global(.plot-key span) { display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap; }
+  :global(.plot-key svg) { width: 18px; height: 10px; overflow: visible; }
+  :global(.lab .t-btns) { font-size: var(--step--1); }
   :global(.lab .t-plot:not([hidden])) { display: block; }
 </style>

@@ -7,18 +7,18 @@ const { lang, n } = Astro.props;
 const es = lang === 'es';
 const S = es
   ? {
-      Dt: 'Diámetro del estanque', d: 'Diámetro del orificio', h0: 'Altura inicial h₀', Cd: 'Coeficiente de descarga Cd',
-      play: 'animar', stop: 'detener', plot: 'Nivel en función del tiempo', sketch: 'Estanque',
-      xt: 't (s)', yh: 'h (m)', lh: 'h(t)', lnow: 'instante animado', lv: 'velocidad de salida',
-      read: ['Tiempo de vaciado', 'caudal inicial', 'velocidad inicial en el chorro'],
-      cap: 'Vaciado de un estanque cilíndrico por un orificio en el fondo. Bernoulli entre la superficie libre y el chorro da la velocidad de salida, y la conservación de masa relaciona esa velocidad con la bajada del nivel. El nivel baja cada vez más lento, porque la velocidad del chorro disminuye con √h; la mitad inferior del estanque tarda más que la superior. El coeficiente de descarga resume las pérdidas y la contracción del chorro.',
+      Dt: 'Diámetro del estanque Dt', d: 'Diámetro del orificio d', h0: 'Altura inicial h₀', Cd: 'Coeficiente de descarga Cd',
+      play: 'animar el vaciado', stop: 'detener', plot: 'Nivel del agua en el tiempo', sketch: 'Estanque',
+      xt: 't (s)', yh: 'h (m)', lh: 'nivel h(t)', lnow: 'instante de la animación', lv: 'velocidad de salida',
+      read: ['tiempo de vaciado', 'caudal inicial', 'velocidad inicial del chorro'],
+      cap: 'Vaciado de un estanque cilíndrico por un orificio en el fondo. La ecuación de Bernoulli entre la superficie libre y el chorro da la velocidad de salida, √(2gh), y la conservación de masa relaciona el caudal que sale con la bajada del nivel. Como la velocidad del chorro disminuye con la raíz de la altura, el nivel baja cada vez más lento: la mitad inferior del estanque tarda más en vaciarse que la superior. El coeficiente de descarga C<sub>d</sub> (menor que 1) reúne las pérdidas por fricción y la contracción del chorro al salir por el orificio.',
     }
   : {
-      Dt: 'Tank diameter', d: 'Orifice diameter', h0: 'Initial height h₀', Cd: 'Discharge coefficient Cd',
-      play: 'animate', stop: 'stop', plot: 'Level against time', sketch: 'Tank',
-      xt: 't (s)', yh: 'h (m)', lh: 'h(t)', lnow: 'animated instant', lv: 'outflow velocity',
-      read: ['Drain time', 'initial flow rate', 'initial jet velocity'],
-      cap: 'Draining a cylindrical tank through an orifice in its base. Bernoulli between the free surface and the jet gives the outflow velocity, and mass conservation links that velocity to the falling level. The level falls ever more slowly because the jet velocity decreases with √h, so the lower half of the tank takes longer to empty than the upper half. The discharge coefficient lumps losses and the contraction of the jet.',
+      Dt: 'Tank diameter Dt', d: 'Orifice diameter d', h0: 'Initial height h₀', Cd: 'Discharge coefficient Cd',
+      play: 'animate the draining', stop: 'stop', plot: 'Water level over time', sketch: 'Tank',
+      xt: 't (s)', yh: 'h (m)', lh: 'level h(t)', lnow: 'animated instant', lv: 'outflow velocity',
+      read: ['drain time', 'initial flow rate', 'initial jet velocity'],
+      cap: 'Draining a cylindrical tank through an orifice in its base. Bernoulli’s equation between the free surface and the jet gives the outflow velocity, √(2gh), and mass conservation links the outflow to the falling level. Because the jet velocity decreases with the square root of the height, the level falls more and more slowly: the lower half of the tank takes longer to empty than the upper half. The discharge coefficient C<sub>d</sub> (below 1) accounts for friction losses and for the contraction of the jet as it leaves the orifice.',
     };
 ---
 <figure class="lab" data-t-tank data-s={JSON.stringify(S)}>
@@ -28,7 +28,7 @@ const S = es
       <ParameterSlider name="d" label={S.d} min={5} max={100} step={1} value={30} unit=" mm" format="int" />
       <ParameterSlider name="h0" label={S.h0} min={0.2} max={5} step={0.05} value={2} unit=" m" />
       <ParameterSlider name="Cd" label={S.Cd} min={0.5} max={1} step={0.01} value={0.61} />
-      <p><button type="button" class="btn" data-t-play>{S.play}</button></p>
+      <p class="t-btns"><button type="button" class="btn" data-t-play>{S.play}</button></p>
       <p class="lab__readout" data-t-read aria-live="polite"></p>
     </div>
     <div class="lab__plots tank-plots">
@@ -42,21 +42,23 @@ const S = es
           <text x="152" y="44" class="tank__lbl" data-t-hlbl>h</text>
         </svg>
       </div>
-      <div><p class="panel-title">{S.plot}</p><div class="t-plot" data-t-h></div></div>
+      <div><p class="panel-title">{S.plot}</p><div class="t-plot" data-t-h></div><div class="t-key" data-t-kh></div></div>
     </div>
   </div>
-  <Equation tex={String.raw`\frac{\pi D_t^2}{4}\,\frac{dh}{dt}=-C_d\,\frac{\pi d^2}{4}\sqrt{2gh}\quad\Longrightarrow\quad t_{\mathrm{${es ? "vac" : "drain"}}}=\left(\frac{D_t}{d}\right)^{2}\frac{1}{C_d}\sqrt{\frac{2h_0}{g}}`} />
-  <figcaption><span class="fig-num">{es ? 'Figura' : 'Figure'} {n}.</span>{S.cap}</figcaption>
+  <Equation tex={String.raw`\frac{\pi D_t^2}{4}\,\frac{dh}{dt}=-C_d\,\frac{\pi d^2}{4}\sqrt{2gh}\qquad \Longrightarrow\; t_{\mathrm{${es ? "vac" : "drain"}}}=\left(\frac{D_t}{d}\right)^{2}\frac{1}{C_d}\sqrt{\frac{2h_0}{g}}`} />
+  <figcaption><span class="fig-num">{es ? 'Figura' : 'Figure'} {n}.</span><Fragment set:html={S.cap} /></figcaption>
 </figure>
 
 <script>
   import { LinePlot, fmt } from '../../lib/plot';
   import { tankHeight, drainTime, G } from '../../lib/teaching';
+  import { renderKey } from '../../lib/legendkey';
 
   document.querySelectorAll<HTMLElement>('[data-t-tank]').forEach((root) => {
     const S = JSON.parse(root.dataset.s!);
     const val = (k: string) => +root.querySelector<HTMLInputElement>(`[name="${k}"]`)!.value;
-    const plot = new LinePlot(root.querySelector('[data-t-h]')!, { width: 420, height: 280, xlabel: S.xt, ylabel: S.yh, title: S.plot });
+    const plot = new LinePlot(root.querySelector('[data-t-h]')!, { width: 420, height: 280, xlabel: S.xt, ylabel: S.yh, title: S.plot, legend: false });
+    renderKey(root.querySelector('[data-t-kh]')!, [{ label: S.lh, cls: 's-physics' }, { label: S.lnow, cls: 's-data', kind: 'point' }]);
     const read = root.querySelector<HTMLElement>('[data-t-read]')!;
     const water = root.querySelector<SVGRectElement>('[data-t-water]')!;
     const jet = root.querySelector<SVGPathElement>('[data-t-jet]')!;
@@ -87,7 +89,7 @@ const S = es
       jet.setAttribute('d', h > 0 ? `M80 180 Q${80 + reach * 0.6} 182 ${80 + reach} 200` : 'M80 180');
       const Q0 = Cd * Math.PI * d * d / 4 * Math.sqrt(2 * G * h0);
       const tdTxt = td < 120 ? `${td.toFixed(1)} s` : td < 7200 ? `${(td / 60).toFixed(1)} min` : `${(td / 3600).toFixed(2)} h`;
-      read.innerHTML = `${S.read[0]}: <strong>${tdTxt}</strong>.<br>${S.read[1]}: <strong>${fmt(Q0 * 1000)}</strong> L/s; ${S.read[2]}: <strong>${Math.sqrt(2 * G * h0).toFixed(2)}</strong> m/s.`;
+      read.innerHTML = `${S.read[0]} <strong>${tdTxt}</strong><br>${S.read[1]} <strong>${fmt(Q0 * 1000)}</strong> L/s · ${S.read[2]} <strong>${Math.sqrt(2 * G * h0).toFixed(2)}</strong> m/s`;
       return td;
     };
 

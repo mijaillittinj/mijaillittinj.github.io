@@ -9,18 +9,18 @@ const S = es
   ? {
       T: 'Temperatura T', scale: 'Escala vertical', lin: 'lineal', log: 'logarítmica',
       presets: 'Ejemplos', pRoom: 'ambiente (300 K)', pFlame: 'llama (1800 K)', pLamp: 'filamento (2800 K)', pSun: 'Sol (5800 K)',
-      plot: 'Poder emisivo espectral del cuerpo negro', xl: 'λ (µm)', ye: 'Ebλ (W m⁻² µm⁻¹)',
-      lE: 'Ebλ(T)', lvis: 'visible 0,38–0,78 µm', lpk: 'máximo (Wien)',
-      read: ['Máximo en λ', 'Poder emisivo total σT⁴', 'fracción en el visible'],
-      cap: 'Distribución espectral de la radiación emitida por un cuerpo negro (ley de Planck). Al subir la temperatura la emisión total crece como T⁴ y el máximo se desplaza hacia longitudes de onda cortas, λmax·T = 2898 µm·K. Un cuerpo a temperatura ambiente emite casi todo en el infrarrojo; un filamento incandescente emite solo una pequeña parte en el visible. Estas mismas leyes se usan en pirometría para medir temperaturas de llamas a partir de su emisión.',
+      plot: 'Poder emisivo espectral de un cuerpo negro', xl: 'longitud de onda λ (µm)', ye: 'Ebλ (W m⁻² µm⁻¹)', yeU: 'W m⁻² µm⁻¹',
+      lE: 'ley de Planck', lvis: 'visible (0,38–0,78 µm)', lpk: 'máximo (ley de Wien)',
+      read: ['máximo en λ', 'emisión total σT⁴', 'fracción en el visible'],
+      cap: 'Radiación emitida por un cuerpo negro, un emisor ideal, en cada longitud de onda (ley de Planck). Al subir la temperatura la emisión total crece como T⁴ (ley de Stefan–Boltzmann) y el máximo se desplaza hacia longitudes de onda más cortas (ley de Wien, λ<sub>max</sub>·T = 2898 µm·K). Un cuerpo a temperatura ambiente emite casi todo en el infrarrojo, y un filamento incandescente entrega en el visible solo una pequeña fracción de su emisión. Estas leyes son la base de la pirometría, que mide la temperatura de un objeto, por ejemplo una llama, a partir de la luz que emite.',
     }
   : {
       T: 'Temperature T', scale: 'Vertical scale', lin: 'linear', log: 'logarithmic',
       presets: 'Examples', pRoom: 'room (300 K)', pFlame: 'flame (1800 K)', pLamp: 'filament (2800 K)', pSun: 'Sun (5800 K)',
-      plot: 'Blackbody spectral emissive power', xl: 'λ (µm)', ye: 'Ebλ (W m⁻² µm⁻¹)',
-      lE: 'Ebλ(T)', lvis: 'visible 0.38–0.78 µm', lpk: 'peak (Wien)',
-      read: ['Peak at λ', 'Total emissive power σT⁴', 'fraction in the visible'],
-      cap: 'Spectral distribution of the radiation emitted by a blackbody (Planck’s law). As the temperature rises, total emission grows as T⁴ and the peak moves to shorter wavelengths, λmax·T = 2898 µm·K. A body at room temperature emits almost everything in the infrared; an incandescent filament emits only a small part in the visible. The same laws are used in pyrometry to measure flame temperatures from their emission.',
+      plot: 'Spectral emissive power of a blackbody', xl: 'wavelength λ (µm)', ye: 'Ebλ (W m⁻² µm⁻¹)', yeU: 'W m⁻² µm⁻¹',
+      lE: 'Planck’s law', lvis: 'visible (0.38–0.78 µm)', lpk: 'peak (Wien’s law)',
+      read: ['peak at λ', 'total emission σT⁴', 'fraction in the visible'],
+      cap: 'Radiation emitted by a blackbody, an ideal emitter, at each wavelength (Planck’s law). As the temperature rises, the total emission grows as T⁴ (Stefan–Boltzmann law) and the peak moves to shorter wavelengths (Wien’s law, λ<sub>max</sub>·T = 2898 µm·K). A body at room temperature emits almost everything in the infrared, and an incandescent filament puts only a small fraction of its emission in the visible. These laws are the basis of pyrometry, which measures the temperature of an object, a flame for instance, from the light it emits.',
     };
 ---
 <figure class="lab" data-t-bb data-s={JSON.stringify(S)}>
@@ -45,22 +45,26 @@ const S = es
       </div>
       <p class="lab__readout" data-t-read aria-live="polite"></p>
     </div>
-    <div><p class="panel-title">{S.plot}</p><div class="t-plot" data-t-lin></div><div class="t-plot" data-t-log hidden></div></div>
+    <div><p class="panel-title">{S.plot}</p><div class="t-plot" data-t-lin></div><div class="t-plot" data-t-log hidden></div><div class="t-key" data-t-kbb></div></div>
   </div>
   <Equation tex={String.raw`E_{b\lambda}(\lambda,T)=\frac{2\pi h c^2}{\lambda^5\left[\exp\!\left(\dfrac{hc}{\lambda k_B T}\right)-1\right]},\qquad \lambda_{\max}T=2898\ \mu\mathrm{m\,K},\qquad \int_0^\infty E_{b\lambda}\,d\lambda=\sigma T^4`} />
-  <figcaption><span class="fig-num">{es ? 'Figura' : 'Figure'} {n}.</span>{S.cap}</figcaption>
+  <figcaption><span class="fig-num">{es ? 'Figura' : 'Figure'} {n}.</span><Fragment set:html={S.cap} /></figcaption>
 </figure>
 
 <script>
   import { LinePlot } from '../../lib/plot';
   import { planck, wienPeak, bandFraction, SIGMA } from '../../lib/teaching';
+  import { renderKey } from '../../lib/legendkey';
+  const SUP: Record<string, string> = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+  const sup = (n: number) => String(n).split('').map((c) => SUP[c] ?? c).join('');
 
   document.querySelectorAll<HTMLElement>('[data-t-bb]').forEach((root) => {
     const S = JSON.parse(root.dataset.s!);
     const input = root.querySelector<HTMLInputElement>('[name="T"]')!;
     const boxLin = root.querySelector<HTMLElement>('[data-t-lin]')!;
     const boxLog = root.querySelector<HTMLElement>('[data-t-log]')!;
-    const opts = { width: 760, height: 300, xlabel: S.xl, ylabel: S.ye, title: S.plot };
+    const opts = { width: 760, height: 300, xlabel: S.xl, ylabel: S.ye, title: S.plot, legend: false };
+    renderKey(root.querySelector('[data-t-kbb]')!, [{ label: S.lE, cls: 's-physics' }, { label: S.lpk, cls: 's-data', kind: 'point' }, { label: S.lvis, cls: 's-muted', kind: 'band' }]);
     const pLin = new LinePlot(boxLin, opts);
     const pLog = new LinePlot(boxLog, { ...opts, logy: true });
     const read = root.querySelector<HTMLElement>('[data-t-read]')!;
@@ -73,16 +77,21 @@ const S = es
       const lmax = Math.min(40, Math.max(3, 6 * lm));
       const lmin = log ? 0.1 : 0.05;
       const ls = Array.from({ length: 400 }, (_, i) => lmin + ((lmax - lmin) * i) / 399);
-      const E = ls.map((l) => planck(l, T));
-      const ylim: [number, number] = log ? [peak * 1e-6, peak * 3] : [0, peak * 1.12];
+      // linear scale: plot in units of 10^p so that tick labels stay distinct
+      const p = log ? 0 : Math.floor(Math.log10(peak));
+      const u = 10 ** p;
+      const E = ls.map((l) => planck(l, T) / u);
+      if (!log) pLin.setLabels(undefined, p === 0 ? S.ye : `Ebλ (10${sup(p)} ${S.yeU})`);
+      const pk = peak / u;
+      const ylim: [number, number] = log ? [peak * 1e-6, peak * 3] : [0, pk * 1.12];
       const series = [
         { kind: 'band' as const, x: [0.38, 0.78], y: [ylim[0], ylim[0]], y2: [ylim[1], ylim[1]], cls: 's-muted', label: S.lvis },
         { kind: 'line' as const, x: ls, y: E, cls: 's-physics', label: S.lE },
-        { kind: 'points' as const, x: [lm], y: [peak], cls: 's-data', label: S.lpk },
+        { kind: 'points' as const, x: [lm], y: [pk], cls: 's-data', label: S.lpk },
       ];
       (log ? pLog : pLin).render(series, { xlim: [0, lmax], ylim });
       const vis = bandFraction(0.38, 0.78, T);
-      read.innerHTML = `${S.read[0]} = <strong>${lm.toFixed(2)}</strong> µm.<br>${S.read[1]} = <strong>${(SIGMA * T ** 4).toExponential(2)}</strong> W/m².<br>${S.read[2]}: <strong>${vis < 1e-4 ? vis.toExponential(1) : (100 * vis).toFixed(vis < 0.01 ? 3 : 1) + ' %'}</strong>.`;
+      read.innerHTML = `${S.read[0]} = <strong>${lm.toFixed(2)}</strong> µm<br>${S.read[1]} = <strong>${(SIGMA * T ** 4).toExponential(2)}</strong> W/m²<br>${S.read[2]} <strong>${vis < 1e-4 ? vis.toExponential(1) : (100 * vis).toFixed(vis < 0.01 ? 3 : 1) + ' %'}</strong>`;
     };
     root.querySelectorAll<HTMLButtonElement>('[data-preset]').forEach((b) => b.addEventListener('click', () => {
       input.value = b.dataset.preset!;

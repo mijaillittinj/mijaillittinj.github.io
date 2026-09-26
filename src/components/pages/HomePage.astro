@@ -21,25 +21,25 @@ const T = es
       title: undefined,
       eyebrow: 'Métodos computacionales para problemas inversos',
       tags: ['Problemas inversos', 'Aprendizaje automático científico', 'Sistemas físicos'],
-      lede: 'Desarrollo métodos para estimar magnitudes que no se pueden medir directamente, como campos de temperatura, propiedades de partículas o fuentes de radiación, a partir de observaciones indirectas y ruidosas. Lo hago combinando modelos físicos con datos: primero con reconstrucción regularizada y ahora con redes neuronales informadas por la física.',
+      lede: 'Desarrollo métodos computacionales para estimar magnitudes que no se pueden medir directamente, como campos de temperatura, propiedades de partículas o fuentes de radiación, a partir de observaciones indirectas y ruidosas. Los métodos combinan modelos físicos con datos: primero mediante reconstrucción regularizada y ahora también con redes neuronales informadas por la física, es decir, redes entrenadas para cumplir las ecuaciones que gobiernan el sistema.',
       cta1: 'Programa de investigación', cta2: 'Publicaciones',
       pubLabel: 'Publicaciones recientes', allPubs: 'Todas las publicaciones',
       teachLabel: 'Docencia', teachNow: 'Este semestre', allTeach: 'Docencia',
       learnLabel: 'Aprender', learnNew: 'Módulo interactivo', allLearn: 'Todos los módulos',
-      demosLabel: 'Ejemplos interactivos', demosTitle: 'Mecánica de fluidos, transferencia de calor e intercambiadores, con controles deslizantes', demosDesc: 'Flujo en tuberías y diagrama de Moody, vaciado de estanques, conducción transitoria y número de Biot, radio crítico de aislamiento, radiación de cuerpo negro y método ε–NTU.', coursesNow: 'Cursos que dicto en la UTFSM',
-      swLabel: 'Software', swDesc: 'Implementación en Python de la transformada de Abel basada en splines, con corrección de atrapamiento de señal.',
+      demosLabel: 'Ejemplos interactivos', demosTitle: 'Mecánica de fluidos, transferencia de calor e intercambiadores de calor', demosDesc: 'Seis modelos de clase que se manipulan en el navegador: flujo en tuberías y diagrama de Moody, vaciado de estanques, conducción transitoria y número de Biot, radio crítico de aislamiento, radiación de cuerpo negro y método ε–NTU.', coursesNow: 'Cursos que dicto en la UTFSM',
+      swLabel: 'Software', swDesc: 'Paquete de Python que reconstruye perfiles radiales a partir de mediciones en la línea de visión (transformada de Abel basada en splines), con corrección del atrapamiento de señal.',
     }
   : {
       title: undefined,
       eyebrow: 'Computational methods for inverse problems',
       tags: ['Inverse problems', 'Scientific machine learning', 'Physical systems'],
-      lede: 'I develop methods that estimate quantities we cannot measure directly, such as temperature fields, particle properties or radiative sources, from indirect and noisy observations. The approach combines physical models with data: first through regularised reconstruction, now through physics-informed neural networks.',
+      lede: 'I develop computational methods to estimate quantities that cannot be measured directly, such as temperature fields, particle properties or radiation sources, from indirect and noisy observations. The methods combine physical models with data, first through regularised reconstruction and now also through physics-informed neural networks: networks trained to satisfy the equations that govern the system.',
       cta1: 'Research programme', cta2: 'Publications',
       pubLabel: 'Recent papers', allPubs: 'All publications',
       teachLabel: 'Teaching', teachNow: 'This semester', allTeach: 'Teaching',
       learnLabel: 'Learn', learnNew: 'Interactive module', allLearn: 'All modules',
-      demosLabel: 'Interactive examples', demosTitle: 'Fluid mechanics, heat transfer and heat exchangers, with sliders', demosDesc: 'Pipe flow and the Moody diagram, tank draining, transient conduction and the Biot number, the critical radius of insulation, blackbody radiation and the ε–NTU method.', coursesNow: 'Courses I teach at UTFSM',
-      swLabel: 'Software', swDesc: 'Python implementation of the spline-based Abel transform with signal-trapping correction.',
+      demosLabel: 'Interactive examples', demosTitle: 'Fluid mechanics, heat transfer and heat exchangers', demosDesc: 'Six course models to explore in the browser: pipe flow and the Moody diagram, tank draining, transient conduction and the Biot number, the critical radius of insulation, blackbody radiation and the ε–NTU method.', coursesNow: 'Courses I teach at UTFSM',
+      swLabel: 'Software', swDesc: 'Python package that reconstructs radial profiles from line-of-sight measurements (the spline-based Abel transform), with a correction for signal trapping.',
     };
 ---
 <Base title={T.title} image="/og-default.png">
@@ -101,7 +101,7 @@ const T = es
 
   .more-wrap { margin-top: var(--s-3); font-size: var(--step--1); }
 
-  .desc dt { font-weight: 700; display: inline; }
+  .desc dt { font-weight: 700; display: inline; margin-right: 0.35em; }
   .desc dd { display: inline; margin: 0; text-align: justify; }
   .desc dd::after { content: ''; display: block; margin-bottom: var(--s-3); }
 </style>

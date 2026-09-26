@@ -66,9 +66,31 @@ const { base, field, caption, id = 'td' } = Astro.props;
     const out = root.querySelector<HTMLElement>('[data-elout]')!;
     const cut = root.querySelector<HTMLInputElement>('[data-cut]')!;
 
+    // The retrieved field ends where the diagnostics end, and that edge moves inward one grid
+    // cell every few rows. Cut at a smoothed edge radius instead of the staircase (otherwise
+    // each step shows up as a horizontal band in the line-of-sight image), and fill the cells
+    // just beyond the staircase with the last valid value of the row so the cut is continuous.
+    const edge = new Float64Array(NZ);
+    for (let j = 0; j < NZ; j++) {
+      let last = 0;
+      for (let i = 0; i < nr; i++) if (Number.isFinite(data[(j + j0) * nr + i])) last = i;
+      edge[j] = last + 0.5;
+      for (let i = last + 1; i < Math.min(nr, last + 4); i++) f[j * nr + i] = f[j * nr + last];
+    }
+    const win = 12, edgeS = new Float64Array(NZ);
+    for (let j = 0; j < NZ; j++) {
+      let s2 = 0, n = 0;
+      for (let k = Math.max(0, j - win); k <= Math.min(NZ - 1, j + win); k++) { s2 += edge[k]; n++; }
+      edgeS[j] = Math.min(s2 / n, edge[j] + 2) * (R / (nr - 1));
+    }
+    const edgeAt = (z: number) => {
+      const y = Math.max(0, Math.min(NZ - 1, (z / H) * (NZ - 1))), j = Math.floor(y), j1 = Math.min(j + 1, NZ - 1);
+      return edgeS[j] + (edgeS[j1] - edgeS[j]) * (y - j);
+    };
+
     // bilinear sample of f(r, z) with z measured from the bottom of the cropped field
     const sample = (r: number, z: number) => {
-      if (r >= R || z < 0 || z > H) return 0;
+      if (r >= R || z < 0 || z > H || r > edgeAt(z)) return 0;
       const x = (r / R) * (nr - 1), y = (z / H) * (NZ - 1);
       const i = Math.floor(x), j = Math.floor(y);
       const dx = x - i, dy = y - j;
@@ -86,7 +108,7 @@ const { base, field, caption, id = 'td' } = Astro.props;
       const halfW = R * 1.08;
       const vmin = -R * s - 0.02 * H, vmax = H * c + R * s + 0.02 * H;
       const img = new Float32Array(W * Hpx);
-      const steps = 110;
+      const steps = 200; // fewer steps leave faint aliasing arcs
       const tmax = R * 1.02;
       let mx = 0;
       for (let py = 0; py < Hpx; py++) {

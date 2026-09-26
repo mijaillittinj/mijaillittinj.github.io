@@ -18,15 +18,15 @@ export interface LearnModule {
 export const categories: Record<LearnCategory, { title: string; blurb: string }> = {
   'inverse-problems': {
     title: 'Inverse problems',
-    blurb: 'Recovering causes from effects: projections, ill-conditioning and regularisation.',
+    blurb: 'Recovering hidden causes from indirect measurements, and why noise makes this hard.',
   },
   optimization: {
     title: 'Optimization',
-    blurb: 'How iterative methods move through a loss landscape, and why they sometimes fail.',
+    blurb: 'How iterative methods search for the minimum of a function, and why they sometimes fail.',
   },
   'machine-learning': {
     title: 'Machine learning',
-    blurb: 'Learning from data, and what changes when a physical law enters the loss.',
+    blurb: 'Fitting models to data, and what changes when a physical law is added to the training.',
   },
   'numerical-methods': {
     title: 'Numerical methods',
@@ -38,7 +38,7 @@ export const categories: Record<LearnCategory, { title: string; blurb: string }>
   },
   uncertainty: {
     title: 'Uncertainty',
-    blurb: 'How noise in the data becomes uncertainty in what we infer, and how to combine models with data.',
+    blurb: 'How noise in the data becomes uncertainty in the result, and how to combine a model with measurements.',
   },
 };
 
@@ -47,7 +47,7 @@ export const modules: LearnModule[] = [
     slug: 'inverse-problems/abel-transform',
     category: 'inverse-problems',
     title: 'Seeing inside an axisymmetric object: the Abel transform',
-    question: 'Shape a radial field, project it, add noise, and watch direct inversion fail while regularisation recovers it.',
+    question: 'A camera sees an axisymmetric object only as a projection. Shape a radial profile, project it, add noise, and compare direct inversion, which amplifies the noise, with a regularised inversion that recovers the profile.',
     status: 'live',
     minutes: 15,
     related: [
@@ -59,7 +59,7 @@ export const modules: LearnModule[] = [
     slug: 'optimization/gradient-descent',
     category: 'optimization',
     title: 'Gradient descent, momentum and Adam on a loss landscape',
-    question: 'Pick a starting point and a step size, and compare how three methods travel to (or away from) a minimum.',
+    question: 'Choose a starting point and a step size, and compare how three optimisation methods approach the minimum of a function, or fail to.',
     status: 'live',
     minutes: 12,
     related: [{ label: 'Course: thermal systems design', href: '/teaching/thermal-systems-design/' }],
@@ -68,7 +68,7 @@ export const modules: LearnModule[] = [
     slug: 'machine-learning/physics-informed-learning',
     category: 'machine-learning',
     title: 'Data only or data plus physics? A small physics-informed network',
-    question: 'Train a tiny network on five noisy sensors, then add the heat equation to the loss and infer a hidden parameter.',
+    question: 'Fit a small neural network to four noisy temperature readings, then add the heat equation to its training and use it to estimate a parameter that is not measured.',
     status: 'live',
     minutes: 15,
     related: [{ label: 'Research: physics-informed learning', href: '/research/#physics-informed' }],
@@ -77,7 +77,7 @@ export const modules: LearnModule[] = [
     slug: 'inverse-problems/svd-noise-amplification',
     category: 'inverse-problems',
     title: 'Why inversion amplifies noise: the singular value decomposition',
-    question: 'Decompose a blur into singular values, see which components the data can resolve, and filter the rest with truncation or Tikhonov.',
+    question: 'Break a blurring operator into independent components, see which of them the data can resolve, and filter out the rest with truncation or Tikhonov regularisation.',
     status: 'live',
     minutes: 15,
     related: [
@@ -89,7 +89,7 @@ export const modules: LearnModule[] = [
     slug: 'uncertainty/bayesian-mcmc',
     category: 'uncertainty',
     title: 'Bayesian inference with Markov chain Monte Carlo',
-    question: 'Calibrate a cooling law from a few noisy readings and let a Metropolis sampler map every parameter value compatible with the data.',
+    question: 'Estimate the two parameters of a cooling law from a few noisy readings, and let a random sampler map every combination of values that is compatible with the data.',
     status: 'live',
     minutes: 15,
     related: [{ label: 'Module: tracking with a Kalman filter', href: '/learn/uncertainty/kalman-filter/' }],
@@ -98,7 +98,7 @@ export const modules: LearnModule[] = [
     slug: 'machine-learning/neural-network-from-scratch',
     category: 'machine-learning',
     title: 'A neural network from scratch: fitting, overfitting and generalisation',
-    question: 'Train a small network with hand-written backpropagation and watch the validation error reveal overfitting.',
+    question: 'Train a small neural network written from first principles and watch the error on unseen data reveal when it starts to memorise the noise.',
     status: 'live',
     minutes: 15,
     related: [
@@ -110,7 +110,7 @@ export const modules: LearnModule[] = [
     slug: 'uncertainty/kalman-filter',
     category: 'uncertainty',
     title: 'Tracking a drone with a Kalman filter',
-    question: 'Fuse a motion model with noisy GPS fixes and tune how much the filter trusts each of them.',
+    question: 'Combine a simple model of motion with noisy GPS positions, and adjust how much the filter trusts each of them.',
     status: 'live',
     minutes: 12,
     related: [{ label: 'Module: Bayesian inference with MCMC', href: '/learn/uncertainty/bayesian-mcmc/' }],

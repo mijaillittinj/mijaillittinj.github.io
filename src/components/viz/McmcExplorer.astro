@@ -41,15 +41,18 @@ import ParameterSlider from './ParameterSlider.astro';
 </div>
 
 <script>
+  import { keyed } from '../../lib/legendkey';
   import { makeData, startChain, step, quantile, histogram, cooling, BOX, type Chain, type Data } from '../../lib/mcmc';
   import { LinePlot } from '../../lib/plot';
 
   document.querySelectorAll<HTMLElement>('[data-mcmc]').forEach((root) => {
     const $ = <T extends Element>(s: string) => root.querySelector<T>(s)!;
     const val = (name: string) => +$<HTMLInputElement>(`[name="${name}"]`).value;
-    const pData = new LinePlot($('[data-mc-data]'), { width: 860, height: 280, xlabel: 'time t (min)', ylabel: 'T (°C)', title: 'Cooling data' });
+    const pData = new LinePlot($('[data-mc-data]'), { width: 860, height: 280, xlabel: 'time t (min)', ylabel: 'T (°C)', title: 'Cooling data' , legend: false});
+    const pDataR = keyed(pData, $('[data-mc-data]'));
     const pPost = new LinePlot($('[data-mc-post]'), { width: 420, height: 280, xlabel: 'time constant τ (min)', ylabel: 'T∞ (°C)', title: 'Posterior samples', legend: false });
-    const pTrace = new LinePlot($('[data-mc-trace]'), { width: 420, height: 280, xlabel: 'iteration', ylabel: 'τ (min)', title: 'Trace' });
+    const pTrace = new LinePlot($('[data-mc-trace]'), { width: 420, height: 280, xlabel: 'iteration', ylabel: 'τ (min)', title: 'Trace' , legend: false});
+    const pTraceR = keyed(pTrace, $('[data-mc-trace]'));
     const pHt = new LinePlot($('[data-mc-htau]'), { width: 420, height: 240, xlabel: 'τ (min)', ylabel: 'density', title: 'Marginal τ', legend: false });
     const pHT = new LinePlot($('[data-mc-htinf]'), { width: 420, height: 240, xlabel: 'T∞ (°C)', ylabel: 'density', title: 'Marginal T∞', legend: false });
     const read = $<HTMLElement>('[data-mc-read]');
@@ -81,7 +84,7 @@ import ParameterSlider from './ParameterSlider.astro';
       }
       series.push({ kind: 'line', x: ts, y: ts.map((t) => cooling(t, TRUE.tau, TRUE.Tinf)), cls: 's-truth', dash: true, label: 'true curve (hidden)' });
       series.push({ kind: 'points', x: data.t, y: data.d, cls: 's-data', label: 'thermocouple readings' });
-      pData.render(series, { xlim: [0, 40], ylim: [10, 95] });
+      pDataR(series, { xlim: [0, 40], ylim: [10, 95] });
 
       const lim = (a: number[], box: [number, number]) => a.length > 50 ? [Math.max(box[0], quantile(a, 0.002) - 1), Math.min(box[1], quantile(a, 0.998) + 1)] as [number, number] : box;
       // posterior scatter (thinned) + recent path
@@ -98,7 +101,7 @@ import ParameterSlider from './ParameterSlider.astro';
       const tstep = Math.max(1, Math.floor(N / 600));
       const ti: number[] = [], tv: number[] = [];
       for (let j = 0; j < N; j += tstep) { ti.push(j); tv.push(ch.tau[j]); }
-      pTrace.render([
+      pTraceR([
         { kind: 'line', x: ti, y: tv, cls: 's-physics', label: 'τ' },
         { kind: 'line', x: [b, b], y: [BOX.tau[0], BOX.tau[1]], cls: 's-muted', dash: true, label: 'end of burn-in' },
         { kind: 'line', x: [0, Math.max(N, 10)], y: [TRUE.tau, TRUE.tau], cls: 's-truth', dash: true, label: 'true τ' },

@@ -94,6 +94,14 @@ export function drawField(canvas: HTMLCanvasElement, data: ArrayLike<number>, o:
   ctx.putImageData(img, 0, 0);
 }
 
+/** Load a uint16-quantised field (little-endian; 65535 = masked), exported by scripts/export_*.py. */
+export async function loadU16Field(url: string, min: number, max: number): Promise<Float32Array> {
+  const buf = new Uint16Array(await (await fetch(url)).arrayBuffer());
+  const out = new Float32Array(buf.length);
+  for (let i = 0; i < buf.length; i++) out[i] = buf[i] === 65535 ? NaN : min + ((max - min) * buf[i]) / 65534;
+  return out;
+}
+
 /** Load a uint8-quantised field exported by scripts/export_*.py. */
 export async function loadU8Field(url: string, min: number, max: number): Promise<Float32Array> {
   const buf = new Uint8Array(await (await fetch(url)).arrayBuffer());
@@ -242,7 +250,7 @@ export class LinePlot {
       const t = el('text', { x: m.l - 6, y: Yraw(v) + 4, 'text-anchor': 'end', class: 'tick' }, axes);
       t.textContent = logy ? `1e${v}` : fmt(v);
     });
-    el('rect', { x: m.l, y: m.t, width: pw, height: ph, class: 'frame' }, axes);
+    el('rect', { x: m.l, y: m.t, width: pw, height: ph, class: 'plotframe' }, axes);
     if (this.o.xlabel) { const t = el('text', { x: m.l + pw / 2, y: H - 6, 'text-anchor': 'middle', class: 'axlabel' }, axes); t.textContent = this.o.xlabel; }
     if (this.o.ylabel) { const t = el('text', { x: 12, y: m.t + ph / 2, 'text-anchor': 'middle', transform: `rotate(-90 12 ${m.t + ph / 2})`, class: 'axlabel' }, axes); t.textContent = this.o.ylabel; }
 

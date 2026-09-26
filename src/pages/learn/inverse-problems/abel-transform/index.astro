@@ -11,7 +11,7 @@ import { url } from '../../../../i18n/utils';
     <h2>A camera sees sums, not points</h2>
     <p>Many objects in engineering are round: jets, flames, plasmas, pipes, some biological tissues. When a camera looks at such an object from the side, each pixel does not record the value at one point. It records the sum of everything along the line of sight through the object. For an object that is symmetric about its axis, described by a radial profile <em>f(r)</em>, the recorded signal at lateral offset <em>y</em> is</p>
     <Equation tex={String.raw`P(y) = 2\int_{y}^{R} \frac{f(r)\, r}{\sqrt{r^2 - y^2}}\, dr .`} />
-    <p>This is the <strong>Abel transform</strong>. Getting <em>f(r)</em> back from <em>P(y)</em> is an inverse problem. The animation shows the idea: a ray sweeps across the object, and each ray adds up all the rings it crosses.</p>
+    <p>This is the <em>Abel transform</em>. Getting <em>f(r)</em> back from <em>P(y)</em> is an inverse problem. The animation shows the idea: a ray sweeps across the object, and each ray adds up all the rings it crosses.</p>
   </div>
   <div class="anim"><ManimScene name="abel-projection" label="Animation of line-of-sight integration through an axisymmetric field and of outside-in inversion"
     transcript="An axisymmetric field is shown as concentric rings, brightest on an off-axis ring. A horizontal ray sweeps from the edge to the centre and the projection P(y) is traced. The projection is the Abel integral. To invert it, the outermost ring is found first from the outermost ray, then each inner ring after subtracting the rings outside it. Errors accumulate towards the axis." /></div>
@@ -25,7 +25,7 @@ import { url } from '../../../../i18n/utils';
       { tex: String.raw`f_{N} = \frac{P_N}{L_{NN}},\quad f_{j} = \frac{1}{L_{jj}}\Big(P_j - \sum_{k>j} L_{jk} f_k\Big)`, note: 'Back substitution: solve for the outermost ring first, then peel inwards. This is called onion peeling.' },
       { tex: String.raw`\delta f_j \;\text{inherits}\; \delta P_j \;\text{and every}\; \delta f_{k>j}`, note: 'Each inner value reuses all the outer ones, so measurement noise accumulates towards the axis.' },
     ]} />
-    <p>Without noise, onion peeling is exact. With noise it is not, and the error grows towards the centre, where the chords are short and many previous errors pile up. This is what it means for a problem to be <strong>ill-conditioned</strong>: small changes in the data produce large changes in the answer.</p>
+    <p>Without noise, onion peeling is exact. With noise it is not, and the error grows towards the centre, where the chords are short and many previous errors pile up. This is what it means for a problem to be <em>ill-conditioned</em>: small changes in the data produce large changes in the answer.</p>
 
     <h2>Regularisation: prefer plausible answers</h2>
     <p>Instead of solving <em>Lf = P</em> exactly, ask for the profile that fits the data <em>and</em> is not too rough:</p>
@@ -48,7 +48,7 @@ import { url } from '../../../../i18n/utils';
   <div class="prose">
     <h2>What to take away</h2>
     <ul>
-      <li>An inverse problem needs a <strong>forward model</strong> (here the chord-length matrix) and something to <strong>stabilise</strong> the inversion (here the curvature penalty).</li>
+      <li>An inverse problem needs a <em>forward model</em> (here the chord-length matrix) and something to <em>stabilise</em> the inversion (here the curvature penalty).</li>
       <li>Regularisation trades variance (noise) for bias (over-smoothing). The best λ depends on the noise level and on how sharp the true profile is.</li>
       <li>The same structure, data misfit plus prior knowledge, appears in tomography, image deblurring and physics-informed learning. The <a href={url('/learn/machine-learning/physics-informed-learning/')}>next module</a> replaces the smoothness penalty with a physical law.</li>
     </ul>

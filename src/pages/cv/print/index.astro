@@ -15,7 +15,7 @@ const bold = (s: string) => s.replace('M. Littin', '<strong>M. Littin</strong>')
   <header class="page-head frame cv-head">
     <p class="eyebrow">Curriculum vitae</p>
     <h1>Mijail Littin, PhD</h1>
-    <p class="lede">Computational methods for inverse problems in physical systems. Current direction: scientific machine learning for physics-constrained inference.</p>
+    <p class="lede">Computational methods for inverse problems in physical systems, with regularised reconstruction and physics-informed machine learning.</p>
     <p class="meta contact">{person.email} · ORCID <a href={`https://orcid.org/${person.orcid}`}>{person.orcid}</a> · Scopus {person.scopus}</p>
     <p class="cluster no-print dl">
       <a class="btn btn--primary" href={url('/cv/Mijail_Littin_CV.pdf')} download>Download academic CV (PDF)</a>
@@ -52,7 +52,7 @@ const bold = (s: string) => s.replace('M. Littin', '<strong>M. Littin</strong>')
     <section class="row cvs">
       <h2 class="label row__label">Research</h2>
       <div class="prose">
-        <p>Inference of latent physical quantities from indirect, incomplete and noisy observations by combining physical models and data. Regularised reconstruction of ill-posed problems, including axisymmetric tomography; joint inversion of several measurement modalities with physics-informed neural networks. In progress: uncertainty quantification in neural inversion. Proposed: identifiability and surrogate models of physical operators. Application and validation contexts: energy, combustion, thermal radiation, optical diagnostics, aerosols.</p>
+        <p>Inference of physical quantities that cannot be measured directly from indirect, incomplete and noisy observations, by combining physical models and data. Regularised reconstruction of ill-posed problems, including axisymmetric tomography; joint inversion of several measurement techniques with physics-informed neural networks. Application and validation contexts: energy, combustion, thermal radiation, optical diagnostics and aerosols.</p>
         <p>{published.length} journal articles published or in press and {accepted.length} accepted; {pubs.filter((p) => p.firstAuthor).length} as first author; {pubs.filter((p) => p.ml).length} based on neural networks or machine learning. {confs.length} conference, workshop and meeting contributions.</p>
       </div>
     </section>

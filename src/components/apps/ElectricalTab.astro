@@ -13,10 +13,10 @@ const { lang = 'en', hidden = false } = Astro.props;
 const es = lang === 'es';
 const T = es
   ? {
-      fwd: 'Directo', fwdText: 'a partir de la radiación, la temperatura, el polvo que se acumula sobre los paneles y su envejecimiento, calcular la energía diaria de una planta fotovoltaica de 100 MWp en el desierto.',
-      inv: 'Inverso', invText: 'a partir de los datos de monitoreo y del registro de limpiezas, estimar la tasa de ensuciamiento y la degradación, que no se pueden medir directamente en toda la planta.',
+      fwd: 'Directo', fwdText: 'calcular la energía diaria de una planta fotovoltaica de 100 MWp en el desierto a partir de la radiación solar, la temperatura, el polvo que se deposita sobre los módulos (ensuciamiento) y la lenta pérdida de eficiencia que traen los años (degradación).',
+      inv: 'Inverso', invText: 'a partir de los datos de monitoreo de la planta y de su registro de limpiezas, estimar la tasa de ensuciamiento y la tasa de degradación, que no se pueden medir directamente en toda la planta.',
       mFwd: 'directo: simular la planta', mInv: 'inverso: diagnosticar la planta',
-      rate: 'Tasa de ensuciamiento', interval: 'Limpieza de paneles cada', none: 'Sin limpiezas en los dos años', deg: 'Degradación', noise: 'Ruido de medición',
+      rate: 'Tasa de ensuciamiento', interval: 'Intervalo entre limpiezas', none: 'Sin limpiezas durante dos años', deg: 'Degradación', noise: 'Ruido de medición',
       method: 'Método', classic: 'mínimos cuadrados', newD: 'nuevos datos', train: 'entrenar la PINN', stop: 'detener',
       cost: 'Costo por limpieza', price: 'Precio de la energía',
       pE: '(a) Energía diaria', pSR: '(b) Índice de desempeño y razón de ensuciamiento', pPI: '(a) Índice de desempeño: datos y modelo ajustado', pSRe: '(b) Razón de ensuciamiento: estimada y verdadera',
@@ -27,20 +27,20 @@ const T = es
       rd: {
         fwd: 'Energía en dos años', lost: 'pérdida por ensuciamiento', cleans: 'limpiezas',
         r: 'Tasa de ensuciamiento', d: 'degradación', truth: 'verdadero', lostE: 'energía perdida por ensuciamiento', jumps: 'limpiezas visibles como saltos en los datos', of: 'de',
-        conf: 'Sin limpiezas, los datos solo determinan la caída total', confEnd: 'el ensuciamiento y la degradación no se pueden separar',
-        pinnIdle: 'Pulse «entrenar la PINN»: parte de r = 0,10 %/día y degradación 0,30 %/año.', data: 'pérdida de datos', ode: 'residuo de la EDO', srErr: 'error de la razón de ensuciamiento (RMS)',
+        conf: 'sin limpiezas: caída total', confEnd: 'el ensuciamiento y la degradación no se pueden separar',
+        pinnIdle: 'Pulse «entrenar la PINN». Valores iniciales: r = 0,10 %/día, degradación 0,30 %/año.', data: 'pérdida de datos', ode: 'residuo de la EDO', srErr: 'error de la razón de ensuciamiento (RMS)',
         pinnConf: 'Sin limpiezas, la PINN solo fija la caída total; el reparto entre ensuciamiento y degradación depende del punto de partida.',
         opt: 'Con la tasa estimada conviene limpiar cada', costs: 'costo anual', current: 'el intervalo actual de', more: 'cuesta', perYr: 'mil USD/año más', best: 'es prácticamente óptimo', needR: 'Primero hay que estimar la tasa de ensuciamiento: sin limpiezas no se puede separar de la degradación.',
       },
       lossLabel: 'La PINN minimiza',
-      cap: 'En una planta fotovoltaica nadie mide directamente cuánto polvo hay sobre cientos de miles de paneles, ni cuánto se han degradado: se infiere a partir del monitoreo (energía, radiación y temperatura) y del registro de limpiezas. Cada limpieza devuelve el índice de desempeño casi a su valor limpio; la pendiente entre limpiezas da la tasa de ensuciamiento y la tendencia de los valores recién limpios, la degradación. Sin limpiezas ambos efectos hacen caer el índice de la misma forma y no se pueden separar: la misma lección de identificabilidad que en las otras pestañas. La tasa estimada decide la frecuencia de limpieza. Planta sintética de 100 MWp, dos años de datos diarios.',
-      pinnCap: 'PINN: una red representa la historia del ensuciamiento, con cada limpieza del registro como un reinicio; la ecuación dSR/dt = −r·SR está en la pérdida, y r y la degradación se entrenan junto con la red. A la red nunca se le dice que el ensuciamiento es exponencial: lo impone la ecuación.',
+      cap: 'Arriba: en modo directo, la energía diaria y la razón de ensuciamiento (la fracción de la luz que atraviesa el polvo y llega a las celdas) para los valores elegidos; en modo inverso, el índice de desempeño (energía medida dividida por la energía de una planta limpia) con el modelo ajustado. Cada limpieza devuelve el índice cerca de 1; la pendiente entre limpiezas da la tasa de ensuciamiento, y la tendencia de los valores justo después de cada limpieza, la degradación. Sin limpiezas ambos efectos bajan el índice de la misma manera y no se pueden distinguir. Abajo (modo inverso): la tasa de ensuciamiento estimada fija el intervalo de limpieza que minimiza el costo de limpiar más la venta de energía perdida. Planta sintética de 100 MWp, dos años de datos diarios.',
+      pinnCap: 'Opción PINN: una red neuronal describe la historia del ensuciamiento, que se reinicia en cada limpieza del registro; la pérdida incluye la ecuación del ensuciamiento dSR/dt = −r·SR, y r y la tasa de degradación se entrenan junto con la red. A la red no se le dice que el ensuciamiento decae de forma exponencial; lo impone la ecuación.',
     }
   : {
-      fwd: 'Forward', fwdText: 'from irradiation, temperature, the dust that settles on the modules and their ageing, compute the daily energy of a 100 MWp PV plant in the desert.',
-      inv: 'Inverse', invText: 'from the monitoring data and the cleaning log, estimate the soiling rate and the degradation, which cannot be measured directly across a whole plant.',
+      fwd: 'Forward', fwdText: 'compute the daily energy of a 100 MWp photovoltaic plant in the desert from the solar irradiation, the temperature, the dust that settles on the modules (soiling) and their slow loss of efficiency with age (degradation).',
+      inv: 'Inverse', invText: 'from the plant’s monitoring data and its cleaning log, estimate the soiling rate and the degradation rate, which cannot be measured directly across a whole plant.',
       mFwd: 'forward: simulate the plant', mInv: 'inverse: diagnose the plant',
-      rate: 'Soiling rate', interval: 'Module cleaning every', none: 'No cleanings in the two years', deg: 'Degradation', noise: 'Measurement noise',
+      rate: 'Soiling rate', interval: 'Cleaning interval', none: 'No cleanings for two years', deg: 'Degradation', noise: 'Measurement noise',
       method: 'Method', classic: 'least squares', newD: 'new data', train: 'train the PINN', stop: 'stop',
       cost: 'Cost per cleaning', price: 'Energy price',
       pE: '(a) Daily energy', pSR: '(b) Performance index and soiling ratio', pPI: '(a) Performance index: data and fitted model', pSRe: '(b) Soiling ratio: estimated and true',
@@ -51,22 +51,29 @@ const T = es
       rd: {
         fwd: 'Energy in two years', lost: 'lost to soiling', cleans: 'cleanings',
         r: 'Soiling rate', d: 'degradation', truth: 'true', lostE: 'energy lost to soiling', jumps: 'cleanings visible as jumps in the data', of: 'of',
-        conf: 'Without cleanings the data determine only the total decline', confEnd: 'soiling and degradation cannot be separated',
-        pinnIdle: 'Press “train the PINN”: it starts from r = 0.10 %/day and degradation 0.30 %/yr.', data: 'data loss', ode: 'ODE residual', srErr: 'soiling-ratio error (RMS)',
+        conf: 'no cleanings: total decline', confEnd: 'soiling and degradation cannot be separated',
+        pinnIdle: 'Press “train the PINN”. Starting values: r = 0.10 %/day, degradation 0.30 %/yr.', data: 'data loss', ode: 'ODE residual', srErr: 'soiling-ratio error (RMS)',
         pinnConf: 'Without cleanings the PINN fixes only the total decline; how it splits it between soiling and degradation depends on where it starts.',
         opt: 'With the estimated rate, clean every', costs: 'annual cost', current: 'the current interval of', more: 'costs', perYr: 'kUSD/yr more', best: 'is practically optimal', needR: 'Estimate the soiling rate first: without cleanings it cannot be separated from degradation.',
       },
       lossLabel: 'The PINN minimises',
-      cap: 'Nobody measures directly how much dust lies on hundreds of thousands of modules, or how much they have degraded: both are inferred from the monitoring data (energy, irradiation and temperature) and the cleaning log. Each cleaning brings the performance index back close to its clean value; the slope between cleanings gives the soiling rate, and the trend of the freshly cleaned values gives the degradation. Without cleanings both effects make the index fall in the same way and cannot be separated: the same identifiability lesson as in the other tabs. The estimated rate then sets the cleaning frequency. Synthetic 100 MWp plant, two years of daily data.',
-      pinnCap: 'PINN: a network represents the soiling history, with every cleaning in the log as a reset; the equation dSR/dt = −r·SR sits in the loss, and r and the degradation are trained together with the network. The network is never told that soiling is exponential: the equation makes it so.',
+      cap: 'Top: in forward mode, the daily energy and the soiling ratio (the fraction of light that passes through the dust to the cells) for the chosen settings; in inverse mode, the performance index (measured energy divided by the energy of a clean plant) with the fitted model. Each cleaning brings the index back close to 1; the slope between cleanings gives the soiling rate, and the trend of the values right after each cleaning gives the degradation. Without cleanings both effects lower the index in the same way, so they cannot be told apart. Bottom (inverse mode): the estimated soiling rate sets the cleaning interval that minimises the cost of cleaning plus the lost energy sales. Synthetic 100 MWp plant, two years of daily data.',
+      pinnCap: 'PINN option: a neural network describes the soiling history, restarting at every cleaning in the log; the loss includes the soiling equation dSR/dt = −r·SR, and r and the degradation rate are trained with the network. The network is not told that soiling decays exponentially; the equation imposes it.',
     };
 ---
 <div class="eng-tab pvt" data-eng-tab="electrical" data-pv-text={JSON.stringify(T)} hidden={hidden}>
   <p class="eng-fi"><em>{T.fwd}</em>: {T.fwdText} <em>{T.inv}</em>: {T.invText}</p>
 
-  <div class="seg pvt__modes" role="group" aria-label={es ? 'Modo' : 'Mode'}>
-    <button type="button" data-pv-mode="fwd" aria-pressed="true">{T.mFwd}</button>
-    <button type="button" data-pv-mode="inv" aria-pressed="false">{T.mInv}</button>
+  <div class="eng-switches">
+    <div class="eng-switch"><span>{es ? 'Modo' : 'Mode'}:</span>
+      <div class="seg" role="group" aria-label={es ? 'Modo' : 'Mode'}>
+        <button type="button" data-pv-mode="fwd" aria-pressed="true">{T.mFwd}</button>
+        <button type="button" data-pv-mode="inv" aria-pressed="false">{T.mInv}</button>
+      </div>
+    </div>
+    <div class="eng-switch" data-pv-invui hidden><span>{T.method}:</span>
+      <div class="seg" role="group" aria-label={T.method}><button type="button" data-pv-m="classic" aria-pressed="true">{T.classic}</button><button type="button" data-pv-m="pinn" aria-pressed="false">PINN</button></div>
+    </div>
   </div>
 
   <div class="pvt__grid">
@@ -82,22 +89,19 @@ const T = es
     </div>
   </div>
 
-  <div class="pvt__controls">
+  <div class="eng-controls">
     <div class="control"><div class="control__head"><label for={`pv-r-${lang}`}>{T.rate}</label><output data-pv-or>—</output></div><input id={`pv-r-${lang}`} data-pv-rate type="range" min="0.05" max="0.5" step="0.01" value="0.2" /></div>
     <div class="control"><div class="control__head"><label for={`pv-n-${lang}`}>{T.interval}</label><output data-pv-on>—</output></div><input id={`pv-n-${lang}`} data-pv-int type="range" min="7" max="180" step="1" value="30" /></div>
     <div class="control"><div class="control__head"><label for={`pv-d-${lang}`}>{T.deg}</label><output data-pv-od>—</output></div><input id={`pv-d-${lang}`} data-pv-deg type="range" min="0" max="2" step="0.05" value="0.7" /></div>
     <div class="control"><div class="control__head"><label for={`pv-e-${lang}`}>{T.noise}</label><output data-pv-oe>—</output></div><input id={`pv-e-${lang}`} data-pv-noise type="range" min="0" max="2" step="0.1" value="0.7" /></div>
-    <label class="meta pvt__check"><input type="checkbox" data-pv-none /> {T.none}</label>
-    <div class="control" data-pv-invui hidden><span class="control__head">{T.method}</span>
-      <div class="seg" role="group" aria-label={T.method}><button type="button" data-pv-m="classic" aria-pressed="true">{T.classic}</button><button type="button" data-pv-m="pinn" aria-pressed="false">PINN</button></div>
-    </div>
-    <p class="pvt__btns"><button type="button" class="btn" data-pv-train hidden>{T.train}</button> <button type="button" class="btn" data-pv-new>{T.newD}</button></p>
   </div>
+  <div class="eng-checks"><label><input type="checkbox" data-pv-none /> {T.none}</label></div>
+  <p class="eng-actions"><button type="button" class="btn" data-pv-train hidden>{T.train}</button><button type="button" class="btn" data-pv-new>{T.newD}</button></p>
 
   <Equation tex={es
     ? String.raw`\begin{gathered} E(t) = E_{\text{limpia}}(t)\; \mathrm{SR}(t)\,\big(1 - R_d\, t\big) \\ \frac{\mathrm{d}\,\mathrm{SR}}{\mathrm{d}t} = -r\,\mathrm{SR}\ \ \text{entre limpiezas} \\ \mathrm{SR} = 1\ \text{al limpiar} \end{gathered}`
     : String.raw`\begin{gathered} E(t) = E_{\text{clean}}(t)\; \mathrm{SR}(t)\,\big(1 - R_d\, t\big) \\ \frac{\mathrm{d}\,\mathrm{SR}}{\mathrm{d}t} = -r\,\mathrm{SR}\ \ \text{between cleanings} \\ \mathrm{SR} = 1\ \text{after a cleaning} \end{gathered}`} />
-  <p class="meta pvt__loss" data-pv-pinnui hidden>{T.lossLabel} <Equation display={false} tex={String.raw`\mathcal{L}(\theta, r, R_d) = \overline{\big(\mathrm{SR}_\theta (1 - R_d t) - \mathrm{PI}\big)^2} + \lambda\, \overline{\Big(\tfrac{\mathrm{d}\ln \mathrm{SR}_\theta}{\mathrm{d}t} + r\Big)^2}`} /></p>
+  <p class="eng-loss" data-pv-pinnui hidden>{T.lossLabel} <Equation display={false} tex={String.raw`\mathcal{L}(\theta, r, R_d) = \overline{\big(\mathrm{SR}_\theta (1 - R_d t) - \mathrm{PI}\big)^2} + \lambda\, \overline{\Big(\tfrac{\mathrm{d}\ln \mathrm{SR}_\theta}{\mathrm{d}t} + r\Big)^2}`} /></p>
   <p class="lab__readout" data-pv-read aria-live="polite"></p>
 
   <div class="pvt__decision" data-pv-dec hidden>
@@ -206,7 +210,7 @@ const T = es
       if (fit.confounded) {
         const m = days.map((t) => Math.exp(fit.c0 - fit.sum * t));
         s1.push({ kind: 'line', x: days, y: m, cls: 's-learned', label: T.leg.fit });
-        txt = `${T.rd.conf}, ${fmt(fit.sum * 100, 3)} ${T.unitDay}: ${T.rd.confEnd} (${T.rd.truth}: ${fmt(tr.r * 100, 2)} ${T.unitDay} + ${fmt(tr.Rd * 100, 2)} ${T.unitYr}).`;
+        txt = `${T.rd.conf} ${fmt(fit.sum * 100, 3)} ${T.unitDay} · ${T.rd.confEnd} (${T.rd.truth}: ${fmt(tr.r * 100, 2)} ${T.unitDay} + ${fmt(tr.Rd * 100, 2)} ${T.unitYr}).`;
       } else {
         const sr = soilingSeries(fit.r, data.cleanings);
         s1.push({ kind: 'line', x: days, y: days.map((t) => Math.exp(fit.c0) * sr[t] * (1 - (fit.Rd * t) / 365)), cls: 's-learned', label: T.leg.fit });
@@ -340,7 +344,6 @@ const T = es
 </script>
 
 <style>
-  .pvt__modes { display: flex; justify-content: center; margin: 0 auto var(--s-3); }
   .pvt__grid { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); max-width: 40rem; margin: var(--s-2) auto 0; align-items: start; }
   .pvt__cell { min-width: 0; }
   .pvt__plot { min-height: 13rem; min-width: 0; }
@@ -355,12 +358,7 @@ const T = es
   .pvt__key :global(.pvt__dash.key--learned) { color: var(--c-learned); }
   .pvt__key :global(.pvt__dash.key--physics) { color: var(--c-physics); }
   .pvt__key :global(.c-muted) { color: var(--ink-3); }
-  .pvt__controls { display: grid; gap: var(--s-3) var(--s-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); max-width: 40rem; margin: var(--s-4) auto 0; }
-  .pvt__controls [hidden] { display: none; }
-  .pvt__check { display: flex; gap: 0.4em; align-items: baseline; }
-  .pvt__btns { grid-column: 1 / -1; font-size: var(--step--1); text-align: center; }
-  .pvt__loss { font-size: var(--step--1); text-align: center; max-width: 40rem; margin: var(--s-2) auto 0; overflow-x: auto; }
-  .pvt__loss[hidden], .pvt__decision[hidden] { display: none; }
+  .pvt__decision[hidden] { display: none; }
   .pvt :global(.eq) { max-width: 40rem; margin-inline: auto; justify-content: center; }
   .pvt .lab__readout { max-width: 40rem; margin: var(--s-2) auto 0; text-align: center; }
   .pvt__decision { max-width: 40rem; margin: var(--s-5) auto 0; border-top: 0.5px solid var(--ink-3); padding-top: var(--s-3); }

@@ -44,6 +44,7 @@ import { objectives } from '../../lib/optim';
 </div>
 
 <script>
+  import { keyed } from '../../lib/legendkey';
   import { objectives, run, type Vec2, type Method } from '../../lib/optim';
   import { LinePlot, landscape } from '../../lib/plot';
 
@@ -58,7 +59,8 @@ import { objectives } from '../../lib/optim';
     const map = $<HTMLElement>('[data-map]');
     const read = $<HTMLElement>('[data-read]');
     const note = $<HTMLElement>('[data-note]');
-    const lossPlot = new LinePlot($('[data-loss]'), { width: 420, height: 300, xlabel: 'iteration', ylabel: 'f(x)', logy: true, title: 'Loss history' });
+    const lossPlot = new LinePlot($('[data-loss]'), { width: 420, height: 300, xlabel: 'iteration', ylabel: 'f(x)', logy: true, title: 'Loss history' , legend: false});
+    const lossPlotR = keyed(lossPlot, $('[data-loss]'));
     let obj = objectives[0];
     let start: Vec2 = [...obj.start] as Vec2;
     let animT = -1;
@@ -130,7 +132,7 @@ import { objectives } from '../../lib/optim';
       st.setAttribute('cx', String(sx)); st.setAttribute('cy', String(sy)); st.setAttribute('r', '5'); st.setAttribute('class', 'start');
       svg.appendChild(st);
 
-      lossPlot.render(runs.map((r) => ({
+      lossPlotR(runs.map((r) => ({
         kind: 'line' as const, x: r.loss.map((_, i) => i).slice(0, lim + 1), y: r.loss.slice(0, lim + 1).map((v) => Math.max(v, 1e-12)), cls: colors[r.m], label: names[r.m],
       })), { xlim: [0, steps] });
 

@@ -74,8 +74,9 @@ const { base, fields, caption, id = 'fe' } = Astro.props;
       line.style.bottom = `${(j / (nz - 1)) * 100}%`;
       zout.textContent = `${zAt(j).toFixed(1)} mm`;
       const info = meta.fields[key];
+      const label = fields.find((f) => f.key === key)?.label ?? key;
+      plot.setLabels(undefined, info.unit === '-' ? label : `${label} (${info.unit})`);
       plot.render([{ kind: 'line', x: rr, y: Array.from(d.subarray(j * nr, (j + 1) * nr)), cls: 's-learned' }], { xlim: [0, meta.r_mm[1]], ylim: [info.min, info.max] });
-      plot.svg.querySelector('.axlabel:last-of-type');
     };
     const render = async () => {
       const d = await get(key);
@@ -102,7 +103,7 @@ const { base, fields, caption, id = 'fe' } = Astro.props;
       const info = meta.fields[key];
       read.textContent = Number.isFinite(v)
         ? `r = ${rr[i].toFixed(2)} mm, z = ${zAt(j).toFixed(1)} mm: ${fmt(v)} ${info.unit === '-' ? '' : info.unit}`
-        : `r = ${rr[i].toFixed(2)} mm, z = ${zAt(j).toFixed(1)} mm: no data (not all diagnostics available)`;
+        : `r = ${rr[i].toFixed(2)} mm, z = ${zAt(j).toFixed(1)} mm: no data (outside the measured region)`;
     });
     render();
   }

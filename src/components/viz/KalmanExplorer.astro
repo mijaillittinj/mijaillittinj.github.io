@@ -30,6 +30,7 @@ import ParameterSlider from './ParameterSlider.astro';
 </div>
 
 <script>
+  import { keyed } from '../../lib/legendkey';
   import { scenario, init, predict, update, ellipse, type KF } from '../../lib/kalman';
   import { LinePlot, cssVar } from '../../lib/plot';
 
@@ -38,7 +39,8 @@ import ParameterSlider from './ParameterSlider.astro';
     const val = (name: string) => +$<HTMLInputElement>(`[name="${name}"]`).value;
     const canvas = $<HTMLCanvasElement>('[data-kf-map]');
     const ctx = canvas.getContext('2d')!;
-    const pErr = new LinePlot($('[data-kf-err]'), { width: 860, height: 220, xlabel: 'time (s)', ylabel: 'error (m)', title: 'Error' });
+    const pErr = new LinePlot($('[data-kf-err]'), { width: 860, height: 220, xlabel: 'time (s)', ylabel: 'error (m)', title: 'Error' , legend: false});
+    const pErrR = keyed(pErr, $('[data-kf-err]'));
     const read = $<HTMLElement>('[data-kf-read]');
     const btn = $<HTMLButtonElement>('[data-kf-play]');
     const measBox = $<HTMLInputElement>('[data-kf-meas]'), ellBox = $<HTMLInputElement>('[data-kf-ell]');
@@ -102,7 +104,7 @@ import ParameterSlider from './ParameterSlider.astro';
       ctx.beginPath(); ctx.arc(X(sc.truth[k][0]), Y(sc.truth[k][1]), 4, 0, 2 * Math.PI); ctx.fill();
 
       const ts = eM.map((_, i) => i * dt);
-      pErr.render([
+      pErrR([
         { kind: 'line', x: ts, y: eM, cls: 's-data', label: 'GPS fix' },
         { kind: 'line', x: ts, y: eK, cls: 's-learned', label: 'Kalman estimate' },
       ], { xlim: [0, (N - 1) * dt], ylim: [0, Math.max(4 * val('r'), 5)] });

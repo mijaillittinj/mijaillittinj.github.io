@@ -11,7 +11,8 @@
   20.0,
   37.688575744628906
  ],
- "encoding": "uint8 row-major [z][r], value = min + (max-min)*q/254, q=255 means masked",
+ "dtype": "uint16",
+ "encoding": "uint16 little-endian row-major [z][r], value = min + (max-min)*q/65534, q=65535 means masked",
  "fields": {
   "fs": {
    "min": 0.7777210474014282,

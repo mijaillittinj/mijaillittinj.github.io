@@ -36,15 +36,19 @@ import ParameterSlider from './ParameterSlider.astro';
 </div>
 
 <script>
+  import { keyed } from '../../lib/legendkey';
   import { initNet, evalNet, exact, lossGrad, makeTrainer, makeData, type PinnConfig } from '../../lib/pinn';
   import { LinePlot } from '../../lib/plot';
 
   document.querySelectorAll<HTMLElement>('[data-pinn]').forEach((root) => {
     const $ = <T extends Element>(s: string) => root.querySelector<T>(s)!;
     const val = (n: string) => +$<HTMLInputElement>(`[name="${n}"]`).value;
-    const pField = new LinePlot($('[data-field]'), { width: 860, height: 300, xlabel: 'position along the fin x', ylabel: 'θ', title: 'Temperature profile' });
-    const pLoss = new LinePlot($('[data-loss]'), { width: 420, height: 240, xlabel: 'iteration', ylabel: 'loss', logy: true, title: 'Loss' });
-    const pM = new LinePlot($('[data-mplot]'), { width: 420, height: 240, xlabel: 'iteration', ylabel: 'm', title: 'Inferred m' });
+    const pField = new LinePlot($('[data-field]'), { width: 860, height: 300, xlabel: 'position along the fin x', ylabel: 'θ', title: 'Temperature profile' , legend: false});
+    const pFieldR = keyed(pField, $('[data-field]'));
+    const pLoss = new LinePlot($('[data-loss]'), { width: 420, height: 240, xlabel: 'iteration', ylabel: 'loss', logy: true, title: 'Loss' , legend: false});
+    const pLossR = keyed(pLoss, $('[data-loss]'));
+    const pM = new LinePlot($('[data-mplot]'), { width: 420, height: 240, xlabel: 'iteration', ylabel: 'm', title: 'Inferred m' , legend: false});
+    const pMR = keyed(pM, $('[data-mplot]'));
     const read = $<HTMLElement>('[data-read]');
     const btn = $<HTMLButtonElement>('[data-train]');
     const xs = Float64Array.from({ length: 101 }, (_, i) => i / 100);
@@ -73,24 +77,24 @@ import ParameterSlider from './ParameterSlider.astro';
 
     const draw = () => {
       const s = state;
-      pField.render([
+      pFieldR([
         { kind: 'line', x: xs, y: xs.map((x) => exact(x, s.mTrue)), cls: 's-truth', label: 'true θ(x)' },
         { kind: 'line', x: xs, y: xs.map((x) => evalNet(s.netD, x).u), cls: 's-muted', label: 'data only', dash: true },
         { kind: 'line', x: xs, y: xs.map((x) => evalNet(s.netP, x).u), cls: 's-learned', label: 'data + physics' },
         { kind: 'points', x: s.data.map((d) => d[0]), y: s.data.map((d) => d[1]), cls: 's-data', label: 'sensors' },
       ], { xlim: [0, 1], ylim: [-0.3, 1.3] });
       if (s.hI.length) {
-        pLoss.render([
+        pLossR([
           { kind: 'line', x: s.hI, y: s.hD, cls: 's-muted', label: 'data only', dash: true },
           { kind: 'line', x: s.hI, y: s.hP, cls: 's-learned', label: 'data + physics' },
         ], { xlim: [0, MAX] });
-        pM.render([
+        pMR([
           { kind: 'line', x: [0, MAX], y: [s.mTrue, s.mTrue], cls: 's-truth', label: 'true m', dash: true },
           { kind: 'line', x: s.hI, y: s.hM, cls: 's-learned', label: 'inferred' },
         ], { xlim: [0, MAX], ylim: [0, 3.5] });
       } else {
-        pLoss.render([], { xlim: [0, MAX], ylim: [1e-6, 1] });
-        pM.render([{ kind: 'line', x: [0, MAX], y: [s.mTrue, s.mTrue], cls: 's-truth', label: 'true m', dash: true }], { xlim: [0, MAX], ylim: [0, 3.5] });
+        pLossR([], { xlim: [0, MAX], ylim: [1e-6, 1] });
+        pMR([{ kind: 'line', x: [0, MAX], y: [s.mTrue, s.mTrue], cls: 's-truth', label: 'true m', dash: true }], { xlim: [0, MAX], ylim: [0, 3.5] });
       }
       const eD = rmsErr(s.netD, s.mTrue), eP = rmsErr(s.netP, s.mTrue);
       const m = Math.exp(s.netP.logm);
