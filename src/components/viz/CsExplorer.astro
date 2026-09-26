@@ -1,0 +1,222 @@
+---
+/**
+ * Compressed sensing lab: a signal made of a few tones is sampled at M random times and
+ * reconstructed by minimum-norm least squares (fails), L1 minimisation (FISTA, animated)
+ * or orthogonal matching pursuit; an on-demand map shows the success rate over (M, K).
+ * Numerics in src/lib/cs.ts.
+ */
+import ParameterSlider from './ParameterSlider.astro';
+interface Props { lang?: 'en' | 'es' }
+const { lang = 'en' } = Astro.props;
+const es = lang === 'es';
+const T = es
+  ? {
+      method: 'Reconstrucción', mn: 'mínimos cuadrados (mínima energía)', l1: 'L1 (FISTA)', omp: 'voraz (OMP)',
+      M: 'Número de mediciones M', K: 'Número de tonos K', noise: 'Ruido (%)', lam: 'Peso de L1, log₁₀ λ',
+      debias: 'Reajustar los tonos detectados (L1)', newSig: 'nueva señal', map: 'calcular el mapa de éxito', mapping: 'calculando…',
+      pTime: '(a) Señal en el tiempo', pFreq: '(b) Coeficientes de frecuencia (DCT)', pMap: '(c) Tasa de éxito según M y K',
+      truth: 'señal verdadera', samples: 'mediciones', rec: 'reconstrucción', cTrue: 'coeficientes verdaderos', cRec: 'coeficientes estimados',
+      t: 'tiempo (muestra)', k: 'frecuencia k', amp: 'amplitud',
+      mapX: 'mediciones M →', mapY: '↑ tonos K', mapNote: 'Blanco: recuperación exacta en todos los ensayos; negro: nunca. Curva: M = 2K ln(N/K). Punto: la configuración actual.',
+      err: 'error relativo de la señal', of: 'de', it: 'iteración', mapHint: 'pulse «calcular el mapa de éxito»',
+    }
+  : {
+      method: 'Reconstruction', mn: 'least squares (minimum energy)', l1: 'L1 (FISTA)', omp: 'greedy (OMP)',
+      M: 'Number of measurements M', K: 'Number of tones K', noise: 'Noise (%)', lam: 'L1 weight, log₁₀ λ',
+      debias: 'Refit the detected tones (L1)', newSig: 'new signal', map: 'compute the success map', mapping: 'computing…',
+      pTime: '(a) Signal in time', pFreq: '(b) Frequency coefficients (DCT)', pMap: '(c) Success rate by M and K',
+      truth: 'true signal', samples: 'measurements', rec: 'reconstruction', cTrue: 'true coefficients', cRec: 'estimated coefficients',
+      t: 'time (sample)', k: 'frequency k', amp: 'amplitude',
+      mapX: 'measurements M →', mapY: '↑ tones K', mapNote: 'White: exact recovery in every trial; black: never. Curve: M = 2K ln(N/K). Dot: the current setting.',
+      err: 'relative signal error', of: 'of', it: 'iteration', mapHint: 'press “compute the success map”',
+    };
+---
+<div class="lab cs" data-cs data-text={JSON.stringify(T)}>
+  <div class="cs__controls">
+    <div class="control cs__method">
+      <span class="control__head">{T.method}</span>
+      <div class="seg" role="group" aria-label={T.method}>
+        <button type="button" data-cs-method="mn" aria-pressed="false">{T.mn}</button>
+        <button type="button" data-cs-method="l1" aria-pressed="true">{T.l1}</button>
+        <button type="button" data-cs-method="omp" aria-pressed="false">{T.omp}</button>
+      </div>
+    </div>
+    <ParameterSlider name="csM" label={T.M} min={4} max={128} step={1} value={32} format="int" />
+    <ParameterSlider name="csK" label={T.K} min={1} max={20} step={1} value={5} format="int" />
+    <ParameterSlider name="csnoise" label={T.noise} min={0} max={10} step={0.5} value={0} format="fixed2" />
+    <ParameterSlider name="cslam" label={T.lam} min={-3} max={-0.5} step={0.1} value={-2} format="fixed2" />
+  </div>
+  <p class="cs__row"><label class="meta cs__check"><input type="checkbox" data-cs-debias checked /> {T.debias}</label>
+    <button type="button" class="btn" data-cs-new>{T.newSig}</button> <button type="button" class="btn" data-cs-map>{T.map}</button></p>
+  <p class="lab__readout cs__read" data-cs-read aria-live="polite">&nbsp;</p>
+
+  <div class="cs__plots">
+    <div class="cs__wide">
+      <p class="panel-title">{T.pTime}</p>
+      <div class="cs__plot" data-cs-time></div>
+    </div>
+    <div>
+      <p class="panel-title">{T.pFreq}</p>
+      <div class="cs__plot" data-cs-freq></div>
+    </div>
+    <div>
+      <p class="panel-title">{T.pMap}</p>
+      <div class="cs__map"><canvas data-cs-mapc aria-hidden="true"></canvas><canvas class="cs__overlay" data-cs-over aria-hidden="true"></canvas><p class="cs__hint" data-cs-hint>{T.mapHint}</p></div>
+      <p class="cs__axes"><span>{T.mapY}</span><span>{T.mapX}</span></p>
+      <p class="meta cs__note">{T.mapNote}</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { dctMatrix, makeProblem, minNorm, makeFista, debias, omp, synth, relErr, makePhaseMap, type Problem } from '../../lib/cs';
+  import { LinePlot, drawField, cssVar, type RGB } from '../../lib/plot';
+  import { keyed } from '../../lib/legendkey';
+
+  const N = 128;
+  const Ks = Array.from({ length: 20 }, (_, i) => i + 1);
+  const Ms = Array.from({ length: 31 }, (_, i) => 8 + 4 * i); // 8 … 128
+
+  function init(root: HTMLElement) {
+    const T = JSON.parse(root.dataset.text!);
+    const dec = document.documentElement.lang === 'es' ? ',' : '.';
+    const $ = <E extends Element>(s: string) => root.querySelector<E>(s)!;
+    const val = (name: string) => +$<HTMLInputElement>(`[name="${name}"]`).value;
+    const Psi = dctMatrix(N);
+    const read = $<HTMLElement>('[data-cs-read]');
+    const debBox = $<HTMLInputElement>('[data-cs-debias]');
+    const pTime = new LinePlot($('[data-cs-time]'), { width: 860, height: 240, xlabel: T.t, ylabel: T.amp, legend: false, title: T.pTime });
+    const pTimeR = keyed(pTime, $('[data-cs-time]'));
+    const pFreq = new LinePlot($('[data-cs-freq]'), { width: 420, height: 240, xlabel: T.k, ylabel: T.amp, legend: false, title: T.pFreq });
+    const pFreqR = keyed(pFreq, $('[data-cs-freq]'));
+    const cMap = $<HTMLCanvasElement>('[data-cs-mapc]'), cOver = $<HTMLCanvasElement>('[data-cs-over]');
+    const mapBtn = $<HTMLButtonElement>('[data-cs-map]');
+
+    let method: 'mn' | 'l1' | 'omp' = 'l1', seed = 3, p: Problem, raf = 0;
+    let fista: ReturnType<typeof makeFista> | null = null;
+    let rate: Float64Array | null = null, mapRaf = 0;
+    const ts = Array.from({ length: N }, (_, i) => i);
+
+    const show = (c: ArrayLike<number>, iter?: number) => {
+      const xr = synth(Psi, N, c);
+      let yl = 0;
+      for (const v of p.x) yl = Math.max(yl, Math.abs(v));
+      yl = 1.35 * (yl || 1);
+      pTimeR([
+        { kind: 'line', x: ts, y: Array.from(p.x), cls: 's-truth', label: T.truth },
+        { kind: 'line', x: ts, y: Array.from(xr), cls: 's-learned', label: T.rec },
+        { kind: 'points', x: Array.from(p.idx), y: Array.from(p.y), cls: 's-data', label: T.samples },
+      ], { ylim: [-yl, yl] });
+      const ks = Array.from({ length: N / 2 }, (_, i) => i);
+      pFreqR([
+        { kind: 'points', x: ks, y: ks.map((k) => (p.c[k] !== 0 ? p.c[k] : NaN)), cls: 's-truth', label: T.cTrue },
+        { kind: 'line', x: ks, y: ks.map((k) => c[k]), cls: 's-learned', label: T.cRec },
+      ], { ylim: [-1.1, 1.1] });
+      const e = relErr(xr, p.x);
+      read.textContent = `M = ${p.M} ${T.of} N = ${N} (${Math.round((100 * p.M) / N)} %) · K = ${p.K} · ${T.err} ${(e < 1e-3 ? e.toExponential(1) : e.toFixed(3)).replace('.', dec)}` + (iter !== undefined ? ` · ${T.it} ${iter}` : '');
+    };
+
+    const loop = () => {
+      if (!fista || root.offsetParent === null) return;
+      for (let k = 0; k < 6 && fista.iter < 300; k++) fista.step();
+      const done = fista.iter >= 300;
+      const lam = 10 ** val('cslam');
+      show(done && debBox.checked ? debias(p, fista.c, Math.max(2 * lam, 1e-3)) : fista.c, fista.iter);
+      if (!done) raf = requestAnimationFrame(loop);
+    };
+
+    const solve = () => {
+      cancelAnimationFrame(raf);
+      if (method === 'mn') { show(minNorm(p)); return; }
+      if (method === 'omp') { show(omp(p, p.K)); return; }
+      fista = makeFista(p, 10 ** val('cslam'));
+      raf = requestAnimationFrame(loop);
+    };
+
+    const rebuild = () => {
+      const K = val('csK'), M = Math.max(val('csM'), 1);
+      p = makeProblem(Psi, N, K, M, val('csnoise') / 100, seed);
+      solve();
+      drawMarker();
+    };
+
+    const drawMarker = () => {
+      const w = cOver.clientWidth || 300, h = cOver.clientHeight || 200;
+      cOver.width = w * devicePixelRatio; cOver.height = h * devicePixelRatio;
+      const ctx = cOver.getContext('2d')!;
+      ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      const X = (M: number) => ((M - Ms[0] + 2) / (Ms[Ms.length - 1] - Ms[0] + 4)) * w;
+      const Y = (K: number) => h - ((K - 0.5) / Ks.length) * h;
+      // theory: M = 2 K ln(N / K)
+      ctx.strokeStyle = cssVar('--c-physics') || '#1d4a8a'; ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      for (let K = 1; K <= 20; K += 0.25) { const M = 2 * K * Math.log(N / K); const x = X(M), y = Y(K); if (K === 1) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
+      ctx.stroke();
+      ctx.fillStyle = cssVar('--c-data') || '#b4531a';
+      ctx.beginPath(); ctx.arc(X(val('csM')), Y(val('csK')), 5, 0, 2 * Math.PI); ctx.fill();
+    };
+
+    const grey = (t: number): RGB => { const v = Math.round(255 * t); return [v, v, v]; };
+    const drawMap = () => {
+      if (!rate) return;
+      // rows: K from bottom (K = 1) to top; columns: M
+      drawField(cMap, rate, { nx: Ms.length, ny: Ks.length, cmap: grey, vmin: 0, vmax: 1 });
+    };
+    const computeMap = () => {
+      cancelAnimationFrame(mapRaf);
+      const pm = makePhaseMap(Psi, N, Ks, Ms, 6);
+      rate = pm.rate;
+      $<HTMLElement>('[data-cs-hint]').hidden = true;
+      mapBtn.disabled = true;
+      const step = () => {
+        const t0 = performance.now();
+        while (!pm.done && performance.now() - t0 < 7) pm.step();
+        drawMap();
+        mapBtn.textContent = pm.done ? T.map : `${T.mapping} ${Math.round(100 * pm.progress)} %`;
+        if (!pm.done) mapRaf = requestAnimationFrame(step);
+        else mapBtn.disabled = false;
+      };
+      mapRaf = requestAnimationFrame(step);
+    };
+
+    root.querySelectorAll<HTMLButtonElement>('[data-cs-method]').forEach((b) => b.addEventListener('click', () => {
+      method = b.dataset.csMethod as typeof method;
+      root.querySelectorAll<HTMLButtonElement>('[data-cs-method]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      solve();
+    }));
+    ['csM', 'csK', 'csnoise'].forEach((n) => $<HTMLInputElement>(`[name="${n}"]`).addEventListener('input', rebuild));
+    $<HTMLInputElement>('[name="cslam"]').addEventListener('input', solve);
+    debBox.addEventListener('change', solve);
+    $<HTMLButtonElement>('[data-cs-new]').addEventListener('click', () => { seed++; rebuild(); });
+    mapBtn.addEventListener('click', computeMap);
+    window.addEventListener('themechange', drawMarker);
+    new ResizeObserver(drawMarker).observe(cOver);
+
+    rebuild();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-cs]').forEach((root) => {
+    const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); init(root); } }, { rootMargin: '200px' });
+    io.observe(root);
+  });
+</script>
+
+<style>
+  .cs [hidden] { display: none !important; }
+  .cs__controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: var(--s-3) var(--s-5); align-items: start; }
+  .cs__method { grid-column: 1 / -1; }
+  .cs__row { display: flex; flex-wrap: wrap; gap: 0.5rem 1.2rem; align-items: baseline; justify-content: center; margin-top: var(--s-3); font-size: var(--step--1); }
+  .cs__check { display: inline-flex; gap: 0.4em; align-items: baseline; }
+  .cs__read { text-align: center; margin-top: var(--s-2); min-height: 1.5em; }
+  .cs__plots { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); margin-top: var(--s-3); }
+  .cs__plots > * { min-width: 0; }
+  .cs__wide { grid-column: 1 / -1; }
+  .cs__plot { min-height: 12rem; }
+  .cs__map { position: relative; aspect-ratio: 31 / 20; background: var(--paper-2); outline: 0.5px solid var(--ink-3); margin-top: 0.3rem; }
+  .cs__map canvas { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+  .cs__overlay { image-rendering: auto !important; }
+  .cs__hint { position: absolute; inset: 0; display: grid; place-items: center; font-size: var(--step--1); font-style: italic; color: var(--ink-3); text-align: center; padding: 1rem; }
+  .cs__axes { display: flex; justify-content: space-between; font-size: var(--step--2); color: var(--ink-3); font-style: italic; margin-top: 0.2rem; }
+  .cs__note { font-size: var(--step--2); margin-top: 0.3rem; }
+</style>

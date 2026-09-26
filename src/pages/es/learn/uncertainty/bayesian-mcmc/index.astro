@@ -1,0 +1,44 @@
+---
+import LearnModule from '../../../../../layouts/LearnModule.astro';
+import Equation from '../../../../../components/viz/Equation.astro';
+import McmcExplorer from '../../../../../components/viz/McmcExplorer.astro';
+import Answer from '../../../../../components/ui/Answer.astro';
+import { localized } from '../../../../../i18n/utils';
+---
+<LearnModule lang="es" slug="uncertainty/bayesian-mcmc" description="Calibración bayesiana interactiva de la ley de enfriamiento de Newton con un muestreador de Monte Carlo por cadenas de Markov (Metropolis): traza de la cadena, muestras a posteriori, intervalos creíbles y banda predictiva.">
+  <div class="prose">
+    <h2>No una respuesta, sino una distribución de respuestas</h2>
+    <p>Un objeto caliente se enfría hasta la temperatura ambiente. Según la ley de enfriamiento de Newton, su temperatura es</p>
+    <Equation tex={String.raw`T(t) = T_\infty + (T_0 - T_\infty)\, e^{-t/\tau},`} />
+    <p>donde <em>T</em><sub>0</sub> = 90 °C es conocida, mientras que la constante de tiempo <em>τ</em> (que depende del coeficiente de transferencia de calor) y la temperatura ambiente <em>T</em><sub>∞</sub> no lo son. Un termopar entrega unas pocas lecturas con ruido. Un ajuste por mínimos cuadrados devuelve un solo par (<em>τ</em>, <em>T</em><sub>∞</sub>). La pregunta bayesiana es otra: <em>¿qué valores son compatibles con los datos, y en qué medida?</em></p>
+    <p>El teorema de Bayes combina lo que dicen los datos (la verosimilitud) con lo que se sabía antes (la distribución a priori). Con ruido gaussiano de tamaño conocido <em>σ</em> y una distribución a priori uniforme sobre un rango plausible,</p>
+    <Equation tex={String.raw`p(\tau, T_\infty \mid d) \;\propto\; p(d \mid \tau, T_\infty)\, p(\tau, T_\infty),\qquad p(d \mid \tau, T_\infty) \propto \exp\!\Big(-\frac{1}{2\sigma^2}\sum_i r_i^2\Big),\qquad r_i = d_i - T(t_i;\tau,T_\infty).`} />
+    <p>La constante de normalización es una integral que conviene evitar. El método de Monte Carlo por cadenas de Markov (MCMC) la evita: produce muestras cuyo histograma converge a la distribución a posteriori usando solo cocientes de la fórmula anterior.</p>
+    <h2>El algoritmo de Metropolis</h2>
+    <p>Desde el punto actual se propone un paso aleatorio de tamaño típico <em>w</em>. Se acepta con probabilidad mín(1, <em>p</em>(propuesta)/<em>p</em>(actual)); si no, la cadena se queda donde está y registra otra vez el punto actual. Los pasos cuesta arriba siempre se aceptan y los pasos cuesta abajo solo a veces, de modo que la cadena pasa en cada región un tiempo proporcional a su probabilidad.</p>
+  </div>
+
+  <McmcExplorer lang="es" />
+
+  <div class="try">
+    <h3>Ejercicios</h3>
+    <ol>
+      <li>Ejecute el muestreador. La cadena parte lejos (τ = 30 min, T∞ = 50 °C). ¿Cuántas iteraciones necesita para llegar a la región de alta probabilidad? Ese tramo es el <em>calentamiento</em> (burn-in) y se descarta.
+        <Answer lang="es"><p>Con los valores por defecto la cadena llega a la nube, en torno a τ ≈ 9 min y T∞ ≈ 22 °C, después de unas cien iteraciones; luego la traza se estabiliza en una banda con ruido. Las muestras anteriores describen el punto de partida y no los datos, por eso se eliminan. El laboratorio descarta el primer 20 % de la cadena (como máximo 1000 muestras), un margen holgado.</p></Answer></li>
+      <li>Ponga un ancho de propuesta muy pequeño (log₁₀ w = −2) y después uno muy grande (+1,5). Observe la tasa de aceptación y la traza. ¿Por qué ambos extremos son ineficientes? Una aceptación de 20–50 % suele ser un buen objetivo.
+        <Answer lang="es"><p>Con pasos muy pequeños casi todas las propuestas se aceptan (alrededor de 90 %), pero cada movimiento es mínimo: la cadena avanza muy lento y puede no alcanzar la región de alta probabilidad en 20 000 iteraciones. Con pasos muy grandes casi todas las propuestas caen en zonas improbables y se rechazan (aceptación cercana a 0 %), así que la cadena permanece en el mismo punto durante largos tramos, que se ven como escalones planos en la traza. En ambos casos las muestras consecutivas son casi iguales y aportan poca información nueva. El paso por defecto da alrededor de 40 %.</p></Answer></li>
+      <li>Conserve solo las lecturas hasta 5 min. Las muestras forman una nube larga e inclinada: <em>τ</em> y <em>T</em>∞ están correlacionados. ¿Por qué, en un experimento corto, un enfriamiento lento hacia un ambiente frío se parece a uno rápido hacia un ambiente más cálido?
+        <Answer lang="es"><p>Al comienzo del experimento la curva es casi una recta de pendiente (T₀ − T∞)/τ. Una temperatura ambiente más baja (mayor T₀ − T∞) junto con una τ más grande da la misma pendiente, de modo que las primeras lecturas no distinguen entre ambos casos. Con lecturas hasta 5 min la correlación entre τ y T∞ es de alrededor de −0,98, y de T∞ solo se sabe que está entre unos 1 y 35 °C. Solo las lecturas cercanas a la meseta final miden T∞ directamente.</p></Answer></li>
+      <li>Extienda las lecturas hasta 40 min y compare el ancho de los intervalos creíbles. ¿Qué parámetro ganó más con el experimento largo?
+        <Answer lang="es"><p>T∞. Al pasar de 15 a 40 min, su intervalo del 95 % se reduce de unos 11 °C de ancho a unos 3 °C, mientras que el de τ pasa de unos 2,7 a 1,6 min. Las lecturas tardías están sobre la meseta, que depende solo de T∞, y además rompen la correlación entre ambos parámetros.</p></Answer></li>
+      <li>Aumente el ruido. ¿La banda del 95 % en el gráfico de datos sigue conteniendo la curva verdadera? Debería hacerlo la mayoría de las veces, pero no siempre: eso significa 95 %.
+        <Answer lang="es"><p>La banda se ensancha a medida que crece el ruido, porque más valores de los parámetros son compatibles con las lecturas. Para la mayoría de los conjuntos de datos sigue conteniendo la curva verdadera, pero no en todo instante ni para todos los conjuntos: se espera que una banda del 95 % falle alrededor de un 5 % de las veces. Pulse «Nuevos datos» varias veces para comprobarlo.</p></Answer></li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>Qué entregan las muestras</h2>
+    <p>Toda pregunta sobre los parámetros se convierte en un promedio sobre las muestras: la mediana y un intervalo creíble del 95 % se obtienen ordenándolas; la <em>banda predictiva a posteriori</em> se obtiene evaluando el modelo para muchas muestras y tomando cuantiles en cada instante. La correlación entre parámetros, invisible en una tabla de valores ±, se ve en la nube.</p>
+    <p>Metropolis es el método MCMC más simple; se vuelve lento en muchas dimensiones y con distribuciones a posteriori estrechas y curvas, por eso métodos como el Monte Carlo hamiltoniano usan gradientes. La misma idea, una distribución en lugar de una sola respuesta, es lo que la cuantificación de incertidumbre aporta a las reconstrucciones del <a href={localized('/learn/inverse-problems/abel-transform/', 'es')}>módulo de Abel</a> y a las <a href={localized('/learn/machine-learning/physics-informed-learning/', 'es')}>redes informadas por la física</a>.</p>
+  </div>
+</LearnModule>

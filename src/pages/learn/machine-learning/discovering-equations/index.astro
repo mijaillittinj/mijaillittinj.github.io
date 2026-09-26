@@ -1,0 +1,43 @@
+---
+import LearnModule from '../../../../layouts/LearnModule.astro';
+import Equation from '../../../../components/viz/Equation.astro';
+import SindyExplorer from '../../../../components/viz/SindyExplorer.astro';
+import Answer from '../../../../components/ui/Answer.astro';
+import { url } from '../../../../i18n/utils';
+---
+<LearnModule slug="machine-learning/discovering-equations" lang="en" description="Recover the differential equations of an oscillator, a pendulum, a predator–prey system and the Lorenz system from noisy trajectory data with sparse regression (SINDy), in the browser.">
+  <div class="prose">
+    <h2>From measurements to a law</h2>
+    <p>Kepler spent years looking for a simple rule behind Tycho Brahe’s planetary positions. Today the same question can be asked of a computer: given measurements of how a system changes in time, which short equation produces them? Machine learning usually answers with a black box that predicts well but explains nothing. The method in this module returns an equation that a scientist can read.</p>
+    <p>The system is assumed to follow a differential equation d<i>x</i>/d<i>t</i> = <i>f</i>(<i>x</i>), where <i>x</i> is the state (for example an angle and an angular velocity). The idea of <em>sparse identification of nonlinear dynamics</em> (SINDy; Brunton, Proctor and Kutz, <em>PNAS</em> 113, 2016) is to write <i>f</i> as a combination of candidate terms and to keep only the few that are needed.</p>
+    <h2>A library of candidate terms and a sparse fit</h2>
+    <p>Each measured state gives one row of the library matrix Θ, whose columns are the candidate terms evaluated on the data (1, <i>x</i>, <i>y</i>, <i>x</i>², <i>xy</i>, sin <i>x</i>, …). The derivatives are estimated from the samples. The unknown coefficients Ξ then solve the equation below, where <em>sparse</em> means that most coefficients are exactly zero:</p>
+    <Equation tex={String.raw`\dot{X} \approx \Theta(X)\,\Xi, \qquad \Xi \text{ sparse.}`} />
+    <p>Sparsity is imposed by <em>sequentially thresholded least squares</em>: fit all coefficients by least squares, set every coefficient smaller than a threshold λ to zero, fit again with the remaining terms, and repeat until nothing changes. The threshold plays the role of Occam’s razor: a term must earn its place by explaining a clear part of the data.</p>
+  </div>
+
+  <SindyExplorer lang="en" />
+
+  <div class="try">
+    <h3>Exercises</h3>
+    <ol>
+      <li>With the defaults (predator–prey, 2 % noise, λ = 0.1, all the data), compare the discovered and the true equations. How many of the ten library terms survive?
+        <Answer lang="en"><p>Exactly the four true terms survive: d<i>x</i>/d<i>t</i> = 1.00 <i>x</i> − 0.50 <i>xy</i> and d<i>y</i>/d<i>t</i> = −0.60 <i>y</i> + 0.20 <i>xy</i>, with coefficient errors below 1 %. The prey grow on their own and are eaten when they meet predators; the predators die out on their own and grow by eating. The remaining eight candidates are set to zero, so the result is both accurate and readable.</p></Answer></li>
+      <li>Lower the threshold to its minimum (log₁₀ λ = −3). Then raise it slowly past 0.2. What happens in each case, and why?
+        <Answer lang="en"><p>With λ = 0.001 almost every candidate survives (eight spurious terms appear, with small coefficients such as −0.10 or 0.06). They fit the noise: the model still reproduces the data, but it is no longer the simple law. Above λ ≈ 0.2 the real term 0.20 <i>xy</i> is removed, and without it the predator equation cannot be fitted at all, so it collapses to zero and the simulated model runs away. The threshold has to lie between the size of the noise-induced coefficients and the smallest real one.</p></Answer></li>
+      <li>Raise the noise to 30 %, then tick the smoothing option. What changes?
+        <Answer lang="en"><p>At 30 % noise without smoothing, four spurious terms appear and the largest coefficient error is about 40 %. The weak point is the derivative: a finite difference divides the noise by the sampling interval, so the estimated d<i>x</i>/d<i>t</i> is much noisier than <i>x</i> itself. Smoothing (a local quadratic fit over five points) reduces that noise; here it removes the spurious terms and brings the error down to about 8 %. Too much smoothing would bias the derivatives instead, so smoothing is a trade-off, like any regularisation.</p></Answer></li>
+      <li>Choose the damped pendulum. With the default amplitude SINDy finds −3.98 sin <i>x</i>. Now reduce the initial amplitude to 0.1. What goes wrong?
+        <Answer lang="en"><p>For small angles sin <i>x</i> ≈ <i>x</i>, so the library columns <i>x</i> and sin <i>x</i> are almost identical on the data. The fit can no longer tell them apart and splits the restoring force between them with large, opposite coefficients (for example −5.14 <i>x</i> + 1.16 sin <i>x</i>), plus spurious terms. The equation still predicts small swings, but the physics is lost. This is a problem of identifiability, not of the algorithm: only large swings contain the information that distinguishes sin <i>x</i> from <i>x</i>.</p></Answer></li>
+      <li>Choose predator–prey, set the noise to 10 % and reduce the amount of data from 100 % to 25 %. Then try 50 %.
+        <Answer lang="en"><p>With 25 % of the record (just over one cycle) two spurious terms appear in the prey equation; with 50 % the four true terms are recovered again with errors of about 2 %. With few data the candidate columns are more alike over the short stretch, and noise can be absorbed by the wrong terms. More data covering different states of the system makes the terms distinguishable.</p></Answer></li>
+      <li>Choose the Lorenz system at 0.5 % noise. The discovered coefficients are within a few per cent of the truth, yet the trajectory of the discovered model leaves the data after a while. Why?
+        <Answer lang="en"><p>The Lorenz system is chaotic: two trajectories that start almost together separate exponentially fast. Any small error in the coefficients (here about 4 %, mostly from the finite differences) acts like a small perturbation, and the simulated trajectory separates from the measured one after about four time units even though the equations are essentially right. For chaotic systems the correct test of a discovered model is its equations and its long-term statistics, not a point-by-point match. The same fact limits weather forecasts; see the <a href={url('/learn/uncertainty/chaos-data-assimilation/')}>module on chaos and data assimilation</a>.</p></Answer></li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>Where it is used</h2>
+    <p>Sparse regression of this kind has been used to recover models of fluid flows, chemical reaction networks, plasma dynamics and biological oscillators, and to build compact models for control. It works best when the right terms are in the library, when the data cover varied states, and when derivatives can be estimated reliably. When they cannot, a different route is to put a known equation into the training of a neural network, as in the <a href={url('/learn/machine-learning/physics-informed-learning/')}>physics-informed learning module</a>.</p>
+  </div>
+</LearnModule>

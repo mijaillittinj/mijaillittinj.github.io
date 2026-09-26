@@ -5,12 +5,14 @@
  * <FieldExplorer base="/data/carbon2026/" fields={[{key:'fs', label:'Soot volume fraction'}]} />
  */
 import { url } from '../../i18n/utils';
-interface Props { base: string; fields: { key: string; label: string }[]; caption?: string; id?: string }
-const { base, fields, caption, id = 'fe' } = Astro.props;
+interface Props { base: string; fields: { key: string; label: string }[]; caption?: string; id?: string; lang?: 'en' | 'es' }
+const { base, fields, caption, id = 'fe', lang = 'en' } = Astro.props;
+const es = lang === 'es';
+const S = es ? { field: 'Campo', height: 'Altura sobre el quemador', profile: 'Perfil radial', nodata: 'sin datos (fuera de la región medida)' } : { field: 'Field', height: 'Height above burner', profile: 'Radial profile', nodata: 'no data (outside the measured region)' };
 ---
-<figure class="fe" data-fe data-base={url(base)} data-fields={JSON.stringify(fields)}>
+<figure class="fe" data-fe data-base={url(base)} data-fields={JSON.stringify(fields)} data-s={JSON.stringify(S)}>
   <div class="fe__top">
-    <div class="seg" role="group" aria-label="Field">
+    <div class="seg" role="group" aria-label={S.field}>
       {fields.map((f, i) => <button type="button" data-key={f.key} aria-pressed={i === 0 ? 'true' : 'false'}>{f.label}</button>)}
     </div>
   </div>
@@ -25,7 +27,7 @@ const { base, fields, caption, id = 'fe' } = Astro.props;
     </div>
     <div class="fe__side">
       <div class="control">
-        <div class="control__head"><label for={`${id}-z`}>Height above burner</label><output data-zout></output></div>
+        <div class="control__head"><label for={`${id}-z`}>{S.height}</label><output data-zout></output></div>
         <input id={`${id}-z`} type="range" min="0" max="1" step="0.005" value="0.5" data-z />
       </div>
       <div data-plot></div>
@@ -48,6 +50,7 @@ const { base, fields, caption, id = 'fe' } = Astro.props;
   async function init(root: HTMLElement) {
     const base = root.dataset.base!;
     const fields: { key: string; label: string }[] = JSON.parse(root.dataset.fields!);
+    const S = JSON.parse(root.dataset.s!);
     const meta = await loadMeta(base);
     const { nz, nr } = meta;
     const cache: Record<string, Float32Array> = {};
@@ -61,7 +64,7 @@ const { base, fields, caption, id = 'fe' } = Astro.props;
     const cbar = root.querySelector<HTMLElement>('[data-cbar]')!;
     const stops = Array.from({ length: 11 }, (_, i) => `rgb(${viridis(i / 10).join(',')})`).join(',');
     cbar.style.background = `linear-gradient(90deg, ${stops})`;
-    const plot = new LinePlot(root.querySelector<HTMLElement>('[data-plot]')!, { width: 420, height: 250, xlabel: 'r (mm)', legend: false, title: 'Radial profile' });
+    const plot = new LinePlot(root.querySelector<HTMLElement>('[data-plot]')!, { width: 420, height: 250, xlabel: 'r (mm)', legend: false, title: S.profile });
     const rr = Float64Array.from({ length: nr }, (_, i) => meta.r_mm[0] + ((meta.r_mm[1] - meta.r_mm[0]) * i) / (nr - 1));
     let key = fields[0].key;
 
@@ -103,7 +106,7 @@ const { base, fields, caption, id = 'fe' } = Astro.props;
       const info = meta.fields[key];
       read.textContent = Number.isFinite(v)
         ? `r = ${rr[i].toFixed(2)} mm, z = ${zAt(j).toFixed(1)} mm: ${fmt(v)} ${info.unit === '-' ? '' : info.unit}`
-        : `r = ${rr[i].toFixed(2)} mm, z = ${zAt(j).toFixed(1)} mm: no data (outside the measured region)`;
+        : `r = ${rr[i].toFixed(2)} mm, z = ${zAt(j).toFixed(1)} mm: ${S.nodata}`;
     });
     render();
   }

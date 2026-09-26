@@ -33,7 +33,7 @@ const {
 
 const lang = langFromPath(Astro.url.pathname);
 const siteTitle = t(lang, 'site.title');
-const fullTitle = title ? `${title} · ${siteTitle}` : `${siteTitle} · Inverse problems and scientific machine learning`;
+const fullTitle = title ? `${title} · ${siteTitle}` : `${siteTitle} · ${lang === 'es' ? 'Problemas inversos y aprendizaje automático científico' : 'Inverse problems and scientific machine learning'}`;
 const desc = description ?? t(lang, 'site.description');
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const key = routeKey(Astro.url.pathname);
@@ -50,7 +50,7 @@ const personLd = {
   url: new URL(url('/'), Astro.site).href,
   sameAs: ['https://orcid.org/0000-0002-5577-5060'],
   identifier: { '@type': 'PropertyValue', propertyID: 'ORCID', value: '0000-0002-5577-5060' },
-  jobTitle: 'Adjunct Instructor',
+  jobTitle: lang === 'es' ? 'Profesor de cátedra' : 'Adjunct Instructor',
   affiliation: { '@type': 'CollegeOrUniversity', name: 'Universidad Técnica Federico Santa María' },
   alumniOf: [
     { '@type': 'CollegeOrUniversity', name: 'INSA Rouen Normandie' },

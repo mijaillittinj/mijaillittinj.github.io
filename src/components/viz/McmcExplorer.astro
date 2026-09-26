@@ -4,36 +4,58 @@
  * chain trace, posterior samples, marginal histograms and the posterior predictive band.
  */
 import ParameterSlider from './ParameterSlider.astro';
+interface Props { lang?: 'en' | 'es' }
+const { lang = 'en' } = Astro.props;
+const es = lang === 'es';
+const T = es
+  ? {
+      npts: 'Número de lecturas', tmax: 'Lecturas hasta t (min)', sigma: 'Ruido del termopar σ', prop: 'Ancho de propuesta log₁₀ w', propHint: 'Paso aleatorio para ambos parámetros.',
+      run: 'Ejecutar el muestreador', pause: 'Pausa', cont: 'Continuar', reset: 'Reiniciar', newData: 'Nuevos datos',
+      pData: 'Lecturas y banda predictiva a posteriori (95 %)', pPost: 'Muestras a posteriori de (τ, T∞)', pTrace: 'Traza de la cadena para τ', pHt: 'Distribución marginal a posteriori de τ', pHT: 'Distribución marginal a posteriori de T∞',
+      xTime: 'tiempo t (min)', xTau: 'constante de tiempo τ (min)', xIt: 'iteración', density: 'densidad',
+      band: 'banda a posteriori del 95 %', median: 'mediana a posteriori', trueCurve: 'curva verdadera (oculta)', readings: 'lecturas del termopar', burn: 'fin del calentamiento', trueTau: 'τ verdadero',
+      idle: 'Pulse «Ejecutar el muestreador». La cadena parte lejos de la solución, en τ = 30 min, T∞ = 50 °C.',
+      samples: 'muestras', acc: 'tasa de aceptación', ci: 'Mediana e intervalo creíble del 95 %', trueW: 'verdadero',
+    }
+  : {
+      npts: 'Number of readings', tmax: 'Readings up to t (min)', sigma: 'Thermocouple noise σ', prop: 'Proposal width log₁₀ w', propHint: 'Random-walk step for both parameters.',
+      run: 'Run the sampler', pause: 'Pause', cont: 'Continue', reset: 'Reset', newData: 'New data',
+      pData: 'Readings and posterior predictive band (95 %)', pPost: 'Posterior samples of (τ, T∞)', pTrace: 'Chain trace of τ', pHt: 'Marginal posterior of τ', pHT: 'Marginal posterior of T∞',
+      xTime: 'time t (min)', xTau: 'time constant τ (min)', xIt: 'iteration', density: 'density',
+      band: 'posterior 95 % band', median: 'posterior median', trueCurve: 'true curve (hidden)', readings: 'thermocouple readings', burn: 'end of burn-in', trueTau: 'true τ',
+      idle: 'Press “Run the sampler”. The chain starts far from the truth, at τ = 30 min, T∞ = 50 °C.',
+      samples: 'samples', acc: 'acceptance rate', ci: 'Median and 95 % credible interval', trueW: 'true',
+    };
 ---
-<div class="lab" data-mcmc>
+<div class="lab" data-mcmc data-lang={lang} data-text={JSON.stringify(T)}>
   <div class="lab__grid">
     <div class="lab__controls">
-      <ParameterSlider name="npts" label="Number of readings" min={4} max={30} step={1} value={10} format="int" />
-      <ParameterSlider name="tmax" label="Readings up to t (min)" min={5} max={40} step={1} value={15} format="int" unit=" min" />
-      <ParameterSlider name="sigma" label="Thermocouple noise σ" min={0.2} max={4} step={0.1} value={1.5} unit=" °C" />
-      <ParameterSlider name="prop" label="Proposal width log₁₀ w" min={-2} max={1.5} step={0.1} value={-0.3} hint="Random-walk step for both parameters." />
-      <p class="meta"><button type="button" class="btn btn--primary" data-mc-run>Run the sampler</button> <button type="button" class="btn" data-mc-reset>Reset</button> <button type="button" class="btn" data-mc-new>New data</button></p>
+      <ParameterSlider name="npts" label={T.npts} min={4} max={30} step={1} value={10} format="int" />
+      <ParameterSlider name="tmax" label={T.tmax} min={5} max={40} step={1} value={15} format="int" unit=" min" />
+      <ParameterSlider name="sigma" label={T.sigma} min={0.2} max={4} step={0.1} value={1.5} unit=" °C" />
+      <ParameterSlider name="prop" label={T.prop} min={-2} max={1.5} step={0.1} value={-0.3} hint={T.propHint} />
+      <p class="meta"><button type="button" class="btn btn--primary" data-mc-run>{T.run}</button> <button type="button" class="btn" data-mc-reset>{T.reset}</button> <button type="button" class="btn" data-mc-new>{T.newData}</button></p>
       <p class="lab__readout" data-mc-read aria-live="polite"></p>
     </div>
     <div class="lab__plots">
       <div class="wide">
-        <p class="panel-title">Readings and posterior predictive band (95 %)</p>
+        <p class="panel-title">{T.pData}</p>
         <div class="mc__plot" data-mc-data></div>
       </div>
       <div>
-        <p class="panel-title">Posterior samples of (τ, T∞)</p>
+        <p class="panel-title">{T.pPost}</p>
         <div class="mc__plot" data-mc-post></div>
       </div>
       <div>
-        <p class="panel-title">Chain trace of τ</p>
+        <p class="panel-title">{T.pTrace}</p>
         <div class="mc__plot" data-mc-trace></div>
       </div>
       <div>
-        <p class="panel-title">Marginal posterior of τ</p>
+        <p class="panel-title">{T.pHt}</p>
         <div class="mc__plot" data-mc-htau></div>
       </div>
       <div>
-        <p class="panel-title">Marginal posterior of T∞</p>
+        <p class="panel-title">{T.pHT}</p>
         <div class="mc__plot" data-mc-htinf></div>
       </div>
     </div>
@@ -47,14 +69,17 @@ import ParameterSlider from './ParameterSlider.astro';
 
   document.querySelectorAll<HTMLElement>('[data-mcmc]').forEach((root) => {
     const $ = <T extends Element>(s: string) => root.querySelector<T>(s)!;
+    const L = JSON.parse(root.dataset.text!);
+    const es = root.dataset.lang === 'es';
+    const n = (v: string) => (es ? v.replace('.', ',') : v);
     const val = (name: string) => +$<HTMLInputElement>(`[name="${name}"]`).value;
-    const pData = new LinePlot($('[data-mc-data]'), { width: 860, height: 280, xlabel: 'time t (min)', ylabel: 'T (°C)', title: 'Cooling data' , legend: false});
+    const pData = new LinePlot($('[data-mc-data]'), { width: 860, height: 280, xlabel: L.xTime, ylabel: 'T (°C)', title: L.pData , legend: false});
     const pDataR = keyed(pData, $('[data-mc-data]'));
-    const pPost = new LinePlot($('[data-mc-post]'), { width: 420, height: 280, xlabel: 'time constant τ (min)', ylabel: 'T∞ (°C)', title: 'Posterior samples', legend: false });
-    const pTrace = new LinePlot($('[data-mc-trace]'), { width: 420, height: 280, xlabel: 'iteration', ylabel: 'τ (min)', title: 'Trace' , legend: false});
+    const pPost = new LinePlot($('[data-mc-post]'), { width: 420, height: 280, xlabel: L.xTau, ylabel: 'T∞ (°C)', title: L.pPost, legend: false });
+    const pTrace = new LinePlot($('[data-mc-trace]'), { width: 420, height: 280, xlabel: L.xIt, ylabel: 'τ (min)', title: L.pTrace , legend: false});
     const pTraceR = keyed(pTrace, $('[data-mc-trace]'));
-    const pHt = new LinePlot($('[data-mc-htau]'), { width: 420, height: 240, xlabel: 'τ (min)', ylabel: 'density', title: 'Marginal τ', legend: false });
-    const pHT = new LinePlot($('[data-mc-htinf]'), { width: 420, height: 240, xlabel: 'T∞ (°C)', ylabel: 'density', title: 'Marginal T∞', legend: false });
+    const pHt = new LinePlot($('[data-mc-htau]'), { width: 420, height: 240, xlabel: 'τ (min)', ylabel: L.density, title: L.pHt, legend: false });
+    const pHT = new LinePlot($('[data-mc-htinf]'), { width: 420, height: 240, xlabel: 'T∞ (°C)', ylabel: L.density, title: L.pHT, legend: false });
     const read = $<HTMLElement>('[data-mc-read]');
     const btn = $<HTMLButtonElement>('[data-mc-run]');
     const MAX = 20000, PER_FRAME = 60;
@@ -79,11 +104,11 @@ import ParameterSlider from './ParameterSlider.astro';
           const v = draws.map((j) => cooling(t, ch.tau[j], ch.Tinf[j]));
           lo.push(quantile(v, 0.025)); hi.push(quantile(v, 0.975)); med.push(quantile(v, 0.5));
         }
-        series.push({ kind: 'band', x: ts, y: lo, y2: hi, cls: 's-learned', label: 'posterior 95 % band' });
-        series.push({ kind: 'line', x: ts, y: med, cls: 's-learned', label: 'posterior median' });
+        series.push({ kind: 'band', x: ts, y: lo, y2: hi, cls: 's-learned', label: L.band });
+        series.push({ kind: 'line', x: ts, y: med, cls: 's-learned', label: L.median });
       }
-      series.push({ kind: 'line', x: ts, y: ts.map((t) => cooling(t, TRUE.tau, TRUE.Tinf)), cls: 's-truth', dash: true, label: 'true curve (hidden)' });
-      series.push({ kind: 'points', x: data.t, y: data.d, cls: 's-data', label: 'thermocouple readings' });
+      series.push({ kind: 'line', x: ts, y: ts.map((t) => cooling(t, TRUE.tau, TRUE.Tinf)), cls: 's-truth', dash: true, label: L.trueCurve });
+      series.push({ kind: 'points', x: data.t, y: data.d, cls: 's-data', label: L.readings });
       pDataR(series, { xlim: [0, 40], ylim: [10, 95] });
 
       const lim = (a: number[], box: [number, number]) => a.length > 50 ? [Math.max(box[0], quantile(a, 0.002) - 1), Math.min(box[1], quantile(a, 0.998) + 1)] as [number, number] : box;
@@ -103,8 +128,8 @@ import ParameterSlider from './ParameterSlider.astro';
       for (let j = 0; j < N; j += tstep) { ti.push(j); tv.push(ch.tau[j]); }
       pTraceR([
         { kind: 'line', x: ti, y: tv, cls: 's-physics', label: 'τ' },
-        { kind: 'line', x: [b, b], y: [BOX.tau[0], BOX.tau[1]], cls: 's-muted', dash: true, label: 'end of burn-in' },
-        { kind: 'line', x: [0, Math.max(N, 10)], y: [TRUE.tau, TRUE.tau], cls: 's-truth', dash: true, label: 'true τ' },
+        { kind: 'line', x: [b, b], y: [BOX.tau[0], BOX.tau[1]], cls: 's-muted', dash: true, label: L.burn },
+        { kind: 'line', x: [0, Math.max(N, 10)], y: [TRUE.tau, TRUE.tau], cls: 's-truth', dash: true, label: L.trueTau },
       ], { xlim: [0, Math.max(N, 10)], ylim: BOX.tau });
 
       const tauP = ch.tau.slice(b), TP = ch.Tinf.slice(b);
@@ -120,11 +145,12 @@ import ParameterSlider from './ParameterSlider.astro';
         { kind: 'line', x: [TRUE.Tinf, TRUE.Tinf], y: [0, ymT], cls: 's-truth', dash: true },
       ], { xlim: lT, ylim: [0, ymT] });
 
-      if (N < 2) { read.innerHTML = 'Press “Run the sampler”. The chain starts far from the truth, at τ = 30 min, T∞ = 50 °C.'; return; }
+      if (N < 2) { read.textContent = L.idle; return; }
       const acc = ch.proposed ? ch.accepted / ch.proposed : 0;
-      const ci = (a: number[]) => `${quantile(a, 0.5).toFixed(1)} [${quantile(a, 0.025).toFixed(1)}, ${quantile(a, 0.975).toFixed(1)}]`;
-      read.innerHTML = `${N - 1} samples, acceptance rate <strong>${(acc * 100).toFixed(0)} %</strong>` +
-        (post > 100 ? `. Median and 95 % credible interval: τ = <strong>${ci(tauP)}</strong> min (true ${TRUE.tau}), T∞ = <strong>${ci(TP)}</strong> °C (true ${TRUE.Tinf}).` : '.');
+      const sep = es ? '; ' : ', ';
+      const ci = (a: number[]) => n(`${quantile(a, 0.5).toFixed(1)}`) + ` [${n(quantile(a, 0.025).toFixed(1))}${sep}${n(quantile(a, 0.975).toFixed(1))}]`;
+      read.innerHTML = `${N - 1} ${L.samples} · ${L.acc} <strong>${(acc * 100).toFixed(0)} %</strong>` +
+        (post > 100 ? ` · ${L.ci}: τ = <strong>${ci(tauP)}</strong> min (${L.trueW} ${TRUE.tau}), T∞ = <strong>${ci(TP)}</strong> °C (${L.trueW} ${TRUE.Tinf})` : '');
     };
 
     const loop = () => {
@@ -132,14 +158,14 @@ import ParameterSlider from './ParameterSlider.astro';
       const w = 10 ** val('prop');
       step(ch, data, PER_FRAME, w, w);
       if (++frame % 2 === 0 || ch.tau.length > MAX) draw();
-      if (ch.tau.length > MAX) { running = false; btn.textContent = 'Run the sampler'; draw(); return; }
+      if (ch.tau.length > MAX) { running = false; btn.textContent = L.run; draw(); return; }
       requestAnimationFrame(loop);
     };
-    const reset = () => { running = false; btn.textContent = 'Run the sampler'; setup(); draw(); };
+    const reset = () => { running = false; btn.textContent = L.run; setup(); draw(); };
     btn.addEventListener('click', () => {
-      if (running) { running = false; btn.textContent = 'Continue'; return; }
+      if (running) { running = false; btn.textContent = L.cont; return; }
       if (ch.tau.length > MAX) setup();
-      running = true; btn.textContent = 'Pause'; requestAnimationFrame(loop);
+      running = true; btn.textContent = L.pause; requestAnimationFrame(loop);
     });
     $('[data-mc-reset]').addEventListener('click', reset);
     $('[data-mc-new]').addEventListener('click', () => { seed++; reset(); });

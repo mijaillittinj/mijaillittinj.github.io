@@ -1,0 +1,279 @@
+---
+/**
+ * Chaos and data assimilation lab (Lorenz-63).
+ * Mode 1, butterfly effect: two trajectories that start a tiny distance apart, and their
+ * separation on a log scale. Mode 2, forecast and assimilation: a truth run, a free-running
+ * ensemble and an ensemble corrected by noisy observations with an ensemble Kalman filter.
+ */
+interface Props { lang?: 'en' | 'es' }
+const { lang = 'en' } = Astro.props;
+const es = lang === 'es';
+const T = es
+  ? {
+      mode: 'Experimento', mB: 'efecto mariposa', mA: 'pronóstico y asimilación',
+      delta: 'Diferencia inicial, log₁₀ δ', noise: 'Ruido de observación', every: 'Observar cada', members: 'Tamaño del conjunto',
+      obs: 'Variables observadas', oX: 'solo x', oXZ: 'x, z', oXYZ: 'x, y, z',
+      free: 'Mostrar el conjunto sin asimilación', play: 'reproducir', pause: 'pausa', reset: 'reiniciar',
+      proj: 'Atractor de Lorenz, proyección x–z', tu: 'unidades de tiempo',
+      pB: 'Distancia entre las dos trayectorias', pA: 'Error de la media del conjunto',
+      yB: 'distancia (escala log)', yA: 'error (RMS)', x: 'tiempo',
+      kTruth: 'trayectoria verdadera', kPert: 'trayectoria perturbada', kRef: 'referencia exp(0,9 t)', kDist: 'distancia',
+      kFree: 'sin asimilación', kDa: 'con asimilación (EnKF)', kObs: 'observaciones', kEns: 'conjunto',
+      rd: { t: 't =', d: 'distancia', h1: 'la distancia supera 1 en t =', h: 'aún por debajo de 1', rmse: 'error RMS medio', free: 'sin asimilación', da: 'con EnKF', spread: 'dispersión del conjunto' },
+    }
+  : {
+      mode: 'Experiment', mB: 'butterfly effect', mA: 'forecast and assimilation',
+      delta: 'Initial difference, log₁₀ δ', noise: 'Observation noise', every: 'Observe every', members: 'Ensemble size',
+      obs: 'Observed variables', oX: 'x only', oXZ: 'x, z', oXYZ: 'x, y, z',
+      free: 'Show the ensemble without assimilation', play: 'play', pause: 'pause', reset: 'reset',
+      proj: 'Lorenz attractor, x–z projection', tu: 'time units',
+      pB: 'Distance between the two trajectories', pA: 'Error of the ensemble mean',
+      yB: 'distance (log scale)', yA: 'error (RMS)', x: 'time',
+      kTruth: 'true trajectory', kPert: 'perturbed trajectory', kRef: 'reference exp(0.9 t)', kDist: 'distance',
+      kFree: 'without assimilation', kDa: 'with assimilation (EnKF)', kObs: 'observations', kEns: 'ensemble',
+      rd: { t: 't =', d: 'distance', h1: 'distance exceeds 1 at t =', h: 'still below 1', rmse: 'mean RMS error', free: 'without assimilation', da: 'with EnKF', spread: 'ensemble spread' },
+    };
+---
+<div class="lab" data-lz data-text={JSON.stringify(T)}>
+  <div class="lz__top">
+    <span class="lz__label">{T.mode}:</span>
+    <div class="seg" role="group" aria-label={T.mode}>
+      <button type="button" data-lz-mode="b" aria-pressed="true">{T.mB}</button>
+      <button type="button" data-lz-mode="a" aria-pressed="false">{T.mA}</button>
+    </div>
+  </div>
+  <div class="lab__grid">
+    <div class="lab__controls">
+      <div data-lz-only="b">
+        <div class="control"><div class="control__head"><label for={`lz-d-${lang}`}>{T.delta}</label><output data-lz-do></output></div><input id={`lz-d-${lang}`} data-lz-d type="range" min="-10" max="-1" step="1" value="-6" /></div>
+      </div>
+      <div data-lz-only="a" hidden class="lz__ctrls">
+        <div class="control"><div class="control__head"><label for={`lz-r-${lang}`}>{T.noise}</label><output data-lz-ro></output></div><input id={`lz-r-${lang}`} data-lz-r type="range" min="0.2" max="6" step="0.1" value="1" /></div>
+        <div class="control"><div class="control__head"><label for={`lz-e-${lang}`}>{T.every}</label><output data-lz-eo></output></div><input id={`lz-e-${lang}`} data-lz-e type="range" min="5" max="60" step="5" value="10" /></div>
+        <div class="control"><div class="control__head"><label for={`lz-m-${lang}`}>{T.members}</label><output data-lz-mo></output></div><input id={`lz-m-${lang}`} data-lz-m type="range" min="5" max="100" step="5" value="30" /></div>
+        <div class="control">
+          <span class="control__head">{T.obs}</span>
+          <div class="seg" role="group" aria-label={T.obs}>
+            <button type="button" data-lz-o="0" aria-pressed="true">{T.oX}</button>
+            <button type="button" data-lz-o="0,2" aria-pressed="false">{T.oXZ}</button>
+            <button type="button" data-lz-o="0,1,2" aria-pressed="false">{T.oXYZ}</button>
+          </div>
+        </div>
+        <label class="meta lz__chk"><input type="checkbox" data-lz-free checked /> {T.free}</label>
+      </div>
+      <p class="lz__btns"><button type="button" class="btn" data-lz-play>{T.pause}</button> <button type="button" class="btn" data-lz-reset>{T.reset}</button></p>
+    </div>
+    <div class="lz__plots">
+      <div>
+        <p class="panel-title">{T.proj}</p>
+        <canvas class="lz__canvas" data-lz-c width="600" height="520" role="img" aria-label={T.proj}></canvas>
+        <p class="meta lz__key" data-lz-key></p>
+      </div>
+      <div>
+        <p class="panel-title" data-lz-ptitle>{T.pB}</p>
+        <div class="lz__plot" data-lz-plot></div>
+      </div>
+    </div>
+  </div>
+  <p class="lab__readout lz__read" data-lz-read aria-live="polite">&nbsp;</p>
+</div>
+
+<script>
+  import { rk4, onAttractor, trajectory, makeEnsemble, enkfUpdate, mean, dist, type Vec3 } from '../../lib/lorenz';
+  import { LinePlot, cssVar, type Series } from '../../lib/plot';
+  import { keyed } from '../../lib/legendkey';
+  import { rng } from '../../lib/linalg';
+
+  const DT = 0.01, STEPS_PER_FRAME = 4, TMAX = 30;
+
+  document.querySelectorAll<HTMLElement>('[data-lz]').forEach((root) => {
+    let visible = false, started = false, kick = () => {};
+    const io = new IntersectionObserver((es) => { visible = es.some((e) => e.isIntersecting); if (visible && !started) { started = true; init(); } if (visible) kick(); }, { rootMargin: '200px' });
+    io.observe(root);
+
+    function init() {
+      const T = JSON.parse(root.dataset.text!);
+      const $ = <E extends Element>(s: string) => root.querySelector<E>(s)!;
+      const canvas = $<HTMLCanvasElement>('[data-lz-c]'), ctx = canvas.getContext('2d')!;
+      const dIn = $<HTMLInputElement>('[data-lz-d]'), rIn = $<HTMLInputElement>('[data-lz-r]'), eIn = $<HTMLInputElement>('[data-lz-e]'), mIn = $<HTMLInputElement>('[data-lz-m]');
+      const freeBox = $<HTMLInputElement>('[data-lz-free]'), playBtn = $<HTMLButtonElement>('[data-lz-play]'), read = $<HTMLElement>('[data-lz-read]');
+      const plotEl = $<HTMLElement>('[data-lz-plot]');
+      const plot = new LinePlot(plotEl, { width: 560, height: 300, xlabel: T.x, ylabel: T.yB, legend: false, logy: true, title: T.pB });
+      const plotR = keyed(plot, plotEl);
+      let mode: 'b' | 'a' = 'b', idx = [0];
+      const back = trajectory(onAttractor(4, DT), 6000, DT);
+
+      // state
+      let t = 0, running = true, raf = 0;
+      let a: Vec3, b: Vec3, trailA: Vec3[] = [], trailB: Vec3[] = [], ts: number[] = [], ds: number[] = [], tHit = NaN;
+      let truth: Vec3, free: Vec3[] = [], da: Vec3[] = [], eFree: number[] = [], eDa: number[] = [], obsPts: { t: number; v: number[] }[] = [], k = 0, R = rng(1);
+
+      const outputs = () => {
+        $<HTMLOutputElement>('[data-lz-do]').textContent = `δ = 1e${dIn.value}`;
+        $<HTMLOutputElement>('[data-lz-ro]').textContent = (+rIn.value).toFixed(1);
+        $<HTMLOutputElement>('[data-lz-eo]').textContent = `${(+eIn.value * DT).toFixed(2)} ${T.tu}`;
+        $<HTMLOutputElement>('[data-lz-mo]').textContent = mIn.value;
+      };
+      const reset = () => {
+        t = 0; k = 0; tHit = NaN; ts = []; ds = []; eFree = []; eDa = []; obsPts = [];
+        if (mode === 'b') {
+          a = onAttractor(1, DT); b = [a[0] + 10 ** +dIn.value, a[1], a[2]];
+          trailA = [a]; trailB = [b];
+        } else {
+          truth = onAttractor(2, DT); R = rng(101);
+          const first = makeEnsemble(truth, +mIn.value, 2, 3);
+          free = first.map((e) => [...e] as Vec3); da = first.map((e) => [...e] as Vec3);
+          trailA = [truth];
+        }
+        running = true; playBtn.textContent = T.pause;
+        draw(); kick();
+      };
+      const step = () => {
+        k++; t = k * DT;
+        if (mode === 'b') {
+          a = rk4(a, DT); b = rk4(b, DT);
+          trailA.push(a); trailB.push(b);
+          if (trailA.length > 500) { trailA.shift(); trailB.shift(); }
+          const d = dist(a, b);
+          if (k % 5 === 0) { ts.push(t); ds.push(Math.max(d, 1e-12)); }
+          if (Number.isNaN(tHit) && d > 1) tHit = t;
+        } else {
+          truth = rk4(truth, DT);
+          trailA.push(truth); if (trailA.length > 400) trailA.shift();
+          for (let i = 0; i < free.length; i++) { free[i] = rk4(free[i], DT); da[i] = rk4(da[i], DT); }
+          if (k % +eIn.value === 0) {
+            const r = +rIn.value;
+            const obs = idx.map((c) => truth[c] + r * R.normal());
+            enkfUpdate(da, obs, idx, r, R);
+            obsPts.push({ t, v: obs }); if (obsPts.length > 12) obsPts.shift();
+          }
+          if (k % 5 === 0) { ts.push(t); eFree.push(dist(mean(free), truth)); eDa.push(dist(mean(da), truth)); }
+        }
+      };
+
+      // x–z projection: x ∈ [−22, 22], z ∈ [0, 52]
+      const px = (x: number) => ((x + 22) / 44) * canvas.width;
+      const pz = (z: number) => canvas.height - (z / 52) * canvas.height;
+      const draw = () => {
+        const w = canvas.width, h = canvas.height;
+        ctx.fillStyle = cssVar('--paper'); ctx.fillRect(0, 0, w, h);
+        ctx.strokeStyle = cssVar('--ink-3'); ctx.lineWidth = 1; ctx.strokeRect(0.5, 0.5, w - 1, h - 1);
+        // faint attractor
+        ctx.strokeStyle = cssVar('--ink-3'); ctx.globalAlpha = 0.18; ctx.lineWidth = 1;
+        ctx.beginPath(); back.forEach((p, i) => (i ? ctx.lineTo(px(p[0]), pz(p[2])) : ctx.moveTo(px(p[0]), pz(p[2])))); ctx.stroke();
+        ctx.globalAlpha = 1;
+        const trail = (pts: Vec3[], color: string, lw: number) => {
+          ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.beginPath();
+          pts.forEach((p, i) => (i ? ctx.lineTo(px(p[0]), pz(p[2])) : ctx.moveTo(px(p[0]), pz(p[2])))); ctx.stroke();
+        };
+        const dot = (p: Vec3, color: string, r: number) => { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(px(p[0]), pz(p[2]), r, 0, 2 * Math.PI); ctx.fill(); };
+        if (mode === 'b') {
+          // the true trajectory is drawn wider underneath: while the two coincide, it frames the perturbed one
+          trail(trailA, cssVar('--c-truth'), 5);
+          trail(trailB, cssVar('--c-learned'), 1.8);
+          dot(a, cssVar('--c-truth'), 6); dot(b, cssVar('--c-learned'), 4);
+        } else {
+          if (freeBox.checked) { ctx.globalAlpha = 0.45; free.forEach((e) => dot(e, cssVar('--ink-3'), 3)); ctx.globalAlpha = 1; }
+          ctx.globalAlpha = 0.7; da.forEach((e) => dot(e, cssVar('--c-learned'), 3)); ctx.globalAlpha = 1;
+          trail(trailA, cssVar('--c-truth'), 2.2); dot(truth, cssVar('--c-truth'), 5);
+          // latest observations: x (and z) as amber marks
+          ctx.strokeStyle = cssVar('--c-data'); ctx.fillStyle = cssVar('--c-data'); ctx.lineWidth = 2;
+          obsPts.forEach((o, j) => {
+            ctx.globalAlpha = 0.3 + 0.7 * (j / Math.max(1, obsPts.length - 1));
+            const xo = o.v[0], zi = idx.indexOf(2);
+            if (zi >= 0) { ctx.beginPath(); ctx.arc(px(xo), pz(o.v[zi]), 4, 0, 2 * Math.PI); ctx.fill(); }
+            else { ctx.beginPath(); ctx.moveTo(px(xo), h - 18); ctx.lineTo(px(xo), h - 4); ctx.stroke(); }
+          });
+          ctx.globalAlpha = 1;
+        }
+        drawPlot();
+      };
+      const keyHtml = () => {
+        const items = mode === 'b'
+          ? [['truth', T.kTruth], ['learned', T.kPert]]
+          : [['truth', T.kTruth], ['learned', `${T.kEns}: ${T.kDa}`], ['muted', `${T.kEns}: ${T.kFree}`], ['data', T.kObs]];
+        $<HTMLElement>('[data-lz-key]').innerHTML = items.map(([c, l]) => `<span><span class="key key--${c}"></span>${l}</span>`).join('');
+      };
+      const drawPlot = () => {
+        if (mode === 'b') {
+          const d0 = 10 ** +dIn.value;
+          const refT = [0, TMAX], refY = refT.map((tt) => d0 * Math.exp(0.9 * tt));
+          const series: Series[] = [
+            { kind: 'line', x: refT, y: refY, cls: 's-muted', dash: true, label: T.kRef },
+            { kind: 'line', x: ts, y: ds, cls: 's-learned', label: T.kDist },
+          ];
+          plotR(series, { xlim: [0, TMAX], ylim: [1e-11, 100] });
+        } else {
+          const series: Series[] = [
+            { kind: 'line', x: ts, y: eFree, cls: 's-muted', label: T.kFree },
+            { kind: 'line', x: ts, y: eDa, cls: 's-learned', label: T.kDa },
+          ];
+          plotR(series, { xlim: [0, TMAX], ylim: [0, 30] });
+        }
+        const avg = (v: number[]) => { const s = v.slice(Math.floor(v.length / 4)); return s.length ? Math.sqrt(s.reduce((q, x) => q + x * x, 0) / s.length) : NaN; };
+        if (mode === 'b') {
+          const d = ds.length ? ds[ds.length - 1] : 10 ** +dIn.value;
+          read.textContent = `${T.rd.t} ${t.toFixed(1)} · ${T.rd.d} ${d.toExponential(1)} · ${Number.isNaN(tHit) ? T.rd.h : `${T.rd.h1} ${tHit.toFixed(1)}`}`;
+        } else {
+          const m = mean(da);
+          const spread = Math.sqrt(da.reduce((q, e) => q + dist(e, m) ** 2, 0) / da.length);
+          read.textContent = `${T.rd.t} ${t.toFixed(1)} · ${T.rd.rmse}: ${T.rd.free} ${avg(eFree).toFixed(2)}, ${T.rd.da} ${avg(eDa).toFixed(2)} · ${T.rd.spread} ${spread.toFixed(2)}`;
+        }
+      };
+
+      const loop = () => {
+        raf = 0;
+        if (!visible || !running) return;
+        for (let s = 0; s < STEPS_PER_FRAME; s++) step();
+        if (t >= TMAX) { running = false; playBtn.textContent = T.play; }
+        draw();
+        if (running) raf = requestAnimationFrame(loop);
+      };
+      kick = () => { if (!raf && running) raf = requestAnimationFrame(loop); };
+
+      const setMode = (m: 'b' | 'a') => {
+        mode = m;
+        root.querySelectorAll('[data-lz-mode]').forEach((o) => o.setAttribute('aria-pressed', String((o as HTMLElement).dataset.lzMode === m)));
+        root.querySelectorAll<HTMLElement>('[data-lz-only]').forEach((el) => (el.hidden = el.dataset.lzOnly !== m));
+        $<HTMLElement>('[data-lz-ptitle]').textContent = m === 'b' ? T.pB : T.pA;
+        (plot as unknown as { o: { logy: boolean } }).o.logy = m === 'b';
+        plot.setLabels(T.x, m === 'b' ? T.yB : T.yA);
+        keyHtml(); reset();
+      };
+      root.querySelectorAll<HTMLButtonElement>('[data-lz-mode]').forEach((btn) => btn.addEventListener('click', () => setMode(btn.dataset.lzMode as 'b' | 'a')));
+      root.querySelectorAll<HTMLButtonElement>('[data-lz-o]').forEach((btn) => btn.addEventListener('click', () => {
+        idx = btn.dataset.lzO!.split(',').map(Number);
+        root.querySelectorAll('[data-lz-o]').forEach((o) => o.setAttribute('aria-pressed', String(o === btn)));
+        reset();
+      }));
+      [dIn, rIn, eIn, mIn].forEach((el) => el.addEventListener('input', () => { outputs(); reset(); }));
+      freeBox.addEventListener('change', draw);
+      playBtn.addEventListener('click', () => {
+        if (running) { running = false; playBtn.textContent = T.play; return; }
+        if (t >= TMAX) { reset(); return; }
+        running = true; playBtn.textContent = T.pause; kick();
+      });
+      $('[data-lz-reset]').addEventListener('click', reset);
+      window.addEventListener('themechange', draw);
+      outputs(); keyHtml(); reset();
+    }
+  });
+</script>
+
+<style>
+  .lz__top { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 0.3rem 0.8rem; margin-bottom: var(--s-4); font-size: var(--step--1); }
+  .lz__label { font-style: italic; color: var(--ink-2); }
+  .lz__ctrls { display: grid; gap: var(--s-3); }
+  .lz__ctrls[hidden] { display: none; }
+  .lz__plots { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); align-items: start; min-width: 0; }
+  .lz__plots > * { min-width: 0; }
+  .lz__canvas { width: 100%; height: auto; aspect-ratio: 600 / 520; display: block; }
+  .lz__plot { min-height: 12rem; }
+  .lz__key { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.2rem 0.9rem; margin-top: var(--s-2); font-size: var(--step--2); }
+  .lz__key > span { display: inline-flex; align-items: center; gap: 0.3rem; }
+  .lz__key .key { margin: 0; }
+  .lz__key :global(.key--muted) { background: var(--ink-3); }
+  .lz__chk { display: flex; gap: 0.4em; align-items: baseline; }
+  .lz__btns { display: flex; flex-wrap: wrap; gap: 0.3rem 0.8rem; font-size: var(--step--1); }
+  .lz__read { text-align: center; margin-top: var(--s-3); }
+</style>

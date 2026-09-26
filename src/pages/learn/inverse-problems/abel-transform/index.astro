@@ -4,6 +4,7 @@ import Equation from '../../../../components/viz/Equation.astro';
 import AbelExplorer from '../../../../components/viz/AbelExplorer.astro';
 import ManimScene from '../../../../components/slides/ManimScene.astro';
 import EquationDerivation from '../../../../components/viz/EquationDerivation.astro';
+import Answer from '../../../../components/ui/Answer.astro';
 import { url } from '../../../../i18n/utils';
 ---
 <LearnModule slug="inverse-problems/abel-transform" description="Interactive introduction to the Abel transform and its inversion: line-of-sight projection of an axisymmetric field, noise amplification in direct inversion, and Tikhonov regularisation.">
@@ -38,10 +39,14 @@ import { url } from '../../../../i18n/utils';
   <div class="try">
     <h3>Exercises</h3>
     <ol>
-      <li>Set the noise to 0. Is the direct inversion exact? Now raise the noise to 1 %. Where does the error appear first, near the axis or near the edge? Why?</li>
-      <li>With 2 % noise, move λ from 10⁻³ to 10⁴ and watch the error readout. Sketch error against λ. Where is the minimum, and what happens on either side?</li>
-      <li>Choose "Off-axis ring" and make it sharp. Can regularisation keep the peak height? What is the price of smoothness?</li>
-      <li>Turn on the spread over 30 noise draws. The shaded band shows how much the answer changes if the experiment is repeated. Is the uncertainty the same at every radius?</li>
+      <li>Set the noise to 0. Is the direct inversion exact? Now raise the noise to 1 %. Where does the error appear first, near the axis or near the edge? Why?
+        <Answer lang="en"><p>Without noise the direct inversion is exact to rounding error: onion peeling solves the triangular system <em>Lf = P</em> exactly. With 1 % noise the error is largest near the axis (up to about 0.17 of the peak in the innermost rings, against a few hundredths near the edge). Each inner ring is computed after subtracting all the rings outside it, so it inherits their errors, and near the axis the chords through the ring are short, so a small error in <em>P</em> is divided by a small number.</p></Answer></li>
+      <li>With 2 % noise, move λ from 10⁻³ to 10⁴ and watch the error readout. Sketch error against λ. Where is the minimum, and what happens on either side?
+        <Answer lang="en"><p>For the default profile the error falls from about 10 % at λ = 10⁻³ (close to the direct inversion) to a minimum of about 1 % near λ ≈ 30, then rises again to about 10 % at λ = 10³ and 19 % at λ = 10⁴. The curve is U-shaped: on the left the penalty is too weak and noise dominates (variance); on the right it is too strong and the profile is flattened (bias). The best λ balances the two and depends on the noise level.</p></Answer></li>
+      <li>Choose "Off-axis ring" and move the ring-width slider to 0, the narrowest ring. Can regularisation keep the peak height? What is the price of smoothness?
+        <Answer lang="en"><p>Not with the default λ = 10: the reconstructed peak drops to about 0.86 of the true height, and to about 0.68 at λ = 100, because the curvature penalty treats a narrow peak like noise. A smaller λ (around 1) restores most of the peak, but then more noise gets through. Smoothness costs resolution: the narrower the true feature, the smaller the λ it tolerates, and the more noise you must accept.</p></Answer></li>
+      <li>Turn on the spread over 30 noise draws. The shaded band shows how much the answer changes if the experiment is repeated. Is the uncertainty the same at every radius?
+        <Answer lang="en"><p>No. With the default settings the standard deviation is about 0.04 near the axis and about 0.015 at mid-radius and near the edge, so the band is widest at the centre. The centre is only seen through short chords that also cross every outer ring, so it is the least determined part of the profile. This is typical of Abel inversion and is why reconstructed values on the axis deserve the most caution.</p></Answer></li>
     </ol>
   </div>
 

@@ -1,0 +1,47 @@
+---
+import LearnModule from '../../../../../layouts/LearnModule.astro';
+import Equation from '../../../../../components/viz/Equation.astro';
+import EquationDerivation from '../../../../../components/viz/EquationDerivation.astro';
+import MlpExplorer from '../../../../../components/viz/MlpExplorer.astro';
+import Answer from '../../../../../components/ui/Answer.astro';
+import { localized } from '../../../../../i18n/utils';
+---
+<LearnModule lang="es" slug="machine-learning/neural-network-from-scratch" description="Entrene una pequeña red neuronal en el navegador con retropropagación escrita a mano y Adam: ajuste, sobreajuste, error de validación, decaimiento de pesos y parada temprana.">
+  <div class="prose">
+    <h2>Una función con muchas perillas ajustables</h2>
+    <p>El tipo más simple de red neuronal, el perceptrón multicapa, es una cadena de pasos sencillos. Cada capa multiplica su entrada por una matriz de pesos, suma un sesgo y aplica una función no lineal, aquí tanh:</p>
+    <Equation tex={String.raw`h^{(0)} = x, \qquad h^{(\ell)} = \tanh\!\big(W^{(\ell)} h^{(\ell-1)} + b^{(\ell)}\big), \qquad \hat y = W^{(L+1)} h^{(L)} + b^{(L+1)} .`} />
+    <p>Entrenar significa elegir todos los pesos de modo que las salidas de la red reproduzcan los datos de entrenamiento, normalmente minimizando el error cuadrático medio con un método de gradiente como Adam (vea el <a href={localized('/learn/optimization/gradient-descent/', 'es')}>módulo de descenso de gradiente</a>).</p>
+    <h2>La retropropagación es la regla de la cadena aplicada hacia atrás</h2>
+    <EquationDerivation lang="es" title="Gradientes capa por capa" steps={[
+      { tex: String.raw`\mathcal{L} = \frac{1}{N}\sum_{n} (\hat y_n - y_n)^2, \qquad \delta^{(L+1)} = \frac{\partial \mathcal{L}}{\partial \hat y} = \frac{2}{N}(\hat y - y)`, note: 'Se parte de la salida: la sensibilidad de la pérdida respecto de la predicción.' },
+      { tex: String.raw`\frac{\partial \mathcal{L}}{\partial W^{(\ell)}} = \delta^{(\ell)}\, {h^{(\ell-1)}}^{\mathsf T}, \qquad \frac{\partial \mathcal{L}}{\partial b^{(\ell)}} = \delta^{(\ell)}`, note: 'El gradiente de cada peso es el error local multiplicado por la entrada que ese peso multiplicaba.' },
+      { tex: String.raw`\delta^{(\ell-1)} = \big({W^{(\ell)}}^{\mathsf T} \delta^{(\ell)}\big) \odot \big(1 - {h^{(\ell-1)}}^2\big)`, note: 'El error se propaga hacia atrás a través de los pesos y de la derivada de tanh.' },
+    ]} />
+    <p>Una pasada hacia adelante y una hacia atrás entregan el gradiente respecto de todos los parámetros, con un costo de unas dos evaluaciones de la red. El código que corre abajo son exactamente estas tres líneas, escritas en TypeScript, y se verifica con diferencias finitas.</p>
+  </div>
+
+  <MlpExplorer lang="es" />
+
+  <div class="try">
+    <h3>Ejercicios</h3>
+    <ol>
+      <li>Entrene con los valores por defecto (2 capas × 24 neuronas, 12 puntos). El error de entrenamiento sigue bajando, mientras que el de validación llega a un mínimo y vuelve a subir. Eso es <em>sobreajuste</em>: la red memoriza el ruido.
+        <Answer lang="es"><p>La red tiene 673 parámetros para 12 puntos, así que puede pasar por todos ellos: el error de entrenamiento baja hasta unos 10⁻¹⁴. El error de validación alcanza su mínimo, alrededor de 4 × 10⁻², cerca de la iteración 200–250, y luego sube a unos 7 × 10⁻² a medida que la curva se dobla para seguir el ruido entre los puntos de entrenamiento.</p></Answer></li>
+      <li>Aumente los puntos de entrenamiento a 60 sin cambiar la red. ¿Por qué se cierra la brecha entre el error de entrenamiento y el de validación?
+        <Answer lang="es"><p>Con 60 puntos la red ya no puede pasar por todos con una curva suave, así que promedia el ruido. El error de entrenamiento se mantiene cerca de 1,3 × 10⁻² y el de validación cerca de 2,7 × 10⁻², próximo al piso de ruido σ² ≈ 2,3 × 10⁻², que ningún modelo puede superar. Más datos restringen al mismo modelo flexible.</p></Answer></li>
+      <li>Con 12 puntos, reduzca el ancho paso a paso hasta 2 neuronas, entrenando hasta el final cada vez. ¿Qué ancho da el menor error de validación final? ¿Cómo se ve su curva?
+        <Answer lang="es"><p>Con solo 12 puntos con ruido gana la red más pequeña: 2 neuronas por capa (13 parámetros) termina con un error de validación de unos 3,9 × 10⁻², mientras que los anchos de 3 a 24 terminan entre 7 y 10 × 10⁻², porque con suficientes iteraciones todos ajustan el ruido. La red pequeña no puede seguir cada ondulación de la función verdadera (<em>subajuste</em>), pero con tan pocos puntos ese sesgo cuesta menos que la variabilidad de un modelo flexible. La complejidad óptima depende de cuántos datos hay.</p></Answer></li>
+      <li>Active la parada temprana y entrene otra vez. ¿Qué iteración se conserva? Pruebe luego el decaimiento de pesos. Ambos son formas de <em>regularización</em>, la misma idea que en el <a href={localized('/learn/inverse-problems/svd-noise-amplification/', 'es')}>módulo de la SVD</a>.
+        <Answer lang="es"><p>La parada temprana conserva los pesos de alrededor de la iteración 240, donde el error de validación fue mínimo (unos 4 × 10⁻²); el entrenamiento se detiene 600 iteraciones después sin mejoras. El decaimiento de pesos con κ = 10⁻³ evita que el error de entrenamiento se desplome (queda cerca de 8 × 10⁻³), pero aquí el error de validación igual sube hasta unos 8 × 10⁻²: esa intensidad no basta para esta red y estos datos. La regularización debe ajustarse, y el conjunto de validación es lo que indica cuánto.</p></Answer></li>
+      <li>Ponga el ruido en 0. ¿Puede ahora una red grande alcanzar un error de validación cercano a cero? ¿Qué lo limita?
+        <Answer lang="es"><p>No llega a cero: con 12 puntos sin ruido el error de validación se estabiliza cerca de 1,4 × 10⁻³. Entre los puntos de entrenamiento la red no tiene restricciones, así que allí puede diferir de la función verdadera. Con 60 puntos sin ruido baja a unos 3 × 10⁻⁵ y entonces lo limitan el tiempo de entrenamiento y el tamaño finito de la red.</p></Answer></li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>El verdadero objetivo es generalizar</h2>
+    <p>El error de entrenamiento indica cuán bien la red describe los puntos que ya vio; el error de validación, sobre puntos que no vio, estima cómo se comportará en uso. Con más parámetros que datos, muchas redes ajustan perfectamente el conjunto de entrenamiento y difieren mucho entre los puntos. El decaimiento de pesos suma ½κ‖<em>W</em>‖² a la pérdida y favorece pesos pequeños y funciones suaves; la parada temprana detiene el entrenamiento cuando el error de validación deja de mejorar.</p>
+    <p>La física ofrece una tercera forma de restringir un modelo flexible: poner la ecuación que gobierna el sistema en la función de pérdida. Ese es el tema del <a href={localized('/learn/machine-learning/physics-informed-learning/', 'es')}>módulo de aprendizaje informado por la física</a>.</p>
+  </div>
+</LearnModule>

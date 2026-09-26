@@ -1,0 +1,44 @@
+---
+import LearnModule from '../../../../../layouts/LearnModule.astro';
+import Equation from '../../../../../components/viz/Equation.astro';
+import ClassifierExplorer from '../../../../../components/viz/ClassifierExplorer.astro';
+import Answer from '../../../../../components/ui/Answer.astro';
+import { localized, url } from '../../../../../i18n/utils';
+---
+<LearnModule slug="machine-learning/decision-boundaries" lang="es" description="Entrene una pequeña red neuronal para separar dos clases de puntos en el plano y vea cómo se curva su frontera de decisión: modelos lineales, capas ocultas, ingeniería de variables, sobreajuste y exceso de confianza lejos de los datos.">
+  <div class="prose">
+    <h2>Trazar una frontera entre dos clases</h2>
+    <p>Un clasificador recibe un punto, por ejemplo las dos mediciones (<i>x</i>, <i>y</i>) de una muestra, y decide si pertenece a la clase A o a la clase B. Una red neuronal lo hace calculando un único número <i>z</i> a partir de las entradas y transformándolo en una probabilidad con la función logística:</p>
+    <Equation tex={String.raw`P(\text{B} \mid x, y) = \sigma(z) = \frac{1}{1 + e^{-z}}, \qquad z = \text{red}(x, y).`} />
+    <p>La <em>frontera de decisión</em> es la curva donde esa probabilidad vale un medio. Sin capas ocultas, <i>z</i> es una suma ponderada de las entradas y la frontera es una recta. Cada capa oculta aplica una función no lineal (tanh o ReLU) a sumas ponderadas, lo que permite que la frontera se curve.</p>
+    <h2>Entrenar: hacer probable la clase correcta</h2>
+    <p>Los pesos se eligen para minimizar la <em>entropía cruzada</em>, el promedio de −log de la probabilidad que la red asigna a la clase correcta. Es pequeña cuando la red está segura y acierta, y muy grande cuando está segura y se equivoca:</p>
+    <Equation tex={String.raw`\begin{aligned}\mathcal{L} = -\frac{1}{N}\sum_{n} \Big[&c_n \log p_n \\ &+ (1 - c_n)\log(1 - p_n)\Big],\end{aligned} \qquad c_n \in \{0, 1\}.`} />
+    <p>El laboratorio entrena la red en vivo con el optimizador Adam. El fondo de color muestra la probabilidad de cada clase (cuanto más intenso el color, más segura está la red), la curva negra es la frontera de decisión y el cuadrado punteado marca la región donde están los datos. La exactitud de prueba se mide sobre 400 puntos que la red nunca ve durante el entrenamiento.</p>
+  </div>
+
+  <ClassifierExplorer lang="es" />
+
+  <div class="try">
+    <h3>Ejercicios</h3>
+    <ol>
+      <li>Con los datos en círculos, seleccione 0 capas ocultas. ¿Qué exactitud alcanza la red y por qué?
+        <Answer lang="es"><p>Cerca de 53 %, no mejor que adivinar. Sin capas ocultas la frontera es una recta, y ninguna recta separa un anillo de puntos de los puntos de su centro. Con una capa oculta de 8 neuronas (el valor por defecto) la frontera se cierra en un lazo y la exactitud de prueba llega a cerca de 98 %.</p></Answer></li>
+      <li>Mantenga 0 capas ocultas pero active las entradas <i>x</i>² e <i>y</i>². ¿Qué ocurre? Luego elija XOR, donde los puntos de cuadrantes opuestos comparten clase, y pruebe en cambio la entrada <i>xy</i>.
+        <Answer lang="es"><p>Con <i>x</i>² e <i>y</i>² el modelo lineal separa los círculos a la perfección (100 % de exactitud de prueba con solo cinco parámetros), porque un círculo <i>x</i>² + <i>y</i>² = <i>r</i>² es una recta en esas variables. Para XOR la variable útil es el producto <i>xy</i>, cuyo signo da la clase; con ella un modelo lineal pasa de cerca de 58 % a 92 %. Elegir buenas entradas, lo que se llama ingeniería de variables, puede reemplazar a la profundidad. Las capas ocultas aprenden esas variables por sí solas cuando no se conocen de antemano.</p></Answer></li>
+      <li>Elija la espiral. Compare 1 capa oculta de 8 neuronas con 2 capas ocultas de 16 neuronas. Deje terminar cada entrenamiento.
+        <Answer lang="es"><p>La red pequeña llega a cerca de 95 % en los puntos de entrenamiento y 87 % en los de prueba; la frontera no logra enrollarse alrededor de los brazos de la espiral en todas partes. Con dos capas de 16 neuronas (337 parámetros en lugar de 33) la exactitud de entrenamiento llega a 100 % y la de prueba a cerca de 91 %. Las redes más profundas y anchas pueden representar fronteras más complicadas, a costa de más parámetros y de un mayor riesgo de ajustar el ruido.</p></Answer></li>
+      <li>Elija las lunas, fije 16 puntos de entrenamiento y ruido 0,25, y use 2 capas ocultas de 24 neuronas. Compare la exactitud de entrenamiento y de prueba, y mire las curvas de pérdida. Luego active el decaimiento de pesos.
+        <Answer lang="es"><p>La red clasifica bien los 16 puntos de entrenamiento pero solo cerca de 83 % de los de prueba, y la entropía cruzada de prueba sube mientras la de entrenamiento tiende a cero: ha memorizado el ruido (sobreajuste) con 697 parámetros para 16 puntos. Con decaimiento de pesos, que penaliza los pesos grandes, la exactitud de prueba queda más o menos igual (alrededor de 80 %), pero la entropía cruzada de prueba baja de cerca de 2,3 a cerca de 0,9. La frontera se suaviza y las probabilidades son menos extremas, así que la red se equivoca con plena seguridad con menos frecuencia. La regularización mejora sobre todo cuánto se puede confiar en su seguridad.</p></Answer></li>
+      <li>Con los círculos por defecto, mire las esquinas de la imagen, lejos del cuadrado punteado. ¿Qué dice la red ahí y deberíamos creerle?
+        <Answer lang="es"><p>Las esquinas aparecen con color intenso: la lectura muestra una confianza media cercana a 100 % lejos de los datos. La red nunca vio un punto ahí y aun así asigna una clase casi con certeza, porque la salida logística se satura cuando las entradas crecen. Una probabilidad entregada por un clasificador no mide cuánto sabe. Cuando las decisiones dependen de ello hacen falta métodos que sí lo informan, como los <a href={localized('/learn/uncertainty/gaussian-processes/', 'es')}>procesos gaussianos</a> o los conjuntos de redes con predicción conforme (el ejemplo de IA confiable en la <a href={url('/es/#computing')}>pestaña de computación de la página de inicio</a>).</p></Answer></li>
+      <li>Con una red grande, haga clic para agregar algunos puntos de clase B dentro de la región de la clase A. ¿Cómo reacciona la frontera?
+        <Answer lang="es"><p>El entrenamiento se reanuda y una red flexible curva la frontera para encerrar los puntos nuevos, a menudo formando pequeñas islas a su alrededor. Que eso sea correcto depende de si los puntos son rasgos reales o valores atípicos mal etiquetados; la red no puede saberlo. El decaimiento de pesos o una red más pequeña mantienen la frontera más simple y tratan los puntos aislados como ruido.</p></Answer></li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>Dónde se usa</h2>
+    <p>El mismo principio, con muchas más entradas y capas, clasifica imágenes, sonidos, espectros, señales médicas y defectos en inspección industrial. Las lecciones de este ejemplo pequeño se trasladan directamente: el modelo solo puede trazar las fronteras que su arquitectura permite, necesita regularización cuando hay pocos datos y sus probabilidades deben verificarse antes de usarlas como confianza. Un ejemplo relacionado de regresión, con las curvas de error en detalle, es el <a href={localized('/learn/machine-learning/neural-network-from-scratch/', 'es')}>módulo de red neuronal desde cero</a>.</p>
+  </div>
+</LearnModule>

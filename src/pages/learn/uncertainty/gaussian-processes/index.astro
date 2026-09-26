@@ -1,0 +1,43 @@
+---
+import LearnModule from '../../../../layouts/LearnModule.astro';
+import Equation from '../../../../components/viz/Equation.astro';
+import GpExplorer from '../../../../components/viz/GpExplorer.astro';
+import Answer from '../../../../components/ui/Answer.astro';
+import { url } from '../../../../i18n/utils';
+---
+<LearnModule slug="uncertainty/gaussian-processes" lang="en" description="Gaussian-process regression in the browser: add measurements, change the kernel and its length scale, fit the hyperparameters by maximum likelihood, and see where the model is uncertain and where it would measure next.">
+  <div class="prose">
+    <h2>A curve with error bars everywhere</h2>
+    <p>Suppose a quantity has been measured at a handful of points: a temperature along a pipe, the grade of an ore body along a drill line, the output of a simulation that takes hours to run. We want the value between the measurements, and we want to know how far to trust each prediction. A Gaussian process (GP) does both: it returns a curve and, at every point, an uncertainty that is small near the data and grows away from them.</p>
+    <p>Instead of choosing a formula (a line, a polynomial), a GP places a probability distribution directly on functions. The only modelling choice is the <em>kernel</em> <em>k</em>, which says how strongly the values at two points are correlated. The most common one, the RBF or Gaussian kernel, says that nearby points have similar values and that the correlation fades over a <em>length scale</em> ℓ:</p>
+    <Equation tex={String.raw`f \sim \mathcal{GP}\big(0,\, k\big), \qquad k(x, x') = \sigma_f^2 \exp\!\Big(-\frac{(x-x')^2}{2\ell^2}\Big), \qquad y_i = f(x_i) + \varepsilon_i,\ \ \varepsilon_i \sim \mathcal N(0, \sigma_n^2).`} />
+    <h2>Conditioning on the data</h2>
+    <p>Given measurements <strong>y</strong> at points <strong>x</strong>, the prediction at a new point <em>x</em><sub>*</sub> is again Gaussian, with a closed-form mean and variance. Here <em>K</em> is the matrix of kernel values between the measured points and <strong>k</strong><sub>*</sub> the vector of kernel values between <em>x</em><sub>*</sub> and each of them:</p>
+    <Equation tex={String.raw`\mu(x_*) = \mathbf k_*^{\mathsf T} K_y^{-1} \mathbf y, \qquad \sigma^2(x_*) = k(x_*, x_*) - \mathbf k_*^{\mathsf T} K_y^{-1} \mathbf k_*, \qquad K_y = K + \sigma_n^2 I .`} />
+    <p>The variance does not depend on the measured values, only on where the measurements are. Far from all of them, <strong>k</strong><sub>*</sub> ≈ 0 and the prediction falls back to the prior: mean zero, standard deviation σ<sub>f</sub>. The three hyperparameters (ℓ, σ<sub>f</sub>, σ<sub>n</sub>) can be chosen by maximising the <em>marginal likelihood</em>, the probability of the data under the model, which balances fitting the points against the complexity of the curve:</p>
+    <Equation tex={String.raw`\begin{aligned}\log p(\mathbf y) &= -\tfrac12\, \mathbf y^{\mathsf T} K_y^{-1} \mathbf y \\ &\quad - \tfrac12 \log |K_y| - \tfrac n2 \log 2\pi .\end{aligned}`} />
+  </div>
+
+  <GpExplorer lang="en" />
+
+  <div class="try">
+    <h3>Exercises</h3>
+    <ol>
+      <li>With the defaults (ℓ = 1), where is the ±2σ band narrowest and where is it widest? Now move the length scale to its minimum (0.16) and to its maximum (7.9). What happens to the curve and to the band in each case?
+        <Answer lang="en"><p>The band is narrowest at the measurements and widest in the gap between x ≈ 2.2 and 5.1 and beyond the last point (σ ≈ 0.76 at x = 3.6). With ℓ = 0.16 the points no longer inform their neighbours: the mean drops back to zero between measurements and σ returns to the prior value 1.0. With ℓ = 7.9 the model insists on an almost straight curve: it misses the measurements, the band becomes very thin (σ ≈ 0.06 at x = 3.6) and the log marginal likelihood falls from about −6.5 to −81. The length scale sets how far information travels; too short overfits the gaps, too long underfits the data.</p></Answer></li>
+      <li>Set the noise σ<sub>n</sub> to 0.01, then to 1. How does the curve treat the measurements?
+        <Answer lang="en"><p>With σ<sub>n</sub> = 0.01 the mean passes through every point: the model treats each measurement as exact. With σ<sub>n</sub> = 1 it treats most of the variation as noise, so the mean is pulled towards zero (at the first point it predicts 0.57 while the measurement is 0.93) and the band widens. The noise level decides how much of the data is signal; the true measurement noise here is 0.1.</p></Answer></li>
+      <li>Press “fit the hyperparameters”. Which values does it find? Then tick “show the hidden function”. Is the function always inside the band?
+        <Answer lang="en"><p>The fit converges to about ℓ ≈ 1.35, σ<sub>f</sub> ≈ 0.82 and σ<sub>n</sub> ≈ 0.11, close to the true noise of 0.1, and the log marginal likelihood rises from about −6.5 to −5.7. But the hidden function leaves the band in the large gap: only about 70 % of it lies inside the ±2σ band, against the 95 % that the band promises. Seven points cannot reveal the short oscillation of the function, and the fitted model is too confident. A GP’s uncertainty is only as honest as its kernel and hyperparameters, especially with few data.</p></Answer></li>
+      <li>Press “measure where the model suggests” five or six times, refitting after each measurement. Where does the model choose to measure, and what happens to the band?
+        <Answer lang="en"><p>It measures where σ is largest: first at the right end of the interval (x = 10), then in the big gap (x ≈ 3.6), then at the left end (x = 0). The ends have large variance because they have data on one side only. After five or six measurements about 85 % of the hidden function lies inside the band. Measuring where the model is most uncertain is the simplest form of active learning; Bayesian optimisation adds a second term that favours points where the objective looks promising.</p></Answer></li>
+      <li>Switch the kernel to Matérn 5/2 and fit again. How do the sampled functions look, and which kernel do the data prefer?
+        <Answer lang="en"><p>Matérn 5/2 allows rougher functions than the RBF kernel, which is infinitely smooth: the sampled curves wiggle more at short range. After fitting it explains more of the scatter as signal (σ<sub>n</sub> ≈ 0.02 instead of 0.11), and its log marginal likelihood (about −5.9) is slightly lower than the RBF value (about −5.7), so the data mildly prefer the smoother kernel, as they should for this smooth hidden function. The marginal likelihood can compare models, not only tune them.</p></Answer></li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>Where it is used</h2>
+    <p>In geostatistics the same method is called <em>kriging</em>, after the mining engineer Danie Krige, who used it to estimate ore grades between boreholes. In engineering, GPs are common surrogate models of expensive simulations: a few dozen runs train the GP, which then predicts new cases in microseconds and says where another run would be most useful. That is the basis of Bayesian optimisation. The uncertainty band plays the same role as the posterior in the <a href={url('/learn/uncertainty/bayesian-mcmc/')}>Bayesian inference module</a>, and the length scale acts like the regularisation parameter of the <a href={url('/learn/inverse-problems/svd-noise-amplification/')}>SVD module</a>: it decides how smooth the answer is allowed to be.</p>
+  </div>
+</LearnModule>

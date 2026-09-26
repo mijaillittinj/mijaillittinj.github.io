@@ -5,30 +5,52 @@
  * minimises the residual of the fin equation θ'' − m²θ = 0 (and can infer m).
  */
 import ParameterSlider from './ParameterSlider.astro';
+interface Props { lang?: 'en' | 'es' }
+const { lang = 'en' } = Astro.props;
+const T = lang === 'es'
+  ? {
+      comma: true,
+      nsens: 'Número de sensores', cover: 'Los sensores cubren x ∈ [0, …]', noise: 'Ruido de los sensores σ', mtrue: 'Parámetro verdadero de la aleta m (oculto al modelo)', lphys: 'Peso de la física λ',
+      learnm: 'Inferir m a partir de los datos (partiendo de m = 1)', train: 'Entrenar', pause: 'Pausa', cont: 'Continuar', reset: 'Reiniciar',
+      idle: 'Pulse Entrenar. Ambas redes parten de los mismos pesos aleatorios.',
+      pField: 'Temperatura a lo largo de la aleta, θ(x)', pLoss: 'Pérdida de entrenamiento', pM: 'Parámetro inferido m',
+      xField: 'posición a lo largo de la aleta x', xIt: 'iteración', yLoss: 'pérdida', tField: 'Perfil de temperatura', tLoss: 'Pérdida', tM: 'm inferido',
+      truth: 'θ(x) verdadera', dataOnly: 'solo datos', physics: 'datos + física', sensors: 'sensores', trueM: 'm verdadero', inferred: 'inferido',
+      it: 'Iteración', err: 'Error en toda la aleta (RMS)', mInf: 'm inferido', trueW: 'verdadero',
+    }
+  : {
+      nsens: 'Number of sensors', cover: 'Sensors cover x ∈ [0, …]', noise: 'Sensor noise σ', mtrue: 'True fin parameter m (hidden from the model)', lphys: 'Physics weight λ',
+      learnm: 'Infer m from the data (start from m = 1)', train: 'Train', pause: 'Pause', cont: 'Continue', reset: 'Reset',
+      idle: 'Press Train. Both networks start from the same random weights.',
+      pField: 'Temperature along the fin, θ(x)', pLoss: 'Training loss', pM: 'Inferred parameter m',
+      xField: 'position along the fin x', xIt: 'iteration', yLoss: 'loss', tField: 'Temperature profile', tLoss: 'Loss', tM: 'Inferred m',
+      truth: 'true θ(x)', dataOnly: 'data only', physics: 'data + physics', sensors: 'sensors', trueM: 'true m', inferred: 'inferred',
+      it: 'Iteration', err: 'Error over the whole fin (RMS)', mInf: 'Inferred m', trueW: 'true',
+    };
 ---
-<div class="lab" data-pinn>
+<div class="lab" data-pinn data-t={JSON.stringify(T)}>
   <div class="lab__grid">
     <div class="lab__controls">
-      <ParameterSlider name="nsens" label="Number of sensors" min={2} max={12} step={1} value={4} format="int" />
-      <ParameterSlider name="cover" label="Sensors cover x ∈ [0, …]" min={0.2} max={1} step={0.05} value={0.4} />
-      <ParameterSlider name="noise" label="Sensor noise σ" min={0} max={0.08} step={0.005} value={0.02} format="fixed3" />
-      <ParameterSlider name="mtrue" label="True fin parameter m (hidden from the model)" min={0.5} max={3} step={0.1} value={2} />
-      <ParameterSlider name="lphys" label="Physics weight λ" min={0.01} max={5} step={0.01} value={1} />
-      <label class="meta"><input type="checkbox" data-learnm checked /> Infer m from the data (start from m = 1)</label>
-      <p class="meta"><button type="button" class="btn btn--primary" data-train>Train</button> <button type="button" class="btn" data-reset>Reset</button></p>
-      <p class="lab__readout" data-read aria-live="polite">Press Train. Both networks start from the same random weights.</p>
+      <ParameterSlider name="nsens" label={T.nsens} min={2} max={12} step={1} value={4} format="int" />
+      <ParameterSlider name="cover" label={T.cover} min={0.2} max={1} step={0.05} value={0.4} />
+      <ParameterSlider name="noise" label={T.noise} min={0} max={0.08} step={0.005} value={0.02} format="fixed3" />
+      <ParameterSlider name="mtrue" label={T.mtrue} min={0.5} max={3} step={0.1} value={2} />
+      <ParameterSlider name="lphys" label={T.lphys} min={0.01} max={5} step={0.01} value={1} />
+      <label class="meta"><input type="checkbox" data-learnm checked /> {T.learnm}</label>
+      <p class="meta"><button type="button" class="btn btn--primary" data-train>{T.train}</button> <button type="button" class="btn" data-reset>{T.reset}</button></p>
+      <p class="lab__readout" data-read aria-live="polite">{T.idle}</p>
     </div>
     <div class="lab__plots">
       <div class="wide">
-        <p class="panel-title">Temperature along the fin, θ(x)</p>
+        <p class="panel-title">{T.pField}</p>
         <div data-field></div>
       </div>
       <div>
-        <p class="panel-title">Training loss</p>
+        <p class="panel-title">{T.pLoss}</p>
         <div data-loss></div>
       </div>
       <div>
-        <p class="panel-title">Inferred parameter m</p>
+        <p class="panel-title">{T.pM}</p>
         <div data-mplot></div>
       </div>
     </div>
@@ -41,13 +63,16 @@ import ParameterSlider from './ParameterSlider.astro';
   import { LinePlot } from '../../lib/plot';
 
   document.querySelectorAll<HTMLElement>('[data-pinn]').forEach((root) => {
+    const T = JSON.parse(root.dataset.t!);
+    // Spanish readouts use a decimal comma
+    const dec = (t: string) => (T.comma ? t.replace(/(\d)\.(\d)/g, '$1,$2') : t);
     const $ = <T extends Element>(s: string) => root.querySelector<T>(s)!;
     const val = (n: string) => +$<HTMLInputElement>(`[name="${n}"]`).value;
-    const pField = new LinePlot($('[data-field]'), { width: 860, height: 300, xlabel: 'position along the fin x', ylabel: 'θ', title: 'Temperature profile' , legend: false});
+    const pField = new LinePlot($('[data-field]'), { width: 860, height: 300, xlabel: T.xField, ylabel: 'θ', title: T.tField, legend: false});
     const pFieldR = keyed(pField, $('[data-field]'));
-    const pLoss = new LinePlot($('[data-loss]'), { width: 420, height: 240, xlabel: 'iteration', ylabel: 'loss', logy: true, title: 'Loss' , legend: false});
+    const pLoss = new LinePlot($('[data-loss]'), { width: 420, height: 240, xlabel: T.xIt, ylabel: T.yLoss, logy: true, title: T.tLoss, legend: false});
     const pLossR = keyed(pLoss, $('[data-loss]'));
-    const pM = new LinePlot($('[data-mplot]'), { width: 420, height: 240, xlabel: 'iteration', ylabel: 'm', title: 'Inferred m' , legend: false});
+    const pM = new LinePlot($('[data-mplot]'), { width: 420, height: 240, xlabel: T.xIt, ylabel: 'm', title: T.tM, legend: false});
     const pMR = keyed(pM, $('[data-mplot]'));
     const read = $<HTMLElement>('[data-read]');
     const btn = $<HTMLButtonElement>('[data-train]');
@@ -78,29 +103,29 @@ import ParameterSlider from './ParameterSlider.astro';
     const draw = () => {
       const s = state;
       pFieldR([
-        { kind: 'line', x: xs, y: xs.map((x) => exact(x, s.mTrue)), cls: 's-truth', label: 'true θ(x)' },
-        { kind: 'line', x: xs, y: xs.map((x) => evalNet(s.netD, x).u), cls: 's-muted', label: 'data only', dash: true },
-        { kind: 'line', x: xs, y: xs.map((x) => evalNet(s.netP, x).u), cls: 's-learned', label: 'data + physics' },
-        { kind: 'points', x: s.data.map((d) => d[0]), y: s.data.map((d) => d[1]), cls: 's-data', label: 'sensors' },
+        { kind: 'line', x: xs, y: xs.map((x) => exact(x, s.mTrue)), cls: 's-truth', label: T.truth },
+        { kind: 'line', x: xs, y: xs.map((x) => evalNet(s.netD, x).u), cls: 's-muted', label: T.dataOnly, dash: true },
+        { kind: 'line', x: xs, y: xs.map((x) => evalNet(s.netP, x).u), cls: 's-learned', label: T.physics },
+        { kind: 'points', x: s.data.map((d) => d[0]), y: s.data.map((d) => d[1]), cls: 's-data', label: T.sensors },
       ], { xlim: [0, 1], ylim: [-0.3, 1.3] });
       if (s.hI.length) {
         pLossR([
-          { kind: 'line', x: s.hI, y: s.hD, cls: 's-muted', label: 'data only', dash: true },
-          { kind: 'line', x: s.hI, y: s.hP, cls: 's-learned', label: 'data + physics' },
+          { kind: 'line', x: s.hI, y: s.hD, cls: 's-muted', label: T.dataOnly, dash: true },
+          { kind: 'line', x: s.hI, y: s.hP, cls: 's-learned', label: T.physics },
         ], { xlim: [0, MAX] });
         pMR([
-          { kind: 'line', x: [0, MAX], y: [s.mTrue, s.mTrue], cls: 's-truth', label: 'true m', dash: true },
-          { kind: 'line', x: s.hI, y: s.hM, cls: 's-learned', label: 'inferred' },
+          { kind: 'line', x: [0, MAX], y: [s.mTrue, s.mTrue], cls: 's-truth', label: T.trueM, dash: true },
+          { kind: 'line', x: s.hI, y: s.hM, cls: 's-learned', label: T.inferred },
         ], { xlim: [0, MAX], ylim: [0, 3.5] });
       } else {
         pLossR([], { xlim: [0, MAX], ylim: [1e-6, 1] });
-        pMR([{ kind: 'line', x: [0, MAX], y: [s.mTrue, s.mTrue], cls: 's-truth', label: 'true m', dash: true }], { xlim: [0, MAX], ylim: [0, 3.5] });
+        pMR([{ kind: 'line', x: [0, MAX], y: [s.mTrue, s.mTrue], cls: 's-truth', label: T.trueM, dash: true }], { xlim: [0, MAX], ylim: [0, 3.5] });
       }
       const eD = rmsErr(s.netD, s.mTrue), eP = rmsErr(s.netP, s.mTrue);
       const m = Math.exp(s.netP.logm);
-      read.innerHTML = s.it === 0 ? 'Press Train. Both networks start from the same random weights.' :
-        `Iteration ${s.it}. Error over the whole fin (RMS): data only <strong>${eD.toFixed(3)}</strong>, data + physics <strong>${eP.toFixed(3)}</strong>.` +
-        (s.cfgP.learnM ? ` Inferred m = <strong>${m.toFixed(2)}</strong> (true ${s.mTrue.toFixed(1)}).` : '');
+      read.innerHTML = s.it === 0 ? T.idle : dec(
+        `${T.it} ${s.it}. ${T.err}: ${T.dataOnly} <strong>${eD.toFixed(3)}</strong>, ${T.physics} <strong>${eP.toFixed(3)}</strong>.` +
+        (s.cfgP.learnM ? ` ${T.mInf} = <strong>${m.toFixed(2)}</strong> (${T.trueW} ${s.mTrue.toFixed(1)}).` : ''));
     };
 
     const loop = () => {
@@ -114,14 +139,14 @@ import ParameterSlider from './ParameterSlider.astro';
       s.hI.push(s.it); s.hD.push(Math.max(lD, 1e-12)); s.hP.push(Math.max(lP, 1e-12)); s.hM.push(Math.exp(s.netP.logm));
       draw();
       if (s.it < MAX) requestAnimationFrame(loop);
-      else { running = false; btn.textContent = 'Train'; }
+      else { running = false; btn.textContent = T.train; }
     };
 
-    const reset = () => { running = false; btn.textContent = 'Train'; state = setup(); draw(); };
+    const reset = () => { running = false; btn.textContent = T.train; state = setup(); draw(); };
     btn.addEventListener('click', () => {
-      if (running) { running = false; btn.textContent = 'Continue'; return; }
+      if (running) { running = false; btn.textContent = T.cont; return; }
       if (state.it >= MAX) state = setup();
-      running = true; btn.textContent = 'Pause'; requestAnimationFrame(loop);
+      running = true; btn.textContent = T.pause; requestAnimationFrame(loop);
     });
     $('[data-reset]').addEventListener('click', reset);
     root.querySelectorAll('input').forEach((i) => i.addEventListener('change', reset));

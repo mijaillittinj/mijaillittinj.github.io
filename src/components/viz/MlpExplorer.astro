@@ -4,33 +4,55 @@
  * and Adam; training and validation losses, weight decay and early stopping.
  */
 import ParameterSlider from './ParameterSlider.astro';
+interface Props { lang?: 'en' | 'es' }
+const { lang = 'en' } = Astro.props;
+const es = lang === 'es';
+const T = es
+  ? {
+      layers: 'Capas ocultas', layersAria: 'Número de capas ocultas', width: 'Neuronas por capa', ntrain: 'Puntos de entrenamiento', noise: 'Ruido en los datos σ',
+      decay: 'Decaimiento de pesos (κ = 10⁻³)', early: 'Parada temprana (conservar los pesos con menor error de validación)',
+      train: 'Entrenar', pause: 'Pausa', cont: 'Continuar', reset: 'Reiniciar',
+      pFit: 'Datos, función verdadera y red', pLoss: 'Error de entrenamiento y de validación',
+      xIn: 'entrada x', yOut: 'salida y', xIt: 'iteración', yMse: 'error cuadrático medio',
+      trueF: 'función verdadera', valPts: 'puntos de validación', trainPts: 'puntos de entrenamiento', net: 'red', trainErr: 'error de entrenamiento', valErr: 'error de validación', best: 'mejor validación',
+      params: 'parámetros para', pts: 'puntos de entrenamiento', idle: 'Pulse «Entrenar».', it: 'iteración', floor: 'piso de ruido σ²', restored: 'la parada temprana restauró los pesos de la iteración',
+    }
+  : {
+      layers: 'Hidden layers', layersAria: 'Number of hidden layers', width: 'Neurons per layer', ntrain: 'Training points', noise: 'Noise on the data σ',
+      decay: 'Weight decay (κ = 10⁻³)', early: 'Early stopping (keep the best validation weights)',
+      train: 'Train', pause: 'Pause', cont: 'Continue', reset: 'Reset',
+      pFit: 'Data, true function and network', pLoss: 'Training and validation error',
+      xIn: 'input x', yOut: 'output y', xIt: 'iteration', yMse: 'mean squared error',
+      trueF: 'true function', valPts: 'validation points', trainPts: 'training points', net: 'network', trainErr: 'training error', valErr: 'validation error', best: 'best validation',
+      params: 'parameters for', pts: 'training points', idle: 'Press Train.', it: 'iteration', floor: 'noise floor σ²', restored: 'early stopping restored the weights of iteration',
+    };
 ---
-<div class="lab" data-mlp>
+<div class="lab" data-mlp data-text={JSON.stringify(T)}>
   <div class="lab__grid">
     <div class="lab__controls">
       <div class="control">
-        <span class="control__head">Hidden layers</span>
-        <div class="seg" role="group" aria-label="Number of hidden layers">
+        <span class="control__head">{T.layers}</span>
+        <div class="seg" role="group" aria-label={T.layersAria}>
           <button type="button" data-depth="1" aria-pressed="false">1</button>
           <button type="button" data-depth="2" aria-pressed="true">2</button>
           <button type="button" data-depth="3" aria-pressed="false">3</button>
         </div>
       </div>
-      <ParameterSlider name="width" label="Neurons per layer" min={2} max={40} step={1} value={24} format="int" />
-      <ParameterSlider name="ntrain" label="Training points" min={5} max={60} step={1} value={12} format="int" />
-      <ParameterSlider name="noise" label="Noise on the data σ" min={0} max={0.4} step={0.01} value={0.15} />
-      <label class="meta"><input type="checkbox" data-mlp-decay /> Weight decay (κ = 10⁻³)</label>
-      <label class="meta"><input type="checkbox" data-mlp-early /> Early stopping (keep the best validation weights)</label>
-      <p class="meta"><button type="button" class="btn btn--primary" data-mlp-train>Train</button> <button type="button" class="btn" data-mlp-reset>Reset</button></p>
+      <ParameterSlider name="width" label={T.width} min={2} max={40} step={1} value={24} format="int" />
+      <ParameterSlider name="ntrain" label={T.ntrain} min={5} max={60} step={1} value={12} format="int" />
+      <ParameterSlider name="noise" label={T.noise} min={0} max={0.4} step={0.01} value={0.15} />
+      <label class="meta"><input type="checkbox" data-mlp-decay /> {T.decay}</label>
+      <label class="meta"><input type="checkbox" data-mlp-early /> {T.early}</label>
+      <p class="meta"><button type="button" class="btn btn--primary" data-mlp-train>{T.train}</button> <button type="button" class="btn" data-mlp-reset>{T.reset}</button></p>
       <p class="lab__readout" data-mlp-read aria-live="polite"></p>
     </div>
     <div class="lab__plots">
       <div class="wide">
-        <p class="panel-title">Data, true function and network</p>
+        <p class="panel-title">{T.pFit}</p>
         <div class="mlp__plot" data-mlp-fit></div>
       </div>
       <div class="wide">
-        <p class="panel-title">Training and validation error</p>
+        <p class="panel-title">{T.pLoss}</p>
         <div class="mlp__plot" data-mlp-loss></div>
       </div>
     </div>
@@ -44,10 +66,11 @@ import ParameterSlider from './ParameterSlider.astro';
 
   document.querySelectorAll<HTMLElement>('[data-mlp]').forEach((root) => {
     const $ = <T extends Element>(s: string) => root.querySelector<T>(s)!;
+    const L = JSON.parse(root.dataset.text!);
     const val = (name: string) => +$<HTMLInputElement>(`[name="${name}"]`).value;
-    const pFit = new LinePlot($('[data-mlp-fit]'), { width: 860, height: 300, xlabel: 'input x', ylabel: 'output y', title: 'Fit' , legend: false});
+    const pFit = new LinePlot($('[data-mlp-fit]'), { width: 860, height: 300, xlabel: L.xIn, ylabel: L.yOut, title: L.pFit , legend: false});
     const pFitR = keyed(pFit, $('[data-mlp-fit]'));
-    const pLoss = new LinePlot($('[data-mlp-loss]'), { width: 860, height: 240, xlabel: 'iteration', ylabel: 'mean squared error', logy: true, title: 'Loss curves' , legend: false});
+    const pLoss = new LinePlot($('[data-mlp-loss]'), { width: 860, height: 240, xlabel: L.xIt, ylabel: L.yMse, logy: true, title: L.pLoss , legend: false});
     const pLossR = keyed(pLoss, $('[data-mlp-loss]'));
     const read = $<HTMLElement>('[data-mlp-read]');
     const btn = $<HTMLButtonElement>('[data-mlp-train]');
@@ -64,21 +87,21 @@ import ParameterSlider from './ParameterSlider.astro';
     const draw = () => {
       const { net, split } = s;
       pFitR([
-        { kind: 'line', x: xs, y: xs.map(target), cls: 's-truth', dash: true, label: 'true function' },
-        { kind: 'points', x: split.val.x, y: split.val.y, cls: 's-muted', label: 'validation points' },
-        { kind: 'points', x: split.train.x, y: split.train.y, cls: 's-data', label: 'training points' },
-        { kind: 'line', x: xs, y: xs.map((x) => Math.max(-3, Math.min(3, predict(net, x)))), cls: 's-learned', label: 'network' },
+        { kind: 'line', x: xs, y: xs.map(target), cls: 's-truth', dash: true, label: L.trueF },
+        { kind: 'points', x: split.val.x, y: split.val.y, cls: 's-muted', label: L.valPts },
+        { kind: 'points', x: split.train.x, y: split.train.y, cls: 's-data', label: L.trainPts },
+        { kind: 'line', x: xs, y: xs.map((x) => Math.max(-3, Math.min(3, predict(net, x)))), cls: 's-learned', label: L.net },
       ], { xlim: [0, 1], ylim: [-2.2, 2.2] });
       const series: import('../../lib/plot').Series[] = [
-        { kind: 'line', x: s.hI, y: s.hT, cls: 's-learned', label: 'training error' },
-        { kind: 'line', x: s.hI, y: s.hV, cls: 's-warn', label: 'validation error' },
+        { kind: 'line', x: s.hI, y: s.hT, cls: 's-learned', label: L.trainErr },
+        { kind: 'line', x: s.hI, y: s.hV, cls: 's-warn', label: L.valErr },
       ];
-      if (s.bestP && earlyBox.checked) series.push({ kind: 'line', x: [s.bestIt, s.bestIt], y: [1e-6, 10], cls: 's-muted', dash: true, label: 'best validation' });
+      if (s.bestP && earlyBox.checked) series.push({ kind: 'line', x: [s.bestIt, s.bestIt], y: [1e-6, 10], cls: 's-muted', dash: true, label: L.best });
       pLossR(s.hI.length ? series : [], { xlim: [0, MAX], ylim: [1e-6, 10] });
       const tr = mse(net, s.split.train.x, s.split.train.y), va = mse(net, s.split.val.x, s.split.val.y);
-      read.innerHTML = `${nParams(net)} parameters for ${s.split.train.x.length} training points. ` +
-        (s.it ? `Iteration ${s.it}: training error <strong>${tr.toExponential(1)}</strong>, validation error <strong>${va.toExponential(1)}</strong> (noise floor σ² = ${(val('noise') ** 2).toExponential(1)}).` : 'Press Train.') +
-        (s.stopped ? ` Early stopping restored the weights of iteration ${s.bestIt}.` : '');
+      read.innerHTML = `${nParams(net)} ${L.params} ${s.split.train.x.length} ${L.pts}` +
+        (s.it ? ` · ${L.it} ${s.it} · ${L.trainErr} <strong>${tr.toExponential(1)}</strong> · ${L.valErr} <strong>${va.toExponential(1)}</strong> (${L.floor} = ${(val('noise') ** 2).toExponential(1)})` : `. ${L.idle}`) +
+        (s.stopped ? ` · ${L.restored} ${s.bestIt}` : '');
     };
     const loop = () => {
       if (!running) return;
@@ -87,16 +110,16 @@ import ParameterSlider from './ParameterSlider.astro';
       const tr = mse(s.net, s.split.train.x, s.split.train.y), va = mse(s.net, s.split.val.x, s.split.val.y);
       s.hI.push(s.it); s.hT.push(Math.max(tr, 1e-6)); s.hV.push(Math.max(va, 1e-6));
       if (va < s.best) { s.best = va; s.bestIt = s.it; s.bestP = cloneParams(s.net); }
-      if (earlyBox.checked && s.it - s.bestIt > PATIENCE && s.bestP) { setParams(s.net, s.bestP); s.stopped = true; running = false; btn.textContent = 'Train'; draw(); return; }
+      if (earlyBox.checked && s.it - s.bestIt > PATIENCE && s.bestP) { setParams(s.net, s.bestP); s.stopped = true; running = false; btn.textContent = L.train; draw(); return; }
       draw();
-      if (s.it >= MAX) { running = false; btn.textContent = 'Train'; return; }
+      if (s.it >= MAX) { running = false; btn.textContent = L.train; return; }
       requestAnimationFrame(loop);
     };
-    const reset = () => { running = false; btn.textContent = 'Train'; setup(); draw(); };
+    const reset = () => { running = false; btn.textContent = L.train; setup(); draw(); };
     btn.addEventListener('click', () => {
-      if (running) { running = false; btn.textContent = 'Continue'; return; }
+      if (running) { running = false; btn.textContent = L.cont; return; }
       if (s.it >= MAX || s.stopped) setup();
-      running = true; btn.textContent = 'Pause'; requestAnimationFrame(loop);
+      running = true; btn.textContent = L.pause; requestAnimationFrame(loop);
     });
     $('[data-mlp-reset]').addEventListener('click', reset);
     root.querySelectorAll<HTMLButtonElement>('[data-depth]').forEach((b) => b.addEventListener('click', () => {

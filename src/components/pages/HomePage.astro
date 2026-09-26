@@ -66,7 +66,7 @@ const T = es
     <div class="row">
       <h2 class="row__label" id="pubs-title">{T.pubLabel}</h2>
       <div class="bib">
-        {recent.map((p) => <PubItem pub={p} compact />)}
+        {recent.map((p) => <PubItem pub={p} compact lang={lang} />)}
         <p class="more-wrap"><a class="more" href={url('/publications/')}>{T.allPubs}</a></p>
       </div>
     </div>

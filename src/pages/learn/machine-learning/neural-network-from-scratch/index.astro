@@ -3,6 +3,7 @@ import LearnModule from '../../../../layouts/LearnModule.astro';
 import Equation from '../../../../components/viz/Equation.astro';
 import EquationDerivation from '../../../../components/viz/EquationDerivation.astro';
 import MlpExplorer from '../../../../components/viz/MlpExplorer.astro';
+import Answer from '../../../../components/ui/Answer.astro';
 import { url } from '../../../../i18n/utils';
 ---
 <LearnModule slug="machine-learning/neural-network-from-scratch" description="Train a small neural network in the browser with hand-written backpropagation and Adam: fitting, overfitting, validation error, weight decay and early stopping.">
@@ -25,11 +26,16 @@ import { url } from '../../../../i18n/utils';
   <div class="try">
     <h3>Exercises</h3>
     <ol>
-      <li>Train with the default settings (2 layers × 24 neurons, 12 points). The training error keeps falling while the validation error turns around and rises. That is <em>overfitting</em>: the network memorises the noise.</li>
-      <li>Increase the training points to 60 without changing the network. Why does the gap between training and validation error close?</li>
-      <li>With 12 points, reduce the width to 3 neurons. Now the network is too simple to follow the function: <em>underfitting</em>. Find the width with the lowest validation error.</li>
-      <li>Turn on early stopping and train again. Which iteration is kept? Then try weight decay instead. Both are forms of <em>regularisation</em>, the same idea as in the <a href={url('/learn/inverse-problems/svd-noise-amplification/')}>SVD module</a>.</li>
-      <li>Set the noise to 0. Can a large network now reach a validation error close to zero? What limits it?</li>
+      <li>Train with the default settings (2 layers × 24 neurons, 12 points). The training error keeps falling while the validation error turns around and rises. That is <em>overfitting</em>: the network memorises the noise.
+        <Answer lang="en"><p>The network has 673 parameters for 12 points, so it can pass through every point: the training error falls to about 10⁻¹⁴. The validation error reaches its minimum, about 4 × 10⁻², near iteration 200–250, and then rises to about 7 × 10⁻² as the curve bends to follow the noise between the training points.</p></Answer></li>
+      <li>Increase the training points to 60 without changing the network. Why does the gap between training and validation error close?
+        <Answer lang="en"><p>With 60 points the network can no longer pass through all of them with a smooth curve, so it averages the noise out. The training error stays near 1.3 × 10⁻² and the validation error near 2.7 × 10⁻², close to the noise floor σ² ≈ 2.3 × 10⁻², which no model can beat. More data constrain the same flexible model.</p></Answer></li>
+      <li>With 12 points, reduce the width step by step down to 2 neurons, training to the end each time. Which width gives the lowest final validation error? What does its curve look like?
+        <Answer lang="en"><p>With only 12 noisy points the smallest network wins: 2 neurons per layer (13 parameters) ends with a validation error of about 3.9 × 10⁻², while widths from 3 to 24 end between 7 and 10 × 10⁻², because given enough iterations they all fit the noise. The small network cannot follow every wiggle of the true function (<em>underfitting</em>), but with so few points that bias costs less than the variance of a flexible model. The best complexity depends on how much data there is.</p></Answer></li>
+      <li>Turn on early stopping and train again. Which iteration is kept? Then try weight decay instead. Both are forms of <em>regularisation</em>, the same idea as in the <a href={url('/learn/inverse-problems/svd-noise-amplification/')}>SVD module</a>.
+        <Answer lang="en"><p>Early stopping keeps the weights from about iteration 240, where the validation error was lowest (about 4 × 10⁻²); training halts 600 iterations later without improvement. Weight decay with κ = 10⁻³ stops the training error from collapsing (it stays near 8 × 10⁻³), but here the validation error still climbs to about 8 × 10⁻²: this strength is not enough for this network and data. Regularisation has to be tuned, and the validation set is what tells you how much.</p></Answer></li>
+      <li>Set the noise to 0. Can a large network now reach a validation error close to zero? What limits it?
+        <Answer lang="en"><p>Not zero: with 12 noise-free points the validation error levels off near 1.4 × 10⁻³. Between the training points the network is unconstrained, so it can differ from the true function there. With 60 noise-free points it drops to about 3 × 10⁻⁵ and is then limited by the finite training time and network size.</p></Answer></li>
     </ol>
   </div>
 

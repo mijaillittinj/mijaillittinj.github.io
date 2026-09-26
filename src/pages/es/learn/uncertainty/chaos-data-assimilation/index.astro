@@ -1,0 +1,42 @@
+---
+import LearnModule from '../../../../../layouts/LearnModule.astro';
+import Equation from '../../../../../components/viz/Equation.astro';
+import LorenzExplorer from '../../../../../components/viz/LorenzExplorer.astro';
+import Answer from '../../../../../components/ui/Answer.astro';
+import { localized } from '../../../../../i18n/utils';
+---
+<LearnModule slug="uncertainty/chaos-data-assimilation" lang="es" description="El sistema de Lorenz en el navegador: vea cómo dos trayectorias casi idénticas se separan (el efecto mariposa) y corrija un pronóstico por conjuntos con observaciones ruidosas mediante un filtro de Kalman por conjuntos, la idea detrás del pronóstico del tiempo.">
+  <div class="prose">
+    <h2>Tres ecuaciones que no se pueden predecir por mucho tiempo</h2>
+    <p>En 1963 el meteorólogo Edward Lorenz redujo un modelo de convección en la atmósfera a tres variables, <em>x</em>, <em>y</em> y <em>z</em>, que representan, de forma aproximada, la intensidad del movimiento convectivo y dos diferencias de temperatura:</p>
+    <Equation tex={String.raw`\dot x = \sigma (y - x), \qquad \dot y = x(\rho - z) - y, \qquad \dot z = x y - \beta z, \qquad \sigma = 10,\ \rho = 28,\ \beta = 8/3 .`} />
+    <p>Las ecuaciones son deterministas: el mismo punto de partida da siempre la misma trayectoria. Sin embargo, la trayectoria nunca se estabiliza ni se repite; gira sin fin en torno a dos lóbulos, el célebre <em>atractor</em> con forma de mariposa. Peor aún para predecir, dos trayectorias que parten casi del mismo punto se separan exponencialmente, más o menos como e<sup>λ<em>t</em></sup> con λ ≈ 0,9 por unidad de tiempo. Esta sensibilidad a las condiciones iniciales es lo que Lorenz llamó el efecto mariposa.</p>
+    <h2>Pronosticar de todos modos: conjuntos y asimilación de datos</h2>
+    <p>Como el estado inicial nunca se conoce con exactitud, los pronosticadores corren un <em>conjunto</em> (ensemble): muchas copias del modelo que parten de estados levemente distintos, todos compatibles con las observaciones. La dispersión del conjunto estima la incertidumbre del pronóstico. Si se lo deja solo, el conjunto pronto cubre todo el atractor y el pronóstico ya no sirve. La asimilación de datos lo trae de vuelta: cada vez que llegan observaciones nuevas, cada miembro se acerca a ellas. El filtro de Kalman por conjuntos (EnKF) lo hace con la actualización del <a href={localized('/learn/uncertainty/kalman-filter/', 'es')}>módulo del filtro de Kalman</a>, usando el propio conjunto para estimar la covarianza del pronóstico <em>P</em><sup>f</sup>:</p>
+    <Equation tex={String.raw`\mathbf x^{a}_i = \mathbf x^{f}_i + K\big(\mathbf y + \boldsymbol\varepsilon_i - H\mathbf x^{f}_i\big), \qquad K = P^{f} H^{\mathsf T}\big(H P^{f} H^{\mathsf T} + R\big)^{-1}.`} />
+    <p>Aquí <strong>y</strong> son las observaciones, <em>H</em> selecciona las variables observadas, <em>R</em> es la covarianza del ruido de observación y <strong>ε</strong><sub><em>i</em></sub> una perturbación aleatoria de las observaciones para cada miembro. Como la covarianza del conjunto relaciona las variables, observar solo <em>x</em> también corrige <em>y</em> y <em>z</em>.</p>
+  </div>
+
+  <LorenzExplorer lang="es" />
+
+  <div class="try">
+    <h3>Ejercicios</h3>
+    <ol>
+      <li>En el experimento del efecto mariposa, con la diferencia inicial por defecto δ = 10<sup>−6</sup>, ¿cuándo supera 1 la distancia entre las dos trayectorias? ¿Qué forma tiene la curva de distancia en escala logarítmica y por qué deja de crecer?
+        <Answer lang="es"><p>La distancia supera 1 en t ≈ 17,6. En el eje logarítmico sube aproximadamente en línea recta, paralela a la referencia punteada e<sup>0,9 t</sup>: el error crece exponencialmente, a una tasa fijada por el mayor exponente de Lyapunov. Oscila porque la tasa de crecimiento cambia a lo largo del atractor. Deja de crecer en unas decenas porque ambas trayectorias permanecen en el atractor, cuyo tamaño es finito; desde ahí son simplemente puntos sin relación sobre él.</p></Answer></li>
+      <li>Repita con δ = 10<sup>−10</sup> y con δ = 10<sup>−2</sup>. ¿Cuánto tiempo de predicción compra cada factor diez de precisión inicial?
+        <Answer lang="es"><p>La distancia supera 1 en t ≈ 27,6 con δ = 10<sup>−10</sup> y en t ≈ 7,2 con δ = 10<sup>−2</sup>. Cada factor diez compra apenas unas 2,5 unidades de tiempo, cerca de ln 10 / 0,9. Medir el estado inicial un millón de veces mejor alarga el pronóstico en unas 15 unidades de tiempo, no un millón de veces. Este rendimiento logarítmico explica por qué los pronósticos del tiempo pierden su utilidad después de una o dos semanas, por buenas que sean las observaciones.</p></Answer></li>
+      <li>Cambie a «pronóstico y asimilación» con los valores iniciales (x observada cada 0,1 unidades de tiempo, ruido 1). Compare el error del conjunto sin asimilación con el del conjunto asimilado. ¿Cómo puede la observación de x corregir y y z?
+        <Answer lang="es"><p>El conjunto libre pierde el rastro en cerca de 1,5 unidades de tiempo y su error medio se estabiliza alrededor de 15, el tamaño del atractor. El conjunto asimilado mantiene un error de cerca de 1,5. Los miembros del conjunto llevan las correlaciones entre variables que crea la dinámica (x impulsa a y mediante el término σ(y − x) y el producto xy impulsa a z), de modo que la ganancia de Kalman convierte una corrección de x en correcciones de y y z.</p></Answer></li>
+      <li>Cambie el intervalo de observación de 0,05 a 0,3 y luego a 0,6 unidades de tiempo. ¿Qué pasa con el error y por qué?
+        <Answer lang="es"><p>El error medio crece de cerca de 1,2 (cada 0,05) a cerca de 4,3 (cada 0,3) y 8 (cada 0,6). Entre dos observaciones los errores crecen exponencialmente y se duplican aproximadamente cada 0,8 unidades de tiempo; si el intervalo es demasiado largo, el conjunto ya se ha dispersado por buena parte del atractor y la siguiente observación solo lo repara en parte. Aumentar el ruido tiene un efecto parecido: con ruido 0,2 el error baja a cerca de 0,3; con ruido 6 sube a cerca de 8,5.</p></Answer></li>
+      <li>¿Qué conviene más: observar las tres variables cada 0,4 unidades de tiempo, o solo x cada 0,1? Pruebe ambas. Luego, con los valores iniciales, reduzca el conjunto a 5 miembros. ¿Por qué un conjunto tan pequeño sigue funcionando aquí?
+        <Answer lang="es"><p>Observar solo x cada 0,1 unidades de tiempo da un error medio de cerca de 1,5; observar x, y y z cada 0,4 da cerca de 5,7. En un sistema caótico importa más la frecuencia de las observaciones que su cantidad en cada instante, porque los errores crecen exponencialmente entre observaciones. Con 5 miembros el error aumenta poco (cerca de 1,9 en vez de 1,5): el sistema de Lorenz tiene tres variables, así que unos pocos miembros bastan para estimar sus covarianzas. Los modelos meteorológicos tienen cientos de millones de variables y conjuntos de unos cincuenta miembros; por eso los filtros operacionales necesitan técnicas adicionales como la localización y la inflación (este laboratorio usa una inflación leve del 5 %).</p></Answer></li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>Dónde se usa</h2>
+    <p>Los servicios meteorológicos hacen exactamente esto a una escala enormemente mayor: modelos con cientos de millones de variables, conjuntos de unos cincuenta miembros y millones de observaciones de satélites, globos, aviones y estaciones de superficie asimiladas varias veces al día. La misma combinación de un modelo imperfecto con datos imperfectos se usa en reanálisis del océano y del clima, en modelos de yacimientos petroleros y en los sistemas de seguimiento del <a href={localized('/learn/uncertainty/kalman-filter/', 'es')}>módulo del filtro de Kalman</a>. La lección del experimento mariposa es general: en un sistema caótico, un pronóstico solo es útil si viene con una estimación de su propia incertidumbre y se corrige continuamente con datos.</p>
+  </div>
+</LearnModule>

@@ -1,0 +1,43 @@
+---
+import LearnModule from '../../../../../layouts/LearnModule.astro';
+import Equation from '../../../../../components/viz/Equation.astro';
+import GradientDescentExplorer from '../../../../../components/viz/GradientDescentExplorer.astro';
+import Answer from '../../../../../components/ui/Answer.astro';
+import { localized } from '../../../../../i18n/utils';
+---
+<LearnModule lang="es" slug="optimization/gradient-descent" description="Descenso de gradiente, momentum y Adam interactivos sobre funciones de pérdida cuadrática, de Rosenbrock y de Himmelblau: tamaño del paso, condicionamiento y estabilidad.">
+  <div class="prose">
+    <h2>Bajar una colina viendo solo el terreno cercano</h2>
+    <p>Entrenar una red neuronal, calibrar una simulación y diseñar un intercambiador de calor se reducen a minimizar una función <em>f(x)</em>. La mayoría de los métodos prácticos solo usan información local: el valor de <em>f</em> y su gradiente en el punto actual. El descenso de gradiente da un paso en contra del gradiente,</p>
+    <Equation tex={String.raw`x_{k+1} = x_k - \alpha\, \nabla f(x_k),`} />
+    <p>donde el tamaño del paso <em>α</em> (la tasa de aprendizaje, en aprendizaje automático) decide cuánto avanzar. Ese único número decide si el método se arrastra, converge o explota.</p>
+  </div>
+
+  <GradientDescentExplorer lang="es" />
+
+  <div class="try">
+    <h3>Ejercicios</h3>
+    <ol>
+      <li>En el valle cuadrático con κ = 20 (κ mide cuán alargado es el valle; vea más abajo), suba α lentamente. ¿Con qué valor el descenso de gradiente empieza a zigzaguear y cuándo diverge? Compare con el límite 2/κ que aparece bajo el gráfico de la pérdida.
+        <Answer lang="es"><p>En la dirección <em>y</em>, cada paso multiplica el error por 1 − ακ. Cuando α supera 1/κ = 0,05, ese factor se vuelve negativo, así que el camino se pasa de largo y zigzaguea de un lado al otro del valle. Por encima de 2/κ = 0,1 su magnitud supera 1 y la oscilación crece hasta que la iteración diverge, justo en el límite indicado.</p></Answer></li>
+      <li>Mantenga α justo bajo el límite y aumente κ. ¿Por qué se vuelve lenta la convergencia a lo largo de la dirección larga y plana, aunque el método sea estable?
+        <Answer lang="es"><p>El tamaño del paso lo limita la dirección empinada (α &lt; 2/κ), pero en la dirección plana el error solo se reduce en un factor 1 − α por paso. Un κ mayor obliga a un α menor, así que el avance en <em>x</em> se hace lento: con α al 95 % del límite, llegar a f &lt; 10⁻⁶ toma unos 74 pasos con κ = 5 y unos 195 con κ = 50. El costo lo fija el número de condición, no la estabilidad.</p></Answer></li>
+      <li>Active momentum con β = 0,8. Con el mismo α llega al mínimo en muchos menos pasos. Mire el camino: ¿qué está promediando el momentum?
+        <Answer lang="es"><p>Con el α por defecto, momentum llega a f &lt; 10⁻⁶ en unos 69 pasos, frente a unos 147 del descenso de gradiente simple. La velocidad es un promedio móvil de los gradientes anteriores: las componentes que cambian de signo en cada paso (a través del valle) se cancelan, mientras que la componente que siempre apunta a lo largo del valle se acumula. Momentum promedia y elimina el zigzag.</p></Answer></li>
+      <li>Cambie a Himmelblau y haga clic en varios puntos de partida. El mínimo al que se llega depende de dónde se parte. ¿Qué significa esto para entrenar una red a partir de una inicialización aleatoria?
+        <Answer lang="es"><p>Cada punto de partida cae en la cuenca de uno de los cuatro mínimos: el inicio por defecto termina cerca de (−2,81; 3,13), uno en (1, 1) termina en (3, 2) y uno en (1, −1) termina cerca de (3,58; −1,85). Un método local solo encuentra el mínimo de la cuenca en la que parte. Con una red neuronal ocurre lo mismo: distintas inicializaciones aleatorias dan redes entrenadas distintas, y por eso los resultados se suelen comprobar con varias semillas.</p></Answer></li>
+      <li>Pruebe Adam en Rosenbrock con un paso grande. Adam reescala cada coordenada con una estimación móvil del tamaño del gradiente. ¿Cuándo ayuda eso y cuándo hace ruidosa la aproximación final?
+        <Answer lang="es"><p>Como Adam divide por el tamaño del gradiente, sus pasos miden aproximadamente α en cada coordenada, sin importar cuán empinado sea el terreno. Lejos del mínimo eso es una ventaja: con log₁₀ α = −1,5 el descenso de gradiente simple diverge en Rosenbrock, mientras que Adam converge. Cerca del mínimo los pasos no se achican con el gradiente, así que la pérdida sigue saltando (entre cerca de 10⁻¹³ y 10⁻⁹ con log₁₀ α = −0,5) en vez de bajar de forma suave. En la práctica, el tamaño del paso se reduce durante el entrenamiento.</p></Answer></li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>Por qué el tamaño del paso está limitado</h2>
+    <p>En la función cuadrática <em>f = ½(x² + κy²)</em> cada coordenada evoluciona por separado: <em>y<sub>k+1</sub> = (1 − ακ) y<sub>k</sub></em>. La iteración solo se achica si <em>|1 − ακ| &lt; 1</em>, lo que da</p>
+    <Equation tex={String.raw`0 < \alpha < \frac{2}{\lambda_{\max}(\nabla^2 f)} = \frac{2}{\kappa}.`} />
+    <p>La dirección más empinada fija el límite de velocidad para todas las direcciones. Por eso el cociente entre la curvatura mayor y la menor, el <em>número de condición</em>, controla cuántos pasos se necesitan. El mismo argumento de estabilidad aparece al elegir el paso de tiempo de una simulación explícita, y no por casualidad: el descenso de gradiente es el método de Euler explícito aplicado a <em>dx/dt = −∇f</em>.</p>
+    <h2>Momentum y Adam</h2>
+    <p>Momentum mantiene una velocidad acumulada, <em>v<sub>k+1</sub> = βv<sub>k</sub> − α∇f(x<sub>k</sub>)</em>, de modo que las oscilaciones a través del valle se cancelan mientras el movimiento constante a lo largo de él se acumula. Adam además divide cada componente del paso por una estimación móvil del tamaño del gradiente, lo que lo hace menos sensible a la escala de cada variable. Son los métodos con que se entrenan las redes informadas por la física de la <a href={localized('/research/', 'es') + '#physics-informed'}>investigación</a> de este sitio.</p>
+    <p class="muted">Este módulo acompaña la unidad de optimización de <a href={localized('/teaching/thermal-systems-design/', 'es')}>Diseño y Optimización de Sistemas Térmicos</a> (UTFSM, ILN223).</p>
+  </div>
+</LearnModule>

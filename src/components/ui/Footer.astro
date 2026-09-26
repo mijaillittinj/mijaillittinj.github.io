@@ -17,7 +17,7 @@ const updated = new Date().toISOString().slice(0, 10);
     <div>
       <p class="label">{t(lang, 'footer.contact')}</p>
       <p class="meta"><a href={`mailto:${person.email}`}>{person.email}</a></p>
-      <p class="meta"><a href={url('/cv/Mijail_Littin_CV.pdf')}>{t(lang, 'nav.cv')} (PDF)</a></p>
+      <p class="meta"><a href={url('/cv/Mijail_Littin_CV.pdf')}>{lang === 'es' ? 'CV (PDF, en inglés)' : 'CV (PDF)'}</a></p>
     </div>
     <div>
       <p class="label">{t(lang, 'footer.profiles')}</p>

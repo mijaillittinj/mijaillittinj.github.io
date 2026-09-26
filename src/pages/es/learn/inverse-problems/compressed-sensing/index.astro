@@ -1,0 +1,44 @@
+---
+import LearnModule from '../../../../../layouts/LearnModule.astro';
+import Equation from '../../../../../components/viz/Equation.astro';
+import CsExplorer from '../../../../../components/viz/CsExplorer.astro';
+import Answer from '../../../../../components/ui/Answer.astro';
+import { localized } from '../../../../../i18n/utils';
+---
+<LearnModule slug="inverse-problems/compressed-sensing" lang="es" description="Muestreo compresivo interactivo: recupere una señal formada por unos pocos tonos a partir de muchas menos muestras aleatorias de las que exige la frecuencia de Nyquist, con mínimos cuadrados, minimización L1 (FISTA) y búsqueda ortogonal voraz (OMP), y vea la transición de fase.">
+  <div class="prose">
+    <h2>Menos mediciones que incógnitas</h2>
+    <p>La señal del laboratorio tiene <em>N</em> = 128 valores, pero solo la medimos en <em>M</em> instantes elegidos al azar, muchos menos de los que pide el teorema de muestreo clásico. Con menos ecuaciones que incógnitas, infinitas señales concuerdan con las mediciones. La respuesta habitual de mínimos cuadrados elige la de menor energía, que resulta ser cero en todos los instantes no medidos: ajusta los datos a la perfección y no sirve de nada.</p>
+    <h2>La dispersión es la información que falta</h2>
+    <p>Muchas señales naturales son <em>dispersas</em> (en inglés, <em>sparse</em>): en una base adecuada, la mayoría de sus coeficientes vale cero. Un acorde son unos pocos tonos, una fotografía se describe bien con unas pocas ondículas, una resonancia magnética con unos pocos rasgos. Aquí la señal es una suma de <em>K</em> tonos coseno, así que su transformada discreta del coseno (DCT) tiene solo <em>K</em> coeficientes <em>c</em> distintos de cero. Las mediciones son <em>y</em> = Φ<em>c</em> + ε, donde cada fila de Φ evalúa los cosenos en un instante muestreado. Buscar el <em>c</em> más disperso que ajusta los datos es una búsqueda combinatoria, pero reemplazar el conteo de coeficientes no nulos por la suma de sus valores absolutos (la norma L1) da un problema convexo que se resuelve de forma eficiente:</p>
+    <Equation tex={String.raw`\hat c = \arg\min_{c}\; \tfrac12 \lVert \Phi c - y \rVert^2 + \lambda \lVert c \rVert_1, \qquad \lVert c \rVert_1 = \sum_k |c_k| .`} />
+    <p>El laboratorio lo resuelve con FISTA, una versión rápida del umbralizado suave iterativo: se da un paso de gradiente sobre el desajuste con los datos y luego cada coeficiente se reduce hacia cero en λ, dejando exactamente en cero los pequeños,</p>
+    <Equation tex={String.raw`c \leftarrow \mathcal S_\lambda\big(c - \Phi^{\mathsf T}(\Phi c - y)\big), \qquad \mathcal S_\lambda(v) = \mathrm{sign}(v)\,\max(|v| - \lambda,\, 0).`} />
+    <p>Candès, Romberg y Tao, y de forma independiente Donoho (2006), demostraron que, si las mediciones son suficientemente aleatorias, esto recupera exactamente una señal con <em>K</em> coeficientes no nulos a partir de unas <em>M</em> ≈ 2<em>K</em> ln(<em>N</em>/<em>K</em>) muestras. La alternativa voraz del laboratorio, la búsqueda ortogonal de coincidencias (OMP), elige el tono que mejor explica el residuo restante, vuelve a ajustar y repite; aquí se le informa el número verdadero de tonos <em>K</em>.</p>
+  </div>
+
+  <CsExplorer lang="es" />
+
+  <div class="try">
+    <h3>Ejercicios</h3>
+    <ol>
+      <li>Con la configuración por defecto (5 tonos, 32 muestras), cambie a mínimos cuadrados. ¿Cómo es la reconstrucción y por qué?
+        <Answer lang="es"><p>La reconstrucción pasa exactamente por las 32 muestras y cae a cero en todo el resto; el error relativo es cercano a 0,88. Entre todas las señales que ajustan los datos, mínimos cuadrados elige la de menor energía, y agregar cualquier cosa en los instantes no medidos solo aumenta la energía. En el panel de frecuencias la energía se reparte entre todos los coeficientes en vez de concentrarse en 5. Ajustar los datos no basta: la información previa (la dispersión) decide la respuesta.</p></Answer></li>
+      <li>Vuelva a L1 y reduzca el número de mediciones hasta que la recuperación falle. ¿Cuántas muestras necesita esta señal de 5 tonos?
+        <Answer lang="es"><p>Para esta señal, L1 todavía la recupera exactamente con 24 muestras y falla con 20 (el error salta a cerca de 1). Es menos de la quinta parte de las 128 muestras que exigiría el muestreo clásico. La regla práctica 2<em>K</em> ln(<em>N</em>/<em>K</em>) ≈ 32 es un valor típico para señales aleatorias, no un límite exacto para una realización; pulse «nueva señal» para ver cómo se mueve el umbral.</p></Answer></li>
+      <li>Desmarque «Reajustar los tonos detectados». ¿Por qué L1 por sí sola deja un pequeño error incluso sin ruido?
+        <Answer lang="es"><p>El error sube de unos 10⁻⁹ a unos 0,07. El umbralizado suave reduce cada coeficiente en λ, así que los tonos quedan un poco más débiles: L1 encuentra las frecuencias correctas pero sesga sus amplitudes. Reajustar los tonos detectados con mínimos cuadrados ordinarios elimina el sesgo. Los dos pasos cumplen funciones distintas: la penalización L1 selecciona qué tonos están presentes y los mínimos cuadrados fijan su intensidad.</p></Answer></li>
+      <li>Fije <em>K</em> = 10 con 32 muestras y luego aumente <em>M</em>. ¿Cuántas muestras se necesitan ahora?
+        <Answer lang="es"><p>Con 32 muestras la reconstrucción falla (error cercano a 0,6). L1 lo logra desde unas 40 muestras para esta señal, y OMP desde unas 52; la regla práctica da 2 × 10 × ln(12,8) ≈ 51. El número de muestras crece aproximadamente en proporción al número de tonos por un logaritmo, no con el largo de la señal, y por eso el muestreo compresivo rinde cuando las señales son muy dispersas.</p></Answer></li>
+      <li>Vuelva a 5 tonos y 32 muestras, agregue 5 % de ruido y mueva λ entre −3 y −0,5. ¿Qué valores funcionan mejor y qué falla en cada extremo?
+        <Answer lang="es"><p>Con λ demasiado pequeño (log λ = −3) el error es cercano a 0,2: el método sigue ajustando el ruido y agrega tonos falsos. Alrededor de log λ ≈ −1,3 a −1,5 el error baja a unos 0,03–0,05. Con λ demasiado grande (log λ = −1 o más) los tonos reales se eliminan y el error sube hacia 1. Como en toda inversión regularizada, λ debe ser comparable al nivel de ruido en los coeficientes: lo bastante grande para rechazar el ruido y lo bastante pequeño para conservar la señal.</p></Answer></li>
+      <li>Pulse «calcular el mapa de éxito». ¿Dónde está la frontera entre éxito y fracaso, y qué tan nítida es?
+        <Answer lang="es"><p>El mapa (OMP, sin ruido, 6 señales aleatorias por celda) es negro a la izquierda y blanco a la derecha, con una franja gris angosta entre ambos que sigue la curva <em>M</em> ≈ 2<em>K</em> ln(<em>N</em>/<em>K</em>). El paso de fallar casi siempre a acertar casi siempre es abrupto, y por eso se llama transición de fase (Donoho y Tanner la describieron en detalle). Ubicar el punto actual a uno u otro lado de la curva predice lo que muestran los paneles de reconstrucción.</p></Answer></li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>Dónde se usa</h2>
+    <p>La resonancia magnética es la aplicación más conocida: el equipo mide los coeficientes de Fourier de la imagen línea por línea, y muestrear solo un subconjunto aleatorio de ellos para luego reconstruir con una hipótesis de dispersión acorta bastante los exámenes. La misma idea aparece en la radiointerferometría, que solo muestrea unas pocas frecuencias espaciales del cielo, en prospecciones sísmicas con trazas faltantes, en cámaras de un solo píxel y en espectroscopía rápida. La lección de fondo es la del <a href={localized('/learn/inverse-problems/svd-noise-amplification/', 'es')}>módulo de la SVD</a> y del <a href={localized('/learn/inverse-problems/ct-tomography/', 'es')}>módulo de tomografía</a>: cuando los datos no alcanzan, lo que suponemos sobre la incógnita decide el resultado, y una buena hipótesis vale por muchas mediciones.</p>
+  </div>
+</LearnModule>

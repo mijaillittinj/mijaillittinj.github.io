@@ -1,0 +1,129 @@
+---
+import Base from '../../layouts/Base.astro';
+import Equation from '../viz/Equation.astro';
+import ScientificFigure from '../viz/ScientificFigure.astro';
+import PubItem from '../ui/PubItem.astro';
+import { software } from '../../data/software';
+import { byId } from '../../data/publications';
+import { localized } from '../../i18n/utils';
+import type { Lang } from '../../i18n/ui';
+import fig from '../../assets/figures/pysat-3d-abel.png';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const es = lang === 'es';
+const L = (k: string) => localized(k, lang);
+const s = software.find((x) => x.slug === 'pysat-abel')!;
+const paper = byId('littin2024sat')!;
+const summary = es && s.es ? s.es.summary : s.summary;
+const links = es && s.es?.links ? s.es.links : s.links;
+const jsonld = [{
+  '@context': 'https://schema.org', '@type': 'SoftwareSourceCode', name: 'pysat-abel',
+  description: summary, programmingLanguage: 'Python', codeRepository: 'https://gitlab.coria-cfd.fr/littinm/pysat',
+  author: { '@type': 'Person', name: 'Mijail Littin' }, version: '0.1.3',
+  citation: `https://doi.org/${paper.doi}`,
+}];
+const T = es
+  ? {
+      paperLink: 'Artículo (Fuel 2024)', solves: 'Qué resuelve',
+      p1: 'Una cámara que observa un objeto con simetría de rotación (una llama, un chorro, un plasma) registra integrales a lo largo de líneas de visión. Recuperar el perfil radial local a partir de ellas es el problema de la inversión de Abel, y una inversión directa amplifica el ruido de medición cerca del eje. Cuando además el medio absorbe parte de la luz en su camino hacia la cámara (atrapamiento de señal, o autoabsorción), la señal registrada se atenúa y una inversión de Abel simple entrega valores sesgados.',
+      p2: 'SAT representa el perfil radial desconocido <em>κ(r)</em> con un spline cúbico de valores no negativos en los nodos y pendiente nula en el eje. El spline se ajusta para que su proyección coincida con la medición, con una penalización sobre su curvatura que suprime el ruido:',
+      p3: 'El factor <em>F(x, r)</em> da cuenta del atrapamiento. Se calcula a partir del perfil de extinción, que a su vez se obtiene primero invirtiendo una medición de atenuación a lo largo de la línea de visión (para la cual <em>F</em> = 1).',
+      p4: 'El <a href="ABEL">módulo interactivo sobre la transformada de Abel</a> presenta el problema de fondo, y la pestaña de la llama en la figura de la página de inicio aplica SAT a una llama simulada.',
+      figAlt: 'Diagrama: un mapa de una llama de etileno integrado a lo largo de la línea de visión se convierte con la transformada de Abel basada en splines en un mapa radial reconstruido, mostrado como un campo tridimensional de revolución.',
+      figCap: 'Una llama de etileno: el mapa integrado a lo largo de la línea de visión que registra una cámara (izquierda) y el mapa radial reconstruido con la transformada de Abel basada en splines, mostrado en tres dimensiones por revolución.',
+      figCredit: 'Figura de M. Littin, tomada de la documentación de pysat-abel.',
+      install: 'Instalación', release: 'Versión actual 0.1.3 (mayo de 2025). Dependencias: NumPy, SciPy, joblib y <code>abel</code>.',
+      usage: 'Uso mínimo', usageText: '<code>abel_inversion</code> entrega el eje radial y el coeficiente recuperado. <code>nknots</code> fija la flexibilidad del spline y <code>lambda_</code> el peso de la penalización de curvatura. La misma llamada sirve para datos de transmisividad, emisión y dispersión. La documentación del paquete incluye un cuaderno tutorial con datos sintéticos.',
+      cite: 'Cita y licencia', license: 'Licencia', authors: 'Autores (metadatos de PyPI)',
+      c1: '# tau: transmisividad a través del objeto (1D, centrada en el eje)', c2: '# perfil de emisión, corregido por atrapamiento con la extinción recién obtenida',
+    }
+  : {
+      paperLink: 'Paper (Fuel 2024)', solves: 'What it solves',
+      p1: 'A camera looking at an object with rotational symmetry (a flame, a jet, a plasma) records integrals along lines of sight. Recovering the local radial profile from them is the Abel inversion problem, and a direct inversion amplifies measurement noise near the axis. When the medium also absorbs part of the light on its way to the camera (signal trapping, or self-absorption), the recorded signal is attenuated and a plain Abel inversion gives biased values.',
+      p2: 'SAT represents the unknown radial profile <em>κ(r)</em> as a cubic spline with non-negative knot values and zero slope on the axis. The spline is fitted so that its projection matches the measurement, with a penalty on its curvature that suppresses noise:',
+      p3: 'The factor <em>F(x, r)</em> accounts for trapping. It is computed from the extinction profile, itself obtained first by inverting a line-of-sight attenuation measurement (for which <em>F</em> = 1).',
+      p4: 'The <a href="ABEL">interactive Abel module</a> introduces the underlying problem, and the flame tab of the home-page figure applies SAT to a simulated flame.',
+      figAlt: 'Diagram: a line-of-sight integrated map of an ethylene flame is converted by the spline-based Abel transform into a reconstructed radial map, shown as a revolved three-dimensional field.',
+      figCap: 'An ethylene flame: the line-of-sight map recorded by a camera (left) and the radial map reconstructed with the spline-based Abel transform, shown revolved in three dimensions.',
+      figCredit: 'Figure by M. Littin, from the pysat-abel documentation.',
+      install: 'Install', release: 'Current release 0.1.3 (May 2025). Dependencies: NumPy, SciPy, joblib and <code>abel</code>.',
+      usage: 'Minimal usage', usageText: '<code>abel_inversion</code> returns the radial axis and the recovered coefficient. <code>nknots</code> sets the flexibility of the spline and <code>lambda_</code> the weight of the curvature penalty. The same call handles transmissivity, emission and scattering data. The package documentation includes a tutorial notebook with synthetic data.',
+      cite: 'Cite and license', license: 'License', authors: 'Authors (PyPI metadata)',
+      c1: '# tau: transmissivity across the object (1D, centred on the axis)', c2: '# emission profile, corrected for trapping with the extinction just recovered',
+    };
+const code = `import numpy as np
+from pysat.modules import abel_inversion
+
+${T.c1}
+r, kext = abel_inversion(tau, data_type="transmissivity", nknots=15, lambda_=1e6)
+
+${T.c2}
+r, J = abel_inversion(s_emi, data_type="emission",
+                      apply_correction=True, kext=kext)`;
+---
+<Base title="pysat-abel" math description={summary} jsonld={jsonld}>
+  <header class="page-head frame">
+    <p class="eyebrow"><a href={L('/software/')}>Software</a> · Python</p>
+    <h1><code class="h1code">pysat-abel</code></h1>
+    <p class="lede">{summary}</p>
+    <ul class="links head-links">{links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}<li><a href={`https://doi.org/${paper.doi}`}>{T.paperLink}</a></li></ul>
+  </header>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label">{T.solves}</h2>
+      <div class="prose">
+        <p set:html={T.p1} />
+        <p set:html={T.p2} />
+        <Equation tex={String.raw`\begin{aligned}\hat\kappa &= \arg\min_{\kappa}\, J(\kappa), \\ J(\kappa) &= \int \big[S_{\mathrm{mod}}(x;\kappa) - S_{\mathrm{exp}}(x)\big]^2\,\mathrm{d}x \\ &\quad + \mu \int_0^R \kappa''(r)^2\,\mathrm{d}r,\end{aligned}`} />
+        <Equation tex={String.raw`S(x) = 2\int_x^\infty \frac{\kappa(r)\, F(x,r)}{\sqrt{r^2-x^2}}\, r\, dr .`} />
+        <p set:html={T.p3} />
+        <p set:html={T.p4.replace('ABEL', L('/learn/inverse-problems/abel-transform/'))} />
+      </div>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <ScientificFigure src={fig} alt={T.figAlt} caption={T.figCap} credit={T.figCredit} sizes="(min-width: 50rem) 36rem, 100vw" />
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label">{T.install}</h2>
+      <div class="prose">
+        <pre><code>python -m venv pysat-env
+source pysat-env/bin/activate
+pip install pysat-abel</code></pre>
+        <p class="meta" set:html={T.release} />
+      </div>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label">{T.usage}</h2>
+      <div class="prose">
+        <pre><code>{code}</code></pre>
+        <p set:html={T.usageText} />
+      </div>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label">{T.cite}</h2>
+      <div>
+        <PubItem pub={paper} compact lang={lang} />
+        <p class="meta lic">{T.license}: {es && s.es ? s.es.license : s.license}. {es && s.es ? s.es.licenseNote : s.licenseNote}</p>
+        <p class="meta">{T.authors}: M. Littin, A. Poux, G. Lefevre, M. Mazur, F. Escudero, A. Fuentes, J. Yon.</p>
+      </div>
+    </div>
+  </section>
+</Base>
+<style>
+  .h1code { font-size: 0.9em; background: none; padding: 0; }
+  .head-links { margin-top: var(--s-4); }
+  .head-links li + li::before { content: none; }
+  .head-links li:not(:last-child)::after { content: '·'; color: var(--ink-3); padding: 0 0.5em; }
+  .lic { margin-top: var(--s-4); }
+</style>

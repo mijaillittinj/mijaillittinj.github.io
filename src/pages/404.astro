@@ -1,11 +1,17 @@
 ---
+// GitHub Pages serves a single 404 page for every language, so it is bilingual.
 import Base from '../layouts/Base.astro';
 import { url } from '../i18n/utils';
 ---
-<Base title="Page not found" noindex>
+<Base title="Page not found · Página no encontrada" noindex>
   <header class="page-head frame">
     <p class="eyebrow">404</p>
     <h1>This page does not exist</h1>
     <p class="lede">The address may have changed. Try the <a href={url('/')}>home page</a>, <a href={url('/publications/')}>publications</a> or <a href={url('/learn/')}>learning modules</a>.</p>
+    <p class="lede es" lang="es">Esta página no existe. Es posible que la dirección haya cambiado. Pruebe la <a href={url('/es/')}>página de inicio</a>, las <a href={url('/es/publications/')}>publicaciones</a> o los <a href={url('/es/learn/')}>módulos de aprendizaje</a>.</p>
   </header>
 </Base>
+
+<style>
+  .es { margin-top: var(--s-4) !important; color: var(--ink-2) !important; }
+</style>

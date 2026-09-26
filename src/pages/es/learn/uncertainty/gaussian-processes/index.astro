@@ -1,0 +1,43 @@
+---
+import LearnModule from '../../../../../layouts/LearnModule.astro';
+import Equation from '../../../../../components/viz/Equation.astro';
+import GpExplorer from '../../../../../components/viz/GpExplorer.astro';
+import Answer from '../../../../../components/ui/Answer.astro';
+import { localized } from '../../../../../i18n/utils';
+---
+<LearnModule slug="uncertainty/gaussian-processes" lang="es" description="Regresión con procesos gaussianos en el navegador: agregue mediciones, cambie el núcleo y su escala de longitud, ajuste los hiperparámetros por máxima verosimilitud y vea dónde el modelo es incierto y dónde mediría a continuación.">
+  <div class="prose">
+    <h2>Una curva con barras de error en todas partes</h2>
+    <p>Supongamos que una magnitud se ha medido en unos pocos puntos: la temperatura a lo largo de una tubería, la ley de un cuerpo mineralizado a lo largo de un sondaje, el resultado de una simulación que tarda horas. Queremos el valor entre las mediciones y queremos saber cuánto confiar en cada predicción. Un proceso gaussiano (GP, por su sigla en inglés) entrega ambas cosas: una curva y, en cada punto, una incertidumbre que es pequeña cerca de los datos y crece lejos de ellos.</p>
+    <p>En lugar de elegir una fórmula (una recta, un polinomio), un GP asigna una distribución de probabilidad directamente a las funciones. La única decisión de modelación es el <em>núcleo</em> <em>k</em>, que indica cuán correlacionados están los valores en dos puntos. El más común, el núcleo RBF o gaussiano, dice que puntos cercanos tienen valores parecidos y que la correlación se desvanece a lo largo de una <em>escala de longitud</em> ℓ:</p>
+    <Equation tex={String.raw`f \sim \mathcal{GP}\big(0,\, k\big), \qquad k(x, x') = \sigma_f^2 \exp\!\Big(-\frac{(x-x')^2}{2\ell^2}\Big), \qquad y_i = f(x_i) + \varepsilon_i,\ \ \varepsilon_i \sim \mathcal N(0, \sigma_n^2).`} />
+    <h2>Condicionar en los datos</h2>
+    <p>Dadas mediciones <strong>y</strong> en los puntos <strong>x</strong>, la predicción en un punto nuevo <em>x</em><sub>*</sub> vuelve a ser gaussiana, con media y varianza explícitas. Aquí <em>K</em> es la matriz de valores del núcleo entre los puntos medidos y <strong>k</strong><sub>*</sub> el vector de valores del núcleo entre <em>x</em><sub>*</sub> y cada uno de ellos:</p>
+    <Equation tex={String.raw`\mu(x_*) = \mathbf k_*^{\mathsf T} K_y^{-1} \mathbf y, \qquad \sigma^2(x_*) = k(x_*, x_*) - \mathbf k_*^{\mathsf T} K_y^{-1} \mathbf k_*, \qquad K_y = K + \sigma_n^2 I .`} />
+    <p>La varianza no depende de los valores medidos, solo de dónde están las mediciones. Lejos de todas ellas, <strong>k</strong><sub>*</sub> ≈ 0 y la predicción vuelve al prior: media cero y desviación estándar σ<sub>f</sub>. Los tres hiperparámetros (ℓ, σ<sub>f</sub>, σ<sub>n</sub>) se pueden elegir maximizando la <em>verosimilitud marginal</em>, la probabilidad de los datos bajo el modelo, que equilibra el ajuste a los puntos con la complejidad de la curva:</p>
+    <Equation tex={String.raw`\begin{aligned}\log p(\mathbf y) &= -\tfrac12\, \mathbf y^{\mathsf T} K_y^{-1} \mathbf y \\ &\quad - \tfrac12 \log |K_y| - \tfrac n2 \log 2\pi .\end{aligned}`} />
+  </div>
+
+  <GpExplorer lang="es" />
+
+  <div class="try">
+    <h3>Ejercicios</h3>
+    <ol>
+      <li>Con los valores iniciales (ℓ = 1), ¿dónde es más angosta la banda de ±2σ y dónde es más ancha? Ahora lleve la escala de longitud a su mínimo (0,16) y a su máximo (7,9). ¿Qué les pasa a la curva y a la banda en cada caso?
+        <Answer lang="es"><p>La banda es más angosta en las mediciones y más ancha en el hueco entre x ≈ 2,2 y 5,1 y más allá del último punto (σ ≈ 0,76 en x = 3,6). Con ℓ = 0,16 los puntos dejan de informar a sus vecinos: la media vuelve a cero entre mediciones y σ recupera el valor del prior, 1,0. Con ℓ = 7,9 el modelo insiste en una curva casi recta: no pasa por las mediciones, la banda se vuelve muy delgada (σ ≈ 0,06 en x = 3,6) y la log-verosimilitud marginal cae de cerca de −6,5 a −81. La escala de longitud fija hasta dónde viaja la información; demasiado corta sobreajusta los huecos, demasiado larga subajusta los datos.</p></Answer></li>
+      <li>Fije el ruido σ<sub>n</sub> en 0,01 y luego en 1. ¿Cómo trata la curva a las mediciones?
+        <Answer lang="es"><p>Con σ<sub>n</sub> = 0,01 la media pasa por cada punto: el modelo trata cada medición como exacta. Con σ<sub>n</sub> = 1 interpreta casi toda la variación como ruido, así que la media se acerca a cero (en el primer punto predice 0,57 mientras la medición es 0,93) y la banda se ensancha. El nivel de ruido decide qué parte de los datos es señal; el ruido real de las mediciones es 0,1.</p></Answer></li>
+      <li>Pulse «ajustar los hiperparámetros». ¿Qué valores encuentra? Luego marque «mostrar la función oculta». ¿Está la función siempre dentro de la banda?
+        <Answer lang="es"><p>El ajuste converge a ℓ ≈ 1,35, σ<sub>f</sub> ≈ 0,82 y σ<sub>n</sub> ≈ 0,11, cerca del ruido real de 0,1, y la log-verosimilitud marginal sube de cerca de −6,5 a −5,7. Pero la función oculta sale de la banda en el hueco grande: solo alrededor del 70 % queda dentro de la banda de ±2σ, frente al 95 % que la banda promete. Siete puntos no pueden revelar la oscilación corta de la función y el modelo ajustado resulta demasiado confiado. La incertidumbre de un GP es tan honesta como su núcleo y sus hiperparámetros, sobre todo con pocos datos.</p></Answer></li>
+      <li>Pulse «medir donde sugiere el modelo» cinco o seis veces, reajustando después de cada medición. ¿Dónde elige medir el modelo y qué le pasa a la banda?
+        <Answer lang="es"><p>Mide donde σ es mayor: primero en el extremo derecho del intervalo (x = 10), luego en el hueco grande (x ≈ 3,6) y después en el extremo izquierdo (x = 0). Los extremos tienen varianza alta porque solo tienen datos de un lado. Tras cinco o seis mediciones, cerca del 85 % de la función oculta queda dentro de la banda. Medir donde el modelo es más incierto es la forma más simple de aprendizaje activo; la optimización bayesiana agrega un segundo término que favorece los puntos donde el objetivo parece prometedor.</p></Answer></li>
+      <li>Cambie el núcleo a Matérn 5/2 y vuelva a ajustar. ¿Cómo se ven las funciones muestreadas y qué núcleo prefieren los datos?
+        <Answer lang="es"><p>Matérn 5/2 admite funciones más irregulares que el núcleo RBF, que es infinitamente suave: las curvas muestreadas oscilan más a corta distancia. Tras el ajuste explica más de la dispersión como señal (σ<sub>n</sub> ≈ 0,02 en vez de 0,11) y su log-verosimilitud marginal (cerca de −5,9) es algo menor que la del RBF (cerca de −5,7): los datos prefieren levemente el núcleo más suave, como corresponde a esta función oculta suave. La verosimilitud marginal sirve para comparar modelos, no solo para calibrarlos.</p></Answer></li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>Dónde se usa</h2>
+    <p>En geoestadística el mismo método se llama <em>kriging</em>, por el ingeniero de minas Danie Krige, que lo usó para estimar leyes de mineral entre sondajes. En ingeniería, los GP son modelos sustitutos habituales de simulaciones costosas: unas pocas decenas de corridas entrenan el GP, que luego predice casos nuevos en microsegundos e indica dónde sería más útil otra corrida. Esa es la base de la optimización bayesiana. La banda de incertidumbre cumple el mismo papel que el posterior del <a href={localized('/learn/uncertainty/bayesian-mcmc/', 'es')}>módulo de inferencia bayesiana</a>, y la escala de longitud actúa como el parámetro de regularización del <a href={localized('/learn/inverse-problems/svd-noise-amplification/', 'es')}>módulo de la SVD</a>: decide cuán suave puede ser la respuesta.</p>
+  </div>
+</LearnModule>

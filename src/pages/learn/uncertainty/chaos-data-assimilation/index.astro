@@ -1,0 +1,42 @@
+---
+import LearnModule from '../../../../layouts/LearnModule.astro';
+import Equation from '../../../../components/viz/Equation.astro';
+import LorenzExplorer from '../../../../components/viz/LorenzExplorer.astro';
+import Answer from '../../../../components/ui/Answer.astro';
+import { url } from '../../../../i18n/utils';
+---
+<LearnModule slug="uncertainty/chaos-data-assimilation" lang="en" description="The Lorenz system in the browser: watch two almost identical trajectories diverge (the butterfly effect), then correct an ensemble forecast with noisy observations using an ensemble Kalman filter, the idea behind weather forecasting.">
+  <div class="prose">
+    <h2>Three equations that cannot be predicted for long</h2>
+    <p>In 1963 the meteorologist Edward Lorenz reduced a model of convection in the atmosphere to three variables, <em>x</em>, <em>y</em> and <em>z</em>, loosely the intensity of the convective motion and two temperature differences:</p>
+    <Equation tex={String.raw`\dot x = \sigma (y - x), \qquad \dot y = x(\rho - z) - y, \qquad \dot z = x y - \beta z, \qquad \sigma = 10,\ \rho = 28,\ \beta = 8/3 .`} />
+    <p>The equations are deterministic: the same starting point always gives the same trajectory. Yet the trajectory never settles and never repeats; it winds forever around two lobes, the famous butterfly-shaped <em>attractor</em>. Worse for prediction, two trajectories that start almost at the same point separate exponentially fast, roughly as e<sup>λ<em>t</em></sup> with λ ≈ 0.9 per time unit. This sensitivity to initial conditions is what Lorenz called the butterfly effect.</p>
+    <h2>Forecasting anyway: ensembles and data assimilation</h2>
+    <p>Since the initial state is never known exactly, forecasters run an <em>ensemble</em>: many copies of the model started from slightly different states compatible with the observations. The spread of the ensemble is an estimate of the forecast uncertainty. Left alone, the ensemble soon covers the whole attractor and the forecast is useless. Data assimilation brings it back: each time new observations arrive, every member is pulled towards them. The ensemble Kalman filter (EnKF) does this with the Kalman update of the <a href={url('/learn/uncertainty/kalman-filter/')}>Kalman filter module</a>, using the ensemble itself to estimate the forecast covariance <em>P</em><sup>f</sup>:</p>
+    <Equation tex={String.raw`\mathbf x^{a}_i = \mathbf x^{f}_i + K\big(\mathbf y + \boldsymbol\varepsilon_i - H\mathbf x^{f}_i\big), \qquad K = P^{f} H^{\mathsf T}\big(H P^{f} H^{\mathsf T} + R\big)^{-1}.`} />
+    <p>Here <strong>y</strong> are the observations, <em>H</em> selects the observed variables, <em>R</em> is the observation-noise covariance and <strong>ε</strong><sub><em>i</em></sub> a random perturbation of the observations for each member. Because the ensemble covariance links the variables, observing <em>x</em> alone also corrects <em>y</em> and <em>z</em>.</p>
+  </div>
+
+  <LorenzExplorer lang="en" />
+
+  <div class="try">
+    <h3>Exercises</h3>
+    <ol>
+      <li>In the butterfly experiment, with the default initial difference δ = 10<sup>−6</sup>, when does the distance between the two trajectories exceed 1? What shape does the distance curve have on the logarithmic scale, and why does it stop growing?
+        <Answer lang="en"><p>The distance exceeds 1 at t ≈ 17.6. On the logarithmic axis it rises roughly along a straight line, parallel to the dashed reference e<sup>0.9 t</sup>: the error grows exponentially at a rate set by the largest Lyapunov exponent. It wobbles because the growth rate varies around the attractor. It stops growing at a few tens because both trajectories stay on the attractor, whose size is finite; from then on they are simply unrelated points on it.</p></Answer></li>
+      <li>Repeat with δ = 10<sup>−10</sup> and with δ = 10<sup>−2</sup>. How much prediction time does each factor of ten in initial precision buy?
+        <Answer lang="en"><p>The distance exceeds 1 at t ≈ 27.6 for δ = 10<sup>−10</sup> and at t ≈ 7.2 for δ = 10<sup>−2</sup>. Each factor of ten buys only about 2.5 time units, close to ln 10 / 0.9. Measuring the initial state a million times more precisely extends the forecast by about 15 time units, not a million times. This logarithmic return is why weather forecasts lose their skill after one to two weeks, however good the observations become.</p></Answer></li>
+      <li>Switch to “forecast and assimilation” with the defaults (x observed every 0.1 time units, noise 1). Compare the error of the free-running ensemble with that of the assimilated one. How can observing only x correct y and z?
+        <Answer lang="en"><p>The free ensemble loses track within about 1.5 time units and its mean-error settles around 15, the size of the attractor. The assimilated ensemble keeps an error of about 1.5. The ensemble members carry the correlations between variables created by the dynamics (x drives y through the term σ(y − x) and the product xy drives z), so the Kalman gain turns a correction of x into corrections of y and z.</p></Answer></li>
+      <li>Change the observation interval from 0.05 to 0.3 and then 0.6 time units. What happens to the error, and why?
+        <Answer lang="en"><p>The mean error grows from about 1.2 (every 0.05) to about 4.3 (every 0.3) and 8 (every 0.6). Between two observations the errors grow exponentially, doubling roughly every 0.8 time units; if the gap is too long, the ensemble has already spread over a large part of the attractor and the next observation can only partly repair it. Increasing the noise has a similar effect: with noise 0.2 the error drops to about 0.3, with noise 6 it rises to about 8.5.</p></Answer></li>
+      <li>Which is better: observing all three variables every 0.4 time units, or only x every 0.1? Try both. Then, with the defaults, reduce the ensemble to 5 members. Why does such a small ensemble still work here?
+        <Answer lang="en"><p>Observing only x every 0.1 time units gives a mean error of about 1.5; observing x, y and z every 0.4 gives about 5.7. For a chaotic system, how often you observe matters more than how much you observe at once, because errors grow exponentially between observations. With 5 members the error rises only slightly (about 1.9 instead of 1.5): the Lorenz system has three variables, so a handful of members is enough to estimate their covariances. Weather models have hundreds of millions of variables and ensembles of about fifty members, which is why operational filters need extra techniques such as localisation and inflation (this lab uses a mild 5 % inflation).</p></Answer></li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>Where it is used</h2>
+    <p>Weather services do exactly this at a vastly larger scale: models with hundreds of millions of variables, ensembles of about fifty members, and millions of observations from satellites, balloons, aircraft and ground stations assimilated several times a day. The same combination of an imperfect model and imperfect data runs ocean and climate reanalyses, reservoir models in the oil industry and the tracking systems of the <a href={url('/learn/uncertainty/kalman-filter/')}>Kalman filter module</a>. The lesson of the butterfly experiment is general: for chaotic systems, a forecast is useful only if it comes with an estimate of its own uncertainty and is corrected continually by data.</p>
+  </div>
+</LearnModule>

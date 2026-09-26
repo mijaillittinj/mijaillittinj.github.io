@@ -2,6 +2,7 @@
 import LearnModule from '../../../../layouts/LearnModule.astro';
 import Equation from '../../../../components/viz/Equation.astro';
 import PinnExplorer from '../../../../components/viz/PinnExplorer.astro';
+import Answer from '../../../../components/ui/Answer.astro';
 import { url } from '../../../../i18n/utils';
 ---
 <LearnModule slug="machine-learning/physics-informed-learning" description="Train a small neural network in the browser on sparse, noisy sensor data, with and without a physical law in the loss, and infer a hidden parameter of a cooling fin.">
@@ -25,11 +26,16 @@ import { url } from '../../../../i18n/utils';
   <div class="try">
     <h3>Exercises</h3>
     <ol>
-      <li>Train with the default settings. Where do the two models agree, and where do they differ? Why can the data-only model not know what happens beyond the last sensor?</li>
-      <li>Set the physics weight close to 0.01. How does the physics-informed model behave? And at 5?</li>
-      <li>Reduce the sensors to 2 or 3. Does the inferred <em>m</em> still converge? Now raise the noise to σ = 0.05. Which model degrades more gracefully?</li>
-      <li>Uncheck “Infer m”: the model now uses the true <em>m</em>. Compare the errors. How much of the benefit comes from knowing the equation, and how much from knowing its parameter?</li>
-      <li>Spread the sensors over the whole fin (cover = 1). Is the physics still worth adding?</li>
+      <li>Train with the default settings. Where do the two models agree, and where do they differ? Why can the data-only model not know what happens beyond the last sensor?
+        <Answer lang="en"><p>Both fit the four sensors, which cover only the first 40 % of the fin. Beyond the last sensor the data-only network extrapolates freely: at the tip it predicts about −0.4 instead of the true 0.27, a temperature below the air's that is physically impossible (RMS error about 0.29). The physics-informed network follows the true profile over the whole fin (error about 0.02). Nothing in the data constrains the region without sensors; only the equation does.</p></Answer></li>
+      <li>Set the physics weight close to 0.01. How does the physics-informed model behave? And at 5?
+        <Answer lang="en"><p>Even at λ = 0.01 the physics-informed model stays far better than the data-only one (error about 0.03 against 0.29): with only four points the data term can be satisfied by many functions, and a small physics term is enough to pick the physical one. At λ = 5 the equation dominates and the error drops to about 0.002 with m ≈ 1.98, because here the data and the equation agree. With a wrong model or biased data, a large λ would instead pull the fit away from the measurements.</p></Answer></li>
+      <li>Reduce the sensors to 2 or 3. Does the inferred <em>m</em> still converge? Now raise the noise to σ = 0.05. Which model degrades more gracefully?
+        <Answer lang="en"><p>With 2 or 3 sensors the inferred m still converges close to 2 (about 2.06): the equation needs very little data to fix one parameter. With σ = 0.05 the data-only error grows to about 0.54, while the physics-informed error stays near 0.06; the inferred m becomes biased (about 2.3), which shows that noise now limits the measurement. The physics-informed model degrades far more gracefully.</p></Answer></li>
+      <li>Uncheck “Infer m”: the model now uses the true <em>m</em>. Compare the errors. How much of the benefit comes from knowing the equation, and how much from knowing its parameter?
+        <Answer lang="en"><p>With the true m the error falls from about 0.02 to about 0.006, while the data-only model stays at about 0.29. Most of the benefit comes from the form of the equation; knowing its parameter adds a smaller refinement. That is why the same network can also act as an instrument that measures m.</p></Answer></li>
+      <li>Spread the sensors over the whole fin (cover = 1). Is the physics still worth adding?
+        <Answer lang="en"><p>For reconstructing the temperature, hardly: with sensors spread over the whole fin the data-only error is already about 0.02, the same as with physics. The physics is still worth adding if the goal is m, which only the physics-informed model can estimate (about 2.1 here). Physics helps most where data are missing.</p></Answer></li>
     </ol>
   </div>
 

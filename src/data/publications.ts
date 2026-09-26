@@ -36,6 +36,8 @@ export interface Publication {
   themes: ThemeId[];
   domains: DomainId[];
   summary: string;
+  /** Spanish summary (plain language), shown on /es/publications/. */
+  summaryEs?: string;
   access: {
     /** 'open' = version of record under an open licence. */
     kind: 'open' | 'closed' | 'unknown';
@@ -65,6 +67,8 @@ const curated: Publication[] = [
     domains: ['optical-diagnostics', 'combustion', 'aerosols', 'radiation'],
     summary:
       'Three optical measurements of a flame (attenuation, emission and scattering at several angles, each at five wavelengths) are inverted together by one neural network. Its loss contains light-scattering theory and Planck’s law, and it returns maps of temperature, soot volume fraction, aggregate size, composition and optical index, together with the calibration factors of the instruments.',
+    summaryEs:
+      'Tres mediciones ópticas de una llama (atenuación, emisión y dispersión en varios ángulos, cada una en cinco longitudes de onda) se invierten en conjunto con una sola red neuronal. Su función de pérdida contiene la teoría de dispersión de la luz y la ley de Planck, y entrega mapas de temperatura, fracción volumétrica de hollín, tamaño de agregados, composición e índice óptico, junto con los factores de calibración de los instrumentos.',
     access: { kind: 'open', license: 'CC BY 4.0', pdf: 'https://doi.org/10.1016/j.carbon.2026.121296' },
     links: [{ label: 'SSRN preprint', href: 'https://doi.org/10.2139/ssrn.5726644' }],
     page: '/publications/carbon-2026/',
@@ -81,6 +85,8 @@ const curated: Publication[] = [
     domains: ['optical-diagnostics', 'combustion'],
     summary:
       'A neural network reconstructs soot volume fraction, temperature and an indicator of soot maturity from measurements at only two wavelengths, in normal and inverse diffusion flames.',
+    summaryEs:
+      'Una red neuronal reconstruye la fracción volumétrica de hollín, la temperatura y un indicador de la madurez del hollín a partir de mediciones en solo dos longitudes de onda, en llamas de difusión normales e inversas.',
     access: { kind: 'closed' },
   },
   {
@@ -93,6 +99,8 @@ const curated: Publication[] = [
     domains: ['fire', 'radiation'],
     summary:
       'Machine-learning surrogates for radiative view factors (the fraction of the radiation leaving a fire that reaches a target) in benchmark fire geometries, used as fast replacements for the geometric integrals.',
+    summaryEs:
+      'Modelos sustitutos basados en aprendizaje automático para los factores de visión radiativos (la fracción de la radiación que sale de un incendio y llega a un objetivo) en geometrías de incendio de referencia, usados como reemplazo rápido de las integrales geométricas.',
     access: { kind: 'closed' },
   },
   {
@@ -105,6 +113,8 @@ const curated: Publication[] = [
     domains: ['fire', 'radiation', 'optical-diagnostics'],
     summary:
       'Time-resolved measurements of soot temperature and radiation in flames of a burning solid polymer, PMMA (acrylic glass).',
+    summaryEs:
+      'Mediciones resueltas en el tiempo de la temperatura del hollín y de la radiación en llamas de un polímero sólido en combustión, el PMMA (vidrio acrílico).',
     access: { kind: 'closed' },
   },
   {
@@ -117,6 +127,8 @@ const curated: Publication[] = [
     domains: ['aerosols', 'radiation'],
     summary:
       'A model of how fractal agglomerates scatter light and X-rays (their structure factor) that accounts for the spread in the sizes of the primary particles.',
+    summaryEs:
+      'Un modelo de cómo los aglomerados fractales dispersan la luz y los rayos X (su factor de estructura) que considera la dispersión de tamaños de las partículas primarias.',
     access: { kind: 'open', license: 'CC BY 4.0', pdf: 'https://doi.org/10.1016/j.jqsrt.2026.110072' },
   },
   {
@@ -129,6 +141,8 @@ const curated: Publication[] = [
     domains: ['aerosols', 'radiation'],
     summary:
       'Compares models of scattering by fractal soot agglomerates from X-rays to visible light. These are the forward models used to interpret scattering measurements.',
+    summaryEs:
+      'Compara modelos de dispersión por aglomerados fractales de hollín desde los rayos X hasta la luz visible. Son los modelos directos que se usan para interpretar mediciones de dispersión.',
     access: { kind: 'open', license: 'CC BY 4.0', pdf: 'https://doi.org/10.1016/j.jqsrt.2026.109860' },
   },
   {
@@ -141,6 +155,8 @@ const curated: Publication[] = [
     domains: ['combustion', 'fuels'],
     summary:
       'Evaluates extended reaction mechanisms for predicting soot in simulations of laminar flames of vaporised gasoline.',
+    summaryEs:
+      'Evalúa mecanismos de reacción extendidos para predecir el hollín en simulaciones de llamas laminares de gasolina vaporizada.',
     access: { kind: 'open', license: 'CC BY-NC 4.0', pdf: 'https://doi.org/10.1016/j.csite.2026.108217' },
   },
   {
@@ -153,6 +169,8 @@ const curated: Publication[] = [
     domains: ['fire', 'optical-diagnostics'],
     summary:
       'Compares soot production in laminar flames of clear and black cast PMMA (acrylic glass).',
+    summaryEs:
+      'Compara la producción de hollín en llamas laminares de PMMA (vidrio acrílico) colado transparente y negro.',
     access: { kind: 'closed' },
   },
   {
@@ -165,6 +183,8 @@ const curated: Publication[] = [
     domains: ['fire', 'combustion'],
     summary:
       'Soot measurements in laminar flames of a wildland fuel, Eucalyptus globulus, under different conditions of the oxidiser stream that surrounds the flame (the coflow).',
+    summaryEs:
+      'Mediciones de hollín en llamas laminares de un combustible forestal, Eucalyptus globulus, con distintas condiciones de la corriente oxidante que rodea la llama (el coflujo).',
     access: { kind: 'closed' },
   },
   {
@@ -177,6 +197,8 @@ const curated: Publication[] = [
     domains: ['fire', 'radiation'],
     summary:
       'Uses the field-of-view angle of a receiver to improve estimates of the thermal radiation it receives from a circular pool fire.',
+    summaryEs:
+      'Usa el ángulo del campo de visión de un receptor para mejorar la estimación de la radiación térmica que recibe desde un incendio de charco circular.',
     access: { kind: 'open', license: 'CC BY 4.0', pdf: 'https://doi.org/10.1016/j.ijheatmasstransfer.2025.128312' },
   },
   {
@@ -189,6 +211,8 @@ const curated: Publication[] = [
     domains: ['optical-diagnostics', 'aerosols'],
     summary:
       'Recovers the size distribution of soot aggregates at every point of an axisymmetric flame from light scattered at many angles and wavelengths. The line-of-sight signals are first inverted with the trapping correction, then interpreted with two competing size-distribution models.',
+    summaryEs:
+      'Recupera la distribución de tamaños de los agregados de hollín en cada punto de una llama axisimétrica a partir de la luz dispersada en muchos ángulos y longitudes de onda. Primero se invierten las señales integradas a lo largo de la línea de visión con la corrección de atrapamiento, y luego se interpretan con dos modelos de distribución de tamaños que compiten entre sí.',
     access: { kind: 'open', license: 'CC BY 4.0', pdf: 'https://doi.org/10.1016/j.proci.2025.105946' },
     featured: true,
   },
@@ -202,6 +226,8 @@ const curated: Publication[] = [
     domains: ['aerosols', 'fuels', 'combustion'],
     summary:
       'Synchrotron small-angle X-ray scattering, inverted with the spline-based Abel transform, gives radial profiles of primary-particle size in flames of jet fuel and of blends with sustainable aviation fuel.',
+    summaryEs:
+      'La dispersión de rayos X a ángulo pequeño en un sincrotrón, invertida con la transformada de Abel basada en splines, entrega perfiles radiales del tamaño de las partículas primarias en llamas de combustible de aviación y de mezclas con combustible sostenible de aviación.',
     access: { kind: 'closed' },
   },
   {
@@ -214,6 +240,8 @@ const curated: Publication[] = [
     domains: ['aerosols', 'fuels'],
     summary:
       'Measures how the organic content of soot and the fuel (kerosene or sustainable aviation fuel) change the oxidation of soot particles.',
+    summaryEs:
+      'Mide cómo el contenido orgánico del hollín y el combustible (queroseno o combustible sostenible de aviación) cambian la oxidación de las partículas de hollín.',
     access: { kind: 'open', license: 'CC BY 4.0', pdf: 'https://doi.org/10.1016/j.combustflame.2025.114503' },
   },
   {
@@ -226,6 +254,8 @@ const curated: Publication[] = [
     domains: ['combustion', 'fuels'],
     summary:
       'Explains why replacing part of a propane fuel with dimethyl ether, at constant carbon flow, reduces both soot and nitrogen oxides (NOx).',
+    summaryEs:
+      'Explica por qué reemplazar parte del propano por dimetil éter, manteniendo constante el flujo de carbono, reduce tanto el hollín como los óxidos de nitrógeno (NOx).',
     access: { kind: 'closed' },
   },
   {
@@ -238,6 +268,8 @@ const curated: Publication[] = [
     domains: ['optical-diagnostics', 'combustion'],
     summary:
       'Abel inversion recovers a radial profile from line-of-sight measurements but amplifies noise near the axis. SAT represents the profile as a constrained cubic spline fitted with a curvature penalty, and includes the partial reabsorption of the signal (trapping) in the forward model. Released as the Python package pysat-abel.',
+    summaryEs:
+      'La inversión de Abel recupera un perfil radial a partir de mediciones integradas a lo largo de la línea de visión, pero amplifica el ruido cerca del eje. SAT representa el perfil con un spline cúbico restringido ajustado con una penalización de curvatura, e incluye en el modelo directo la reabsorción parcial de la señal (atrapamiento). Distribuido como el paquete de Python pysat-abel.',
     access: { kind: 'closed' },
     links: [{ label: 'pysat-abel', href: '/software/pysat-abel/' }],
     featured: true,
@@ -252,6 +284,8 @@ const curated: Publication[] = [
     domains: ['optical-diagnostics', 'aerosols'],
     summary:
       'Shows how the attenuation of scattered light on its way to the detector (signal trapping) biases the aggregate sizes inferred from angular scattering, and how to correct it inside the reconstruction.',
+    summaryEs:
+      'Muestra cómo la atenuación de la luz dispersada en su camino hacia el detector (atrapamiento de señal) sesga los tamaños de agregados obtenidos por dispersión angular, y cómo corregirla dentro de la reconstrucción.',
     access: { kind: 'closed' },
   },
   {
@@ -264,6 +298,8 @@ const curated: Publication[] = [
     domains: ['combustion', 'fuels'],
     summary:
       'Combines multi-wavelength attenuation and emission measurements with detailed simulations based on the HyChem mechanism to explain how soot forms in a flame of jet fuel (Jet A-1).',
+    summaryEs:
+      'Combina mediciones de atenuación y emisión en varias longitudes de onda con simulaciones detalladas basadas en el mecanismo HyChem para explicar cómo se forma el hollín en una llama de combustible de aviación (Jet A-1).',
     access: { kind: 'closed' },
   },
   {
@@ -276,6 +312,8 @@ const curated: Publication[] = [
     domains: ['combustion', 'fire', 'radiation'],
     summary:
       'Simulations that separate the dilution, thermal and chemical effects of water vapour on soot and radiation in ethylene flames enriched with hydrogen.',
+    summaryEs:
+      'Simulaciones que separan los efectos de dilución, térmicos y químicos del vapor de agua sobre el hollín y la radiación en llamas de etileno enriquecidas con hidrógeno.',
     access: { kind: 'closed' },
   },
   {
@@ -288,6 +326,8 @@ const curated: Publication[] = [
     domains: ['fire', 'radiation'],
     summary:
       'Estimates the view factor between a flickering flame and a target from parametric flame contours, using Stokes’ theorem.',
+    summaryEs:
+      'Estima el factor de visión entre una llama que oscila y un objetivo a partir de contornos paramétricos de la llama, usando el teorema de Stokes.',
     access: { kind: 'closed' },
   },
   // Accepted, no DOI yet (public HAL records exist for the Kyoto 2026 presentations)
@@ -300,6 +340,8 @@ const curated: Publication[] = [
     domains: ['fuels', 'optical-diagnostics'],
     summary:
       'Applies physics-informed neural inversion to compare soot properties in flames of conventional jet fuel and of blends with sustainable aviation fuel.',
+    summaryEs:
+      'Aplica la inversión neuronal informada por la física para comparar las propiedades del hollín en llamas de combustible de aviación convencional y de mezclas con combustible sostenible de aviación.',
     access: { kind: 'unknown' },
     links: [{ label: 'HAL record', href: 'https://hal.science/hal-05718642' }],
   },
@@ -312,6 +354,8 @@ const curated: Publication[] = [
     domains: ['combustion', 'optical-diagnostics'],
     summary:
       'Uses a neural-network-assisted inversion to follow how soot maturity (how far the particles have evolved from young, organic-rich soot towards graphitic carbon) changes in a periodically forced flame.',
+    summaryEs:
+      'Usa una inversión asistida por redes neuronales para seguir cómo cambia la madurez del hollín (cuánto han evolucionado las partículas desde un hollín joven, rico en compuestos orgánicos, hacia carbono grafítico) en una llama forzada periódicamente.',
     access: { kind: 'unknown' },
     links: [{ label: 'HAL record', href: 'https://hal.science/hal-05718633' }],
   },
@@ -359,6 +403,22 @@ export const domainLabels: Record<DomainId, string> = {
   fire: 'Fire',
   fuels: 'Fuels and energy',
   'optical-diagnostics': 'Optical diagnostics',
+};
+
+export const domainLabelsEs: Record<DomainId, string> = {
+  combustion: 'Combustión',
+  radiation: 'Radiación térmica',
+  aerosols: 'Aerosoles y nanopartículas',
+  fire: 'Incendios',
+  fuels: 'Combustibles y energía',
+  'optical-diagnostics': 'Diagnósticos ópticos',
+};
+
+export const statusLabelEs: Record<PubStatus, string> = {
+  published: 'Publicado',
+  'in-press': 'En prensa',
+  accepted: 'Aceptado',
+  'under-review': 'En revisión',
 };
 
 export const statusLabel: Record<PubStatus, string> = {

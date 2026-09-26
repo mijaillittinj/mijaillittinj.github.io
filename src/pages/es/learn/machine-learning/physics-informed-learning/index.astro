@@ -1,0 +1,47 @@
+---
+import LearnModule from '../../../../../layouts/LearnModule.astro';
+import Equation from '../../../../../components/viz/Equation.astro';
+import PinnExplorer from '../../../../../components/viz/PinnExplorer.astro';
+import Answer from '../../../../../components/ui/Answer.astro';
+import { localized } from '../../../../../i18n/utils';
+---
+<LearnModule lang="es" slug="machine-learning/physics-informed-learning" description="Entrene en el navegador una pequeña red neuronal con datos escasos y ruidosos de sensores, con y sin una ley física en la función de pérdida, e infiera un parámetro oculto de una aleta de enfriamiento.">
+  <div class="prose">
+    <h2>Una aleta, cuatro termómetros y una pregunta</h2>
+    <p>Una aleta metálica sobresale de una pared caliente y pierde calor hacia el aire que la rodea. Su temperatura (escalada de modo que 1 corresponde a la pared y 0 al aire) cumple un balance simple entre la conducción a lo largo de la aleta y la convección hacia el aire:</p>
+    <Equation tex={String.raw`\theta''(x) - m^2\, \theta(x) = 0, \qquad \theta(0) = 1,\quad \theta'(1) = 0 .`} />
+    <p>El número <em>m</em> combina el coeficiente de convección, la conductividad y la geometría. En la práctica no se conoce con precisión, y es justamente lo que un ingeniero querría medir. Supongamos que solo hay cuatro termocuplas, todas en la parte de la aleta más cercana a la pared. ¿Podemos reconstruir la temperatura en toda la aleta? ¿Podemos estimar <em>m</em>?</p>
+
+    <h2>Dos maneras de aprender de los mismos datos</h2>
+    <p>Los dos modelos de abajo son la misma red neuronal pequeña, <em>θ<sub>NN</sub>(x) = Σ a<sub>j</sub> tanh(w<sub>j</sub>x + b<sub>j</sub>) + c</em>, con 16 neuronas ocultas, que parten de los mismos pesos aleatorios. Solo se diferencian en lo que se les pide minimizar.</p>
+    <p>El modelo <em>solo con datos</em> ajusta los sensores y nada más:</p>
+    <Equation tex={String.raw`\mathcal{L}_{data} = \frac{1}{N}\sum_{i=1}^{N} \big(\theta_{NN}(x_i) - \theta_i^{meas}\big)^2 .`} />
+    <p>El modelo <em>informado por la física</em> agrega el residuo de la ecuación en 40 puntos de colocación repartidos por toda la aleta, más las condiciones de borde. Los puntos de colocación son simplemente lugares donde se verifica la ecuación; allí no se necesita ninguna medición. Si <em>m</em> es desconocido, pasa a ser un parámetro entrenable más:</p>
+    <Equation tex={String.raw`\mathcal{L} = \mathcal{L}_{\text{data}} + \lambda\,\big(\mathcal{L}_{\text{eq}} + \mathcal{L}_{\text{bc}}\big),\qquad \mathcal{L}_{\text{eq}} = \frac{1}{M}\sum_{k=1}^{M} r_k^2,\qquad r_k = \theta_{NN}''(x_k) - m^2\theta_{NN}(x_k),\qquad \mathcal{L}_{\text{bc}} = \big(\theta_{NN}(0)-1\big)^2 + \theta_{NN}'(1)^2.`} />
+    <p>Las derivadas de la red respecto de <em>x</em> se calculan de forma exacta, igual que los gradientes respecto de los pesos. El entrenamiento usa Adam.</p>
+  </div>
+
+  <PinnExplorer lang="es" />
+
+  <div class="try">
+    <h3>Ejercicios</h3>
+    <ol>
+      <li>Entrene con la configuración por defecto. ¿Dónde coinciden los dos modelos y dónde difieren? ¿Por qué el modelo solo con datos no puede saber qué ocurre más allá del último sensor?
+        <Answer lang="es"><p>Ambos ajustan los cuatro sensores, que cubren solo el primer 40 % de la aleta. Más allá del último sensor, la red solo con datos extrapola libremente: en la punta predice cerca de −0,4 en vez del valor verdadero 0,27, una temperatura inferior a la del aire que es físicamente imposible (error RMS cercano a 0,29). La red informada por la física sigue el perfil verdadero en toda la aleta (error cercano a 0,02). Nada en los datos restringe la zona sin sensores; solo la ecuación lo hace.</p></Answer></li>
+      <li>Ponga el peso de la física cerca de 0,01. ¿Cómo se comporta el modelo informado por la física? ¿Y con 5?
+        <Answer lang="es"><p>Incluso con λ = 0,01 el modelo informado por la física sigue siendo mucho mejor que el de solo datos (error cercano a 0,03 frente a 0,29): con solo cuatro puntos, el término de datos lo satisfacen muchas funciones, y basta un término físico pequeño para elegir la que es física. Con λ = 5 domina la ecuación y el error baja a cerca de 0,002 con m ≈ 1,98, porque aquí los datos y la ecuación concuerdan. Con un modelo equivocado o datos sesgados, un λ grande en cambio alejaría el ajuste de las mediciones.</p></Answer></li>
+      <li>Reduzca los sensores a 2 o 3. ¿Sigue convergiendo el <em>m</em> inferido? Ahora suba el ruido a σ = 0,05. ¿Qué modelo se degrada de forma más gradual?
+        <Answer lang="es"><p>Con 2 o 3 sensores, el m inferido sigue convergiendo cerca de 2 (alrededor de 2,06): la ecuación necesita muy pocos datos para fijar un parámetro. Con σ = 0,05, el error del modelo solo con datos sube a cerca de 0,54, mientras que el del modelo informado por la física se mantiene cerca de 0,06; el m inferido queda sesgado (cerca de 2,3), lo que muestra que ahora el ruido limita la medición. El modelo informado por la física se degrada de forma mucho más gradual.</p></Answer></li>
+      <li>Desmarque «Inferir m»: el modelo usa ahora el <em>m</em> verdadero. Compare los errores. ¿Cuánto del beneficio viene de conocer la ecuación y cuánto de conocer su parámetro?
+        <Answer lang="es"><p>Con el m verdadero, el error baja de cerca de 0,02 a cerca de 0,006, mientras que el modelo solo con datos se queda en cerca de 0,29. La mayor parte del beneficio viene de la forma de la ecuación; conocer su parámetro agrega un refinamiento menor. Por eso la misma red también puede servir de instrumento para medir m.</p></Answer></li>
+      <li>Reparta los sensores por toda la aleta (cobertura = 1). ¿Sigue valiendo la pena agregar la física?
+        <Answer lang="es"><p>Para reconstruir la temperatura, casi no: con sensores repartidos por toda la aleta, el error del modelo solo con datos ya es cercano a 0,02, igual que con física. La física sigue valiendo la pena si el objetivo es m, que solo el modelo informado por la física puede estimar (cerca de 2,1 aquí). La física ayuda más donde faltan datos.</p></Answer></li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>Lo que esto muestra y lo que no</h2>
+    <p>Con pocos sensores agrupados, ajustar solo los datos es un problema indeterminado: muchas funciones pasan cerca de cuatro puntos. La ley física descarta la mayoría y permite extrapolar. Como la ley contiene <em>m</em>, ajustar datos y física a la vez convierte además la red en un instrumento para medir <em>m</em>. Es un problema inverso en el mismo sentido que el del <a href={localized('/learn/inverse-problems/abel-transform/', 'es')}>módulo de Abel</a>, con la ecuación en el papel del regularizador.</p>
+    <p>El ejemplo es deliberadamente pequeño. La ecuación es lineal, su solución exacta es conocida, y un ajuste clásico de <em>m</em> por mínimos cuadrados también funcionaría. El valor de las redes informadas por la física aparece cuando la física es no lineal, las incógnitas son campos completos y no un solo número, y hay que combinar varios tipos de mediciones. Esa es la situación del caso de estudio de investigación sobre <a href={localized('/publications/carbon-2026/', 'es')}>inversión óptica con varios diagnósticos</a>. El resultado también depende del peso λ, que es una decisión de modelación y merece el mismo escrutinio que cualquier otra.</p>
+  </div>
+</LearnModule>

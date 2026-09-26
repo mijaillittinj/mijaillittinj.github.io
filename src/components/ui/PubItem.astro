@@ -1,29 +1,36 @@
 ---
 import type { Publication } from '../../data/publications';
-import { statusLabel } from '../../data/publications';
-import { url } from '../../i18n/utils';
-interface Props { pub: Publication; compact?: boolean; headingLevel?: 'h3' | 'h4' }
-const { pub: p, compact = false, headingLevel = 'h3' } = Astro.props;
+import { statusLabel, statusLabelEs } from '../../data/publications';
+import { url, localized } from '../../i18n/utils';
+interface Props { pub: Publication; compact?: boolean; headingLevel?: 'h3' | 'h4'; lang?: 'en' | 'es' }
+const { pub: p, compact = false, headingLevel = 'h3', lang = 'en' } = Astro.props;
+const es = lang === 'es';
+const summary = es ? (p.summaryEs ?? p.summary) : p.summary;
+const W = es
+  ? { explainer: 'explicación', open: 'acceso abierto', slides: 'diapositivas (en inglés)' }
+  : { explainer: 'explainer', open: 'open access', slides: 'slides' };
+// internal pages: point to the Spanish route when it exists
+const page = p.page ? localized(p.page, lang) : undefined;
 void headingLevel;
 const authorsHtml = p.authors
   .map((a) => (a === 'M. Littin' ? '<strong>M. Littin</strong>' : a))
   .join(', ');
 const loc = [p.volume, p.article].filter(Boolean).join(', ');
-const internal = (h: string) => (h.startsWith('/') ? url(h) : h);
+const internal = (h: string) => (h.startsWith('/') ? localized(h, lang) : h);
 ---
 <article class="pub" data-year={p.year} data-themes={p.themes.join(' ')} data-ml={p.ml ? '1' : '0'} data-first={p.firstAuthor ? '1' : '0'}>
   <p class="pub__ref">
     <span class="pub__authors" set:html={authorsHtml + '.'} />{' '}
-    <cite class="pub__title">{p.page ? <a href={url(p.page)}>{p.title}</a> : p.title}.</cite>{' '}
+    <cite class="pub__title" lang="en">{page ? <a href={page}>{p.title}</a> : p.title}.</cite>{' '}
     <em>{p.journal}</em>{p.volume && <> <strong>{p.volume}</strong></>}{p.article && `, ${p.article}`} ({p.year}).{' '}
-    {p.status !== 'published' && <span class="pub__status">{statusLabel[p.status]}.</span>}
+    {p.status !== 'published' && <span class="pub__status">{(es ? statusLabelEs : statusLabel)[p.status]}.</span>}
   </p>
-  {!compact && p.summary && <p class="pub__summary">{p.summary}</p>}
+  {!compact && summary && <p class="pub__summary">{summary}</p>}
   <ul class="links">
-    {p.page && <li><a href={url(p.page)}>explainer</a></li>}
+    {page && <li><a href={page}>{W.explainer}</a></li>}
     {p.doi && <li><a href={`https://doi.org/${p.doi}`}>doi:{p.doi}</a></li>}
-    {p.access.kind === 'open' && p.access.pdf && <li><a href={p.access.pdf}>open access ({p.access.license})</a></li>}
-    {p.slides && <li><a href={url(p.slides)}>slides</a></li>}
+    {p.access.kind === 'open' && p.access.pdf && <li><a href={p.access.pdf}>{W.open} ({p.access.license})</a></li>}
+    {p.slides && <li><a href={url(p.slides)}>{W.slides}</a></li>}
     {p.links?.map((l) => <li><a href={internal(l.href)}>{l.label}</a></li>)}
     {!compact && <li><a href={url(`/publications/bibtex/${p.id}.bib`)} download>bibtex</a></li>}
   </ul>

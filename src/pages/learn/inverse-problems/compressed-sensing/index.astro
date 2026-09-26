@@ -1,0 +1,44 @@
+---
+import LearnModule from '../../../../layouts/LearnModule.astro';
+import Equation from '../../../../components/viz/Equation.astro';
+import CsExplorer from '../../../../components/viz/CsExplorer.astro';
+import Answer from '../../../../components/ui/Answer.astro';
+import { url } from '../../../../i18n/utils';
+---
+<LearnModule slug="inverse-problems/compressed-sensing" lang="en" description="Interactive compressed sensing: recover a signal made of a few tones from far fewer random samples than the Nyquist rate requires, with least squares, L1 minimisation (FISTA) and orthogonal matching pursuit, and see the phase transition.">
+  <div class="prose">
+    <h2>Fewer measurements than unknowns</h2>
+    <p>The signal in the lab has <em>N</em> = 128 values, but we only measure it at <em>M</em> randomly chosen times, far fewer than the classical sampling theorem asks for. With fewer equations than unknowns, infinitely many signals agree with the measurements. The standard least-squares answer picks the one with the smallest energy, which turns out to be zero at every time we did not measure: it fits the data perfectly and is useless.</p>
+    <h2>Sparsity is the missing information</h2>
+    <p>Many natural signals are <em>sparse</em>: in a suitable basis, most of their coefficients are zero. A chord is a few tones, a photograph is well described by a few wavelets, an MRI scan by a few features. Here the signal is a sum of <em>K</em> cosine tones, so its discrete cosine transform (DCT) has only <em>K</em> non-zero coefficients <em>c</em>. The measurements are <em>y</em> = Φ<em>c</em> + ε, where each row of Φ evaluates the cosines at one sampled time. Looking for the sparsest <em>c</em> that fits the data is a combinatorial search, but replacing the count of non-zeros by the sum of absolute values (the L1 norm) gives a convex problem that can be solved efficiently:</p>
+    <Equation tex={String.raw`\hat c = \arg\min_{c}\; \tfrac12 \lVert \Phi c - y \rVert^2 + \lambda \lVert c \rVert_1, \qquad \lVert c \rVert_1 = \sum_k |c_k| .`} />
+    <p>The lab solves it with FISTA, a fast version of iterative soft thresholding: take a gradient step on the data misfit, then shrink every coefficient towards zero by λ and set the small ones exactly to zero,</p>
+    <Equation tex={String.raw`c \leftarrow \mathcal S_\lambda\big(c - \Phi^{\mathsf T}(\Phi c - y)\big), \qquad \mathcal S_\lambda(v) = \mathrm{sign}(v)\,\max(|v| - \lambda,\, 0).`} />
+    <p>Candès, Romberg and Tao, and independently Donoho (2006), proved that when the measurements are random enough, this recovers a <em>K</em>-sparse signal exactly from about <em>M</em> ≈ 2<em>K</em> ln(<em>N</em>/<em>K</em>) samples. The greedy alternative in the lab, orthogonal matching pursuit (OMP), picks the tone that best explains the remaining residual, refits, and repeats; here it is told the true number of tones <em>K</em>.</p>
+  </div>
+
+  <CsExplorer lang="en" />
+
+  <div class="try">
+    <h3>Exercises</h3>
+    <ol>
+      <li>With the default settings (5 tones, 32 samples), switch to least squares. What does the reconstruction look like, and why?
+        <Answer lang="en"><p>The reconstruction passes exactly through the 32 samples and drops to zero everywhere else; the relative error is about 0.88. Among all signals that fit the data, least squares picks the one with the smallest energy, and adding anything at unmeasured times only increases the energy. In the frequency panel the energy is spread over all coefficients instead of 5. Fitting the data is not enough: the prior (sparsity) decides the answer.</p></Answer></li>
+      <li>Return to L1 and lower the number of measurements until recovery fails. How many samples does this 5-tone signal need?
+        <Answer lang="en"><p>For this signal L1 still recovers it exactly with 24 samples, and fails at 20 (the error jumps to about 1). That is less than a fifth of the 128 samples classical sampling would require. The rule of thumb 2<em>K</em> ln(<em>N</em>/<em>K</em>) ≈ 32 is a typical value for random signals, not a sharp limit for one realisation; press "new signal" to see the threshold move.</p></Answer></li>
+      <li>Untick "Refit the detected tones". Why does L1 alone leave a small error even without noise?
+        <Answer lang="en"><p>The error rises from about 10⁻⁹ to about 0.07. Soft thresholding shrinks every coefficient by λ, so the tones come out slightly too weak: L1 finds the right frequencies but biases their amplitudes. Refitting the detected tones by ordinary least squares removes the bias. The two steps have different jobs: the L1 penalty selects which tones are present, and least squares sets how strong they are.</p></Answer></li>
+      <li>Set <em>K</em> = 10 with 32 samples, then increase <em>M</em>. How many samples are needed now?
+        <Answer lang="en"><p>With 32 samples the reconstruction fails (error about 0.6). L1 succeeds from about 40 samples for this signal, and OMP from about 52; the rule of thumb gives 2 × 10 × ln(12.8) ≈ 51. The number of samples grows roughly in proportion to the number of tones times a logarithm, not with the length of the signal, which is why compressed sensing pays off when signals are very sparse.</p></Answer></li>
+      <li>Go back to 5 tones and 32 samples, add 5 % noise and move λ from −3 to −0.5. Which values work best, and what goes wrong at each end?
+        <Answer lang="en"><p>With λ too small (log λ = −3) the error is about 0.2: the method keeps fitting the noise and adds spurious tones. Around log λ ≈ −1.3 to −1.5 the error drops to about 0.03–0.05. With λ too large (log λ = −1 and above) real tones are thresholded away and the error climbs towards 1. As in every regularised inversion, λ should be comparable to the noise level in the coefficients, large enough to reject the noise but small enough to keep the signal.</p></Answer></li>
+      <li>Press "compute the success map". Where is the boundary between success and failure, and how sharp is it?
+        <Answer lang="en"><p>The map (OMP, no noise, 6 random signals per cell) is black on the left and white on the right, with a narrow grey band between them that follows the curve <em>M</em> ≈ 2<em>K</em> ln(<em>N</em>/<em>K</em>). The change from almost always failing to almost always succeeding is abrupt, which is why it is called a phase transition (Donoho and Tanner mapped it in detail). Placing the current dot on either side of the curve predicts what the reconstruction panels show.</p></Answer></li>
+    </ol>
+  </div>
+
+  <div class="prose">
+    <h2>Where it is used</h2>
+    <p>Magnetic resonance imaging is the best-known application: an MRI scanner measures the Fourier coefficients of the image one line at a time, and sampling only a random subset of them, then reconstructing with a sparsity prior, shortens scans substantially. The same idea appears in radio interferometry, which only samples a few spatial frequencies of the sky, in seismic surveys with missing traces, in single-pixel cameras and in fast spectroscopy. The underlying lesson is the one of the <a href={url('/learn/inverse-problems/svd-noise-amplification/')}>SVD module</a> and the <a href={url('/learn/inverse-problems/ct-tomography/')}>tomography module</a>: when data are insufficient, what we assume about the unknown decides the result, and a good assumption is worth many measurements.</p>
+  </div>
+</LearnModule>

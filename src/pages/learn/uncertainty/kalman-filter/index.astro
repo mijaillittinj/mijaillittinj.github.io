@@ -2,6 +2,7 @@
 import LearnModule from '../../../../layouts/LearnModule.astro';
 import Equation from '../../../../components/viz/Equation.astro';
 import KalmanExplorer from '../../../../components/viz/KalmanExplorer.astro';
+import Answer from '../../../../components/ui/Answer.astro';
 import { url } from '../../../../i18n/utils';
 ---
 <LearnModule slug="uncertainty/kalman-filter" description="Track a drone from noisy GPS fixes with a Kalman filter: prediction and update steps, covariance ellipse, measurement and process noise, and the balance between model and data.">
@@ -22,11 +23,16 @@ import { url } from '../../../../i18n/utils';
   <div class="try">
     <h3>Exercises</h3>
     <ol>
-      <li>Press Play with the defaults. Compare the RMS error of the raw GPS fixes with that of the filter. Where along the path is the filter least accurate?</li>
-      <li>Lower the process noise to log₁₀ q = −5. The filter now believes the drone flies in straight lines. What happens at the turns? This is a model that trusts itself too much.</li>
-      <li>Raise it to +1. The estimate now jumps with every fix: the filter trusts the data almost completely, and the gain in the readout approaches 100 %.</li>
-      <li>Find the value of <em>q</em> that minimises the error, then double the GPS noise. Does the best <em>q</em> change? How does the size of the ellipse relate to the actual error?</li>
-      <li>The ellipse shrinks quickly after the first few fixes and then stays about the same size. Why does it not keep shrinking forever?</li>
+      <li>Press Play with the defaults. Compare the RMS error of the raw GPS fixes with that of the filter. Where along the path is the filter least accurate?
+        <Answer lang="en"><p>The raw GPS fixes have an RMS error of just over 4 m and the filter about 2.2 m, roughly half. The filter is least accurate during the first seconds, when it does not yet know the velocity and its ellipse is large, and in the sharpest turns, where the constant-velocity model lags behind the real motion.</p></Answer></li>
+      <li>Lower the process noise to log₁₀ q = −5. The filter now believes the drone flies in straight lines. What happens at the turns? This is a model that trusts itself too much.
+        <Answer lang="en"><p>The estimate keeps going straight and overshoots each turn; the RMS error rises to about 20 m, far worse than the GPS alone. The gain falls to about 4 %, so new fixes are almost ignored. The ellipse shrinks to about 1 m while the actual error is about 20 m: the filter is confidently wrong.</p></Answer></li>
+      <li>Raise it to +1. What happens to the estimate and to the gain in the readout?
+        <Answer lang="en"><p>The gain rises to about 77 %, so the estimate jumps towards every new fix and inherits most of its noise; the RMS error grows to about 3.6 m, close to that of the raw GPS. The filter now trusts the data far more than the model.</p></Answer></li>
+      <li>Find the value of <em>q</em> that minimises the error, then double the GPS noise. Does the best <em>q</em> change? How does the size of the ellipse relate to the actual error?
+        <Answer lang="en"><p>The error is lowest near log₁₀ q ≈ −1.5 (about 2.2 m). With the GPS noise doubled to 6 m the best value stays about the same (the error is then about 3.9 m), because q describes how the drone actually accelerates, not the sensor; the filter adjusts its gain to the new r by itself. With good settings the 2σ ellipse (about 3 m in each direction) is consistent with the typical error; with a wrong q, as in exercise 2, it is not.</p></Answer></li>
+      <li>The ellipse shrinks quickly after the first few fixes and then stays about the same size. Why does it not keep shrinking forever?
+        <Answer lang="en"><p>Each prediction adds uncertainty, because the model allows random accelerations (the term Q), and each update removes some, because a new fix arrives. After a few steps the two effects balance and the covariance settles at a steady value. It would keep shrinking only if the model were perfect (q = 0). With a very small q the ellipse does keep shrinking, while the real error grows.</p></Answer></li>
     </ol>
   </div>
 

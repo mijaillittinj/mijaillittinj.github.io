@@ -1,0 +1,158 @@
+---
+/**
+ * Discovering equations from data (SINDy): simulate a system, add noise, estimate derivatives,
+ * select a sparse set of library terms by thresholded least squares, and compare the discovered
+ * equations and their trajectory with the truth. Numerics in src/lib/sindy.ts.
+ */
+import ParameterSlider from './ParameterSlider.astro';
+interface Props { lang?: 'en' | 'es' }
+const { lang = 'en' } = Astro.props;
+const es = lang === 'es';
+const T = es
+  ? {
+      dec: ',', system: 'Sistema', sys: { oscillator: 'oscilador amortiguado', pendulum: 'péndulo amortiguado', lotka: 'depredador–presa', lorenz: 'Lorenz' },
+      noise: 'Ruido en las mediciones', lambda: 'Umbral λ (log₁₀)', length: 'Cantidad de datos', amp: 'Amplitud inicial', smooth: 'Suavizar antes de derivar (Savitzky–Golay)',
+      found: 'Ecuaciones descubiertas', truth: 'Ecuaciones verdaderas', library: 'Biblioteca de términos candidatos (en negrita: seleccionados)',
+      series: 'Serie temporal', phase: 'Retrato de fase', time: 'tiempo t', data: 'datos con ruido', model: 'modelo descubierto', true: 'sistema verdadero',
+      terms: 'términos', of: 'de', found2: 'encontrados', spurious: 'espurios', missing: 'faltantes', err: 'error máximo de coeficientes', none: 'ningún término supera el umbral',
+      diverged: 'la simulación del modelo descubierto diverge',
+    }
+  : {
+      dec: '.', system: 'System', sys: { oscillator: 'damped oscillator', pendulum: 'damped pendulum', lotka: 'predator–prey', lorenz: 'Lorenz' },
+      noise: 'Measurement noise', lambda: 'Threshold λ (log₁₀)', length: 'Amount of data', amp: 'Initial amplitude', smooth: 'Smooth before differentiating (Savitzky–Golay)',
+      found: 'Discovered equations', truth: 'True equations', library: 'Library of candidate terms (bold: selected)',
+      series: 'Time series', phase: 'Phase portrait', time: 'time t', data: 'noisy data', model: 'discovered model', true: 'true system',
+      terms: 'terms', of: 'of', found2: 'found', spurious: 'spurious', missing: 'missing', err: 'largest coefficient error', none: 'no term passes the threshold',
+      diverged: 'the simulation of the discovered model diverges',
+    };
+---
+<div class="lab sindy" data-sindy data-text={JSON.stringify(T)}>
+  <div class="sindy__controls">
+    <div class="control sindy__sys">
+      <span class="control__head">{T.system}</span>
+      <div class="seg" role="group" aria-label={T.system}>
+        {(['oscillator', 'pendulum', 'lotka', 'lorenz'] as const).map((id) => <button type="button" data-sy-sys={id} aria-pressed={id === 'lotka' ? 'true' : 'false'}>{T.sys[id]}</button>)}
+      </div>
+    </div>
+    <div class="sindy__grid">
+      <ParameterSlider name="sy-noise" label={T.noise} min={0} max={30} step={0.5} value={2} unit=" %" format="fixed2" />
+      <ParameterSlider name="sy-lambda" label={T.lambda} min={-3} max={0.3} step={0.05} value={-1} />
+      <ParameterSlider name="sy-length" label={T.length} min={10} max={100} step={5} value={100} unit=" %" format="int" />
+      <div data-sy-ampwrap><ParameterSlider name="sy-amp" label={T.amp} min={0.1} max={1} step={0.05} value={1} /></div>
+    </div>
+    <label class="meta sindy__check"><input type="checkbox" data-sy-smooth /> {T.smooth}</label>
+  </div>
+
+  <div class="sindy__eqs">
+    <div><p class="panel-title">{T.found}</p><div class="sindy__eq" data-sy-found></div></div>
+    <div><p class="panel-title">{T.truth}</p><div class="sindy__eq sindy__eq--true" data-sy-true></div></div>
+  </div>
+  <p class="lab__readout sindy__read" data-sy-read aria-live="polite"></p>
+  <div class="sindy__lib"><p class="meta">{T.library}</p><div class="sindy__chips" data-sy-lib></div></div>
+
+  <div class="sindy__plots">
+    <div><p class="panel-title">{T.series}</p><div class="sindy__plot" data-sy-ts></div></div>
+    <div><p class="panel-title">{T.phase}</p><div class="sindy__plot" data-sy-ph></div></div>
+  </div>
+</div>
+
+<script>
+  import { system, makeData, discover, simulate, modelRhs, equationHtml, type SystemId } from '../../lib/sindy';
+  import { LinePlot, type Series } from '../../lib/plot';
+  import { keyed } from '../../lib/legendkey';
+
+  function init(root: HTMLElement) {
+    const T = JSON.parse(root.dataset.text!);
+    const $ = <E extends Element>(s: string) => root.querySelector<E>(s)!;
+    const num = (n: string) => +$<HTMLInputElement>(`[name="${n}"]`).value;
+    let sysId: SystemId = 'lotka';
+    const tsDiv = $<HTMLElement>('[data-sy-ts]'), phDiv = $<HTMLElement>('[data-sy-ph]');
+    const pTs = new LinePlot(tsDiv, { width: 460, height: 260, xlabel: T.time, ylabel: 'x', title: T.series, legend: false });
+    const pPh = new LinePlot(phDiv, { width: 460, height: 260, xlabel: 'x', ylabel: 'y', title: T.phase, legend: false });
+    const rTs = keyed(pTs, tsDiv), rPh = keyed(pPh, phDiv);
+    const smoothBox = $<HTMLInputElement>('[data-sy-smooth]');
+    const ampWrap = $<HTMLElement>('[data-sy-ampwrap]');
+
+    const update = () => {
+      const sys = system(sysId);
+      ampWrap.hidden = !(sysId === 'oscillator' || sysId === 'pendulum');
+      const duration = sys.tMax * num('sy-length') / 100;
+      const data = makeData(sys, duration, num('sy-noise') / 100, ampWrap.hidden ? 1 : num('sy-amp'), 3);
+      const lambda = 10 ** num('sy-lambda');
+      const r = discover(sys, data, lambda, smoothBox.checked);
+
+      $('[data-sy-found]').innerHTML = r.Xi.map((c, j) => `<p>${equationHtml(sys, c, j)}</p>`).join('');
+      $('[data-sy-true]').innerHTML = sys.truth.map((c, j) => `<p>${equationHtml(sys, c, j)}</p>`).join('');
+      $('[data-sy-lib]').innerHTML = sys.library.map((t, k) => {
+        const on = r.Xi.some((row) => row[k] !== 0), real = sys.truth.some((row) => row[k] !== 0);
+        return `<span class="chip${on ? ' on' : ''}${on && !real ? ' spur' : ''}">${t.html}</span>`;
+      }).join('');
+
+      // trajectory of the discovered model from the same (true) initial state
+      const n = data.t.length;
+      const sim = simulate(modelRhs(sys, r.Xi), data.clean[0], sys.dt, n);
+      const diverged = sim.some((s) => !Number.isFinite(s[0]));
+      const iy = sysId === 'lorenz' ? 2 : 1;
+      const step = Math.max(1, Math.round(n / 160));
+      const idx = Array.from({ length: Math.ceil(n / step) }, (_, k) => k * step);
+      const col = (arr: number[][], j: number) => arr.map((s) => s[j]);
+      const tsSeries: Series[] = [
+        { kind: 'points', x: idx.map((i) => data.t[i]), y: idx.map((i) => data.noisy[i][0]), cls: 's-data', label: T.data },
+        { kind: 'line', x: data.t, y: col(data.clean, 0), cls: 's-truth', dash: true, label: T.true },
+        { kind: 'line', x: data.t, y: col(sim, 0), cls: 's-learned', label: T.model },
+      ];
+      const lo = Math.min(...col(data.clean, 0)), hi = Math.max(...col(data.clean, 0)), pad = 0.25 * (hi - lo || 1);
+      rTs(tsSeries, { xlim: [0, data.t[n - 1]], ylim: [lo - pad, hi + pad] });
+      pPh.setLabels(sys.vars[0], sys.vars[iy]);
+      const ylo = Math.min(...col(data.clean, iy)), yhi = Math.max(...col(data.clean, iy)), ypad = 0.2 * (yhi - ylo || 1);
+      rPh([
+        { kind: 'points', x: idx.map((i) => data.noisy[i][0]), y: idx.map((i) => data.noisy[i][iy]), cls: 's-data', label: T.data },
+        { kind: 'line', x: col(sim, 0), y: col(sim, iy), cls: 's-learned', label: T.model },
+      ], { xlim: [lo - pad, hi + pad], ylim: [ylo - ypad, yhi + ypad] });
+
+      const found = r.nTerms - r.spurious;
+      let msg = r.nTerms === 0 ? T.none
+        : `${found} ${T.of} ${r.nTrue} ${T.terms} ${T.found2} · ${r.spurious} ${T.spurious} · ${r.missing} ${T.missing}`;
+      const d = (x: string) => x.replace('.', T.dec);
+      if (found > 0) msg += ` · ${T.err} ${d((r.maxRelErr * 100).toFixed(1))}\u00a0%`;
+      msg += ` · λ = ${d(lambda.toPrecision(2))}`;
+      if (diverged) msg += ` · ${T.diverged}`;
+      $('[data-sy-read]').textContent = msg;
+    };
+
+    root.querySelectorAll<HTMLButtonElement>('[data-sy-sys]').forEach((b) => b.addEventListener('click', () => {
+      sysId = b.dataset.sySys as SystemId;
+      root.querySelectorAll('[data-sy-sys]').forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
+      update();
+    }));
+    ['sy-noise', 'sy-lambda', 'sy-length', 'sy-amp'].forEach((n) => $(`[name="${n}"]`).addEventListener('input', update));
+    smoothBox.addEventListener('change', update);
+    update();
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-sindy]').forEach((root) => {
+    const io = new IntersectionObserver((es) => {
+      if (es.some((e) => e.isIntersecting)) { io.disconnect(); init(root); }
+    }, { rootMargin: '200px' });
+    io.observe(root);
+  });
+</script>
+
+<style>
+  .sindy__controls { display: grid; gap: var(--s-3); }
+  .sindy__sys .seg { margin-top: 0.2rem; }
+  .sindy__grid { display: grid; gap: var(--s-3) var(--s-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); }
+  .sindy__check { display: flex; gap: 0.4em; align-items: baseline; }
+  .sindy__eqs { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); margin-top: var(--s-4); }
+  .sindy__eq { font-size: var(--step-0); min-height: 3.2em; }
+  .sindy__eq :global(p) { margin: 0.15rem 0; white-space: nowrap; overflow-x: auto; }
+  .sindy__eq--true { color: var(--ink-2); }
+  .sindy__read { margin-top: var(--s-2); }
+  .sindy__lib { margin-top: var(--s-3); }
+  .sindy__chips { display: flex; flex-wrap: wrap; gap: 0.25rem 0.9rem; margin-top: 0.2rem; font-size: var(--step--1); color: var(--ink-3); }
+  .sindy__chips :global(.chip.on) { color: var(--ink); font-weight: 700; }
+  .sindy__chips :global(.chip.spur) { color: var(--c-warn); }
+  .sindy__plots { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); margin-top: var(--s-4); }
+  .sindy__plot { min-height: 13rem; min-width: 0; }
+  .sindy__plots > div { min-width: 0; }
+</style>
