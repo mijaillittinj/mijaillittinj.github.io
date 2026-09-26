@@ -24,8 +24,8 @@ export const courses: Course[] = [
     period: '2026-2',
     level: { en: 'Undergraduate', es: 'Pregrado' },
     description: {
-      en: 'Numerical modelling and simulation, verification and sensitivity analysis, and optimization from constrained problems to stochastic gradient methods, with computational laboratories. A unit on machine learning for data-driven modelling is scheduled for October 2026.',
-      es: 'Modelación numérica y simulación, verificación y análisis de sensibilidad, y optimización desde problemas con restricciones hasta métodos de gradiente estocástico, con laboratorios computacionales. En octubre de 2026 se incluye una unidad de aprendizaje automático para modelado basado en datos.',
+      en: 'How to build a numerical model of a thermal system, check that it is right, find which inputs matter most, and optimise the design, from constrained problems to the stochastic gradient methods used in machine learning. Weekly computational laboratories, and a unit on machine learning for models built from data.',
+      es: 'Cómo construir un modelo numérico de un sistema térmico, comprobar que sea correcto, identificar qué variables pesan más y optimizar el diseño, desde problemas con restricciones hasta los métodos de gradiente estocástico que se usan en aprendizaje automático. Laboratorios computacionales semanales y una unidad de aprendizaje automático para modelos construidos a partir de datos.',
     },
     page: '/teaching/thermal-systems-design/',
     current: true,
@@ -38,8 +38,8 @@ export const courses: Course[] = [
     period: '2026',
     level: { en: 'Undergraduate', es: 'Pregrado' },
     description: {
-      en: 'Conduction, convection and radiation, taught with small computational demonstrations and a semester modelling project.',
-      es: 'Conducción, convección y radiación, con demostraciones computacionales y un proyecto semestral de modelación.',
+      en: 'The three modes of heat transfer (conduction, convection and radiation) and mass transfer, taught with short computational demonstrations and a semester-long modelling project.',
+      es: 'Los tres modos de transferencia de calor (conducción, convección y radiación) y la transferencia de masa, con demostraciones computacionales breves y un proyecto de modelación durante el semestre.',
     },
     current: true,
   },
@@ -51,8 +51,8 @@ export const courses: Course[] = [
     period: '2026',
     level: { en: 'Undergraduate', es: 'Pregrado' },
     description: {
-      en: 'Fluid statics and the conservation of mass, momentum and energy, applied to pipe flow, head losses and fluid systems in industry, supported by interactive demonstrations.',
-      es: 'Estática de fluidos y conservación de masa, cantidad de movimiento y energía, aplicadas a flujo en tuberías, pérdidas de carga y sistemas de fluidos en la industria, con demostraciones interactivas.',
+      en: 'Fluids at rest and in motion: conservation of mass, momentum and energy, applied to pipe flow, friction losses and the pumping systems found in industry, with interactive demonstrations.',
+      es: 'Fluidos en reposo y en movimiento: conservación de masa, cantidad de movimiento y energía, aplicada al flujo en tuberías, las pérdidas por fricción y los sistemas de bombeo de la industria, con demostraciones interactivas.',
     },
     current: true,
   },
@@ -64,8 +64,8 @@ export const courses: Course[] = [
     period: '2026-1',
     level: { en: 'Undergraduate', es: 'Pregrado' },
     description: {
-      en: 'How energy projects are formulated and evaluated: energy resource and demand, technical sizing, costs, financial indicators and emissions, with case studies built in RETScreen.',
-      es: 'Cómo se formulan y evalúan proyectos energéticos: recurso y demanda energética, dimensionamiento técnico, costos, indicadores financieros y emisiones, con casos de estudio desarrollados en RETScreen.',
+      en: 'How an energy project is formulated and evaluated: the available resource and the demand, technical sizing, costs, financial indicators and emissions, with case studies built in RETScreen, a standard software tool for pre-feasibility studies of energy projects.',
+      es: 'Cómo se formula y evalúa un proyecto energético: el recurso disponible y la demanda, el dimensionamiento técnico, los costos, los indicadores financieros y las emisiones, con casos de estudio desarrollados en RETScreen, una herramienta de uso habitual para estudios de prefactibilidad de proyectos de energía.',
     },
     current: true,
   },

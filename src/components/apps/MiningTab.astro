@@ -11,34 +11,40 @@ const { lang = 'en', hidden = false } = Astro.props;
 const es = lang === 'es';
 const T = es
   ? {
-      fwd: 'Directo', fwdText: 'a partir de la posición, la profundidad y la masa de un cuerpo mineralizado, calcular la anomalía de gravedad que mide un gravímetro en superficie.',
-      inv: 'Inverso', invText: 'a partir de una prospección ruidosa en superficie, estimar dónde está el cuerpo, a qué profundidad y cuánta masa tiene.',
-      fig: 'Perfil gravimétrico y sección del subsuelo', hint: 'arrastre el cuerpo violeta para moverlo',
+      fwd: 'Directo', fwdText: 'dadas la posición, la profundidad y la masa de un cuerpo mineralizado enterrado, calcular la anomalía de gravedad en superficie (el pequeño cambio de la aceleración de gravedad que produce).',
+      inv: 'Inverso', invText: 'a partir de mediciones de gravedad con ruido a lo largo de una línea en superficie, estimar dónde está el cuerpo, a qué profundidad y cuánta masa tiene.',
+      fig: 'Perfil gravimétrico y sección del subsuelo', hint: 'arrastre el cuerpo violeta para ajustarlo a mano',
       R: 'Radio del cuerpo', drho: 'Contraste de densidad', noise: 'Ruido del gravímetro',
       inv2: 'invertir', reveal: 'mostrar el cuerpo verdadero', hide: 'ocultar el cuerpo verdadero', newS: 'nueva prospección', stop: 'detener',
       method: 'Método', classic: 'ajuste paramétrico', train: 'entrenar la PINN', dw: 'Ponderación en profundidad', lossLabel: 'La PINN minimiza',
-      pinn: { it: 'iteración', mis: 'desajuste RMS', cm: 'centro de masa', mass: 'masa por metro', idle: 'Pulse «entrenar la PINN»: la red propone una densidad en cada celda de la sección.', surf: 'Sin ponderación en profundidad, el modelo más pequeño que explica los datos queda cerca de la superficie.', deep: 'La ponderación en profundidad compensa el decaimiento del núcleo con la profundidad.' },
-      pinnCap: 'PINN: una red de coordenadas propone el contraste de densidad Δρ(x, z) en toda la sección; la integral de gravedad sobre las celdas está dentro de la pérdida, junto con una penalización pequeña. La gravedad sola no fija la profundidad: sin ponderación en profundidad la masa se concentra cerca de la superficie; con ella, baja hacia la profundidad correcta.',
+      pinn: { it: 'iteración', mis: 'desajuste RMS', cm: 'centro de masa', mass: 'masa por metro', idle: 'Pulse «entrenar la PINN».', surf: 'sin ponderación en profundidad: la masa queda demasiado somera', deep: 'con ponderación en profundidad' },
+      pinnCap: 'Versión PINN: una red neuronal propone el contraste de densidad en cada celda de la sección, y la función de pérdida compara la gravedad que producen esas celdas con las mediciones, más una penalización pequeña que mantiene simple el modelo. Como la gravedad se debilita con la profundidad, el modelo más simple que ajusta los datos pone la masa demasiado cerca de la superficie. La ponderación en profundidad, una corrección habitual en inversión gravimétrica, lo compensa y lleva la masa a una profundidad cercana a la correcta.',
       g: 'Δg (mGal)', depth: 'profundidad (m)', x: 'x (m)',
-      rd: { trial: 'Cuerpo de prueba', depth: 'profundidad', mass: 'λ', mis: 'desajuste RMS', noise: 'ruido', truth: 'Cuerpo verdadero', note: 'La gravedad fija λ = πR²Δρ, pero no R y Δρ por separado.' },
-      cap: 'El ancho de la anomalía fija la profundidad (la semianchura a media altura es igual a z₀) y el producto de amplitud y profundidad fija la masa: los cuerpos profundos dan señales más débiles y anchas. Aun así, la gravedad por sí sola no es única: para formas generales, una cáscara y una masa puntual pueden producir el mismo campo, y aquí solo se determina la masa por metro, no el radio y la densidad por separado. Por eso importan la información previa y otras mediciones. Ejemplo sintético (aproximación 2D).',
+      rd: { trial: 'Cuerpo de prueba', depth: 'profundidad', mass: 'λ', mis: 'desajuste RMS', noise: 'ruido', truth: 'cuerpo verdadero', note: 'la gravedad fija λ = πR²Δρ, no R y Δρ por separado' },
+      cap: 'El gráfico superior muestra la anomalía de gravedad Δg a lo largo de la línea de prospección (puntos: mediciones; curva: modelo), en miligales (1 mGal = 10⁻⁵ m/s², cerca de una millonésima de la gravedad terrestre); el panel inferior es un corte vertical del terreno. Arrastre el cuerpo violeta para ajustar los datos a mano, o pulse «invertir» para ajustarlo automáticamente. El cuerpo se modela como un cilindro horizontal largo, y su contraste de densidad Δρ indica cuánto más denso es que la roca que lo rodea. El ancho de la anomalía fija la profundidad (la semianchura a media altura es igual a la profundidad z₀) y la amplitud por la profundidad fija la masa: los cuerpos profundos dan señales más débiles y anchas. Solo se determina la masa por metro λ = πR²Δρ, no el radio y la densidad por separado, y para formas generales distintas distribuciones de masa pueden producir exactamente el mismo campo. Por eso importan la información previa y otras mediciones. Ejemplo sintético (aproximación 2D).',
     }
   : {
-      fwd: 'Forward', fwdText: 'from the position, depth and mass of an ore body, compute the gravity anomaly that a gravimeter records at the surface.',
-      inv: 'Inverse', invText: 'from a noisy surface survey, estimate where the body is, how deep it lies and how much mass it has.',
-      fig: 'Gravity profile and subsurface section', hint: 'drag the violet body to move it',
+      fwd: 'Forward', fwdText: 'given the position, depth and mass of a buried ore body, compute the gravity anomaly at the surface (the small change in gravitational acceleration it causes).',
+      inv: 'Inverse', invText: 'from noisy gravity measurements along a surface line, estimate where the body is, how deep it lies and how much mass it has.',
+      fig: 'Gravity profile and subsurface section', hint: 'drag the violet body to fit the data by hand',
       R: 'Body radius', drho: 'Density contrast', noise: 'Gravimeter noise',
       inv2: 'invert', reveal: 'reveal the true body', hide: 'hide the true body', newS: 'new survey', stop: 'stop',
       method: 'Method', classic: 'parametric fit', train: 'train the PINN', dw: 'Depth weighting', lossLabel: 'The PINN minimises',
-      pinn: { it: 'iteration', mis: 'RMS misfit', cm: 'centre of mass', mass: 'mass per metre', idle: 'Press “train the PINN”: the network proposes a density in every cell of the section.', surf: 'Without depth weighting, the smallest model that explains the data sits near the surface.', deep: 'Depth weighting compensates for the decay of the kernel with depth.' },
-      pinnCap: 'PINN: a coordinate network proposes the density contrast Δρ(x, z) over the whole section; the gravity integral over the cells sits inside the loss, together with a small penalty. Gravity alone does not fix depth: without depth weighting the mass gathers near the surface; with it, the mass moves down to the right depth.',
+      pinn: { it: 'iteration', mis: 'RMS misfit', cm: 'centre of mass', mass: 'mass per metre', idle: 'Press “train the PINN”.', surf: 'without depth weighting: the mass sits too shallow', deep: 'depth weighting on' },
+      pinnCap: 'PINN version: a neural network proposes the density contrast in every cell of the section, and the loss compares the gravity these cells produce with the measurements, plus a small penalty that keeps the model simple. Because gravity weakens with depth, the simplest model that fits the data puts the mass too close to the surface. Depth weighting, a standard correction in gravity inversion, compensates for this and moves the mass down to about the right depth.',
       g: 'Δg (mGal)', depth: 'depth (m)', x: 'x (m)',
-      rd: { trial: 'Trial body', depth: 'depth', mass: 'λ', mis: 'RMS misfit', noise: 'noise', truth: 'True body', note: 'Gravity fixes λ = πR²Δρ, but not R and Δρ separately.' },
-      cap: 'The width of the anomaly sets the depth (the half-width at half-maximum equals z₀), and amplitude times depth sets the mass: deeper bodies give weaker, broader signals. Gravity alone is still not unique: for general shapes, a shell and a point mass can produce the same field, and here only the mass per metre is determined, not the radius and density separately. That is why priors and other measurements matter. Synthetic example (2D approximation).',
+      rd: { trial: 'Trial body', depth: 'depth', mass: 'λ', mis: 'RMS misfit', noise: 'noise', truth: 'true body', note: 'gravity fixes λ = πR²Δρ, not R and Δρ separately' },
+      cap: 'The upper plot shows the gravity anomaly Δg along the survey line (points: measurements; curve: model), in milligals (1 mGal = 10⁻⁵ m/s², about a millionth of Earth’s gravity); the lower panel is a vertical cross-section of the ground. Drag the violet body to fit the data by hand, or press “invert” to fit it automatically. The body is modelled as a long horizontal cylinder, and its density contrast Δρ is how much denser it is than the surrounding rock. The width of the anomaly sets the depth (the half-width at half-maximum equals the depth z₀), and amplitude times depth sets the mass: deeper bodies give weaker and broader signals. Only the mass per metre λ = πR²Δρ is determined, not the radius and the density separately, and for general shapes different mass distributions can produce exactly the same field. This is why prior information and other measurements matter. Synthetic example (2D approximation).',
     };
 ---
 <div class="eng-tab mi" data-eng-tab="mining" data-mi-text={JSON.stringify(T)} hidden={hidden}>
   <p class="eng-fi"><em>{T.fwd}</em>: {T.fwdText} <em>{T.inv}</em>: {T.invText}</p>
+
+  <div class="eng-switches">
+    <div class="eng-switch"><span>{T.method}:</span>
+      <div class="seg" role="group" aria-label={T.method}><button type="button" data-mi-m="classic" aria-pressed="true">{T.classic}</button><button type="button" data-mi-m="pinn" aria-pressed="false">PINN</button></div>
+    </div>
+  </div>
 
   <div class="mi__fig">
     <p class="panel-title">{T.fig}</p>
@@ -46,7 +52,7 @@ const T = es
     <p class="mi__hint" data-mi-classicui>{T.hint}</p>
   </div>
 
-  <div class="mi__controls">
+  <div class="eng-controls">
     <div class="control" data-mi-classicui>
       <div class="control__head"><label for={`mi-r-${lang}`}>{T.R}</label><output data-mi-or>—</output></div>
       <input id={`mi-r-${lang}`} data-mi-r type="range" min="5" max="120" step="1" value="30" />
@@ -60,15 +66,11 @@ const T = es
       <input id={`mi-n-${lang}`} data-mi-n type="range" min="0" max="0.1" step="0.005" value="0.02" />
     </div>
   </div>
-  <div class="mi__method">
-    <span class="control__head">{T.method}</span>
-    <div class="seg" role="group" aria-label={T.method}><button type="button" data-mi-m="classic" aria-pressed="true">{T.classic}</button><button type="button" data-mi-m="pinn" aria-pressed="false">PINN</button></div>
-    <label class="meta" data-mi-pinnui hidden><input type="checkbox" data-mi-dw checked /> {T.dw}</label>
-  </div>
-  <p class="mi__btns"><button type="button" class="btn" data-mi-inv>{T.inv2}</button><button type="button" class="btn" data-mi-train hidden>{T.train}</button> <button type="button" class="btn" data-mi-rev>{T.reveal}</button> <button type="button" class="btn" data-mi-new>{T.newS}</button></p>
+  <div class="eng-checks" data-mi-pinnui hidden><label><input type="checkbox" data-mi-dw checked /> {T.dw}</label></div>
+  <p class="eng-actions"><button type="button" class="btn" data-mi-inv>{T.inv2}</button><button type="button" class="btn" data-mi-train hidden>{T.train}</button> <button type="button" class="btn" data-mi-rev>{T.reveal}</button> <button type="button" class="btn" data-mi-new>{T.newS}</button></p>
 
-  <div class="mi__eqs"><Equation tex={String.raw`\Delta g(x) = \frac{2G\lambda\, z_0}{(x-x_0)^2 + z_0^2},`} /><Equation tex={String.raw`\lambda = \pi R^2 \Delta\rho`} /></div>
-  <p class="meta mi__loss" data-mi-pinnui hidden>{T.lossLabel} <Equation display={false} tex={String.raw`\mathcal{L}(\theta) = \frac{\lVert G\,\Delta\rho_\theta - d \rVert^2}{\lVert d \rVert^2} + \alpha\,\overline{\big(w(z)\,\Delta\rho_\theta/\rho_s\big)^2}`} /></p>
+  <div class="eng-eqs"><Equation tex={String.raw`\Delta g(x) = \frac{2G\lambda\, z_0}{(x-x_0)^2 + z_0^2},`} /><Equation tex={String.raw`\lambda = \pi R^2 \Delta\rho`} /></div>
+  <p class="eng-loss" data-mi-pinnui hidden>{T.lossLabel} <Equation display={false} tex={String.raw`\mathcal{L}(\theta) = \frac{\lVert G\,\Delta\rho_\theta - d \rVert^2}{\lVert d \rVert^2} + \alpha\,\overline{\big(w(z)\,\Delta\rho_\theta/\rho_s\big)^2}`} /></p>
   <p class="lab__readout" data-mi-read aria-live="polite"></p>
   <p class="eng-cap">{T.cap} {T.pinnCap}</p>
 </div>
@@ -80,9 +82,12 @@ const T = es
   const P_H = 24, P_STEPS = 3000, P_LR = 0.02, P_ALPHA = 1, P_BETA = 2, FRAME_MS = 7, NXD = 101;
 
   const XH = 500, ZMAX = 350;
+  const neg = (t: string) => t.replace('-', '−');
+  let dec = (v: number, d: number) => v.toFixed(d);
 
   function init(root: HTMLElement) {
     const T = JSON.parse(root.dataset.miText!);
+    if (T.inv === 'Inverso') dec = (v: number, d: number) => v.toFixed(d).replace('.', ',');
     const q = <E extends Element>(s: string) => root.querySelector<E>(s)!;
     const canvas = q<HTMLCanvasElement>('[data-mi-canvas]');
     const rIn = q<HTMLInputElement>('[data-mi-r]'), dIn = q<HTMLInputElement>('[data-mi-d]'), nIn = q<HTMLInputElement>('[data-mi-n]');
@@ -231,22 +236,22 @@ const T = es
     const update = () => {
       const drho = +dIn.value;
       const R = radiusOf(trial.m, drho);
-      oR.textContent = `${R.toFixed(0)} m`; oD.textContent = `${drho} kg/m³`; oN.textContent = `${(+nIn.value).toFixed(3)} mGal`;
+      oR.textContent = `${R.toFixed(0)} m`; oD.textContent = `${drho} kg/m³`; oN.textContent = `${dec(+nIn.value, 3)} mGal`;
       if (method === 'pinn') {
         let txt = T.pinn.idle;
         if (rho) {
           const c = centroid(rho, grid);
-          txt = `PINN: ${T.pinn.it} ${pIter} · ${T.pinn.mis} ${pRms.toFixed(3)} mGal (${T.rd.noise} ${(+nIn.value).toFixed(3)}) · ${T.pinn.cm} x = ${c.x.toFixed(0)} m, ${T.rd.depth} ${c.z.toFixed(0)} m · ${T.pinn.mass} ${c.mass.toFixed(2)}×10⁶ kg/m`;
-          if (revealed) txt += `. ${T.rd.truth}: x₀ = ${truth.x0.toFixed(0)} m, ${T.rd.depth} ${truth.z0.toFixed(0)} m, λ = ${truth.m.toFixed(2)}×10⁶ kg/m`;
-          txt += '. ' + (dwBox.checked ? T.pinn.deep : T.pinn.surf);
+          txt = `PINN: ${T.pinn.it} ${pIter} · ${T.pinn.mis} ${dec(pRms, 3)} mGal (${T.rd.noise} ${dec(+nIn.value, 3)}) · ${T.pinn.cm} x = ${neg(c.x.toFixed(0))} m, ${T.rd.depth} ${c.z.toFixed(0)} m · ${T.pinn.mass} ${dec(c.mass, 2)}×10⁶ kg/m`;
+          if (revealed) txt += ` · ${T.rd.truth}: x₀ = ${neg(truth.x0.toFixed(0))} m, ${T.rd.depth} ${truth.z0.toFixed(0)} m, λ = ${dec(truth.m, 2)}×10⁶ kg/m`;
+          txt += ' · ' + (dwBox.checked ? T.pinn.deep : T.pinn.surf);
         }
         read.textContent = txt;
         draw();
         return;
       }
       const mis = rmsMisfit(trial, survey);
-      let txt = `${T.rd.trial}: x₀ = ${trial.x0.toFixed(0)} m, ${T.rd.depth} ${trial.z0.toFixed(0)} m, ${T.rd.mass} = ${trial.m.toFixed(2)}×10⁶ kg/m · ${T.rd.mis} ${mis.toFixed(3)} mGal (${T.rd.noise} ${(+nIn.value).toFixed(3)})`;
-      if (revealed) txt += `. ${T.rd.truth}: x₀ = ${truth.x0.toFixed(0)} m, ${T.rd.depth} ${truth.z0.toFixed(0)} m, ${T.rd.mass} = ${truth.m.toFixed(2)}×10⁶ kg/m (R = ${truth.R.toFixed(0)} m, Δρ = ${Math.round(truth.drho / 10) * 10} kg/m³). ${T.rd.note}`;
+      let txt = `${T.rd.trial}: x₀ = ${neg(trial.x0.toFixed(0))} m, ${T.rd.depth} ${trial.z0.toFixed(0)} m, ${T.rd.mass} = ${dec(trial.m, 2)}×10⁶ kg/m · ${T.rd.mis} ${dec(mis, 3)} mGal (${T.rd.noise} ${dec(+nIn.value, 3)})`;
+      if (revealed) txt += ` · ${T.rd.truth}: x₀ = ${neg(truth.x0.toFixed(0))} m, ${T.rd.depth} ${truth.z0.toFixed(0)} m, ${T.rd.mass} = ${dec(truth.m, 2)}×10⁶ kg/m (R = ${truth.R.toFixed(0)} m, Δρ = ${Math.round(truth.drho / 10) * 10} kg/m³) · ${T.rd.note}`;
       read.textContent = txt;
       draw();
     };
@@ -343,18 +348,10 @@ const T = es
 </script>
 
 <style>
-  .mi__fig { max-width: 40rem; margin: var(--s-3) auto 0; }
+  .mi__fig { max-width: 40rem; margin: 0 auto; }
   .mi__canvas { display: block; width: 100%; height: 22rem; touch-action: none; cursor: grab; background: var(--paper); }
   .mi__hint { text-align: center; font-size: var(--step--2); font-style: italic; color: var(--ink-3); margin-top: 0.2rem; }
-  .mi__controls { display: grid; gap: var(--s-3) var(--s-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); max-width: 40rem; margin: var(--s-4) auto 0; }
-  .mi__btns { max-width: 40rem; margin: var(--s-3) auto 0; font-size: var(--step--1); text-align: center; display: flex; flex-wrap: wrap; gap: 0.2em 1em; justify-content: center; }
-  .mi__method { max-width: 40rem; margin: var(--s-3) auto 0; display: flex; flex-wrap: wrap; gap: 0.3em 1.2em; align-items: baseline; justify-content: center; font-size: var(--step--1); }
-  .mi__method label { display: inline-flex; gap: 0.4em; align-items: baseline; }
-  .mi__method [hidden], .mi__btns [hidden], .mi__loss[hidden] { display: none; }
-  .mi__loss { font-size: var(--step--1); text-align: center; max-width: 40rem; margin: var(--s-2) auto 0; overflow-x: auto; }
   .mi [data-mi-classicui][hidden] { display: none; }
-  .mi__eqs { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0 var(--s-6); max-width: 40rem; margin-inline: auto; }
-  .mi__eqs :global(.eq) { margin-block: var(--s-3); }
   .mi .lab__readout { max-width: 40rem; margin: var(--s-2) auto 0; text-align: center; }
   .mi .eng-cap, .mi .eng-fi { max-width: 40rem; margin-inline: auto; }
   .mi .eng-cap { margin-top: var(--s-3); font-size: var(--step--1); color: var(--ink-2); text-align: justify; }

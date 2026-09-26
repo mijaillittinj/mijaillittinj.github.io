@@ -38,14 +38,17 @@ import ParameterSlider from './ParameterSlider.astro';
 </div>
 
 <script>
+  import { keyed } from '../../lib/legendkey';
   import { initMLP, lossGrad, adam, mse, predict, nParams, makeSplit, target, cloneParams, setParams, type MLP } from '../../lib/mlp';
   import { LinePlot } from '../../lib/plot';
 
   document.querySelectorAll<HTMLElement>('[data-mlp]').forEach((root) => {
     const $ = <T extends Element>(s: string) => root.querySelector<T>(s)!;
     const val = (name: string) => +$<HTMLInputElement>(`[name="${name}"]`).value;
-    const pFit = new LinePlot($('[data-mlp-fit]'), { width: 860, height: 300, xlabel: 'input x', ylabel: 'output y', title: 'Fit' });
-    const pLoss = new LinePlot($('[data-mlp-loss]'), { width: 860, height: 240, xlabel: 'iteration', ylabel: 'mean squared error', logy: true, title: 'Loss curves' });
+    const pFit = new LinePlot($('[data-mlp-fit]'), { width: 860, height: 300, xlabel: 'input x', ylabel: 'output y', title: 'Fit' , legend: false});
+    const pFitR = keyed(pFit, $('[data-mlp-fit]'));
+    const pLoss = new LinePlot($('[data-mlp-loss]'), { width: 860, height: 240, xlabel: 'iteration', ylabel: 'mean squared error', logy: true, title: 'Loss curves' , legend: false});
+    const pLossR = keyed(pLoss, $('[data-mlp-loss]'));
     const read = $<HTMLElement>('[data-mlp-read]');
     const btn = $<HTMLButtonElement>('[data-mlp-train]');
     const decayBox = $<HTMLInputElement>('[data-mlp-decay]'), earlyBox = $<HTMLInputElement>('[data-mlp-early]');
@@ -60,7 +63,7 @@ import ParameterSlider from './ParameterSlider.astro';
     };
     const draw = () => {
       const { net, split } = s;
-      pFit.render([
+      pFitR([
         { kind: 'line', x: xs, y: xs.map(target), cls: 's-truth', dash: true, label: 'true function' },
         { kind: 'points', x: split.val.x, y: split.val.y, cls: 's-muted', label: 'validation points' },
         { kind: 'points', x: split.train.x, y: split.train.y, cls: 's-data', label: 'training points' },
@@ -71,7 +74,7 @@ import ParameterSlider from './ParameterSlider.astro';
         { kind: 'line', x: s.hI, y: s.hV, cls: 's-warn', label: 'validation error' },
       ];
       if (s.bestP && earlyBox.checked) series.push({ kind: 'line', x: [s.bestIt, s.bestIt], y: [1e-6, 10], cls: 's-muted', dash: true, label: 'best validation' });
-      pLoss.render(s.hI.length ? series : [], { xlim: [0, MAX], ylim: [1e-6, 10] });
+      pLossR(s.hI.length ? series : [], { xlim: [0, MAX], ylim: [1e-6, 10] });
       const tr = mse(net, s.split.train.x, s.split.train.y), va = mse(net, s.split.val.x, s.split.val.y);
       read.innerHTML = `${nParams(net)} parameters for ${s.split.train.x.length} training points. ` +
         (s.it ? `Iteration ${s.it}: training error <strong>${tr.toExponential(1)}</strong>, validation error <strong>${va.toExponential(1)}</strong> (noise floor σ² = ${(val('noise') ** 2).toExponential(1)}).` : 'Press Train.') +

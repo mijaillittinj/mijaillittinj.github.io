@@ -11,36 +11,42 @@ const { lang = 'en', hidden = false } = Astro.props;
 const es = lang === 'es';
 const T = es
   ? {
-      fwd: 'Directo', fwdText: 'a partir de las constantes de velocidad k₁ y k₂, calcular cómo evolucionan las concentraciones de A, B y C en un reactor discontinuo.',
+      fwd: 'Directo', fwdText: 'dadas las constantes de velocidad k₁ y k₂ de las reacciones consecutivas A → B → C en un reactor discontinuo, calcular cómo cambian en el tiempo las tres concentraciones.',
       inv: 'Inverso', invText: 'a partir de unas pocas mediciones ruidosas del intermedio B, estimar k₁ y k₂.',
-      plot: 'Concentraciones', land: 'Paisaje del desajuste', landHint: 'haga clic o arrastre para elegir (k₁, k₂)',
+      plot: 'Concentraciones', land: 'Mapa del desajuste', landHint: 'haga clic o arrastre sobre el mapa para fijar (k₁, k₂)',
       k1: 'Constante k₁', k2: 'Constante k₂', noise: 'Ruido de medición', unit: ' 1/min',
       scale: 'Factor de calibración del detector desconocido', measA: 'Medir también A',
       fit: 'ajustar', newExp: 'nuevo experimento', stop: 'detener', method: 'Método', classic: 'mínimos cuadrados', train: 'entrenar la PINN', lossLabel: 'La PINN minimiza',
-      pinn: { it: 'iteración', data: 'pérdida de datos', ode: 'residuo de las EDO', idle: 'Pulse «entrenar la PINN»: parte de las constantes marcadas en el paisaje.', key: ['PINN B', 'PINN A', 'PINN C'] },
-      pinnCap: 'PINN: una sola red entrega A, B y C en función del tiempo, con la condición inicial incorporada; k₁ y k₂ se entrenan junto con los pesos, y la pérdida suma al desajuste con los datos los residuos de las tres ecuaciones de velocidad, r_A = A′ + k₁A, r_B = B′ − k₁A + k₂B y r_C = C′ − k₂B. Con el detector sin calibrar, termina en uno de los dos mínimos simétricos.',
+      pinn: { it: 'iteración', data: 'pérdida de datos', ode: 'residuo de las EDO', idle: 'Pulse «entrenar la PINN»; parte del punto marcado en el mapa.', key: ['PINN B', 'PINN A', 'PINN C'] },
+      pinnCap: 'Opción PINN: una red entrega A, B y C en función del tiempo y se entrena junto con k₁ y k₂; su pérdida suma los residuos de las tres ecuaciones de velocidad al desajuste con los datos, de modo que las constantes salen del ajuste. Con el detector sin calibrar también termina en uno de los dos mínimos.',
       t: 't (min)', c: 'concentración / A₀',
       leg: { A: 'modelo A', B: 'modelo B', sB: 'modelo s·B', C: 'modelo C', dB: 'B medido', dA: 'A medido' },
-      rd: { cur: 'Estimación', mis: 'desajuste', s: 'factor s', truth: 'valores verdaderos', err: 'error', twin: 'Hay dos mínimos igualmente buenos, (k₁, k₂) y (k₂, k₁): con solo B y sin calibración, los datos no distinguen una primera etapa lenta de una segunda etapa lenta.', unique: 'Mínimo único: los datos determinan ambas constantes.' },
-      cap: 'El paisaje muestra el desajuste entre el modelo y los datos para cada par (k₁, k₂), en escala logarítmica; las zonas oscuras ajustan mejor. Con el detector calibrado hay un único valle. Si el factor de calibración es desconocido, aparecen dos mínimos simétricos respecto de la diagonal k₁ = k₂, un ejemplo clásico de falta de identificabilidad; medir también A lo resuelve. Ejemplo sintético.',
+      rd: { cur: 'Estimación', mis: 'desajuste', s: 'factor s', truth: 'valores verdaderos', err: 'error', twin: 'dos mínimos igual de buenos, (k₁, k₂) y (k₂, k₁): B por sí solo no distingue una primera etapa lenta de una segunda etapa lenta.', unique: 'mínimo único: ambas constantes quedan determinadas.' },
+      cap: 'Izquierda: concentraciones que predicen las constantes actuales, junto con las mediciones de B. Derecha: desajuste entre modelo y datos para cada par (k₁, k₂), en ejes logarítmicos; más oscuro indica un mejor ajuste. Haga clic en el mapa o pulse «ajustar» para buscar el mínimo. Con el detector calibrado hay un solo valle y ambas constantes quedan determinadas. Si el factor de calibración del detector es desconocido, aparece un segundo mínimo igual de bueno en (k₂, k₁): los datos no distinguen una primera etapa lenta de una segunda etapa lenta, un caso clásico de falta de identificabilidad. Medir también A elimina la ambigüedad. Datos sintéticos.',
     }
   : {
-      fwd: 'Forward', fwdText: 'from the rate constants k₁ and k₂, compute how the concentrations of A, B and C evolve in a batch reactor.',
+      fwd: 'Forward', fwdText: 'given the rate constants k₁ and k₂ of the consecutive reactions A → B → C in a batch reactor, compute how the three concentrations change in time.',
       inv: 'Inverse', invText: 'from a few noisy measurements of the intermediate B, estimate k₁ and k₂.',
-      plot: 'Concentrations', land: 'Misfit landscape', landHint: 'click or drag to choose (k₁, k₂)',
+      plot: 'Concentrations', land: 'Misfit map', landHint: 'click or drag on the map to set (k₁, k₂)',
       k1: 'Rate constant k₁', k2: 'Rate constant k₂', noise: 'Measurement noise', unit: ' 1/min',
       scale: 'Detector calibration factor unknown', measA: 'Also measure A',
       fit: 'fit', newExp: 'new experiment', stop: 'stop', method: 'Method', classic: 'least squares', train: 'train the PINN', lossLabel: 'The PINN minimises',
-      pinn: { it: 'iteration', data: 'data loss', ode: 'ODE residual', idle: 'Press “train the PINN”: it starts from the constants marked on the landscape.', key: ['PINN B', 'PINN A', 'PINN C'] },
-      pinnCap: 'PINN: one network gives A, B and C as functions of time, with the initial condition built in; k₁ and k₂ are trained together with the weights, and the loss adds the residuals of the three rate equations, r_A = A′ + k₁A, r_B = B′ − k₁A + k₂B and r_C = C′ − k₂B, to the data misfit. With an uncalibrated detector it lands in one of the two mirror minima.',
+      pinn: { it: 'iteration', data: 'data loss', ode: 'ODE residual', idle: 'Press “train the PINN”; it starts from the point marked on the map.', key: ['PINN B', 'PINN A', 'PINN C'] },
+      pinnCap: 'PINN option: one network gives A, B and C as functions of time and is trained together with k₁ and k₂; its loss adds the residuals of the three rate equations to the misfit with the data, so the constants come out of the fit. With an uncalibrated detector it also ends in one of the two minima.',
       t: 't (min)', c: 'concentration / A₀',
       leg: { A: 'model A', B: 'model B', sB: 'model s·B', C: 'model C', dB: 'measured B', dA: 'measured A' },
-      rd: { cur: 'Estimate', mis: 'misfit', s: 'factor s', truth: 'true values', err: 'error', twin: 'Two equally good minima, (k₁, k₂) and (k₂, k₁): with B alone and no calibration, the data cannot tell a slow first step from a slow second step.', unique: 'A single minimum: the data determine both constants.' },
-      cap: 'The landscape shows the misfit between model and data for every pair (k₁, k₂), on a logarithmic scale; darker means a better fit. With a calibrated detector there is a single valley. If the calibration factor is unknown, two minima appear, mirrored about the diagonal k₁ = k₂: a classic loss of identifiability. Measuring A as well removes it. Synthetic example.',
+      rd: { cur: 'Estimate', mis: 'misfit', s: 'factor s', truth: 'true values', err: 'error', twin: 'two equally good minima, (k₁, k₂) and (k₂, k₁): B alone cannot distinguish a slow first step from a slow second step.', unique: 'single minimum: both constants are determined.' },
+      cap: 'Left: the concentrations predicted by the current constants, with the measurements of B. Right: the misfit between model and data for every pair (k₁, k₂), on logarithmic axes; darker is a better fit. Click the map or press “fit” to search for the minimum. With a calibrated detector there is one valley and both constants are determined. If the calibration factor of the detector is unknown, a second, equally good minimum appears at (k₂, k₁): the data cannot tell a slow first step from a slow second step, a classic loss of identifiability. Measuring A as well removes the ambiguity. Synthetic data.',
     };
 ---
 <div class="eng-tab ch" data-eng-tab="chemical" data-ch-text={JSON.stringify(T)} hidden={hidden}>
   <p class="eng-fi"><em>{T.fwd}</em>: {T.fwdText} <em>{T.inv}</em>: {T.invText}</p>
+
+  <div class="eng-switches">
+    <div class="eng-switch"><span>{T.method}:</span>
+      <div class="seg" role="group" aria-label={T.method}><button type="button" data-ch-m="classic" aria-pressed="true">{T.classic}</button><button type="button" data-ch-m="pinn" aria-pressed="false">PINN</button></div>
+    </div>
+  </div>
 
   <div class="ch__grid">
     <div class="ch__cell">
@@ -55,7 +61,7 @@ const T = es
     </div>
   </div>
 
-  <div class="ch__controls">
+  <div class="eng-controls">
     <div class="control">
       <div class="control__head"><label for={`ch-k1-${lang}`}>{T.k1}</label><output data-ch-o1>—</output></div>
       <input id={`ch-k1-${lang}`} data-ch-k1 type="range" min="-1.5" max="1" step="0.01" value="0" />
@@ -68,18 +74,15 @@ const T = es
       <div class="control__head"><label for={`ch-n-${lang}`}>{T.noise}</label><output data-ch-on>—</output></div>
       <input id={`ch-n-${lang}`} data-ch-noise type="range" min="0" max="8" step="0.5" value="3" />
     </div>
-    <div class="ch__opts">
-      <div class="control"><span class="control__head">{T.method}</span>
-        <div class="seg" role="group" aria-label={T.method}><button type="button" data-ch-m="classic" aria-pressed="true">{T.classic}</button><button type="button" data-ch-m="pinn" aria-pressed="false">PINN</button></div>
-      </div>
-      <label class="meta"><input type="checkbox" data-ch-scale /> {T.scale}</label>
-      <label class="meta"><input type="checkbox" data-ch-measa /> {T.measA}</label>
-      <p class="ch__btns"><button type="button" class="btn" data-ch-fit>{T.fit}</button><button type="button" class="btn" data-ch-train hidden>{T.train}</button> <button type="button" class="btn" data-ch-new>{T.newExp}</button></p>
-    </div>
   </div>
+  <div class="eng-checks">
+    <label><input type="checkbox" data-ch-scale /> {T.scale}</label>
+    <label><input type="checkbox" data-ch-measa /> {T.measA}</label>
+  </div>
+  <p class="eng-actions ch__btns"><button type="button" class="btn" data-ch-fit>{T.fit}</button><button type="button" class="btn" data-ch-train hidden>{T.train}</button><button type="button" class="btn" data-ch-new>{T.newExp}</button></p>
 
   <Equation tex={String.raw`C_B(t) = \frac{k_1 A_0}{k_2 - k_1}\left(e^{-k_1 t} - e^{-k_2 t}\right)`} />
-  <p class="meta ch__loss" data-ch-pinnui hidden>{T.lossLabel} <Equation display={false} tex={String.raw`\mathcal{L} = \overline{(sB - B_i)^2} + \lambda\,\overline{r_A^2 + s^2 r_B^2 + r_C^2}`} /></p>
+  <p class="eng-loss" data-ch-pinnui hidden>{T.lossLabel} <Equation display={false} tex={String.raw`\mathcal{L} = \overline{(sB - B_i)^2} + \lambda\,\overline{r_A^2 + s^2 r_B^2 + r_C^2}`} /></p>
   <p class="lab__readout" data-ch-read aria-live="polite"></p>
   <p class="eng-cap">{T.cap} {T.pinnCap}</p>
 </div>
@@ -256,7 +259,7 @@ const T = es
         const e1 = Math.abs(10 ** l1 / 10 ** truth[0] - 1) * 100, e2 = Math.abs(10 ** l2 / 10 ** truth[1] - 1) * 100;
         txt += ` · ${T.rd.truth}: ${fmtK(truth[0])}, ${fmtK(truth[1])} (${T.rd.err} ${e1.toFixed(0)} %, ${e2.toFixed(0)} %)`;
       }
-      txt += '. ' + (scaleBox.checked && !aBox.checked ? T.rd.twin : T.rd.unique);
+      txt += ' · ' + (scaleBox.checked && !aBox.checked ? T.rd.twin : T.rd.unique);
       read.textContent = txt;
       drawLand();
     };
@@ -279,7 +282,7 @@ const T = es
         txt = `PINN: ${T.pinn.it} ${pIter} · k₁ = ${fmtK(k.l1)}, k₂ = ${fmtK(k.l2)} 1/min${scaleBox.checked ? ` · ${T.rd.s} ${k.s.toFixed(2)}` : ''} · ${T.pinn.data} ${pLd.toExponential(1)} · ${T.pinn.ode} ${pLp.toExponential(1)}`;
         if (revealed) {
           const e1 = Math.abs(10 ** k.l1 / 10 ** truth[0] - 1) * 100, e2 = Math.abs(10 ** k.l2 / 10 ** truth[1] - 1) * 100;
-          txt += ` · ${T.rd.truth}: ${fmtK(truth[0])}, ${fmtK(truth[1])} (${T.rd.err} ${e1.toFixed(0)} %, ${e2.toFixed(0)} %). ` + (scaleBox.checked && !aBox.checked ? T.rd.twin : T.rd.unique);
+          txt += ` · ${T.rd.truth}: ${fmtK(truth[0])}, ${fmtK(truth[1])} (${T.rd.err} ${e1.toFixed(0)} %, ${e2.toFixed(0)} %) · ` + (scaleBox.checked && !aBox.checked ? T.rd.twin : T.rd.unique);
         }
       }
       plot.render(series, { xlim: [0, 10], ylim: [-0.05, 1.05] });
@@ -392,12 +395,7 @@ const T = es
   .ch__landwrap { width: 100%; max-width: 20rem; margin-inline: auto; }
   .ch__land { display: block; width: 100%; aspect-ratio: 1; touch-action: none; cursor: crosshair; background: var(--paper); }
   .ch__hint { text-align: center; font-size: var(--step--2); font-style: italic; color: var(--ink-3); margin-top: 0.2rem; }
-  .ch__controls { display: grid; gap: var(--s-3) var(--s-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); max-width: 40rem; margin: var(--s-4) auto 0; }
-  .ch__opts { display: grid; gap: 0.3rem; align-content: start; }
-  .ch__opts label { display: flex; gap: 0.4em; align-items: baseline; }
-  .ch__btns { font-size: var(--step--1); margin-top: 0.2rem; }
-  .ch__btns [hidden], .ch__loss[hidden] { display: none; }
-  .ch__loss { font-size: var(--step--1); text-align: center; max-width: 40rem; margin: var(--s-2) auto 0; overflow-x: auto; }
+  .ch__btns [hidden] { display: none; }
   .ch--pinn .ch__key .key--physics { background: var(--c-learned); }
   .ch--pinn .ch__key .ch__dash:not(.ch__muted) { color: var(--c-learned); }
   .ch :global(.eq) { max-width: 40rem; margin-inline: auto; justify-content: center; }

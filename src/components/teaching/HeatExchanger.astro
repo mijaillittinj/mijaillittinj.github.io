@@ -7,22 +7,22 @@ const { lang, n } = Astro.props;
 const es = lang === 'es';
 const S = es
   ? {
-      NTU: 'Número de unidades de transferencia NTU', Cr: 'Razón de capacidades Cr = Cmin/Cmax',
-      Th: 'Entrada caliente Th,in', Tc: 'Entrada fría Tc,in', Cmin: 'Cmin',
-      plot: 'Efectividad en función de NTU', xn: 'NTU = UA/Cmin', ye: 'ε',
-      lcf: 'contraflujo', lpf: 'flujo paralelo', lcur: 'diseño actual (contraflujo)', lcurp: 'diseño actual (paralelo)',
-      read: ['ε contraflujo', 'ε paralelo', 'Calor transferido (contraflujo)', 'salidas en contraflujo', 'salidas en paralelo', 'caliente', 'fría'],
-      assume: 'Se supone que el fluido caliente es el de menor capacidad térmica, Ch = Cmin.',
-      cap: 'Método ε–NTU para dimensionar intercambiadores de calor. La efectividad ε es el calor transferido dividido por el máximo posible, Cmin(Th,in − Tc,in). Aumentar el área (más NTU) tiene rendimientos decrecientes, y el contraflujo siempre supera al flujo paralelo, que nunca pasa de 1/(1 + Cr). Este es el tipo de relación que se usa al optimizar el área de un intercambiador frente a su costo.',
+      NTU: 'Tamaño, NTU = UA/Cmin', Cr: 'Razón de capacidades Cr',
+      Th: 'Entrada caliente Th,in', Tc: 'Entrada fría Tc,in', Cmin: 'Capacidad térmica Cmin',
+      plot: 'Efectividad en función del tamaño', xn: 'NTU = UA/Cmin', ye: 'ε',
+      lcf: 'contraflujo', lpf: 'flujo paralelo', lcur: 'diseño actual', lcurp: 'diseño actual',
+      read: ['ε contraflujo', 'ε paralelo', 'calor transferido (contraflujo)', 'salidas en contraflujo', 'salidas en paralelo', 'caliente', 'fría'],
+      assume: 'Se supone que el fluido caliente tiene la menor capacidad térmica, Ch = Cmin.',
+      cap: 'Efectividad de un intercambiador de calor según el método ε–NTU. La efectividad ε es el calor transferido dividido por el máximo físicamente posible, C<sub>min</sub>(T<sub>h,in</sub> − T<sub>c,in</sub>), donde C es el caudal másico por el calor específico de cada fluido. El número de unidades de transferencia, NTU = UA/C<sub>min</sub>, mide el tamaño del equipo (U es el coeficiente global de transferencia y A el área). Aumentar el área da rendimientos decrecientes, y el contraflujo siempre supera al flujo paralelo, cuya efectividad nunca pasa de 1/(1 + C<sub>r</sub>). Al diseñar, esta curva se combina con el costo del área para elegir el tamaño.',
     }
   : {
-      NTU: 'Number of transfer units NTU', Cr: 'Capacity ratio Cr = Cmin/Cmax',
-      Th: 'Hot inlet Th,in', Tc: 'Cold inlet Tc,in', Cmin: 'Cmin',
-      plot: 'Effectiveness against NTU', xn: 'NTU = UA/Cmin', ye: 'ε',
-      lcf: 'counterflow', lpf: 'parallel flow', lcur: 'current design (counterflow)', lcurp: 'current design (parallel)',
-      read: ['ε counterflow', 'ε parallel', 'Heat duty (counterflow)', 'outlets in counterflow', 'outlets in parallel flow', 'hot', 'cold'],
+      NTU: 'Size, NTU = UA/Cmin', Cr: 'Capacity ratio Cr',
+      Th: 'Hot inlet Th,in', Tc: 'Cold inlet Tc,in', Cmin: 'Heat capacity rate Cmin',
+      plot: 'Effectiveness against size', xn: 'NTU = UA/Cmin', ye: 'ε',
+      lcf: 'counterflow', lpf: 'parallel flow', lcur: 'current design', lcurp: 'current design',
+      read: ['ε counterflow', 'ε parallel', 'heat duty (counterflow)', 'outlets, counterflow', 'outlets, parallel flow', 'hot', 'cold'],
       assume: 'The hot stream is assumed to have the smaller heat capacity rate, Ch = Cmin.',
-      cap: 'The ε–NTU method for sizing heat exchangers. The effectiveness ε is the heat transferred divided by the largest possible, Cmin(Th,in − Tc,in). Adding area (more NTU) gives diminishing returns, and counterflow always beats parallel flow, which never exceeds 1/(1 + Cr). This is the kind of relation used when an exchanger’s area is optimised against its cost.',
+      cap: 'Effectiveness of a heat exchanger by the ε–NTU method. The effectiveness ε is the heat transferred divided by the largest physically possible, C<sub>min</sub>(T<sub>h,in</sub> − T<sub>c,in</sub>), where C is the mass flow rate times the specific heat of each stream. The number of transfer units, NTU = UA/C<sub>min</sub>, measures the size of the unit (U is the overall heat-transfer coefficient and A the area). Adding area gives diminishing returns, and counterflow always beats parallel flow, whose effectiveness never exceeds 1/(1 + C<sub>r</sub>). In design, this curve is combined with the cost of area to choose the size.',
     };
 ---
 <figure class="lab" data-t-hx data-s={JSON.stringify(S)}>
@@ -35,20 +35,22 @@ const S = es
       <ParameterSlider name="cmin" label={S.Cmin} min={0.1} max={10} step={0.1} value={2} unit=" kW/K" />
       <p class="lab__readout" data-t-read aria-live="polite"></p>
     </div>
-    <div><p class="panel-title">{S.plot}</p><div class="t-plot" data-t-eps></div><p class="meta">{S.assume}</p></div>
+    <div><p class="panel-title">{S.plot}</p><div class="t-plot" data-t-eps></div><div class="t-key" data-t-keps></div><p class="meta t-note">{S.assume}</p></div>
   </div>
   <Equation tex={String.raw`\varepsilon_{\mathrm{cf}}=\frac{1-e^{-\mathrm{NTU}(1-C_r)}}{1-C_r\,e^{-\mathrm{NTU}(1-C_r)}},\qquad \varepsilon_{\mathrm{pf}}=\frac{1-e^{-\mathrm{NTU}(1+C_r)}}{1+C_r},\qquad q=\varepsilon\,C_{\min}\,(T_{h,\mathrm{in}}-T_{c,\mathrm{in}})`} />
-  <figcaption><span class="fig-num">{es ? 'Figura' : 'Figure'} {n}.</span>{S.cap}</figcaption>
+  <figcaption><span class="fig-num">{es ? 'Figura' : 'Figure'} {n}.</span><Fragment set:html={S.cap} /></figcaption>
 </figure>
 
 <script>
   import { LinePlot, fmt } from '../../lib/plot';
   import { effCounter, effParallel } from '../../lib/teaching';
+  import { renderKey } from '../../lib/legendkey';
 
   document.querySelectorAll<HTMLElement>('[data-t-hx]').forEach((root) => {
     const S = JSON.parse(root.dataset.s!);
     const val = (k: string) => +root.querySelector<HTMLInputElement>(`[name="${k}"]`)!.value;
-    const plot = new LinePlot(root.querySelector('[data-t-eps]')!, { width: 760, height: 300, xlabel: S.xn, ylabel: S.ye, title: S.plot });
+    const plot = new LinePlot(root.querySelector('[data-t-eps]')!, { width: 760, height: 300, xlabel: S.xn, ylabel: S.ye, title: S.plot, legend: false });
+    renderKey(root.querySelector('[data-t-keps]')!, [{ label: S.lcf, cls: 's-physics' }, { label: S.lpf, cls: 's-learned' }, { label: S.lcur, cls: 's-data', kind: 'point' }]);
     const read = root.querySelector<HTMLElement>('[data-t-read]')!;
     const N = Array.from({ length: 121 }, (_, i) => (i * 5) / 120);
 
@@ -63,9 +65,13 @@ const S = es
       ], { xlim: [0, 5], ylim: [0, 1.02] });
       const dT = Th - Tc;
       const out = (e: number) => `${S.read[5]} <strong>${(Th - e * dT).toFixed(1)}</strong> °C, ${S.read[6]} <strong>${(Tc + e * Cr * dT).toFixed(1)}</strong> °C`;
-      read.innerHTML = `${S.read[0]} = <strong>${ec.toFixed(3)}</strong>, ${S.read[1]} = <strong>${ep.toFixed(3)}</strong>.<br>${S.read[2]}: <strong>${fmt(ec * Cmin * dT)}</strong> kW.<br>${S.read[3]}: ${out(ec)}.<br>${S.read[4]}: ${out(ep)}.`;
+      read.innerHTML = `ε = <strong>${ec.toFixed(3)}</strong> ${S.read[0].replace('ε ', '')} · <strong>${ep.toFixed(3)}</strong> ${S.read[1].replace('ε ', '')}<br>${S.read[2]} <strong>${fmt(ec * Cmin * dT)}</strong> kW<br>${S.read[3]}: ${out(ec)}<br>${S.read[4]}: ${out(ep)}`;
     };
     root.querySelectorAll('input[type=range]').forEach((i) => i.addEventListener('input', update));
     update();
   });
 </script>
+
+<style>
+  .t-note { text-align: center; margin-top: var(--s-2); }
+</style>

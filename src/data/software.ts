@@ -34,7 +34,7 @@ export const software: Software[] = [
 /**
  * Methods described without code or equations. Only pysat-abel is distributed.
  * Published methods cite their paper; the soot–gas separation method is unpublished
- * (manuscript in preparation), so it is described in general terms only.
+ * so it is described in general terms only.
  */
 export interface Method {
   id: string;
@@ -49,7 +49,7 @@ export const methods: Method[] = [
   {
     id: 'pinn-multidiagnostic',
     name: 'Physics-informed inversion of several optical diagnostics',
-    summary: 'One coordinate-based neural network maps position in the flame to local soot properties. Its loss contains the physics of light scattering by fractal aggregates and thermal emission, so it is trained directly on the measurements, without labelled data. Attenuation, emission and multi-angle scattering at several wavelengths are inverted together, and the calibration factors of the instruments are recovered as part of the solution. Outputs: temperature, volume fraction, aggregate volume, composition and optical-index fields.',
+    summary: 'One neural network takes a position in the flame and returns the local soot properties there. Its loss contains the physics of light scattering by fractal aggregates and thermal emission, so it is trained directly on the measurements, without labelled data. Attenuation, emission and multi-angle scattering at several wavelengths are inverted together, and the calibration factors of the instruments are recovered as part of the solution. Outputs: temperature, volume fraction, aggregate volume, composition and optical-index fields.',
     status: 'Published. Code available upon request.',
     paper: 'littin2026carbon',
     page: '/publications/carbon-2026/',
@@ -57,14 +57,14 @@ export const methods: Method[] = [
   {
     id: 'ann-maturity',
     name: 'Neural network for soot maturity in normal and inverse diffusion flames',
-    summary: 'A coordinate network reconstructs soot volume fraction, temperature and a maturity indicator from flame emission recorded at two wavelengths. The wavelength dependence of the soot optical properties is built into the model, which is what makes maturity visible in the data. Applied to normal (NDF) and inverse (IDF) diffusion flames.',
+    summary: 'A neural network that takes a position in the flame reconstructs soot volume fraction, temperature and an indicator of soot maturity (how far the particles have evolved towards graphitic carbon) from flame emission recorded at two wavelengths. The wavelength dependence of the soot optical properties is built into the model, which is what makes maturity visible in the data. Applied to normal (NDF) and inverse (IDF) diffusion flames.',
     status: 'Published. Code available upon request.',
     paper: 'yap2026dual',
   },
   {
     id: 'aggregate-sizing-2d',
     name: 'Two-dimensional aggregate size distributions from angular light scattering',
-    summary: 'Multi-angle scattering and extinction images are reconstructed locally, with signal trapping taken into account, and interpreted with a scattering model for fractal aggregates. The result is a map of the aggregate size distribution across the flame instead of a single line-of-sight average.',
+    summary: 'Images of light scattered at several angles and of light extinction are converted into local values, with signal trapping taken into account, and interpreted with a scattering model for fractal soot aggregates. The result is a map of the aggregate size distribution across the flame instead of a single line-of-sight average.',
     status: 'Published. Code available upon request.',
     paper: 'littin2025scatt',
   },
@@ -72,6 +72,6 @@ export const methods: Method[] = [
     id: 'soot-gas-voxel',
     name: 'Volumetric separation of soot and gas radiation',
     summary: 'A radiometer measures the total radiation of a flame, soot and combustion gases together. This method divides the flame into small volume elements (voxels), estimates the soot emission of each element from locally resolved soot fields retrieved from flame images, and carries every contribution to the detector through the exact geometry of the set-up. The gas contribution is what remains. The method is validated on synthetic flames with known answers before it is applied to experiments.',
-    status: 'Manuscript in preparation. Description only.',
+    status: 'Unpublished method. Description only.',
   },
 ];

@@ -1,5 +1,5 @@
 /** Loading helpers for axisymmetric fields exported by scripts/export_*.py. */
-import { loadU8Field } from './plot.ts';
+import { loadU8Field, loadU16Field } from './plot.ts';
 
 export interface FieldMeta {
   nz: number;
@@ -7,6 +7,8 @@ export interface FieldMeta {
   r_mm: [number, number];
   z_mm: [number, number];
   source: string;
+  /** 'uint16' for 16-bit fields (.u16); absent means 8-bit (.u8). */
+  dtype?: 'uint8' | 'uint16';
   fields: Record<string, { min: number; max: number; unit: string; label: string }>;
 }
 
@@ -19,7 +21,9 @@ export function loadMeta(base: string): Promise<FieldMeta> {
 export async function loadField(base: string, key: string) {
   const meta = await loadMeta(base);
   const f = meta.fields[key];
-  const data = await loadU8Field(`${base}${key}.u8`, f.min, f.max);
+  const data = meta.dtype === 'uint16'
+    ? await loadU16Field(`${base}${key}.u16`, f.min, f.max)
+    : await loadU8Field(`${base}${key}.u8`, f.min, f.max);
   return { meta, data, info: f };
 }
 

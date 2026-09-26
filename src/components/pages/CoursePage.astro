@@ -15,11 +15,11 @@ const es = lang === 'es';
 const T = es
   ? {
       title: 'Diseño y Optimización de Sistemas Térmicos', eyebrow: 'Docencia · ILN223 · UTFSM · 2026-2',
-      lede: 'Un curso sobre cómo pasar de un sistema térmico real a un modelo que se puede resolver, verificar y optimizar, y sobre cuándo conviene aprender el modelo a partir de datos.',
+      lede: 'Un curso sobre cómo convertir un sistema térmico real en un modelo que se pueda resolver, verificar y optimizar, y sobre cuándo conviene construir el modelo a partir de datos.',
       about: 'Sobre el curso',
       aboutText: [
         'El curso recorre el ciclo completo del diseño computacional: formular un modelo físico, simplificarlo con criterio, resolverlo numéricamente, comprobar que la solución es confiable y usarla para tomar decisiones de diseño mediante optimización. La última unidad introduce el aprendizaje automático como herramienta de modelado basado en datos y lo conecta con los modelos físicos del resto del semestre.',
-        'Las clases combinan teoría con demostraciones en Python que los estudiantes pueden modificar. El primer laboratorio parte de un problema de ingeniería concreto: el calentamiento de un transformador.',
+        'Las clases combinan teoría con demostraciones en Python que los estudiantes pueden modificar. El primer laboratorio parte de un problema concreto de ingeniería: el calentamiento de un transformador eléctrico.',
       ],
       outcomes: 'Al terminar, el estudiante puede',
       outcomesList: [
@@ -33,13 +33,13 @@ const T = es
         ['1', 'Modelado de sistemas térmicos', 'Propósito de un modelo, leyes físicas, análisis dimensional y teorema Π de Buckingham, modelos concentrados y distribuidos (número de Biot), similitud y ajuste de curvas.', []],
         ['2', 'Modelación numérica y simulación', 'Discretización, estabilidad de esquemas explícitos, verificación de la solución y análisis de sensibilidad.', []],
         ['3', 'Optimización de sistemas térmicos', 'Anatomía de un problema de optimización, convexidad, restricciones y multiplicadores de Lagrange, descenso de gradiente, momentum, métodos estocásticos, Newton y BFGS.', [['Módulo: descenso de gradiente', '/learn/optimization/gradient-descent/']]],
-        ['4', 'Aprendizaje automático para modelado basado en datos', 'Regresión, redes neuronales y aprendizaje informado por la física (octubre de 2026).', [['Módulo: aprendizaje informado por la física', '/learn/machine-learning/physics-informed-learning/']]],
+        ['4', 'Aprendizaje automático para modelado basado en datos', 'Regresión, redes neuronales y redes informadas por la física, que combinan datos con las ecuaciones del sistema.', [['Módulo: aprendizaje informado por la física', '/learn/machine-learning/physics-informed-learning/']]],
       ],
       labs: 'Laboratorios computacionales',
       lab1: 'Laboratorio 1: por qué se sobrecalienta un transformador',
       lab1Text: 'Modelos térmicos de un transformador de distribución, primero concentrado (0D) y luego unidimensional, para explicar cómo puede sobrecalentarse hasta fallar. Los estudiantes comparan una estimación empírica del punto caliente con un modelo espacial resuelto explícitamente, aplicando los modelos concentrados y los submodelos acoplados de la unidad 1.',
       tools: 'Herramientas', toolsText: 'Python (NumPy, SciPy, Matplotlib) en notebooks. Bibliografía principal: Y. Jaluria, Design and Optimization of Thermal Systems; S. Brunton y J. N. Kutz, Data-Driven Science and Engineering.',
-      material: 'Material', materialText: 'Las diapositivas, apuntes y notebooks se entregan a los estudiantes inscritos por los canales del curso. Se publicarán aquí versiones abiertas de apuntes y demostraciones a medida que estén revisadas. Las evaluaciones y sus pautas no se publican.',
+      material: 'Material', materialText: 'Las diapositivas, apuntes y notebooks se entregan a los estudiantes inscritos por los canales del curso. Las demostraciones abiertas están en la página de ejemplos interactivos y en la sección Aprender. Las evaluaciones y sus pautas no se publican.',
       back: 'Docencia',
     }
   : {
@@ -48,7 +48,7 @@ const T = es
       about: 'About the course',
       aboutText: [
         'The course follows the full cycle of computational design: formulate a physical model, simplify it with judgement, solve it numerically, check that the solution can be trusted, and use it to make design decisions through optimisation. The last unit introduces machine learning as a tool for data-driven modelling and connects it with the physical models of the rest of the semester.',
-        'Classes combine theory with Python demonstrations that students can modify. The first laboratory starts from a concrete engineering problem: the heating of a transformer. The course is taught in Spanish.',
+        'Classes combine theory with Python demonstrations that students can modify. The first laboratory starts from a concrete engineering problem: the heating of an electrical transformer. The course is taught in Spanish.',
       ],
       outcomes: 'By the end, students can',
       outcomesList: [
@@ -62,13 +62,13 @@ const T = es
         ['1', 'Modelling thermal systems', 'Purpose of a model, physical laws, dimensional analysis and the Buckingham Π theorem, lumped and distributed models (Biot number), similarity and curve fitting.', []],
         ['2', 'Numerical modelling and simulation', 'Discretisation, stability of explicit schemes, verification of the solution and sensitivity analysis.', []],
         ['3', 'Optimisation of thermal systems', 'Anatomy of an optimisation problem, convexity, constraints and Lagrange multipliers, gradient descent, momentum, stochastic methods, Newton and BFGS.', [['Module: gradient descent', '/learn/optimization/gradient-descent/']]],
-        ['4', 'Machine learning for data-driven modelling', 'Regression, neural networks and physics-informed learning (October 2026).', [['Module: physics-informed learning', '/learn/machine-learning/physics-informed-learning/']]],
+        ['4', 'Machine learning for data-driven modelling', 'Regression, neural networks and physics-informed networks, which combine data with the equations of the system.', [['Module: physics-informed learning', '/learn/machine-learning/physics-informed-learning/']]],
       ],
       labs: 'Computational laboratories',
       lab1: 'Lab 1: why does a transformer overheat?',
       lab1Text: 'Thermal models of a distribution transformer, first lumped (0D) and then one-dimensional, to explain how it can overheat until it fails. Students compare an empirical hot-spot estimate with an explicitly resolved spatial model, applying the lumped models and coupled sub-models of unit 1.',
       tools: 'Tools', toolsText: 'Python (NumPy, SciPy, Matplotlib) in notebooks. Main references: Y. Jaluria, Design and Optimization of Thermal Systems; S. Brunton and J. N. Kutz, Data-Driven Science and Engineering.',
-      material: 'Material', materialText: 'Slides, notes and notebooks are distributed to enrolled students through the course channels. Open versions of notes and demonstrations will be published here once they have been reviewed. Assessments and their solutions are not published.',
+      material: 'Material', materialText: 'Slides, notes and notebooks are distributed to enrolled students through the course channels. Open demonstrations are on the interactive examples page and in the Learn section. Assessments and their solutions are not published.',
       back: 'Teaching',
     };
 const jsonld = [{

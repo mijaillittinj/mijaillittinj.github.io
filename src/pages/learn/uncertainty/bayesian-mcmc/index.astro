@@ -11,7 +11,7 @@ import { url } from '../../../../i18n/utils';
     <Equation tex={String.raw`T(t) = T_\infty + (T_0 - T_\infty)\, e^{-t/\tau},`} />
     <p>where <em>T</em><sub>0</sub> = 90 °C is known, while the time constant <em>τ</em> (which depends on the heat transfer coefficient) and the ambient temperature <em>T</em><sub>∞</sub> are not. A thermocouple gives a few noisy readings. A least-squares fit returns one pair (<em>τ</em>, <em>T</em><sub>∞</sub>). The Bayesian question is different: <em>which values are compatible with the data, and how compatible?</em></p>
     <p>Bayes’ theorem combines what the data say (the likelihood) with what we knew before (the prior). With Gaussian noise of known size <em>σ</em> and a uniform prior on a plausible box,</p>
-    <Equation tex={String.raw`p(\tau, T_\infty \mid d) \;\propto\; \exp\!\Big(-\frac{1}{2\sigma^2}\sum_i \big(d_i - T(t_i;\tau,T_\infty)\big)^2\Big)\; p(\tau, T_\infty).`} />
+    <Equation tex={String.raw`p(\tau, T_\infty \mid d) \;\propto\; p(d \mid \tau, T_\infty)\, p(\tau, T_\infty),\qquad p(d \mid \tau, T_\infty) \propto \exp\!\Big(-\frac{1}{2\sigma^2}\sum_i r_i^2\Big),\qquad r_i = d_i - T(t_i;\tau,T_\infty).`} />
     <p>The normalising constant is an integral we would rather not compute. Markov chain Monte Carlo avoids it: it produces samples whose histogram converges to the posterior, using only ratios of the formula above.</p>
     <h2>The Metropolis algorithm</h2>
     <p>From the current point, propose a random step of typical size <em>w</em>. Accept it with probability min(1, <em>p</em>(proposal)/<em>p</em>(current)); otherwise stay where you are and record the current point again. Uphill moves are always accepted, downhill moves sometimes, so the chain spends time in each region in proportion to its probability.</p>
@@ -32,7 +32,7 @@ import { url } from '../../../../i18n/utils';
 
   <div class="prose">
     <h2>What the samples give you</h2>
-    <p>Every question about the parameters becomes an average over samples: the median and a 95 % credible interval come from sorting them; the <strong>posterior predictive band</strong> comes from evaluating the model for many samples and taking quantiles at each time. The correlation between parameters, invisible in a table of ± values, is visible in the cloud.</p>
+    <p>Every question about the parameters becomes an average over samples: the median and a 95 % credible interval come from sorting them; the <em>posterior predictive band</em> comes from evaluating the model for many samples and taking quantiles at each time. The correlation between parameters, invisible in a table of ± values, is visible in the cloud.</p>
     <p>Metropolis is the simplest MCMC method; it slows down in many dimensions and in narrow, curved posteriors, which is why methods such as Hamiltonian Monte Carlo use gradients. The same idea, a distribution instead of a single answer, is what uncertainty quantification brings to the reconstructions in the <a href={url('/learn/inverse-problems/abel-transform/')}>Abel module</a> and to <a href={url('/learn/machine-learning/physics-informed-learning/')}>physics-informed networks</a>.</p>
   </div>
 </LearnModule>

@@ -12,46 +12,53 @@ const { lang = 'en', hidden = false } = Astro.props;
 const es = lang === 'es';
 const T = es
   ? {
-      fwd: 'Directo', fwdText: 'a partir de la volatilidad σ, la tasa r, el precio de ejercicio K y el plazo T, calcular el precio de una opción de compra europea.',
-      inv: 'Inverso', invText: 'a partir de precios de mercado ruidosos, estimar la volatilidad que los explica (calibración).',
+      fwd: 'Directo', fwdText: 'dadas la volatilidad σ, la tasa de interés r, el precio de ejercicio K y el plazo T, calcular el precio de una opción de compra europea.',
+      inv: 'Inverso', invText: 'dados precios de mercado con ruido, encontrar la volatilidad σ que los explica (calibración).',
       mFwd: 'directo: valorar una opción', mInv: 'inverso: calibrar con el mercado',
       sigma: 'Volatilidad σ', r: 'Tasa libre de riesgo r', K: 'Precio de ejercicio K', Tm: 'Plazo T', noise: 'Ruido de las cotizaciones',
       smile: 'Mercado con sonrisa de volatilidad', method: 'Método', classic: 'mínimos cuadrados',
       calib: 'calibrar', reveal: 'revelar la verdad', newM: 'nuevo mercado', train: 'entrenar la PINN', stop: 'detener',
-      pPrice: '(a) Precio de la opción', pSurf: '(b) Valor temporal V − (S − K)⁺', surfHint: 'S de 40 a 160 (horizontal) · τ de 0 a T (vertical)',
+      pPrice: '(a) Precio de la opción', pSurf: '(b) Valor temporal V − (S − K)⁺', surfHint: 'horizontal: S · vertical: τ',
       pIV: '(a) Volatilidad implícita por cotización', pRes: '(b) Residuo de precio (mercado − modelo)',
       pPinn: '(a) Precios: cotizaciones y PINN', pSig: '(b) σ durante el entrenamiento',
       S: 'precio del subyacente S', V: 'precio de la opción', Kx: 'precio de ejercicio K', iv: 'volatilidad', res: 'residuo', it: 'iteración', sig: 'σ',
       leg: { tau: 'τ =', payoff: 'pago al vencimiento', q1: 'cotizaciones τ = 0,25', q2: 'cotizaciones τ = 1', fit: 'σ ajustada', truth: 'σ verdadera', pinn: 'PINN', bs: 'Black–Scholes (verdad)', quotes: 'cotizaciones' },
-      rd: { price: 'Precio en S = 100', delta: 'delta', fitted: 'σ ajustada', truth: 'σ verdadera', rms: 'RMS de precio', err: 'error', smileMsg: 'Los residuos tienen forma sistemática: una σ constante no puede ajustar todas las cotizaciones. Es error de modelo, no ruido: el supuesto de volatilidad constante de Black–Scholes es falso en este mercado.', flatMsg: 'Los residuos son ruido: el modelo es adecuado para este mercado.', press: 'Pulse «calibrar» para estimar una sola σ.', pinnIdle: 'Pulse «entrenar la PINN»: parte de σ = 0,30.', pinnData: 'pérdida de datos', pinnPde: 'residuo de la EDP', priceErr: 'error de precio' },
+      rd: { price: 'Precio en S = 100', delta: 'delta', fitted: 'σ ajustada', truth: 'σ verdadera', rms: 'RMS de precio', err: 'error', smileMsg: 'residuos sistemáticos: ninguna σ constante ajusta todas las cotizaciones (error de modelo, no ruido)', flatMsg: 'los residuos son ruido: el modelo describe este mercado', press: 'Pulse «calibrar» para estimar una sola σ.', pinnIdle: 'Pulse «entrenar la PINN»: parte de σ = 0,30.', pinnData: 'pérdida de datos', pinnPde: 'residuo de la EDP', priceErr: 'error de precio' },
       lossLabel: 'La PINN minimiza',
-      cap: 'Valorar una opción con un modelo es el problema directo; calibrar el modelo con los precios del mercado es el inverso, y la volatilidad implícita es su ejemplo clásico. Con volatilidad constante, una sola σ explica todas las cotizaciones; con una sonrisa de volatilidad aparece un patrón sistemático en los residuos, la misma lección de error de modelo que en las otras pestañas. Calibrar modelos más ricos, como la volatilidad local de Dupire, es un problema mal planteado que necesita regularización. Datos sintéticos, no es una recomendación de inversión.',
-      pinnCap: 'PINN: una red V(S, τ) y la volatilidad σ se entrenan juntas; la pérdida contiene la ecuación de Black–Scholes, el pago al vencimiento y las condiciones de borde, además de las cotizaciones de un solo precio de ejercicio registradas en varios días. A la red nunca se le da la fórmula de Black–Scholes. La PINN usa datos de un solo precio de ejercicio, por lo que la sonrisa no interviene.',
+      cap: 'Una opción de compra europea da el derecho, no la obligación, de comprar un activo a un precio fijo K (el precio de ejercicio) en una fecha fija. El panel (a) muestra su precio en función del precio actual del activo S; el panel (b), su valor temporal, la parte del precio que excede la ganancia inmediata. El modelo de Black–Scholes calcula el precio a partir de la volatilidad σ, que mide cuánto fluctúa el precio del activo. El problema directo es valorar la opción para una σ dada; el inverso es encontrar la σ que reproduce los precios observados, y la σ obtenida de un solo precio se llama volatilidad implícita. Si el mercado se generó con una σ constante, un solo valor ajusta todas las cotizaciones y los residuos son ruido. Con la opción «sonrisa de volatilidad», la volatilidad depende del precio de ejercicio: ninguna σ única ajusta todo y los residuos forman un patrón, porque el modelo mismo es incorrecto. Modelos más ricos, como la volatilidad local de Dupire, son más difíciles de calibrar: el problema es mal planteado y requiere regularización. Datos sintéticos; no es una recomendación de inversión.',
+      pinnCap: 'PINN (red neuronal informada por la física): una red representa el precio V(S, τ) y se entrena junto con σ. Su función de pérdida combina el desajuste con las cotizaciones, la ecuación de Black–Scholes, el pago al vencimiento y las condiciones de borde; así aprende una superficie de precios que cumple el modelo sin recibir nunca la fórmula. La PINN usa las cotizaciones de un solo precio de ejercicio, registradas en varios días, por lo que la opción de sonrisa no se aplica.',
     }
   : {
-      fwd: 'Forward', fwdText: 'from the volatility σ, rate r, strike K and maturity T, compute the price of a European call option.',
-      inv: 'Inverse', invText: 'from noisy market prices, estimate the volatility that explains them (calibration).',
+      fwd: 'Forward', fwdText: 'given the volatility σ, the interest rate r, the strike K and the time to maturity T, compute the price of a European call option.',
+      inv: 'Inverse', invText: 'given noisy market prices, find the volatility σ that explains them (calibration).',
       mFwd: 'forward: price an option', mInv: 'inverse: calibrate to the market',
       sigma: 'Volatility σ', r: 'Risk-free rate r', K: 'Strike K', Tm: 'Maturity T', noise: 'Quote noise',
       smile: 'Market with a volatility smile', method: 'Method', classic: 'least squares',
       calib: 'calibrate', reveal: 'reveal the truth', newM: 'new market', train: 'train the PINN', stop: 'stop',
-      pPrice: '(a) Option price', pSurf: '(b) Time value V − (S − K)⁺', surfHint: 'S from 40 to 160 (horizontal) · τ from 0 to T (vertical)',
+      pPrice: '(a) Option price', pSurf: '(b) Time value V − (S − K)⁺', surfHint: 'horizontal: S · vertical: τ',
       pIV: '(a) Implied volatility of each quote', pRes: '(b) Price residual (market − model)',
       pPinn: '(a) Prices: quotes and PINN', pSig: '(b) σ during training',
       S: 'underlying price S', V: 'option price', Kx: 'strike K', iv: 'volatility', res: 'residual', it: 'iteration', sig: 'σ',
       leg: { tau: 'τ =', payoff: 'payoff at maturity', q1: 'quotes τ = 0.25', q2: 'quotes τ = 1', fit: 'fitted σ', truth: 'true σ', pinn: 'PINN', bs: 'Black–Scholes (truth)', quotes: 'quotes' },
-      rd: { price: 'Price at S = 100', delta: 'delta', fitted: 'fitted σ', truth: 'true σ', rms: 'price RMS', err: 'error', smileMsg: 'The residuals have a systematic shape: one constant σ cannot fit every quote. This is model error, not noise: the Black–Scholes assumption of constant volatility is wrong in this market.', flatMsg: 'The residuals are noise: the model is adequate for this market.', press: 'Press “calibrate” to estimate a single σ.', pinnIdle: 'Press “train the PINN”: it starts from σ = 0.30.', pinnData: 'data loss', pinnPde: 'PDE residual', priceErr: 'price error' },
+      rd: { price: 'Price at S = 100', delta: 'delta', fitted: 'fitted σ', truth: 'true σ', rms: 'price RMS', err: 'error', smileMsg: 'systematic residuals: no constant σ fits every quote (model error, not noise)', flatMsg: 'the residuals are noise: the model describes this market', press: 'Press “calibrate” to estimate a single σ.', pinnIdle: 'Press “train the PINN”: it starts from σ = 0.30.', pinnData: 'data loss', pinnPde: 'PDE residual', priceErr: 'price error' },
       lossLabel: 'The PINN minimises',
-      cap: 'Pricing an option with a model is the forward problem; calibrating the model to market prices is the inverse one, and implied volatility is its classic example. With constant volatility a single σ explains every quote; with a volatility smile the residuals show a systematic pattern, the same lesson about model error as in the other tabs. Calibrating richer models, such as Dupire’s local volatility, is ill-posed and needs regularisation. Synthetic data, not investment advice.',
-      pinnCap: 'PINN: a network V(S, τ) and the volatility σ are trained together; the loss contains the Black–Scholes equation, the payoff at maturity and the boundary conditions, plus the quotes of a single strike recorded on several days. The network is never told the Black–Scholes formula. The PINN uses one strike only, so the smile plays no role there.',
+      cap: 'A European call option gives the right, but not the obligation, to buy an asset at a fixed price K (the strike) on a fixed date. Panel (a) shows its price as a function of today’s asset price S; panel (b) shows its time value, the part of the price above the immediate payoff. The Black–Scholes model computes the price from the volatility σ, which measures how much the asset price fluctuates. The forward problem is to price the option for a given σ; the inverse problem is to find the σ that reproduces observed prices, and the σ recovered from a single price is called the implied volatility. If the market was generated with a constant σ, one value fits every quote and the residuals are noise. With the “volatility smile” option the volatility depends on the strike: no single σ fits everything and the residuals form a pattern, because the model itself is wrong. Richer models, such as Dupire’s local volatility, are harder to calibrate: the problem is ill-posed and needs regularisation. Synthetic data; not investment advice.',
+      pinnCap: 'PINN (physics-informed neural network): a network represents the price V(S, τ) and is trained together with σ. Its loss combines the misfit to the quotes with the Black–Scholes equation, the payoff at maturity and the boundary conditions, so it learns a price surface that obeys the model without ever being given the formula. The PINN uses the quotes of a single strike, recorded on several days, so the smile option does not apply to it.',
     };
 ---
 <div class="eng-tab fi" data-eng-tab="finance" data-fi-text={JSON.stringify(T)} hidden={hidden}>
   <p class="eng-fi"><em>{T.fwd}</em>: {T.fwdText} <em>{T.inv}</em>: {T.invText}</p>
 
-  <div class="seg fi__modes" role="group" aria-label={es ? 'Modo' : 'Mode'}>
-    <button type="button" data-fi-mode="fwd" aria-pressed="true">{T.mFwd}</button>
-    <button type="button" data-fi-mode="inv" aria-pressed="false">{T.mInv}</button>
+  <div class="eng-switches">
+    <div class="eng-switch">
+      <div class="seg" role="group" aria-label={es ? 'Modo' : 'Mode'}>
+        <button type="button" data-fi-mode="fwd" aria-pressed="true">{T.mFwd}</button>
+        <button type="button" data-fi-mode="inv" aria-pressed="false">{T.mInv}</button>
+      </div>
+    </div>
+    <div class="eng-switch" data-fi-invui hidden><span>{T.method}:</span>
+      <div class="seg" role="group" aria-label={T.method}><button type="button" data-fi-m="classic" aria-pressed="true">{T.classic}</button><button type="button" data-fi-m="pinn" aria-pressed="false">PINN</button></div>
+    </div>
   </div>
 
   <div class="fi__grid">
@@ -62,32 +69,27 @@ const T = es
     </div>
     <div class="fi__cell">
       <p class="panel-title" data-fi-t2>{T.pSurf}</p>
-      <div class="fi__surfwrap" data-fi-surfbox><canvas class="fi__surf" data-fi-surf aria-hidden="true"></canvas><p class="fi__hint">{T.surfHint}</p></div>
+      <div class="fi__surfwrap" data-fi-surfbox><canvas class="fi__surf" data-fi-surf aria-hidden="true"></canvas><span class="fi__tk fi__tk--x0">40</span><span class="fi__tk fi__tk--x1">160</span><span class="fi__tk fi__tk--y0">0</span><span class="fi__tk fi__tk--y1">T</span><p class="fi__hint">{T.surfHint}</p></div>
       <div class="fi__plot" data-fi-p2 hidden></div>
     </div>
   </div>
 
-  <div class="fi__controls" data-fi-fwdui>
+  <div class="eng-controls fi__two" data-fi-fwdui>
     <div class="control"><div class="control__head"><label for={`fi-s-${lang}`}>{T.sigma}</label><output data-fi-os>—</output></div><input id={`fi-s-${lang}`} data-fi-sigma type="range" min="0.05" max="0.8" step="0.01" value="0.25" /></div>
     <div class="control"><div class="control__head"><label for={`fi-r-${lang}`}>{T.r}</label><output data-fi-or>—</output></div><input id={`fi-r-${lang}`} data-fi-r type="range" min="0" max="0.1" step="0.0025" value="0.03" /></div>
     <div class="control"><div class="control__head"><label for={`fi-k-${lang}`}>{T.K}</label><output data-fi-ok>—</output></div><input id={`fi-k-${lang}`} data-fi-k type="range" min="60" max="140" step="1" value="100" /></div>
     <div class="control"><div class="control__head"><label for={`fi-t-${lang}`}>{T.Tm}</label><output data-fi-ot>—</output></div><input id={`fi-t-${lang}`} data-fi-t type="range" min="0.1" max="2" step="0.05" value="1" /></div>
   </div>
 
-  <div class="fi__controls" data-fi-invui hidden>
+  <div class="eng-controls" data-fi-invui hidden>
     <div class="control"><div class="control__head"><label for={`fi-n-${lang}`}>{T.noise}</label><output data-fi-on>—</output></div><input id={`fi-n-${lang}`} data-fi-noise type="range" min="0" max="3" step="0.1" value="0.5" /></div>
-    <div class="fi__opts">
-      <div class="control"><span class="control__head">{T.method}</span>
-        <div class="seg" role="group" aria-label={T.method}><button type="button" data-fi-m="classic" aria-pressed="true">{T.classic}</button><button type="button" data-fi-m="pinn" aria-pressed="false">PINN</button></div>
-      </div>
-      <label class="meta" data-fi-smilebox><input type="checkbox" data-fi-smile /> {T.smile}</label>
-    </div>
-    <p class="fi__btns"><button type="button" class="btn" data-fi-calib>{T.calib}</button><button type="button" class="btn" data-fi-train hidden>{T.train}</button> <button type="button" class="btn" data-fi-reveal>{T.reveal}</button> <button type="button" class="btn" data-fi-new>{T.newM}</button></p>
   </div>
+  <div class="eng-checks" data-fi-invui data-fi-smilebox hidden><label><input type="checkbox" data-fi-smile /> {T.smile}</label></div>
+  <p class="eng-actions" data-fi-invui hidden><button type="button" class="btn" data-fi-calib>{T.calib}</button><button type="button" class="btn" data-fi-train hidden>{T.train}</button> <button type="button" class="btn" data-fi-reveal>{T.reveal}</button> <button type="button" class="btn" data-fi-new>{T.newM}</button></p>
 
   <div data-fi-eqfwd><Equation tex={String.raw`\begin{gathered} C = S\,\Phi(d_1) - K e^{-r\tau}\,\Phi(d_2) \\ d_{1,2} = \frac{\ln(S/K) + (r \pm \tfrac12\sigma^2)\,\tau}{\sigma\sqrt{\tau}} \end{gathered}`} /></div>
   <div data-fi-eqpde hidden><Equation tex={String.raw`\begin{gathered} \frac{\partial V}{\partial \tau} = \tfrac12\sigma^2 S^2 \frac{\partial^2 V}{\partial S^2} + r S \frac{\partial V}{\partial S} - r V \\ V(S, 0) = \max(S - K, 0) \end{gathered}`} /></div>
-  <p class="meta fi__loss" data-fi-pinnui hidden>{T.lossLabel} <Equation display={false} tex={String.raw`\mathcal{L}(\theta,\sigma) = \overline{(V_\theta - V_i)^2} + \overline{R_{\mathrm{BS}}^2} + \overline{\big(V_\theta(S,0) - (S-K)^+\big)^2} + \mathcal{L}_{\partial}`} /></p>
+  <p class="eng-loss" data-fi-pinnui hidden>{T.lossLabel} <Equation display={false} tex={String.raw`\mathcal{L}(\theta,\sigma) = \overline{(V_\theta - V_i)^2} + \overline{R_{\mathrm{BS}}^2} + \overline{\big(V_\theta(S,0) - (S-K)^+\big)^2} + \mathcal{L}_{\partial}`} /></p>
   <p class="lab__readout" data-fi-read aria-live="polite"></p>
   <p class="eng-cap">{T.cap} {T.pinnCap}</p>
 </div>
@@ -181,7 +183,7 @@ const T = es
       p2.render(res.length ? res : [{ kind: 'line', x: [78, 122], y: [0, 0], cls: 's-muted', dash: true }], { xlim: [78, 122] });
       let txt = fitted ? `${T.rd.fitted} ${fmt(fitted.sigma, 3)} · ${T.rd.rms} ${fmt(fitted.rms, 3)}` : T.rd.press;
       if (revealed) txt += ` · ${T.rd.truth} ${market.smile ? `${fmt(sigmaOf(market, 100, MATURITIES[0]), 3)} (K = 100, τ = ${fmt(0.25)})` : fmt(market.sigma0, 3)}` + (fitted && !market.smile ? ` (${T.rd.err} ${fmt(Math.abs(fitted.sigma / market.sigma0 - 1) * 100, 1)} %)` : '');
-      if (fitted) txt += '. ' + (market.smile ? T.rd.smileMsg : T.rd.flatMsg);
+      if (fitted) txt += ' · ' + (market.smile ? T.rd.smileMsg : T.rd.flatMsg);
       read.textContent = txt;
     };
 
@@ -282,7 +284,6 @@ const T = es
 </script>
 
 <style>
-  .fi__modes { display: flex; justify-content: center; margin: 0 auto var(--s-3); }
   .fi__grid { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); max-width: 40rem; margin: var(--s-2) auto 0; align-items: start; }
   .fi__cell { min-width: 0; }
   .fi__plot { min-height: 13rem; }
@@ -295,16 +296,19 @@ const T = es
   .fi__key :global(.fi__dash.key--truth) { color: var(--c-truth); }
   .fi__key :global(.c-muted) { color: var(--ink-3); }
   .fi__plot[hidden], .fi__surfwrap[hidden] { display: none; }
-  .fi__surf { display: block; width: 100%; aspect-ratio: 4 / 3; image-rendering: auto; outline: 0.5px solid var(--ink-3); background: var(--paper); }
-  .fi__hint { text-align: center; font-size: var(--step--2); font-style: italic; color: var(--ink-3); margin-top: 0.3rem; }
-  .fi__controls { display: grid; gap: var(--s-3) var(--s-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); max-width: 40rem; margin: var(--s-4) auto 0; }
-  .fi__controls[hidden] { display: none; }
-  .fi__opts { display: grid; gap: 0.3rem; align-content: start; }
-  .fi__opts label { display: flex; gap: 0.4em; align-items: baseline; }
-  .fi__opts [hidden] { display: none; }
-  .fi__btns { grid-column: 1 / -1; font-size: var(--step--1); text-align: center; }
-  .fi__btns [hidden], .fi__loss[hidden], [data-fi-eqpde][hidden], [data-fi-eqfwd][hidden] { display: none; }
-  .fi__loss { font-size: var(--step--1); text-align: center; max-width: 40rem; margin: var(--s-2) auto 0; overflow-x: auto; }
+  /* same plot area as the LinePlot of panel (a): margins 52/14/16/40 px, same height rule */
+  .fi__surfwrap { position: relative; width: 100%; aspect-ratio: 420 / 300; min-height: 220px; }
+  .fi__surf { position: absolute; left: 52px; right: 14px; top: 16px; bottom: 40px; width: calc(100% - 66px); height: calc(100% - 56px); image-rendering: auto; outline: 0.7px solid var(--ink); background: var(--paper); }
+  .fi__tk { position: absolute; font-size: 11.5px; color: var(--ink); line-height: 1; }
+  .fi__tk--x0 { left: 52px; bottom: 26px; transform: translateX(-50%); }
+  .fi__tk--x1 { right: 14px; bottom: 26px; transform: translateX(50%); }
+  .fi__tk--y0 { left: 44px; bottom: 40px; transform: translate(-100%, 50%); }
+  .fi__tk--y1 { left: 44px; top: 16px; transform: translate(-100%, -50%); font-style: italic; }
+  .fi__hint { position: absolute; left: 52px; right: 14px; bottom: 4px; text-align: center; font-size: 12.5px; font-style: italic; color: var(--ink); margin: 0; }
+  /* four forward sliders: 2 × 2 instead of 3 + 1 */
+  .fi .eng-controls.fi__two { grid-template-columns: repeat(2, minmax(0, 15rem)); }
+  @media (max-width: 30rem) { .fi .eng-controls.fi__two { grid-template-columns: minmax(0, 15rem); } }
+  [data-fi-eqpde][hidden], [data-fi-eqfwd][hidden] { display: none; }
   .fi :global(.eq) { max-width: 40rem; margin-inline: auto; justify-content: center; }
   .fi .lab__readout { max-width: 40rem; margin: var(--s-2) auto 0; text-align: center; }
   .fi .eng-cap, .fi .eng-fi { max-width: 40rem; margin-inline: auto; }

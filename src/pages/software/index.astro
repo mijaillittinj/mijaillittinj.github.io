@@ -7,8 +7,8 @@ import { url } from '../../i18n/utils';
 <Base title="Software" description="Research software and methods by Mijail Littin: pysat-abel (spline-based Abel transform with signal-trapping correction), physics-informed inversion of optical diagnostics, neural soot-maturity reconstruction and soot–gas radiation separation.">
   <header class="page-head frame">
     <p class="eyebrow">Software</p>
-    <h1>Code that others can run</h1>
-    <p class="lede">Released research software comes first. The other methods below are described in words only; code for published methods is available upon request.</p>
+    <h1>Software and methods</h1>
+    <p class="lede">Released research software, followed by short descriptions of the methods behind the publications. Only pysat-abel is distributed; code for the published methods is available upon request.</p>
   </header>
   <section class="section frame">
     <div class="row">
@@ -53,7 +53,7 @@ import { url } from '../../i18n/utils';
     <div class="row">
       <h2 class="label row__label">Also on this site</h2>
       <div class="prose">
-        <p>The interactive <a href={url('/learn/')}>learning modules</a> contain small, readable implementations of onion-peeling and Tikhonov Abel inversion, gradient-based optimisers and a physics-informed network with analytic gradients, written in TypeScript without dependencies. Their source is part of this site’s repository.</p>
+        <p>The interactive figures on the home page and in the <a href={url('/learn/')}>learning modules</a> run small implementations, written for this site, of Abel inversion, the spline-based Abel transform, optimisers, neural networks and physics-informed networks. Everything is computed in the reader’s browser.</p>
       </div>
     </div>
   </section>
@@ -63,5 +63,7 @@ import { url } from '../../i18n/utils';
   .sw h3 a { text-decoration: none; }
   .d { margin-block: var(--s-3); max-width: 44rem; }
   .method + .method { margin-top: var(--s-5); }
+  .sw .links li + li::before { content: none; }
+  .sw .links li:not(:last-child)::after { content: '·'; color: var(--ink-3); padding: 0 0.5em; }
   .method h3 { font-size: var(--step-1); }
 </style>

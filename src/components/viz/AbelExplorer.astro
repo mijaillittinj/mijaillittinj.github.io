@@ -43,6 +43,7 @@ import ParameterSlider from './ParameterSlider.astro';
 </div>
 
 <script>
+  import { keyed } from '../../lib/legendkey';
   import { chordMatrix, project, onionPeel, tikhonov, profile, type ProfileKind } from '../../lib/abel';
   import { rng, rms } from '../../lib/linalg';
   import { LinePlot, drawField, viridis } from '../../lib/plot';
@@ -54,8 +55,10 @@ import ParameterSlider from './ParameterSlider.astro';
     const yr = Float64Array.from({ length: n }, (_, i) => i / n);         // ray offsets
     const val = (name: string) => +root.querySelector<HTMLInputElement>(`[name="${name}"]`)!.value;
     let kind: ProfileKind = 'annular';
-    const pProj = new LinePlot(root.querySelector('[data-proj]')!, { width: 420, height: 260, xlabel: 'ray offset y', ylabel: 'P(y)', title: 'Projection' });
-    const pRec = new LinePlot(root.querySelector('[data-rec]')!, { width: 860, height: 300, xlabel: 'radius r', ylabel: 'f(r)', title: 'Reconstruction' });
+    const pProj = new LinePlot(root.querySelector('[data-proj]')!, { width: 420, height: 260, xlabel: 'ray offset y', ylabel: 'P(y)', title: 'Projection' , legend: false});
+    const pProjR = keyed(pProj, root.querySelector('[data-proj]')!);
+    const pRec = new LinePlot(root.querySelector('[data-rec]')!, { width: 860, height: 300, xlabel: 'radius r', ylabel: 'f(r)', title: 'Reconstruction' , legend: false});
+    const pRecR = keyed(pRec, root.querySelector('[data-rec]')!);
     const disk = root.querySelector<HTMLCanvasElement>('[data-disk]')!;
     const read = root.querySelector<HTMLElement>('[data-read]')!;
     const bandBox = root.querySelector<HTMLInputElement>('[data-band]')!;
@@ -98,7 +101,7 @@ import ParameterSlider from './ParameterSlider.astro';
         }
       }
       drawDisk(f);
-      pProj.render([
+      pProjR([
         { kind: 'line', x: yr, y: p, cls: 's-physics', label: 'exact projection' },
         { kind: 'points', x: yr, y: pn, cls: 's-data', label: 'noisy data' },
       ], { xlim: [0, 1] });
@@ -107,7 +110,7 @@ import ParameterSlider from './ParameterSlider.astro';
       series.push({ kind: 'line', x: rc, y: f, cls: 's-truth', label: 'true f(r)' });
       if (directBox.checked) series.push({ kind: 'line', x: rc, y: fd, cls: 's-warn', label: 'direct inversion' });
       series.push({ kind: 'line', x: rc, y: ft, cls: 's-learned', label: 'regularised' });
-      pRec.render(series, { xlim: [0, 1], ylim: [-0.4, 1.5] });
+      pRecR(series, { xlim: [0, 1], ylim: [-0.4, 1.5] });
       const eD = rms(fd, f), eT = rms(ft, f);
       read.innerHTML = `Error (RMS, relative to peak): direct <strong>${(100 * eD).toFixed(1)} %</strong>, regularised <strong>${(100 * eT).toFixed(1)} %</strong>.` +
         (eT > eD ? ' Here regularisation hurts: λ is too large and flattens real structure.' : eD > 3 * eT ? ' The penalty removes most of the amplified noise.' : '');

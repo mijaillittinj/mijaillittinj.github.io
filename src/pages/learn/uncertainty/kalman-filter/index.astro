@@ -11,10 +11,10 @@ import { url } from '../../../../i18n/utils';
     <p>The state is position and velocity, <em>s</em> = (<em>x</em>, <em>y</em>, <em>v<sub>x</sub></em>, <em>v<sub>y</sub></em>). The model says the velocity is roughly constant, up to random accelerations of intensity <em>q</em>; the GPS measures the position with noise of standard deviation <em>r</em>:</p>
     <Equation tex={String.raw`s_{k} = F s_{k-1} + w_k,\quad w_k \sim \mathcal N(0, Q(q)), \qquad z_k = H s_k + v_k,\quad v_k \sim \mathcal N(0, r^2 I).`} />
     <h2>Predict, then correct</h2>
-    <p>Each time step has two stages. The <strong>prediction</strong> moves the estimate forward with the model and inflates its covariance <em>P</em>, because the model is imperfect. The <strong>update</strong> compares the prediction with the new GPS fix and moves part of the way towards it:</p>
+    <p>Each time step has two stages. The <em>prediction</em> moves the estimate forward with the model and inflates its covariance <em>P</em>, because the model is imperfect. The <em>update</em> compares the prediction with the new GPS fix and moves part of the way towards it:</p>
     <Equation tex={String.raw`\hat s_k^- = F \hat s_{k-1}, \quad P_k^- = F P_{k-1} F^{\mathsf T} + Q; \qquad K_k = P_k^- H^{\mathsf T}\big(H P_k^- H^{\mathsf T} + r^2 I\big)^{-1},`} />
     <Equation tex={String.raw`\hat s_k = \hat s_k^- + K_k\,\big(z_k - H \hat s_k^-\big), \qquad P_k = (I - K_k H)\, P_k^- .`} />
-    <p>The <strong>Kalman gain</strong> <em>K</em> decides how far to move: close to 1 when the prediction is uncertain compared with the measurement, close to 0 when the measurement is the noisier of the two. For a linear model with Gaussian noise, this is the best possible estimate in the mean-square sense.</p>
+    <p>The <em>Kalman gain</em> <em>K</em> decides how far to move: close to 1 when the prediction is uncertain compared with the measurement, close to 0 when the measurement is the noisier of the two. For a linear model with Gaussian noise, this is the best possible estimate in the mean-square sense.</p>
   </div>
 
   <KalmanExplorer />

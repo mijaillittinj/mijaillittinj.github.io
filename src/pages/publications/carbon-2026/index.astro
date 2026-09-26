@@ -31,9 +31,9 @@ const jsonld = [{
   <Fragment slot="head"><CitationMeta pub={p} /></Fragment>
 
   <header class="page-head frame">
-    <p class="eyebrow"><a href={url('/publications/')}>Publications</a> · Case study · Carbon 2026</p>
-    <h1 class="title">Three instruments, one physical model, one network</h1>
-    <p class="lede abstract">Can several optical measurements of the same object be inverted together, so that the recovered fields agree with all of them and with the physics that links them?</p>
+    <p class="eyebrow"><a href={url('/publications/')}>Publications</a> · Paper explained · Carbon 2026</p>
+    <h1 class="title">Joint inversion of three optical diagnostics with a physics-informed network</h1>
+    <p class="lede abstract">Three optical measurements of the same flame are inverted together by one neural network, so that the recovered soot properties agree with every measurement and with the physics that links them. This page explains the problem, the method and the results for readers outside combustion.</p>
     <p class="meta cite">{citation(p)} <span class="tag tag--established">Open access · CC BY 4.0</span></p>
     <ul class="links head-links">
       <li><a href={`https://doi.org/${p.doi}`}>Read the paper (DOI)</a></li>
@@ -45,11 +45,11 @@ const jsonld = [{
 
   <section class="section frame">
     <div class="row">
-      <h2 class="row__label">In thirty seconds</h2>
+      <h2 class="row__label">Summary</h2>
       <div class="prose short">
         <p>Light shone through a flame and light emitted or scattered by it depend on the same hidden quantities: how much soot is present, how hot it is, how large its aggregates are and what it is made of. Each measurement is usually inverted on its own, with its own calibration, and the answers do not quite agree.</p>
         <p>In this work a single neural network takes a position <em>(r, z)</em> in the flame and returns all the hidden quantities there. It is not trained on labels, because none exist. It is trained so that, when its outputs are passed through light-scattering theory and Planck’s law, they reproduce every measurement at every wavelength at the same time. The instrument calibration factors are solved for along the way.</p>
-        <p>Nothing in the formulation is specific to flames, so the same construction could be tried wherever several instruments observe one state through known physics. The paper itself demonstrates it on one axisymmetric laminar flame.</p>
+        <p>Nothing in the formulation is specific to flames: it applies whenever several instruments observe the same state through known physics. The paper demonstrates it on one axisymmetric laminar flame.</p>
       </div>
     </div>
   </section>
@@ -98,7 +98,7 @@ const jsonld = [{
     <div class="row">
       <h2 class="row__label">The retrieved fields</h2>
       <div>
-        <p class="prose">Choose a field and move over the map to read values. The data are the author’s network outputs behind the published figures, downsampled for the web.</p>
+        <p class="prose">Choose a field and move the pointer over the map to read the local value; the plot shows the radial profile at the selected height. The data are the network outputs behind the published figures, downsampled for the web.</p>
         <FieldExplorer base="/data/carbon2026/" id="c26" fields={[
           { key: 'fs', label: 'Volume fraction' },
           { key: 'T', label: 'Temperature' },
@@ -108,10 +108,10 @@ const jsonld = [{
           { key: 'V2', label: 'Aggregate volume' },
           { key: 'Em532', label: 'E(m), 532 nm' },
           { key: 'Em1064', label: 'E(m), 1064 nm' },
-        ]} caption="<span class='fig-num'>Figure 2.</span>Interactive view of the retrieved fields (half-plane data mirrored about the axis). Units: ppm for volume fraction, K for temperature, 10<sup>6</sup>&nbsp;nm<sup>3</sup> for the aggregate volume moment ⟨V<sup>2</sup>⟩/⟨V⟩; composition fractions sum to one; E(m) is the absorption function of the soot refractive index." />
+        ]} caption="<span class='fig-num'>Figure 2.</span>Retrieved fields in the measured region of the flame, mirrored about the axis, with the radial profile at the selected height. Units: ppm for volume fraction, K for temperature, 10<sup>6</sup>&nbsp;nm<sup>3</sup> for the aggregate volume moment ⟨V<sup>2</sup>⟩/⟨V⟩. The organic, amorphous and graphitic fractions sum to one. E(m) is the absorption function of the soot refractive index." />
         <h3 class="h3">What the camera actually sees</h3>
-        <p class="prose">The reconstructed field can be revolved around the axis and observed again. At zero elevation the image below is the line-of-sight integral that a side-on camera records, which is what step 2 has to undo. Tilting the view shows the hollow, annular structure hidden in the projection.</p>
-        <ThreeDField base="/data/carbon2026/" field="fs" id="c26td" caption="<span class='fig-num'>Figure 3.</span>Line-of-sight integral of the revolved soot volume fraction, computed in the browser. Only heights where the full radial profile was retrieved are shown." />
+        <p class="prose">The reconstructed field can be revolved around the axis and viewed again. At zero elevation the image is the line-of-sight integral that a side-on camera records, which is what step 2 of the method has to undo. Tilting the view reveals the hollow, ring-shaped structure that the projection hides.</p>
+        <ThreeDField base="/data/carbon2026/" field="fs" id="c26td" caption="<span class='fig-num'>Figure 3.</span>Line-of-sight integral of the revolved soot volume fraction, computed in the browser for the chosen viewing elevation. Only heights where the full radial profile was retrieved are shown." />
       </div>
     </div>
   </section>
@@ -129,15 +129,15 @@ const jsonld = [{
       </div>
     </div>
     <ScientificFigure src={compFig} number={4} alt="Ternary colour map of soot composition: blue (organic) near the bottom centre, reddish (amorphous) along the centre, and green (graphitic) along the outer wings."
-      caption="Composition as a ternary colour map, with the paper’s convention: blue organic, green graphitic, red amorphous." credit={credit} sizes="(min-width: 40rem) 30rem, 100vw" />
+      caption="Soot composition as a colour mixture of the three fractions, with the paper’s convention: blue for organic, green for graphitic, red for amorphous carbon." credit={credit} sizes="(min-width: 40rem) 30rem, 100vw" />
   </section>
 
   <section class="section frame">
     <div class="row">
-      <h2 class="row__label">Why it matters, and limitations</h2>
+      <h2 class="row__label">Significance and limitations</h2>
       <div class="prose">
         <p>When diagnostics are analysed separately, their results are combined afterwards and inconsistencies have to be explained case by case. Writing the shared physics into a single loss turns reconciliation into an optimisation problem with a clear objective, and it lets the data correct the calibration instead of the other way round. For combustion this gives maps of soot optical index and composition that were not available before. For inverse problems more generally it is an example of inference without labels, where the physical model takes the place of a training set.</p>
-        <p>The limitations matter too. RDG-FA is an approximation for these aggregates, the composition fractions are an effective description rather than a chemical analysis, and the paper does not yet quantify uncertainty in the retrieved fields. Which wavelengths are really needed is also left as an open question. These points motivate the <a href={url('/research/#uncertainty')}>uncertainty and identifiability</a> line of the research programme.</p>
+        <p>The method has limitations. RDG-FA is an approximation for these aggregates, the composition fractions are an effective description rather than a chemical analysis, and the paper does not quantify the uncertainty of the retrieved fields, and it does not determine the smallest set of wavelengths that would be sufficient.</p>
       </div>
     </div>
   </section>
@@ -175,6 +175,8 @@ const jsonld = [{
   .title { max-width: 20ch; }
   .cite { margin-top: var(--s-4); max-width: 52rem; }
   .head-links { margin-top: var(--s-3); }
+  .head-links li + li::before { content: none; }
+  .head-links li:not(:last-child)::after { content: '·'; color: var(--ink-3); padding: 0 0.5em; }
   .short { font-size: var(--step-1); line-height: 1.55; }
   .short p { color: var(--ink); }
   .h2 { font-size: var(--step-3); }

@@ -28,18 +28,18 @@ const jsonld = [{
     <div class="row">
       <h2 class="label row__label">What it solves</h2>
       <div class="prose">
-        <p>A camera looking at an axisymmetric object (a flame, a jet, a plasma) records integrals along lines of sight. Recovering the local radial profile is the Abel inversion problem, which amplifies measurement noise near the axis. When the medium also absorbs part of the light on its way to the camera, the recorded signal is attenuated, which is called signal trapping or self-absorption, and a plain Abel inversion is biased.</p>
-        <p>SAT represents the unknown radial profile <em>κ(r)</em> as a cubic spline with non-negative knots and zero slope at the axis. It fits the spline by comparing its forward Abel projection with the measurement, with a curvature penalty:</p>
-        <Equation tex={String.raw`\hat\kappa = \arg\min_{\kappa}\; \int \big[S_{mod}(x;\kappa_1,\dots,\kappa_N) - S_{exp}(x)\big]^2 dx \;+\; \mu \int_0^R \kappa''(r)^2\, dr,`} />
+        <p>A camera looking at an object with rotational symmetry (a flame, a jet, a plasma) records integrals along lines of sight. Recovering the local radial profile from them is the Abel inversion problem, and a direct inversion amplifies measurement noise near the axis. When the medium also absorbs part of the light on its way to the camera (signal trapping, or self-absorption), the recorded signal is attenuated and a plain Abel inversion gives biased values.</p>
+        <p>SAT represents the unknown radial profile <em>κ(r)</em> as a cubic spline with non-negative knot values and zero slope on the axis. The spline is fitted so that its projection matches the measurement, with a penalty on its curvature that suppresses noise:</p>
+        <Equation tex={String.raw`\begin{aligned}\hat\kappa &= \arg\min_{\kappa}\, J(\kappa), \\ J(\kappa) &= \int \big[S_{\mathrm{mod}}(x;\kappa) - S_{\mathrm{exp}}(x)\big]^2\,\mathrm{d}x \\ &\quad + \mu \int_0^R \kappa''(r)^2\,\mathrm{d}r,\end{aligned}`} />
         <Equation tex={String.raw`S(x) = 2\int_x^\infty \frac{\kappa(r)\, F(x,r)}{\sqrt{r^2-x^2}}\, r\, dr .`} />
         <p>The factor <em>F(x, r)</em> accounts for trapping. It is computed from the extinction profile, itself obtained first by inverting a line-of-sight attenuation measurement (for which <em>F</em> = 1).</p>
-        <p>For a hands-on introduction to the underlying problem, see the <a href={url('/learn/inverse-problems/abel-transform/')}>interactive Abel module</a>.</p>
+        <p>The <a href={url('/learn/inverse-problems/abel-transform/')}>interactive Abel module</a> introduces the underlying problem, and the flame tab of the home-page figure applies SAT to a simulated flame.</p>
       </div>
     </div>
   </section>
 
   <section class="section frame">
-    <ScientificFigure src={fig} alt="Diagram: a line-of-sight integrated map of an ethylene flame is converted by the spline-based Abel transform into a deconvoluted radial map, shown as a revolved three-dimensional field." caption="From a line-of-sight integrated map to the deconvoluted radial map with the spline-based Abel transform, for an ethylene flame." credit="Figure by M. Littin, from the pysat-abel documentation." sizes="(min-width: 50rem) 36rem, 100vw" />
+    <ScientificFigure src={fig} alt="Diagram: a line-of-sight integrated map of an ethylene flame is converted by the spline-based Abel transform into a reconstructed radial map, shown as a revolved three-dimensional field." caption="An ethylene flame: the line-of-sight map recorded by a camera (left) and the radial map reconstructed with the spline-based Abel transform, shown revolved in three dimensions." credit="Figure by M. Littin, from the pysat-abel documentation." sizes="(min-width: 50rem) 36rem, 100vw" />
   </section>
 
   <section class="section frame">
@@ -86,5 +86,7 @@ r, J = abel_inversion(s_emi, data_type="emission",
 <style>
   .h1code { font-size: 0.9em; background: none; padding: 0; }
   .head-links { margin-top: var(--s-4); }
+  .head-links li + li::before { content: none; }
+  .head-links li:not(:last-child)::after { content: '·'; color: var(--ink-3); padding: 0 0.5em; }
   .lic { margin-top: var(--s-4); }
 </style>

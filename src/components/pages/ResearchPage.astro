@@ -10,109 +10,94 @@ interface Props { lang: Lang }
 const { lang } = Astro.props;
 const es = lang === 'es';
 
-type Status = 'established' | 'current' | 'future';
 interface Theme {
   id: string;
   title: string;
-  status: { cls: Status; label: string }[];
-  question: string;
+  problem: string;
   why: string;
   done: string[];
-  developing: string[];
   papers: string[];
   resources: { label: string; href: string }[];
 }
-
-const S = {
-  established: es ? 'Trabajo establecido' : 'Established work',
-  current: es ? 'En curso' : 'Current work',
-  future: es ? 'Programa futuro' : 'Future research',
-};
 
 const themes: Theme[] = [
   {
     id: 'reconstruction',
     title: es ? 'Reconstrucción regularizada a partir de mediciones indirectas' : 'Regularised reconstruction from indirect measurements',
-    status: [{ cls: 'established', label: S.established }],
-    question: es
-      ? '¿Cómo recuperar un campo local a partir de señales integradas a lo largo de la línea de visión, cuando la inversión directa amplifica el ruido y la propia señal se atenúa en su camino hacia el detector?'
-      : 'How can a local field be recovered from signals integrated along lines of sight, when direct inversion amplifies noise and the signal itself is attenuated on its way to the detector?',
+    problem: es
+      ? 'Recuperar un campo local, por ejemplo la concentración de partículas en cada punto de una llama, a partir de señales que una cámara integra a lo largo de líneas de visión.'
+      : 'Recovering a local field, for example the particle concentration at every point of a flame, from signals that a camera integrates along lines of sight.',
     why: es
-      ? 'Muchas mediciones no ven el punto que interesa, sino una suma a lo largo de un camino. En objetos axisimétricos esa suma es la transformada de Abel, cuya inversión es mal condicionada: un pequeño error en los datos produce grandes oscilaciones cerca del eje. Si además el medio absorbe parte de la señal, el modelo directo deja de ser lineal y los métodos clásicos sesgan el resultado.'
-      : 'Many measurements do not see the point of interest, only a sum along a path. For axisymmetric objects that sum is the Abel transform, and inverting it is ill-conditioned: a small error in the data becomes large oscillations near the axis. When the medium also absorbs part of the signal, the forward model is no longer a plain projection and classical methods give biased results.',
+      ? 'Una cámara no ve un punto sino la suma de todo lo que hay en su línea de visión. En un objeto con simetría de revolución esa suma es la transformada de Abel. Invertirla es un problema mal condicionado: un error pequeño en los datos produce oscilaciones grandes cerca del eje. Además, la luz emitida o dispersada en el interior se absorbe en parte antes de salir (atrapamiento de señal), y si el modelo lo ignora el resultado queda sesgado.'
+      : 'A camera does not see a point but the sum of everything along its line of sight. For an object with rotational symmetry that sum is the Abel transform. Inverting it is ill-conditioned: a small error in the data turns into large oscillations near the axis. In addition, light emitted or scattered inside the object is partly absorbed before it leaves (signal trapping), and a model that ignores this gives biased results.',
     done: es
       ? [
-          'El método SAT (Spline-based Abel Transform) representa el campo radial con un spline cúbico restringido y lo ajusta con una penalización de curvatura, incluyendo la autoabsorción (atrapamiento) en el modelo directo. Publicado en Fuel (2024) y distribuido como el paquete de Python pysat-abel.',
-          'Se mostró cómo el atrapamiento sesga los tamaños de agregados obtenidos por dispersión angular, y cómo corregirlo dentro de la reconstrucción (Journal of Aerosol Science, 2024).',
-          'Con esa reconstrucción se obtuvieron distribuciones de tamaño de agregados resueltas en dos dimensiones (Proc. Combust. Inst., 2025) y perfiles radiales de partículas primarias a partir de dispersión de rayos X de sincrotrón (Proc. Combust. Inst., 2025).',
-          'La reconstrucción regularizada es hoy la primera etapa de las inversiones informadas por la física descritas abajo: entrega los coeficientes locales que la red neuronal interpreta (Carbon, 2026).',
+          'El método SAT (Spline-based Abel Transform) representa el perfil radial con un spline cúbico y lo ajusta con una penalización de curvatura; el atrapamiento de señal se incluye en el modelo directo. Publicado en Fuel (2024) y distribuido como el paquete de Python pysat-abel.',
+          'Se cuantificó cómo el atrapamiento sesga el tamaño de los agregados de hollín (cadenas de nanopartículas de carbono) que se infiere de la dispersión angular de luz, y cómo corregirlo dentro de la reconstrucción (Journal of Aerosol Science, 2024).',
+          'Con esta reconstrucción se obtuvieron mapas bidimensionales de la distribución de tamaño de agregados en una llama (Proc. Combust. Inst., 2025) y perfiles radiales del tamaño de las partículas primarias a partir de dispersión de rayos X de sincrotrón (Proc. Combust. Inst., 2025).',
+          'La reconstrucción regularizada es también la primera etapa de la inversión con redes neuronales descrita en la sección siguiente (Carbon, 2026).',
         ]
       : [
-          'The SAT method (Spline-based Abel Transform) represents the radial field as a constrained cubic spline and fits it with a curvature penalty, with self-absorption (signal trapping) included in the forward model. Published in Fuel (2024) and distributed as the Python package pysat-abel.',
-          'Showed how trapping biases aggregate sizes inferred from angular light scattering, and how to correct for it inside the reconstruction (Journal of Aerosol Science, 2024).',
-          'Used the same reconstruction to obtain two-dimensional aggregate size distributions (Proc. Combust. Inst., 2025) and radial profiles of primary-particle size from synchrotron X-ray scattering (Proc. Combust. Inst., 2025).',
-          'Regularised reconstruction is now the first stage of the physics-informed inversions described below: it provides the local coefficients that the neural network interprets (Carbon, 2026).',
+          'The SAT method (Spline-based Abel Transform) represents the radial profile as a cubic spline fitted with a curvature penalty, and includes signal trapping in the forward model. Published in Fuel (2024) and released as the Python package pysat-abel.',
+          'Quantified how trapping biases the size of soot aggregates (chains of carbon nanoparticles) inferred from angular light scattering, and how to correct for it inside the reconstruction (Journal of Aerosol Science, 2024).',
+          'Used the same reconstruction to map the aggregate size distribution across a flame in two dimensions (Proc. Combust. Inst., 2025) and to obtain radial profiles of primary-particle size from synchrotron X-ray scattering (Proc. Combust. Inst., 2025).',
+          'Regularised reconstruction is also the first stage of the neural-network inversion described in the next section (Carbon, 2026).',
         ],
-    developing: [],
     papers: ['littin2024sat', 'littin2024trapping', 'littin2025scatt', 'littin2025saxs'],
     resources: [
       { label: 'pysat-abel', href: '/software/pysat-abel/' },
-      { label: es ? 'Módulo interactivo: transformada de Abel' : 'Interactive module: the Abel transform', href: '/learn/inverse-problems/abel-transform/' },
+      { label: es ? 'Módulo interactivo: la transformada de Abel' : 'Interactive module: the Abel transform', href: '/learn/inverse-problems/abel-transform/' },
     ],
   },
   {
     id: 'physics-informed',
-    title: es ? 'Inferencia informada por la física con redes neuronales' : 'Physics-informed neural inference',
-    status: [{ cls: 'established', label: S.established }, { cls: 'current', label: S.current }],
-    question: es
-      ? '¿Puede una red neuronal restringida por las leyes físicas invertir conjuntamente varias técnicas de medición, de modo que los campos recuperados sean consistentes con todas ellas a la vez?'
-      : 'Can a neural network constrained by physical laws invert several measurement techniques jointly, so that the recovered fields agree with all of them at once?',
+    title: es ? 'Inversión con redes neuronales informadas por la física' : 'Physics-informed neural inversion',
+    problem: es
+      ? 'Invertir varias técnicas de medición a la vez, de modo que las propiedades recuperadas sean coherentes con todas ellas.'
+      : 'Inverting several measurement techniques at once, so that the recovered properties agree with all of them.',
     why: es
-      ? 'Cuando cada técnica se invierte por separado, con su propia calibración y sus propias hipótesis, los resultados no encajan entre sí. No existen etiquetas de verdad de terreno para entrenar una red de forma supervisada. Lo que sí se conoce son las ecuaciones que relacionan las propiedades buscadas con las señales medidas.'
-      : 'When each technique is inverted on its own, with its own calibration and assumptions, the results do not agree with each other. There are no ground-truth labels to train a network in the supervised sense. What is known are the equations that link the sought properties to the measured signals.',
+      ? 'Cuando cada técnica se invierte por separado, con su propia calibración y sus propias hipótesis, los resultados no concuerdan entre sí. En un experimento real no existe una respuesta conocida con la que entrenar una red de forma supervisada. Lo que sí se conoce son las ecuaciones que relacionan las propiedades buscadas con las señales medidas, y esas ecuaciones pueden formar parte del entrenamiento.'
+      : 'When each technique is inverted on its own, with its own calibration and assumptions, the results do not agree with each other. In a real experiment there is no known answer with which to train a network in the usual supervised way. What is known are the equations that link the sought properties to the measured signals, and these equations can be part of the training.',
     done: es
       ? [
-          'En Carbon (2026) una red de coordenadas (r, z) → propiedades se entrena con una pérdida que contiene la teoría de Rayleigh–Debye–Gans para agregados fractales y la ley de Planck. Invierte a la vez atenuación, emisión y dispersión multiángulo a cinco longitudes de onda, y estima también los factores de calibración de los instrumentos. Validación con datos sintéticos de CoFlame y aplicación a una llama experimental.',
-          'Aplicación del mismo enfoque a combustibles sostenibles de aviación (Proc. Combust. Inst., aceptado, 2026).',
-          'Coautor de reconstrucciones neuronales con dos longitudes de onda (Proc. Combust. Inst., 2026, primera autora V. Yap) y de la inversión asistida por redes en una llama forzada periódicamente (aceptado, primer autor N. Gutiérrez).',
+          'En Carbon (2026), una red neuronal que recibe la posición (r, z) y entrega las propiedades del hollín se entrena con una función de pérdida que contiene la teoría de dispersión de luz por agregados fractales (Rayleigh–Debye–Gans) y la ley de Planck. La red invierte conjuntamente atenuación, emisión y dispersión en varios ángulos a cinco longitudes de onda, y estima además los factores de calibración de los instrumentos. El método se validó con campos sintéticos de CoFlame y luego se aplicó a una llama experimental.',
+          'El mismo enfoque se aplicó a combustibles sostenibles de aviación (Proc. Combust. Inst., aceptado, 2026).',
+          'Coautor de reconstrucciones neuronales con dos longitudes de onda en llamas de difusión normales e inversas (Proc. Combust. Inst., 2026, primera autora V. Yap) y de una inversión asistida por redes en una llama forzada periódicamente (aceptado, primer autor N. Gutiérrez).',
         ]
       : [
-          'In Carbon (2026) a coordinate network (r, z) → properties is trained with a loss containing Rayleigh–Debye–Gans theory for fractal aggregates and Planck’s law. It inverts attenuation, emission and multi-angle scattering at five wavelengths together, and estimates the calibration factors of the instruments as part of the solution. Validated on synthetic CoFlame data, then applied to an experimental flame.',
+          'In Carbon (2026), a neural network that takes the position (r, z) and returns the soot properties is trained with a loss that contains the theory of light scattering by fractal aggregates (Rayleigh–Debye–Gans) and Planck’s law. The network inverts attenuation, emission and multi-angle scattering at five wavelengths together, and also estimates the calibration factors of the instruments. The method was validated on synthetic CoFlame fields and then applied to an experimental flame.',
           'The same approach applied to sustainable aviation fuels (Proc. Combust. Inst., accepted, 2026).',
-          'Co-author of dual-wavelength neural reconstructions (Proc. Combust. Inst., 2026, first author V. Yap) and of a neural-network-assisted inversion in a periodically forced flame (accepted, first author N. Gutiérrez).',
+          'Co-author of dual-wavelength neural reconstructions in normal and inverse diffusion flames (Proc. Combust. Inst., 2026, first author V. Yap) and of a neural-network-assisted inversion in a periodically forced flame (accepted, first author N. Gutiérrez).',
         ],
-    developing: [],
     papers: ['littin2026carbon', 'littin2026saf', 'yap2026dual', 'gutierrez2026maturity'],
     resources: [
-      { label: es ? 'Caso de estudio: Carbon 2026' : 'Case study: Carbon 2026', href: '/publications/carbon-2026/' },
+      { label: es ? 'Artículo explicado: Carbon 2026' : 'Paper explained: Carbon 2026', href: '/publications/carbon-2026/' },
       { label: es ? 'Presentación interactiva' : 'Interactive presentation', href: '/talks/carbon-2026/' },
-      { label: es ? 'Módulo: aprendizaje informado por la física' : 'Module: physics-informed learning', href: '/learn/machine-learning/physics-informed-learning/' },
+      { label: es ? 'Módulo interactivo: aprendizaje informado por la física' : 'Interactive module: physics-informed learning', href: '/learn/machine-learning/physics-informed-learning/' },
     ],
   },
   {
     id: 'forward-models',
     title: es ? 'Modelos directos y modelos sustitutos' : 'Forward models and surrogates',
-    status: [{ cls: 'established', label: S.established }, { cls: 'future', label: S.future }],
-    question: es
-      ? '¿Qué modelo físico conecta las propiedades buscadas con lo que se mide, y cómo hacerlo lo bastante rápido para usarlo dentro de una inversión?'
-      : 'Which physical model connects the sought properties to what is measured, and how can it be made fast enough to sit inside an inversion?',
+    problem: es
+      ? 'Construir el modelo físico que conecta las propiedades buscadas con lo que se mide, y hacerlo lo bastante rápido para usarlo dentro de una inversión.'
+      : 'Building the physical model that connects the sought properties to what is measured, and making it fast enough to be used inside an inversion.',
     why: es
-      ? 'La calidad de una inversión está limitada por su modelo directo. Los modelos de dispersión de luz por agregados, de intercambio radiativo o de cinética química pueden ser costosos de evaluar, y una inversión los evalúa miles de veces.'
-      : 'The quality of an inversion is limited by its forward model. Models of light scattering by aggregates, of radiative exchange or of chemical kinetics can be expensive to evaluate, and an inversion evaluates them thousands of times.',
+      ? 'Una inversión no puede ser mejor que su modelo directo. Los modelos de dispersión de luz por agregados, de intercambio radiativo o de cinética química pueden ser costosos, y una inversión los evalúa miles de veces. Un modelo sustituto (una aproximación rápida, a menudo una red neuronal entrenada con el modelo completo) hace posible usarlos.'
+      : 'An inversion cannot be better than its forward model. Models of light scattering by aggregates, of radiative exchange or of chemical kinetics can be expensive, and an inversion evaluates them thousands of times. A surrogate (a fast approximation, often a neural network trained on the full model) makes them usable.',
     done: es
       ? [
-          'Modelos de dispersión de rayos X a luz visible por agregados fractales (JQSRT, 2026, dos artículos como coautor).',
-          'Como coautor, intercambio radiativo entre llamas y receptores: factores de vista por contornos (Exp. Therm. Fluid Sci., 2023) y análisis del campo de visión (IJHMT, 2026), liderados por P. Pinto, y modelos sustitutos por aprendizaje automático (IJHMT, 2026, primer autor M. Mercado).',
-          'En el trabajo de Carbon, una red sustituta reemplaza al modelo de dispersión de Lorentz–Drude del índice óptico con desviaciones inferiores a 0,1 %, lo que hace viable el entrenamiento.',
-          'Simulación detallada de formación de hollín con mecanismos cinéticos extendidos (Proc. Combust. Inst., 2024, primer autor; Case Stud. Therm. Eng., 2026, coautor).',
+          'Modelos de dispersión por aglomerados fractales, desde rayos X hasta luz visible (JQSRT, 2026, dos artículos como coautor).',
+          'Intercambio radiativo entre llamas y receptores, como coautor: factores de vista a partir de contornos de llama (Exp. Therm. Fluid Sci., 2023) y análisis del campo de visión del receptor (IJHMT, 2026), liderados por P. Pinto, y modelos sustitutos por aprendizaje automático (IJHMT, 2026, primer autor M. Mercado).',
+          'En el trabajo de Carbon, una red sustituta reemplaza el modelo de Lorentz–Drude del índice óptico del hollín con desviaciones inferiores a 0,1 %, lo que hace práctico el entrenamiento.',
+          'Simulación detallada de la formación de hollín con mecanismos cinéticos extendidos (Proc. Combust. Inst., 2024, primer autor; Case Stud. Therm. Eng., 2026, coautor).',
         ]
       : [
-          'Scattering models from X-rays to visible light for fractal agglomerates (JQSRT, 2026, two papers as co-author).',
-          'As co-author, radiative exchange between flames and receivers: view factors from contours (Exp. Therm. Fluid Sci., 2023) and field-of-view analysis (IJHMT, 2026), led by P. Pinto, and machine-learning surrogates (IJHMT, 2026, first author M. Mercado).',
-          'In the Carbon work, a surrogate network replaces the Lorentz–Drude dispersion model of the optical index with deviations below 0.1%, which makes training practical.',
+          'Scattering models for fractal agglomerates from X-rays to visible light (JQSRT, 2026, two papers as co-author).',
+          'Radiative exchange between flames and receivers, as co-author: view factors from flame contours (Exp. Therm. Fluid Sci., 2023) and the receiver’s field of view (IJHMT, 2026), led by P. Pinto, and machine-learning surrogates (IJHMT, 2026, first author M. Mercado).',
+          'In the Carbon work, a surrogate network replaces the Lorentz–Drude model of the soot optical index with deviations below 0.1 %, which makes training practical.',
           'Detailed simulation of soot formation with extended kinetic mechanisms (Proc. Combust. Inst., 2024, first author; Case Stud. Therm. Eng., 2026, co-author).',
         ],
-    developing: [],
     papers: ['yon2026xray', 'raynaud2026structure', 'mercado2026view', 'pinto2026fov', 'littin2024jeta1'],
     resources: [],
   },
@@ -123,27 +108,23 @@ const domainCount = (d: DomainId) => visiblePublications.filter((p) => p.domains
 
 const T = es
   ? {
-      title: 'Investigación', eyebrow: 'Programa de investigación',
+      title: 'Investigación', eyebrow: 'Investigación',
       h1: 'Inferir lo que no se puede medir directamente',
-      lede: 'El trabajo se organiza por preguntas de método. Los sistemas físicos (llamas, incendios, partículas, radiación térmica) son donde los métodos se han desarrollado y validado. Cada sección resume trabajo publicado o aceptado.',
+      lede: 'Desarrollo métodos para estimar magnitudes físicas que no se pueden medir directamente a partir de observaciones indirectas y ruidosas. Los métodos se han desarrollado y validado en llamas, incendios, partículas y radiación térmica. Cada sección resume trabajo publicado o aceptado.',
       general: 'La forma general del problema',
-      generalText: 'Se observa <em>y</em>, una transformación indirecta y ruidosa de un estado físico <em>x</em> que interesa. El modelo directo 𝒜 describe cómo <em>x</em> produce las observaciones. Invertirlo exige información adicional: una penalización ℛ que elimine soluciones sin sentido físico, o una representación aprendida restringida por las ecuaciones.',
-      q: 'La pregunta', w: 'Por qué importa', d: 'Lo realizado', dev: 'En desarrollo o propuesto', p: 'Artículos', r: 'Código, datos y material',
-      evo: 'Continuidad', evoTitle: 'Cómo se llegó aquí',
-      dom: 'Dominios de aplicación', domText: 'Para quien llega desde una comunidad de aplicación, estos son los sistemas físicos donde se han usado los métodos.',
-      proj: 'Proyectos', projNote: 'Participación en proyectos con financiamiento externo, sin rol de investigador responsable.',
+      generalText: 'Se mide <em>y</em>, una versión indirecta y ruidosa del estado físico <em>x</em> que interesa. El modelo directo 𝒜 describe cómo <em>x</em> produce las mediciones (ecuación 1). Invertir ese modelo rara vez tiene una solución única y estable, por lo que se necesita información adicional: un término ℛ que descarte soluciones sin sentido físico (ecuación 2), o una representación aprendida que cumpla las ecuaciones que gobiernan el sistema.',
+      q: 'El problema', w: 'Por qué es difícil', d: 'Trabajo realizado', p: 'Artículos', r: 'Código, datos y material',
+      dom: 'Dominios de aplicación', domText: 'Sistemas físicos en los que se han aplicado estos métodos, con el número de artículos de cada uno.',
       papersIn: 'artículos',
     }
   : {
-      title: 'Research', eyebrow: 'Research programme',
+      title: 'Research', eyebrow: 'Research',
       h1: 'Inferring what cannot be measured directly',
-      lede: 'The work is organised by questions of method. Physical systems (flames, fires, particles, thermal radiation) are where the methods have been developed and validated. Each section summarises published or accepted work.',
+      lede: 'I develop methods that estimate, from indirect and noisy observations, physical quantities that cannot be measured directly. The methods have been developed and validated on flames, fires, particles and thermal radiation. Each section summarises published or accepted work.',
       general: 'The general form of the problem',
-      generalText: 'We observe <em>y</em>, an indirect and noisy transformation of a physical state <em>x</em> that we care about. The forward model 𝒜 describes how <em>x</em> produces the observations. Inverting it requires additional information: a penalty ℛ that rules out physically meaningless solutions, or a learned representation constrained by the governing equations.',
-      q: 'The question', w: 'Why it matters', d: 'What has been done', dev: 'In progress or proposed', p: 'Papers', r: 'Code, data and material',
-      evo: 'Continuity', evoTitle: 'How the work got here',
-      dom: 'Application domains', domText: 'For visitors from an application community, these are the physical systems in which the methods have been used.',
-      proj: 'Projects', projNote: 'Participation in externally funded projects, without a principal-investigator role.',
+      generalText: 'We measure <em>y</em>, an indirect and noisy version of the physical state <em>x</em> that we care about. The forward model 𝒜 describes how <em>x</em> produces the measurements (equation 1). Inverting that model rarely has a unique, stable solution, so extra information is needed: a term ℛ that rules out physically meaningless solutions (equation 2), or a learned representation that satisfies the governing equations.',
+      q: 'The problem', w: 'Why it is hard', d: 'Work done', p: 'Papers', r: 'Code, data and material',
+      dom: 'Application domains', domText: 'Physical systems in which these methods have been applied, with the number of papers in each.',
       papersIn: 'papers',
     };
 ---
@@ -167,7 +148,7 @@ const T = es
     <div class="row">
       <h2 class="row__label">{T.general}</h2>
       <div class="prose">
-        <Equation tex={String.raw`\underbrace{y}_{\text{observations}} = \underbrace{\mathcal{A}}_{\text{physical model}}(\underbrace{x}_{\text{latent state}}) + \varepsilon,`} label="(1)" />
+        <Equation tex={String.raw`\underbrace{y}_{\text{data}} = \underbrace{\mathcal{A}}_{\text{model}}(\underbrace{x}_{\text{state}}) + \underbrace{\varepsilon}_{\text{noise}},`} label="(1)" />
         <Equation tex={String.raw`\hat{x} = \arg\min_{x}\; \lVert y - \mathcal{A}(x) \rVert^{2} + \mathcal{R}(x).`} label="(2)" />
         <p set:html={T.generalText} />
       </div>
@@ -179,12 +160,10 @@ const T = es
       <div class="row">
         <h2 class="row__label" id={`${t.id}-h`}>{t.title}</h2>
         <div class="prose">
-          <p><strong>{T.q}.</strong> <em>{t.question}</em></p>
+          <p><strong>{T.q}.</strong> {t.problem}</p>
           <p><strong>{T.w}.</strong> {t.why}</p>
           <p class="runin"><strong>{T.d}.</strong></p>
           <ul>{t.done.map((d) => <li>{d}</li>)}</ul>
-          {t.developing.length > 0 && <p class="runin"><strong>{T.dev}.</strong></p>}
-          {t.developing.length > 0 && <ul>{t.developing.map((d) => <li>{d}</li>)}</ul>}
         </div>
         {t.papers.length > 0 && (
           <div class="theme__papers">
@@ -220,11 +199,8 @@ const T = es
   .toc li a { display: flex; gap: 0.6em; color: var(--ink); padding-block: 0.1rem; }
   .toc li a:hover { color: var(--accent); }
   .toc li span { min-width: 1.4em; font-weight: 700; }
-  .theme__status { margin: -0.6rem 0 var(--s-3); color: var(--ink-2); }
   .runin { margin-bottom: -0.4em; }
   .theme__papers { margin-top: var(--s-4); }
   .theme__res { margin-top: var(--s-4); }
-  table.evo, table.projects { margin-top: var(--s-2); font-size: var(--step-0); }
-  .evo__y { white-space: nowrap; color: var(--ink-2); width: 7.5em; }
   .domains { padding-left: 1.5em; margin-top: var(--s-3); columns: 2 14rem; }
 </style>

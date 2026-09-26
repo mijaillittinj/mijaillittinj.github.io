@@ -64,7 +64,7 @@ const curated: Publication[] = [
     themes: ['physics-informed', 'reconstruction', 'forward-models'],
     domains: ['optical-diagnostics', 'combustion', 'aerosols', 'radiation'],
     summary:
-      'Three optical measurements (attenuation, emission and multi-angle scattering at five wavelengths) are inverted jointly by one coordinate-based neural network whose loss contains the light-scattering theory and Planck’s law. The network returns temperature, volume fraction, aggregate size, composition and optical-index fields, together with the calibration factors of the instruments.',
+      'Three optical measurements of a flame (attenuation, emission and scattering at several angles, each at five wavelengths) are inverted together by one neural network. Its loss contains light-scattering theory and Planck’s law, and it returns maps of temperature, soot volume fraction, aggregate size, composition and optical index, together with the calibration factors of the instruments.',
     access: { kind: 'open', license: 'CC BY 4.0', pdf: 'https://doi.org/10.1016/j.carbon.2026.121296' },
     links: [{ label: 'SSRN preprint', href: 'https://doi.org/10.2139/ssrn.5726644' }],
     page: '/publications/carbon-2026/',
@@ -80,7 +80,7 @@ const curated: Publication[] = [
     themes: ['physics-informed', 'reconstruction'],
     domains: ['optical-diagnostics', 'combustion'],
     summary:
-      'Neural reconstruction of soot volume fraction, temperature and a maturity indicator from measurements at only two wavelengths, applied to inverse and normal diffusion flames.',
+      'A neural network reconstructs soot volume fraction, temperature and an indicator of soot maturity from measurements at only two wavelengths, in normal and inverse diffusion flames.',
     access: { kind: 'closed' },
   },
   {
@@ -92,7 +92,7 @@ const curated: Publication[] = [
     themes: ['forward-models'],
     domains: ['fire', 'radiation'],
     summary:
-      'Machine-learning surrogates for radiative view factors between benchmark fire geometries and targets, as fast approximations of the geometric integrals.',
+      'Machine-learning surrogates for radiative view factors (the fraction of the radiation leaving a fire that reaches a target) in benchmark fire geometries, used as fast replacements for the geometric integrals.',
     access: { kind: 'closed' },
   },
   {
@@ -103,7 +103,8 @@ const curated: Publication[] = [
     doi: '10.1016/j.ijheatmasstransfer.2026.129542', status: 'in-press',
     themes: ['experiments', 'reconstruction'],
     domains: ['fire', 'radiation', 'optical-diagnostics'],
-    summary: 'Time-resolved measurements of soot temperature and radiation in flames of a burning solid polymer (PMMA).',
+    summary:
+      'Time-resolved measurements of soot temperature and radiation in flames of a burning solid polymer, PMMA (acrylic glass).',
     access: { kind: 'closed' },
   },
   {
@@ -114,7 +115,8 @@ const curated: Publication[] = [
     doi: '10.1016/j.jqsrt.2026.110072', status: 'published',
     themes: ['forward-models'],
     domains: ['aerosols', 'radiation'],
-    summary: 'A structure-factor model for light and X-ray scattering by fractal agglomerates that accounts for the spread in primary-particle sizes.',
+    summary:
+      'A model of how fractal agglomerates scatter light and X-rays (their structure factor) that accounts for the spread in the sizes of the primary particles.',
     access: { kind: 'open', license: 'CC BY 4.0', pdf: 'https://doi.org/10.1016/j.jqsrt.2026.110072' },
   },
   {
@@ -125,7 +127,8 @@ const curated: Publication[] = [
     doi: '10.1016/j.jqsrt.2026.109860', status: 'published',
     themes: ['forward-models'],
     domains: ['aerosols', 'radiation'],
-    summary: 'Compares scattering models for fractal soot agglomerates from the X-ray to the visible range, which are the forward models used to interpret scattering measurements.',
+    summary:
+      'Compares models of scattering by fractal soot agglomerates from X-rays to visible light. These are the forward models used to interpret scattering measurements.',
     access: { kind: 'open', license: 'CC BY 4.0', pdf: 'https://doi.org/10.1016/j.jqsrt.2026.109860' },
   },
   {
@@ -136,7 +139,8 @@ const curated: Publication[] = [
     doi: '10.1016/j.csite.2026.108217', status: 'published',
     themes: ['forward-models'],
     domains: ['combustion', 'fuels'],
-    summary: 'Evaluates extended reaction mechanisms for predicting soot in simulations of vaporised-gasoline laminar flames.',
+    summary:
+      'Evaluates extended reaction mechanisms for predicting soot in simulations of laminar flames of vaporised gasoline.',
     access: { kind: 'open', license: 'CC BY-NC 4.0', pdf: 'https://doi.org/10.1016/j.csite.2026.108217' },
   },
   {
@@ -147,7 +151,8 @@ const curated: Publication[] = [
     doi: '10.1016/j.firesaf.2026.104875', status: 'published',
     themes: ['experiments'],
     domains: ['fire', 'optical-diagnostics'],
-    summary: 'Compares soot production in laminar flames of clear and black cast PMMA, a solid polymer.',
+    summary:
+      'Compares soot production in laminar flames of clear and black cast PMMA (acrylic glass).',
     access: { kind: 'closed' },
   },
   {
@@ -158,7 +163,8 @@ const curated: Publication[] = [
     doi: '10.1016/j.fuel.2026.138357', status: 'published',
     themes: ['experiments'],
     domains: ['fire', 'combustion'],
-    summary: 'Soot measurements in flames of a wildland fuel under different oxidiser coflow conditions.',
+    summary:
+      'Soot measurements in laminar flames of a wildland fuel, Eucalyptus globulus, under different conditions of the oxidiser stream that surrounds the flame (the coflow).',
     access: { kind: 'closed' },
   },
   {
@@ -169,7 +175,8 @@ const curated: Publication[] = [
     doi: '10.1016/j.ijheatmasstransfer.2025.128312', status: 'published',
     themes: ['forward-models'],
     domains: ['fire', 'radiation'],
-    summary: 'Uses the field-of-view angle of a receiver to improve estimates of the thermal radiation it receives from a circular pool fire.',
+    summary:
+      'Uses the field-of-view angle of a receiver to improve estimates of the thermal radiation it receives from a circular pool fire.',
     access: { kind: 'open', license: 'CC BY 4.0', pdf: 'https://doi.org/10.1016/j.ijheatmasstransfer.2025.128312' },
   },
   {
@@ -181,7 +188,7 @@ const curated: Publication[] = [
     themes: ['reconstruction', 'forward-models'],
     domains: ['optical-diagnostics', 'aerosols'],
     summary:
-      'Recovers the size distribution of nanoparticle aggregates at every point of an axisymmetric flame from multi-angle, multi-wavelength scattering. The line-of-sight signals are first inverted with trapping correction, then interpreted with two competing size-distribution models.',
+      'Recovers the size distribution of soot aggregates at every point of an axisymmetric flame from light scattered at many angles and wavelengths. The line-of-sight signals are first inverted with the trapping correction, then interpreted with two competing size-distribution models.',
     access: { kind: 'open', license: 'CC BY 4.0', pdf: 'https://doi.org/10.1016/j.proci.2025.105946' },
     featured: true,
   },
@@ -194,7 +201,7 @@ const curated: Publication[] = [
     themes: ['reconstruction', 'forward-models', 'experiments'],
     domains: ['aerosols', 'fuels', 'combustion'],
     summary:
-      'Synchrotron small-angle X-ray scattering, deconvolved with the spline-based Abel transform, gives radial profiles of primary-particle size in flames of jet fuel and sustainable-aviation-fuel blends.',
+      'Synchrotron small-angle X-ray scattering, inverted with the spline-based Abel transform, gives radial profiles of primary-particle size in flames of jet fuel and of blends with sustainable aviation fuel.',
     access: { kind: 'closed' },
   },
   {
@@ -205,7 +212,8 @@ const curated: Publication[] = [
     doi: '10.1016/j.combustflame.2025.114503', status: 'published',
     themes: ['experiments'],
     domains: ['aerosols', 'fuels'],
-    summary: 'Studies how organic content and fuel type change the oxidation of soot particles.',
+    summary:
+      'Measures how the organic content of soot and the fuel (kerosene or sustainable aviation fuel) change the oxidation of soot particles.',
     access: { kind: 'open', license: 'CC BY 4.0', pdf: 'https://doi.org/10.1016/j.combustflame.2025.114503' },
   },
   {
@@ -216,7 +224,8 @@ const curated: Publication[] = [
     doi: '10.1016/j.joei.2025.102302', status: 'published',
     themes: ['forward-models'],
     domains: ['combustion', 'fuels'],
-    summary: 'Investigates the mechanisms by which substituting dimethyl ether for part of a propane fuel suppresses both soot and NOx at constant carbon flow.',
+    summary:
+      'Explains why replacing part of a propane fuel with dimethyl ether, at constant carbon flow, reduces both soot and nitrogen oxides (NOx).',
     access: { kind: 'closed' },
   },
   {
@@ -228,7 +237,7 @@ const curated: Publication[] = [
     themes: ['reconstruction'],
     domains: ['optical-diagnostics', 'combustion'],
     summary:
-      'Abel inversion recovers a radial field from line-of-sight measurements but amplifies noise near the axis. SAT represents the field as a constrained cubic spline fitted with a curvature penalty and includes the self-absorption (trapping) of the signal inside the forward model. It is released as the Python package pysat-abel.',
+      'Abel inversion recovers a radial profile from line-of-sight measurements but amplifies noise near the axis. SAT represents the profile as a constrained cubic spline fitted with a curvature penalty, and includes the partial reabsorption of the signal (trapping) in the forward model. Released as the Python package pysat-abel.',
     access: { kind: 'closed' },
     links: [{ label: 'pysat-abel', href: '/software/pysat-abel/' }],
     featured: true,
@@ -242,7 +251,7 @@ const curated: Publication[] = [
     themes: ['reconstruction', 'forward-models'],
     domains: ['optical-diagnostics', 'aerosols'],
     summary:
-      'Shows how attenuation of scattered light along the path to the detector biases aggregate sizes inferred from angular scattering, and how to correct it inside the reconstruction.',
+      'Shows how the attenuation of scattered light on its way to the detector (signal trapping) biases the aggregate sizes inferred from angular scattering, and how to correct it inside the reconstruction.',
     access: { kind: 'closed' },
   },
   {
@@ -254,7 +263,7 @@ const curated: Publication[] = [
     themes: ['forward-models', 'experiments'],
     domains: ['combustion', 'fuels'],
     summary:
-      'Combines multi-wavelength attenuation and emission measurements with detailed simulations based on the HyChem mechanism to explain soot formation in a jet-fuel flame.',
+      'Combines multi-wavelength attenuation and emission measurements with detailed simulations based on the HyChem mechanism to explain how soot forms in a flame of jet fuel (Jet A-1).',
     access: { kind: 'closed' },
   },
   {
@@ -265,7 +274,8 @@ const curated: Publication[] = [
     doi: '10.1016/j.firesaf.2023.103997', status: 'published',
     themes: ['forward-models'],
     domains: ['combustion', 'fire', 'radiation'],
-    summary: 'Simulations separating the dilution, thermal and chemical effects of water vapour on soot and radiation in hydrogen-enriched flames.',
+    summary:
+      'Simulations that separate the dilution, thermal and chemical effects of water vapour on soot and radiation in ethylene flames enriched with hydrogen.',
     access: { kind: 'closed' },
   },
   {
@@ -276,7 +286,8 @@ const curated: Publication[] = [
     doi: '10.1016/j.expthermflusci.2023.111027', status: 'published',
     themes: ['forward-models'],
     domains: ['fire', 'radiation'],
-    summary: 'Estimates the view factor between an unsteady flame and a target from parametric flame contours and Stokes’ theorem.',
+    summary:
+      'Estimates the view factor between a flickering flame and a target from parametric flame contours, using Stokes’ theorem.',
     access: { kind: 'closed' },
   },
   // Accepted, no DOI yet (public HAL records exist for the Kyoto 2026 presentations)
@@ -287,7 +298,8 @@ const curated: Publication[] = [
     year: 2026, journal: 'Proceedings of the Combustion Institute', status: 'accepted', firstAuthor: true, ml: true,
     themes: ['physics-informed'],
     domains: ['fuels', 'optical-diagnostics'],
-    summary: 'Applies physics-informed neural inversion to compare soot properties in flames of conventional jet fuel and sustainable aviation fuel blends.',
+    summary:
+      'Applies physics-informed neural inversion to compare soot properties in flames of conventional jet fuel and of blends with sustainable aviation fuel.',
     access: { kind: 'unknown' },
     links: [{ label: 'HAL record', href: 'https://hal.science/hal-05718642' }],
   },
@@ -298,7 +310,8 @@ const curated: Publication[] = [
     year: 2026, journal: 'Proceedings of the Combustion Institute', status: 'accepted', ml: true,
     themes: ['physics-informed', 'reconstruction'],
     domains: ['combustion', 'optical-diagnostics'],
-    summary: 'Neural-network-assisted inversion used to follow the evolution of soot maturity in a periodically forced diffusion flame.',
+    summary:
+      'Uses a neural-network-assisted inversion to follow how soot maturity (how far the particles have evolved from young, organic-rich soot towards graphitic carbon) changes in a periodically forced flame.',
     access: { kind: 'unknown' },
     links: [{ label: 'HAL record', href: 'https://hal.science/hal-05718633' }],
   },

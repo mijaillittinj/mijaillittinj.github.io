@@ -5,17 +5,19 @@
  */
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
+import { splitTop } from '../../lib/texsplit';
 interface Step { tex: string; note: string }
 interface Props { steps: Step[]; title?: string }
 const { steps, title } = Astro.props;
-const rendered = steps.map((s) => ({ ...s, html: katex.renderToString(s.tex, { displayMode: true, throwOnError: false, output: 'htmlAndMathml', strict: 'ignore' }) }));
+const render = (t: string) => katex.renderToString(t, { displayMode: true, throwOnError: false, output: 'htmlAndMathml', strict: 'ignore' });
+const rendered = steps.map((s) => ({ ...s, pieces: splitTop(s.tex).map(render) }));
 ---
 <div class="deriv" data-deriv>
   {title && <p class="panel-title">{title}</p>}
   <ol>
     {rendered.map((s, i) => (
       <li data-step={i}>
-        <div class="deriv__eq" set:html={s.html} />
+        <div class:list={['deriv__eq', s.pieces.length > 1 && 'deriv__eq--multi']}>{s.pieces.map((h) => <div class="deriv__piece" set:html={h} />)}</div>
         <p class="deriv__note">{s.note}</p>
       </li>
     ))}
@@ -49,7 +51,9 @@ const rendered = steps.map((s) => ({ ...s, html: katex.renderToString(s.tex, { d
   li { counter-increment: step; display: grid; grid-template-columns: 2rem 1fr; gap: 0 var(--s-3); padding-block: var(--s-3); border-top: 1px solid var(--rule); transition: opacity 0.25s; }
   li::before { content: counter(step); grid-row: span 2; font-family: var(--font-sans); font-size: var(--step--1); color: var(--ink-3); padding-top: 0.6em; }
   li.is-hidden { display: none; }
-  .deriv__eq { overflow-x: auto; }
+  .deriv__eq { overflow-x: auto; min-width: 0; }
+  .deriv__eq--multi { display: flex; flex-wrap: wrap; gap: 0 2em; align-items: baseline; overflow-x: visible; }
+  .deriv__piece { max-width: 100%; overflow-x: auto; overflow-y: hidden; }
   .deriv__eq :global(.katex-display) { margin: 0.2em 0; text-align: left; }
   .deriv__note { font-size: var(--step--1); font-family: var(--font-sans); color: var(--ink-2); }
   :global(html:not(.js)) .deriv__ctrl { display: none !important; }

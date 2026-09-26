@@ -8,7 +8,7 @@ import { url } from '../../../../i18n/utils';
 <LearnModule slug="machine-learning/neural-network-from-scratch" description="Train a small neural network in the browser with hand-written backpropagation and Adam: fitting, overfitting, validation error, weight decay and early stopping.">
   <div class="prose">
     <h2>A function with many adjustable knobs</h2>
-    <p>A multilayer perceptron is a composition of simple steps. Each layer multiplies its input by a weight matrix, adds a bias and applies a nonlinear function, here tanh:</p>
+    <p>The simplest kind of neural network, the multilayer perceptron, is a chain of simple steps. Each layer multiplies its input by a weight matrix, adds a bias and applies a nonlinear function, here tanh:</p>
     <Equation tex={String.raw`h^{(0)} = x, \qquad h^{(\ell)} = \tanh\!\big(W^{(\ell)} h^{(\ell-1)} + b^{(\ell)}\big), \qquad \hat y = W^{(L+1)} h^{(L)} + b^{(L+1)} .`} />
     <p>Training means choosing all the weights so that the network’s outputs match the training data, usually by minimising the mean squared error with a gradient method such as Adam (see the <a href={url('/learn/optimization/gradient-descent/')}>gradient descent module</a>).</p>
     <h2>Backpropagation is the chain rule, applied backwards</h2>
@@ -25,10 +25,10 @@ import { url } from '../../../../i18n/utils';
   <div class="try">
     <h3>Exercises</h3>
     <ol>
-      <li>Train with the default settings (2 layers × 24 neurons, 12 points). The training error keeps falling while the validation error turns around and rises. That is <strong>overfitting</strong>: the network memorises the noise.</li>
+      <li>Train with the default settings (2 layers × 24 neurons, 12 points). The training error keeps falling while the validation error turns around and rises. That is <em>overfitting</em>: the network memorises the noise.</li>
       <li>Increase the training points to 60 without changing the network. Why does the gap between training and validation error close?</li>
       <li>With 12 points, reduce the width to 3 neurons. Now the network is too simple to follow the function: <em>underfitting</em>. Find the width with the lowest validation error.</li>
-      <li>Turn on early stopping and train again. Which iteration is kept? Then try weight decay instead. Both are forms of <strong>regularisation</strong>, the same idea as in the <a href={url('/learn/inverse-problems/svd-noise-amplification/')}>SVD module</a>.</li>
+      <li>Turn on early stopping and train again. Which iteration is kept? Then try weight decay instead. Both are forms of <em>regularisation</em>, the same idea as in the <a href={url('/learn/inverse-problems/svd-noise-amplification/')}>SVD module</a>.</li>
       <li>Set the noise to 0. Can a large network now reach a validation error close to zero? What limits it?</li>
     </ol>
   </div>

@@ -2,23 +2,38 @@
 /**
  * Build-time KaTeX rendering (no client JS). Pages using it must set `math` on Base.
  * <Equation tex="y = \mathcal{A}(x) + \varepsilon" display label="(1)" />
+ *
+ * Display equations made of several relations separated by a top-level `\qquad`
+ * (or passed as an array) are rendered as separate pieces that wrap onto new lines
+ * on narrow screens instead of forcing horizontal scrolling.
  */
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
-interface Props { tex: string; display?: boolean; label?: string; class?: string }
+import { splitTop } from '../../lib/texsplit';
+interface Props { tex: string | string[]; display?: boolean; label?: string; class?: string }
 const { tex, display = true, label, class: cls } = Astro.props;
-const html = katex.renderToString(tex, { displayMode: display, throwOnError: false, output: 'htmlAndMathml', strict: 'ignore' });
+
+const opts = { throwOnError: false, output: 'htmlAndMathml' as const, strict: 'ignore' as const };
+const pieces = display ? (Array.isArray(tex) ? tex : splitTop(tex)) : [];
+const html = display
+  ? pieces.map((p) => katex.renderToString(p, { ...opts, displayMode: true }))
+  : [katex.renderToString(Array.isArray(tex) ? tex.join('\\quad ') : tex, { ...opts, displayMode: false })];
 ---
 {display ? (
   <div class:list={['eq', cls]}>
-    <div class="eq__body" set:html={html} />
+    <div class:list={['eq__body', pieces.length > 1 && 'eq__body--multi']}>
+      {html.map((h) => <div class="eq__piece" set:html={h} />)}
+    </div>
     {label && <span class="eq__label">{label}</span>}
   </div>
-) : <span class:list={['eq-inline', cls]} set:html={html} />}
+) : <span class:list={['eq-inline', cls]} set:html={html[0]} />}
 
 <style>
   .eq { display: flex; align-items: center; gap: var(--s-4); margin-block: var(--s-5); }
-  .eq__body { flex: 1; overflow-x: auto; overflow-y: hidden; padding-block: 0.15em; }
+  .eq__body { flex: 1; min-width: 0; overflow-x: auto; overflow-y: hidden; padding-block: 0.15em; }
+  .eq__body--multi { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 0.35em 2.2em; }
+  .eq__piece { min-width: 0; max-width: 100%; }
+  .eq__body--multi .eq__piece { overflow-x: auto; overflow-y: hidden; }
   .eq__body :global(.katex-display) { margin: 0; }
   .eq__label { font-family: var(--font-sans); font-size: var(--step--1); color: var(--ink-3); }
 </style>

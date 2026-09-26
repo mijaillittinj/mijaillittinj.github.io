@@ -10,21 +10,22 @@ const nPub = pubs.filter((p) => p.status === 'published' || p.status === 'in-pre
 const nAcc = pubs.filter((p) => p.status === 'accepted').length;
 const nFirst = pubs.filter((p) => p.firstAuthor).length;
 const nML = pubs.filter((p) => p.ml).length;
-const themeIds = Object.keys(themeLabels) as ThemeId[];
+// only offer topics that have at least one paper
+const themeIds = (Object.keys(themeLabels) as ThemeId[]).filter((t) => pubs.some((p) => p.themes.includes(t)));
 const domainIds = Object.keys(domainLabels) as DomainId[];
 ---
 <Base title="Publications" description="Peer-reviewed publications of Mijail Littin on inverse problems, physics-informed neural networks, optical diagnostics and thermal radiation, with DOIs, open-access links and BibTeX.">
   <header class="page-head frame">
-    <p class="eyebrow">Publications</p>
-    <h1>Papers, with the methods first</h1>
-    <p class="lede abstract">{nPub} journal articles published or in press and {nAcc} accepted, {nFirst} as first author and {nML} based on neural networks or machine learning. Filter by research question or application domain. Every entry links to the version of record; full text is linked only when the publisher licence allows it.</p>
+    <p class="eyebrow">Peer-reviewed articles</p>
+    <h1>Publications</h1>
+    <p class="lede">{nPub} journal articles published or in press and {nAcc} accepted; {nFirst} as first author and {nML} using neural networks or machine learning. Each entry has a short summary written for readers outside the field, a link to the publisher’s version and, when the licence allows it, a link to the open-access full text. The lists can be filtered by topic or by application domain.</p>
   </header>
 
   <section class="frame section--tight filters no-print" aria-label="Filters" data-filters hidden>
     <div class="filters__row">
-      <label class="label" for="f-theme">Question</label>
+      <label class="label" for="f-theme">Topic</label>
       <select id="f-theme" data-f="theme">
-        <option value="">All questions</option>
+        <option value="">All topics</option>
         {themeIds.map((t) => <option value={t}>{themeLabels[t].en}</option>)}
       </select>
       <label class="label" for="f-domain">Domain</label>
@@ -33,7 +34,7 @@ const domainIds = Object.keys(domainLabels) as DomainId[];
         {domainIds.map((d) => <option value={d}>{domainLabels[d]}</option>)}
       </select>
       <label class="check"><input type="checkbox" data-f="first" /> First author</label>
-      <label class="check"><input type="checkbox" data-f="ml" /> Neural / ML</label>
+      <label class="check"><input type="checkbox" data-f="ml" /> Neural networks / ML</label>
       <span class="meta" data-count aria-live="polite"></span>
     </div>
   </section>
@@ -72,7 +73,7 @@ const domainIds = Object.keys(domainLabels) as DomainId[];
     <div class="row">
       <h2 class="row__label nonum">Notes</h2>
       <div class="prose meta">
-        <p>This list is updated automatically from the <a href="https://orcid.org/0000-0002-5577-5060">ORCID</a> record and Crossref (last change detected on {autoSyncDate}); newly found papers appear before their summary is written. Conference contributions are listed in the <a href={url('/cv/')}>CV</a>. Manuscripts under review are not listed here until they are accepted. Author lists follow the published versions. Summaries on this page are written for this site and are not the publishers’ abstracts.</p>
+        <p>Only published and accepted papers are listed. The list is updated automatically from the <a href="https://orcid.org/0000-0002-5577-5060">ORCID</a> record and Crossref (last change detected on {autoSyncDate}); a newly found paper appears before its summary is written. Author lists follow the published versions. The summaries are written for this site and are not the publishers’ abstracts. Conference contributions are listed in the <a href={url('/cv/Mijail_Littin_CV.pdf')}>CV</a>.</p>
         <p>Profiles: <a href="https://orcid.org/0000-0002-5577-5060">ORCID 0000-0002-5577-5060</a> · <a href="https://www.scopus.com/authid/detail.uri?authorId=58550141200">Scopus 58550141200</a>.</p>
       </div>
     </div>
