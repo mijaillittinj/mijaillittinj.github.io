@@ -42,7 +42,7 @@ export const ui = {
     'footer.colophon':
       'Static site built with Astro. No tracking. Figures are generated from the author’s own data or synthetic examples unless stated otherwise.',
     'footer.updated': 'Last updated',
-    'footer.license': 'Text © Mijail Littin, CC BY 4.0 unless noted; code MIT.',
+    'footer.license': 'Text © Mijail Littin, CC BY 4.0 unless noted. Code under the MIT licence.',
     'common.readMore': 'Read more',
     'common.all': 'All',
     'common.pdf': 'PDF',
@@ -77,7 +77,7 @@ export const ui = {
     'footer.colophon':
       'Sitio estático construido con Astro. Sin rastreo. Las figuras se generan con datos propios del autor o con ejemplos sintéticos, salvo indicación.',
     'footer.updated': 'Última actualización',
-    'footer.license': 'Texto © Mijail Littin, CC BY 4.0 salvo indicación; código MIT.',
+    'footer.license': 'Texto © Mijail Littin, CC BY 4.0 salvo indicación. Código bajo licencia MIT.',
     'common.readMore': 'Leer más',
     'common.all': 'Todo',
     'common.pdf': 'PDF',

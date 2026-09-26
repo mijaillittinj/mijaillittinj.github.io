@@ -11,7 +11,7 @@ const T = lang === 'es'
   ? {
       comma: true,
       profile: 'Perfil radial f(r)', gaussian: 'Máximo en el eje', annular: 'Anillo fuera del eje', twozone: 'Dos zonas',
-      a: 'Forma: posición / ancho', b: 'Forma: ancho del anillo / suavidad del borde',
+      a: 'Posición o ancho', b: 'Ancho del anillo o suavidad del borde',
       noise: 'Ruido de medición (% del máximo)', lam: 'Regularización log₁₀ λ', lamHint: 'Peso de la penalización de suavidad ‖Df‖².',
       band: 'Mostrar la dispersión en 30 realizaciones del ruido', direct: 'Mostrar la inversión directa',
       pDisk: 'Sección transversal (lo que buscamos)', pProj: 'Proyección (lo que medimos)', pRec: 'Reconstrucción (lo que inferimos)',
@@ -19,12 +19,12 @@ const T = lang === 'es'
       xProj: 'desplazamiento del rayo y', xRec: 'radio r',
       exact: 'proyección exacta', noisy: 'datos con ruido', bandL: 'regularizada ±2σ (30 realizaciones)', truth: 'f(r) verdadera', directL: 'inversión directa', reg: 'regularizada',
       err: 'Error (RMS, relativo al máximo)', dir: 'directa', regR: 'regularizada',
-      hurt: ' Aquí la regularización empeora el resultado: λ es demasiado grande y aplana estructura real.',
+      hurt: ' Aquí la regularización empeora el resultado, porque λ es demasiado grande y aplana estructura real.',
       helps: ' La penalización elimina la mayor parte del ruido amplificado.',
     }
   : {
       profile: 'Radial profile f(r)', gaussian: 'Peak on axis', annular: 'Off-axis ring', twozone: 'Two zones',
-      a: 'Shape: position / width', b: 'Shape: ring width / edge softness',
+      a: 'Position or width', b: 'Ring width or edge softness',
       noise: 'Measurement noise (% of max)', lam: 'Regularisation log₁₀ λ', lamHint: 'Weight of the smoothness penalty ‖Df‖².',
       band: 'Show spread over 30 noise draws', direct: 'Show direct inversion',
       pDisk: 'Cross-section (what we want)', pProj: 'Projection (what we measure)', pRec: 'Reconstruction (what we infer)',
@@ -32,7 +32,7 @@ const T = lang === 'es'
       xProj: 'ray offset y', xRec: 'radius r',
       exact: 'exact projection', noisy: 'noisy data', bandL: 'regularised ±2σ (30 draws)', truth: 'true f(r)', directL: 'direct inversion', reg: 'regularised',
       err: 'Error (RMS, relative to peak)', dir: 'direct', regR: 'regularised',
-      hurt: ' Here regularisation hurts: λ is too large and flattens real structure.',
+      hurt: ' Here regularisation hurts, because λ is too large and flattens real structure.',
       helps: ' The penalty removes most of the amplified noise.',
     };
 ---

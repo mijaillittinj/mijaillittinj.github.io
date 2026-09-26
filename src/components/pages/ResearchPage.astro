@@ -28,11 +28,11 @@ const themes: Theme[] = [
       ? 'Recuperar un campo local, por ejemplo la concentración de partículas en cada punto de una llama, a partir de señales que una cámara integra a lo largo de líneas de visión.'
       : 'Recovering a local field, for example the particle concentration at every point of a flame, from signals that a camera integrates along lines of sight.',
     why: es
-      ? 'Una cámara no ve un punto sino la suma de todo lo que hay en su línea de visión. En un objeto con simetría de revolución esa suma es la transformada de Abel. Invertirla es un problema mal condicionado: un error pequeño en los datos produce oscilaciones grandes cerca del eje. Además, la luz emitida o dispersada en el interior se absorbe en parte antes de salir (atrapamiento de señal), y si el modelo lo ignora el resultado queda sesgado.'
-      : 'A camera does not see a point but the sum of everything along its line of sight. For an object with rotational symmetry that sum is the Abel transform. Inverting it is ill-conditioned: a small error in the data turns into large oscillations near the axis. In addition, light emitted or scattered inside the object is partly absorbed before it leaves (signal trapping), and a model that ignores this gives biased results.',
+      ? 'Una cámara registra la suma de todo lo que hay a lo largo de cada línea de visión. En un objeto con simetría de revolución esa suma es la transformada de Abel. Invertirla es un problema mal condicionado, porque un error pequeño en los datos produce oscilaciones grandes cerca del eje. Además, parte de la luz emitida o dispersada en el interior se absorbe antes de salir. Este efecto se llama atrapamiento de señal, y un modelo que lo ignora entrega resultados sesgados.'
+      : 'A camera records the sum of everything along each line of sight. For an object with rotational symmetry that sum is the Abel transform. Inverting it is ill-conditioned, because a small error in the data turns into large oscillations near the axis. Part of the light emitted or scattered inside the object is also absorbed before it leaves. This is called signal trapping, and a model that ignores it gives biased results.',
     done: es
       ? [
-          'El método SAT (Spline-based Abel Transform) representa el perfil radial con un spline cúbico y lo ajusta con una penalización de curvatura; el atrapamiento de señal se incluye en el modelo directo. Publicado en Fuel (2024) y distribuido como el paquete de Python pysat-abel.',
+          'El método SAT (Spline-based Abel Transform) representa el perfil radial con un spline cúbico, lo ajusta con una penalización de curvatura e incluye el atrapamiento de señal en el modelo directo. Publicado en Fuel (2024) y distribuido como el paquete de Python pysat-abel.',
           'Se cuantificó cómo el atrapamiento sesga el tamaño de los agregados de hollín (cadenas de nanopartículas de carbono) que se infiere de la dispersión angular de luz, y cómo corregirlo dentro de la reconstrucción (Journal of Aerosol Science, 2024).',
           'Con esta reconstrucción se obtuvieron mapas bidimensionales de la distribución de tamaño de agregados en una llama (Proc. Combust. Inst., 2025) y perfiles radiales del tamaño de las partículas primarias a partir de dispersión de rayos X de sincrotrón (Proc. Combust. Inst., 2025).',
           'La reconstrucción regularizada es también la primera etapa de la inversión con redes neuronales descrita en la sección siguiente (Carbon, 2026).',
@@ -46,7 +46,7 @@ const themes: Theme[] = [
     papers: ['littin2024sat', 'littin2024trapping', 'littin2025scatt', 'littin2025saxs'],
     resources: [
       { label: 'pysat-abel', href: '/software/pysat-abel/' },
-      { label: es ? 'Módulo interactivo: la transformada de Abel' : 'Interactive module: the Abel transform', href: '/learn/inverse-problems/abel-transform/' },
+      { label: es ? 'Módulo interactivo sobre la transformada de Abel' : 'Interactive module on the Abel transform', href: '/learn/inverse-problems/abel-transform/' },
     ],
   },
   {
@@ -71,9 +71,9 @@ const themes: Theme[] = [
         ],
     papers: ['littin2026carbon', 'littin2026saf', 'yap2026dual', 'gutierrez2026maturity'],
     resources: [
-      { label: es ? 'Artículo explicado: Carbon 2026' : 'Paper explained: Carbon 2026', href: '/publications/carbon-2026/' },
+      { label: es ? 'El artículo de Carbon 2026, explicado' : 'The Carbon 2026 paper, explained', href: '/publications/carbon-2026/' },
       { label: es ? 'Presentación interactiva (en inglés)' : 'Interactive presentation', href: '/talks/carbon-2026/' },
-      { label: es ? 'Módulo interactivo: aprendizaje informado por la física' : 'Interactive module: physics-informed learning', href: '/learn/machine-learning/physics-informed-learning/' },
+      { label: es ? 'Módulo interactivo sobre aprendizaje informado por la física' : 'Interactive module on physics-informed learning', href: '/learn/machine-learning/physics-informed-learning/' },
     ],
   },
   {
@@ -88,15 +88,15 @@ const themes: Theme[] = [
     done: es
       ? [
           'Modelos de dispersión por aglomerados fractales, desde rayos X hasta luz visible (JQSRT, 2026, dos artículos como coautor).',
-          'Intercambio radiativo entre llamas y receptores, como coautor: factores de vista a partir de contornos de llama (Exp. Therm. Fluid Sci., 2023) y análisis del campo de visión del receptor (IJHMT, 2026), liderados por P. Pinto, y modelos sustitutos por aprendizaje automático (IJHMT, 2026, primer autor M. Mercado).',
+          'Como coautor, trabajos sobre el intercambio radiativo entre llamas y receptores. P. Pinto lideró los factores de vista a partir de contornos de llama (Exp. Therm. Fluid Sci., 2023) y el análisis del campo de visión del receptor (IJHMT, 2026), y M. Mercado los modelos sustitutos por aprendizaje automático (IJHMT, 2026).',
           'En el trabajo de Carbon, una red sustituta reemplaza el modelo de Lorentz–Drude del índice óptico del hollín con desviaciones inferiores a 0,1 %, lo que hace práctico el entrenamiento.',
-          'Simulación detallada de la formación de hollín con mecanismos cinéticos extendidos (Proc. Combust. Inst., 2024, primer autor; Case Stud. Therm. Eng., 2026, coautor).',
+          'Simulación detallada de la formación de hollín con mecanismos cinéticos extendidos (Proc. Combust. Inst., 2024, como primer autor, y Case Stud. Therm. Eng., 2026, como coautor).',
         ]
       : [
           'Scattering models for fractal agglomerates from X-rays to visible light (JQSRT, 2026, two papers as co-author).',
-          'Radiative exchange between flames and receivers, as co-author: view factors from flame contours (Exp. Therm. Fluid Sci., 2023) and the receiver’s field of view (IJHMT, 2026), led by P. Pinto, and machine-learning surrogates (IJHMT, 2026, first author M. Mercado).',
+          'As co-author, work on radiative exchange between flames and receivers. P. Pinto led the view factors from flame contours (Exp. Therm. Fluid Sci., 2023) and the analysis of the receiver’s field of view (IJHMT, 2026), and M. Mercado led the machine-learning surrogates (IJHMT, 2026).',
           'In the Carbon work, a surrogate network replaces the Lorentz–Drude model of the soot optical index with deviations below 0.1 %, which makes training practical.',
-          'Detailed simulation of soot formation with extended kinetic mechanisms (Proc. Combust. Inst., 2024, first author; Case Stud. Therm. Eng., 2026, co-author).',
+          'Detailed simulation of soot formation with extended kinetic mechanisms (Proc. Combust. Inst., 2024, as first author, and Case Stud. Therm. Eng., 2026, as co-author).',
         ],
     papers: ['yon2026xray', 'raynaud2026structure', 'mercado2026view', 'pinto2026fov', 'littin2024jeta1'],
     resources: [],
@@ -110,9 +110,9 @@ const T = es
   ? {
       title: 'Investigación', eyebrow: 'Investigación',
       h1: 'Inferir lo que no se puede medir directamente',
-      lede: 'Desarrollo métodos para estimar magnitudes físicas que no se pueden medir directamente a partir de observaciones indirectas y ruidosas. Los métodos se han desarrollado y validado en llamas, incendios, partículas y radiación térmica. Cada sección resume trabajo publicado o aceptado.',
+      lede: 'Desarrollo métodos para estimar, a partir de observaciones indirectas y ruidosas, magnitudes físicas que no se pueden medir directamente. Los métodos se han desarrollado y validado en llamas, incendios, partículas y radiación térmica. Cada sección resume trabajo publicado o aceptado.',
       general: 'La forma general del problema',
-      generalText: 'Se mide <em>y</em>, una versión indirecta y ruidosa del estado físico <em>x</em> que interesa. El modelo directo 𝒜 describe cómo <em>x</em> produce las mediciones (ecuación 1). Invertir ese modelo rara vez tiene una solución única y estable, por lo que se necesita información adicional: un término ℛ que descarte soluciones sin sentido físico (ecuación 2), o una representación aprendida que cumpla las ecuaciones que gobiernan el sistema.',
+      generalText: 'Se mide <em>y</em>, una versión indirecta y ruidosa del estado físico <em>x</em> que interesa. El modelo directo 𝒜 describe cómo <em>x</em> produce las mediciones (ecuación 1). Invertir ese modelo rara vez tiene una solución única y estable, así que hace falta información adicional. Puede ser un término ℛ que descarte soluciones sin sentido físico (ecuación 2), o una representación aprendida que cumpla las ecuaciones que gobiernan el sistema.',
       q: 'El problema', w: 'Por qué es difícil', d: 'Trabajo realizado', p: 'Artículos', r: 'Código, datos y material',
       dom: 'Dominios de aplicación', domText: 'Sistemas físicos en los que se han aplicado estos métodos, con el número de artículos de cada uno.',
       papersIn: 'artículos',
@@ -122,7 +122,7 @@ const T = es
       h1: 'Inferring what cannot be measured directly',
       lede: 'I develop methods that estimate, from indirect and noisy observations, physical quantities that cannot be measured directly. The methods have been developed and validated on flames, fires, particles and thermal radiation. Each section summarises published or accepted work.',
       general: 'The general form of the problem',
-      generalText: 'We measure <em>y</em>, an indirect and noisy version of the physical state <em>x</em> that we care about. The forward model 𝒜 describes how <em>x</em> produces the measurements (equation 1). Inverting that model rarely has a unique, stable solution, so extra information is needed: a term ℛ that rules out physically meaningless solutions (equation 2), or a learned representation that satisfies the governing equations.',
+      generalText: 'We measure <em>y</em>, an indirect and noisy version of the physical state <em>x</em> that we care about. The forward model 𝒜 describes how <em>x</em> produces the measurements (equation 1). Inverting that model rarely has a unique, stable solution, so extra information is needed. It can be a term ℛ that rules out physically meaningless solutions (equation 2), or a learned representation that satisfies the governing equations.',
       q: 'The problem', w: 'Why it is hard', d: 'Work done', p: 'Papers', r: 'Code, data and material',
       dom: 'Application domains', domText: 'Physical systems in which these methods have been applied, with the number of papers in each.',
       papersIn: 'papers',

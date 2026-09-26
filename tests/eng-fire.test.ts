@@ -1,5 +1,5 @@
 // Checks for the forest-fire tab: run with `node tests/eng-fire.test.ts`
-import { N, Fuel, makeLandscape, arrivalTimes, allScenarios, worstCase, naivePlan, solveGame, planMask, buildable, type Landscape } from '../src/lib/eng/fire.ts';
+import { N, Fuel, makeLandscape, arrivalTimes, allScenarios, worstCase, naivePlan, solveGame, planMask, buildable, minimaxTable, type Landscape } from '../src/lib/eng/fire.ts';
 
 let fails = 0;
 const check = (name: string, ok: boolean, info = '') => { console.log(`${ok ? 'PASS' : 'FAIL'}  ${name} ${info}`); if (!ok) fails++; };
@@ -59,6 +59,24 @@ const at = (x: number, y: number) => y * N + x;
   let bad = 0;
   for (let c = 0; c < m.length; c++) if (m[c] && !buildable(L, c)) bad++;
   check('firebreaks respect the building rules', bad === 0);
+}
+
+// Game table: row maxima (the fire's best replies) and the min-max row
+{
+  const t = minimaxTable([[3, 9, 4], [7, 5, 6], [2, 8, 1]]);
+  check('game table: argmax of each row', t.argmax.join() === '1,0,1', `(${t.argmax.join()})`);
+  check('game table: row maxima', t.rowMax.join() === '9,7,8', `(${t.rowMax.join()})`);
+  check('game table: min-max row', t.best === 1);
+  // on the real game, each table row's maximum equals the worst case of that plan
+  const L = makeLandscape(7), S = allScenarios(L), p = { windSpeed: 8, horizon: 4 };
+  const rounds = solveGame(L, p, 5, 1, 6);
+  const rows = rounds.filter((r) => r.improved);
+  const tb = minimaxTable(rows.map((r) => r.trialRow));
+  const consistent = rows.every((r, i) => tb.rowMax[i] === r.trialDamage.value);
+  check('game table rows agree with the worst case of each plan', consistent);
+  const final = rounds[rounds.length - 1];
+  check('bold row = best plan found by the game', tb.rowMax[tb.best] === final.worstDamage.value, `(${tb.rowMax[tb.best]} vs ${final.worstDamage.value})`);
+  void S;
 }
 
 if (fails) { console.error(`${fails} check(s) failed`); process.exit(1); }

@@ -51,8 +51,8 @@ export const courses: Course[] = [
     period: '2026',
     level: { en: 'Undergraduate', es: 'Pregrado' },
     description: {
-      en: 'Fluids at rest and in motion: conservation of mass, momentum and energy, applied to pipe flow, friction losses and the pumping systems found in industry, with interactive demonstrations.',
-      es: 'Fluidos en reposo y en movimiento: conservación de masa, cantidad de movimiento y energía, aplicada al flujo en tuberías, las pérdidas por fricción y los sistemas de bombeo de la industria, con demostraciones interactivas.',
+      en: 'Fluids at rest and in motion. Conservation of mass, momentum and energy is applied to pipe flow, friction losses and the pumping systems found in industry, with interactive demonstrations.',
+      es: 'Fluidos en reposo y en movimiento. La conservación de masa, cantidad de movimiento y energía se aplica al flujo en tuberías, las pérdidas por fricción y los sistemas de bombeo de la industria, con demostraciones interactivas.',
     },
     current: true,
   },
@@ -64,8 +64,8 @@ export const courses: Course[] = [
     period: '2026-1',
     level: { en: 'Undergraduate', es: 'Pregrado' },
     description: {
-      en: 'How an energy project is formulated and evaluated: the available resource and the demand, technical sizing, costs, financial indicators and emissions, with case studies built in RETScreen, a standard software tool for pre-feasibility studies of energy projects.',
-      es: 'Cómo se formula y evalúa un proyecto energético: el recurso disponible y la demanda, el dimensionamiento técnico, los costos, los indicadores financieros y las emisiones, con casos de estudio desarrollados en RETScreen, una herramienta de uso habitual para estudios de prefactibilidad de proyectos de energía.',
+      en: 'How an energy project is formulated and evaluated, from the available resource and the demand to technical sizing, costs, financial indicators and emissions. Case studies are built in RETScreen, a standard software tool for pre-feasibility studies of energy projects.',
+      es: 'Cómo se formula y evalúa un proyecto energético, desde el recurso disponible y la demanda hasta el dimensionamiento técnico, los costos, los indicadores financieros y las emisiones. Los casos de estudio se desarrollan en RETScreen, una herramienta de uso habitual para estudios de prefactibilidad de proyectos de energía.',
     },
     current: true,
   },

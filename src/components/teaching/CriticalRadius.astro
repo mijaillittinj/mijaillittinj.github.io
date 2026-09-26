@@ -11,20 +11,20 @@ const S = es
       plot: 'Pérdida de calor por metro de tubo', xr: 'radio exterior del aislante r (mm)', yq: "q' (W/m)",
       lq: "pérdida q'(r)", lbare: 'tubo sin aislante', lrc: 'radio crítico rc',
       read: ['radio crítico r<sub>c</sub> = k/h', 'sin aislante', 'máximo', 'espesor que reduce la pérdida a la mitad'],
-      below: 'rᵢ < rc: una capa delgada de aislante aumenta la pérdida de calor.',
-      above: 'rᵢ ≥ rc: cualquier espesor de aislante reduce la pérdida.',
+      below: 'Como rᵢ < rc, una capa delgada de aislante aumenta la pérdida de calor.',
+      above: 'Como rᵢ ≥ rc, cualquier espesor de aislante reduce la pérdida.',
       never: 'fuera del rango',
-      cap: 'Pérdida de calor de un tubo (o cable) cubierto con aislante, en función del radio exterior del aislante; se desprecia la resistencia de la pared del tubo. Al engrosar el aislante ocurren dos cosas opuestas: aumenta la resistencia a la conducción a través del aislante, ln(r/rᵢ)/(2πk), pero también crece la superficie exterior que entrega calor al aire, y la resistencia a la convección, 1/(2πrh), disminuye. La suma es mínima, y la pérdida máxima, en el radio crítico r<sub>c</sub> = k/h. Para tuberías grandes rᵢ ya supera a r<sub>c</sub> y aislar siempre ayuda; para cables delgados, una capa de aislante puede incluso mejorar su enfriamiento.',
+      cap: 'Pérdida de calor de un tubo (o cable) cubierto con aislante, en función del radio exterior del aislante. Se desprecia la resistencia de la pared del tubo. Al engrosar el aislante ocurren dos cosas opuestas. Aumenta la resistencia a la conducción a través del aislante, ln(r/rᵢ)/(2πk), pero también crece la superficie exterior que entrega calor al aire, y la resistencia a la convección, 1/(2πrh), disminuye. La suma es mínima, y la pérdida máxima, en el radio crítico r<sub>c</sub> = k/h. En tuberías grandes rᵢ ya supera a r<sub>c</sub> y aislar siempre ayuda. En cables delgados, en cambio, una capa de aislante puede incluso mejorar su enfriamiento.',
     }
   : {
       k: 'Insulation conductivity k', h: 'Convection h', ri: 'Pipe radius rᵢ', dT: 'Temperature difference ΔT',
       plot: 'Heat loss per metre of pipe', xr: 'insulation outer radius r (mm)', yq: "q' (W/m)",
       lq: "loss q'(r)", lbare: 'bare pipe', lrc: 'critical radius rc',
       read: ['critical radius r<sub>c</sub> = k/h', 'bare pipe', 'maximum', 'thickness that halves the loss'],
-      below: 'rᵢ < rc: a thin layer of insulation increases the heat loss.',
-      above: 'rᵢ ≥ rc: any thickness of insulation reduces the loss.',
+      below: 'Since rᵢ < rc, a thin layer of insulation increases the heat loss.',
+      above: 'Since rᵢ ≥ rc, any thickness of insulation reduces the loss.',
       never: 'out of range',
-      cap: 'Heat loss of an insulated pipe (or wire) as a function of the outer radius of the insulation; the resistance of the pipe wall is neglected. Thickening the insulation has two opposite effects: the resistance to conduction through the insulation, ln(r/rᵢ)/(2πk), increases, but the outer surface that gives heat to the air also grows, so the resistance to convection, 1/(2πrh), decreases. Their sum is smallest, and the loss largest, at the critical radius r<sub>c</sub> = k/h. For large pipes rᵢ already exceeds r<sub>c</sub> and insulation always helps; for thin wires a layer of insulation can even improve cooling.',
+      cap: 'Heat loss of an insulated pipe (or wire) as a function of the outer radius of the insulation. The resistance of the pipe wall is neglected. Thickening the insulation has two opposite effects. The resistance to conduction through the insulation, ln(r/rᵢ)/(2πk), increases, but the outer surface that gives heat to the air also grows, so the resistance to convection, 1/(2πrh), decreases. Their sum is smallest, and the loss largest, at the critical radius r<sub>c</sub> = k/h. For large pipes rᵢ already exceeds r<sub>c</sub> and insulation always helps. For thin wires, a layer of insulation can even improve cooling.',
     };
 ---
 <figure class="lab" data-t-crit data-s={JSON.stringify(S)}>
@@ -72,7 +72,7 @@ const S = es
         { kind: 'line', x: rs.map(mm), y: q, cls: 's-physics', label: S.lq },
         { kind: 'line', x: [mm(rc), mm(rc)], y: [0, top], cls: 's-data', dash: true, label: S.lrc },
       ], { xlim: [mm(ri), mm(rmax)], ylim: [0, top] });
-      read.innerHTML = `${S.read[0]} = <strong>${mm(rc).toFixed(1)}</strong> mm<br>${S.read[1]} <strong>${fmt(qBare)}</strong> W/m · ${S.read[2]} <strong>${fmt(qMax)}</strong> W/m<br>${S.read[3]}: <strong>${Number.isFinite(rHalf) ? mm(rHalf - ri).toFixed(1) + ' mm' : S.never}</strong><br>${ri < rc ? S.below : S.above}`;
+      read.innerHTML = `${S.read[0]} = <strong>${mm(rc).toFixed(1)}</strong> mm<br>${S.read[1]} <strong>${fmt(qBare)}</strong> W/m · ${S.read[2]} <strong>${fmt(qMax)}</strong> W/m<br>${S.read[3]} = <strong>${Number.isFinite(rHalf) ? mm(rHalf - ri).toFixed(1) + ' mm' : S.never}</strong><br>${ri < rc ? S.below : S.above}`;
     };
     root.querySelectorAll('input[type=range]').forEach((i) => i.addEventListener('input', update));
     update();

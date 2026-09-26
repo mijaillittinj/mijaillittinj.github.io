@@ -217,7 +217,7 @@ const T = es
         } else {
           const m = mean(da);
           const spread = Math.sqrt(da.reduce((q, e) => q + dist(e, m) ** 2, 0) / da.length);
-          read.textContent = `${T.rd.t} ${t.toFixed(1)} · ${T.rd.rmse}: ${T.rd.free} ${avg(eFree).toFixed(2)}, ${T.rd.da} ${avg(eDa).toFixed(2)} · ${T.rd.spread} ${spread.toFixed(2)}`;
+          read.textContent = `${T.rd.t} ${t.toFixed(1)} · ${T.rd.rmse} ${T.rd.free} ${avg(eFree).toFixed(2)}, ${T.rd.da} ${avg(eDa).toFixed(2)} · ${T.rd.spread} ${spread.toFixed(2)}`;
         }
       };
 

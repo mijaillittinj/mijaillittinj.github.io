@@ -12,7 +12,7 @@ const es = lang === 'es';
 const objEs: Record<string, { label: string; note: string }> = {
   valley: { label: 'Valle cuadrático alargado', note: 'f(x, y) = ½(x² + κy²). La hessiana tiene valores propios 1 y κ. El descenso de gradiente simple solo es estable si α < 2/κ, pero el avance en x es proporcional a α. Un κ grande (mal condicionamiento) obliga a converger lentamente.' },
   rosenbrock: { label: 'Rosenbrock (valle curvo)', note: 'f(x, y) = (1 − x)² + 10(y − x²)². El mínimo en (1, 1) está al final de un valle estrecho y curvo. La curvatura local cambia a lo largo del camino, así que ningún paso fijo es ideal.' },
-  himmelblau: { label: 'Himmelblau (cuatro mínimos)', note: 'No convexa, con cuatro mínimos globales. El mínimo al que se llega depende del punto de partida y del tamaño del paso: la respuesta de un método local no es única.' },
+  himmelblau: { label: 'Himmelblau (cuatro mínimos)', note: 'No convexa, con cuatro mínimos globales. El mínimo al que se llega depende del punto de partida y del tamaño del paso, así que la respuesta de un método local no es única.' },
 };
 const objText = Object.fromEntries(objectives.map((o) => [o.id, es ? objEs[o.id] : { label: o.label, note: o.note }]));
 const T = es

@@ -12,34 +12,34 @@ const { lang = 'en', hidden = false } = Astro.props;
 const es = lang === 'es';
 const T = es
   ? {
-      fwd: 'Directo', inv: 'Inverso',
-      fi: [': dados el epicentro (el punto de la superficie sobre el sismo) y la velocidad de las ondas, calcular cuándo llega la primera onda sísmica (la onda P) a cada estación. ', ': solo a partir de esos tiempos de llegada, medidos con ruido, encontrar dónde y cuándo ocurrió el sismo.'],
-      mode: 'Modo', mFwd: 'directo: ubicar el sismo', mInv: 'inverso: localizar un sismo oculto',
+      fwd: 'Problema directo.', inv: 'Problema inverso.',
+      fi: [' Dados el epicentro y la velocidad de las ondas, calcular cuándo llega la primera onda sísmica, la onda P, a cada estación. El epicentro es el punto de la superficie situado sobre el sismo. ', ' Encontrar dónde y cuándo ocurrió el sismo usando solo esos tiempos de llegada, medidos con ruido.'],
+      mode: 'Modo', mFwd: 'ubicar un sismo (directo)', mInv: 'localizar un sismo oculto (inverso)',
       layout: 'Estaciones', lSpread: 'repartidas', lLine: 'en línea', lCluster: 'agrupadas',
       noise: 'Ruido en los tiempos de llegada', replay: 'repetir las ondas', newq: 'nuevo sismo', reveal: 'revelar', hide: 'ocultar',
       arrivals: 'Tiempos de llegada', map: 'Mapa de 200 km × 200 km con estaciones sismológicas',
-      hint: 'Arrastre las estaciones (triángulos)', hintFwd: ' o el epicentro (estrella); también puede hacer clic en el mapa.', hintInv: '; el mapa de desajuste se recalcula de inmediato.',
+      hint: 'Arrastre las estaciones (triángulos)', hintFwd: ' o el epicentro (estrella). También puede hacer clic en el mapa.', hintInv: '. El mapa de desajuste se recalcula de inmediato.',
       legEst: 'estimación', legReg: 'región del 95 %', legTrue: 'verdadero',
       method: 'Método', mCls: 'búsqueda del desajuste (clásico)', mPinn: 'PINN',
       train: 'entrenar la PINN', stop: 'detener', legPinn: 'PINN', legIso: 'isócronas de la PINN', legCls: 'clásico',
       lossLabel: 'La PINN minimiza',
-      pinnCap: ' Opción PINN: una red neuronal describe el tiempo de viaje desde la fuente hasta cualquier punto; la posición de la fuente y la hora de origen se entrenan junto con ella, y la pérdida incluye la ecuación eikonal, que gobierna cómo avanza el frente de onda. En un medio uniforme coincide con la búsqueda clásica; la misma formulación sirve también cuando la velocidad de las ondas varía en el espacio, donde no hay una fórmula sencilla para el tiempo de viaje.',
-      cap: 'El mapa muestra seis estaciones sismológicas en una región de 200 km × 200 km. En modo directo, ubique el epicentro y observe cómo la onda llega a cada estación; las barras indican los tiempos de llegada. En modo inverso el sismo está oculto: su posición y su hora de origen se obtienen minimizando el desajuste entre los tiempos medidos y los predichos, y el sombreado muestra ese desajuste en todo el mapa, junto con la región de confianza del 95 %. La geometría de las estaciones determina la precisión: estaciones alrededor de la fuente dan una región pequeña; estaciones en línea dan una región alargada y una solución espejo igual de buena; estaciones agrupadas dejan mal determinada la distancia. Ejemplo sintético en un medio uniforme (v = 6 km/s).',
+      pinnCap: ' En la opción PINN, una red neuronal describe el tiempo de viaje desde la fuente hasta cualquier punto. La posición de la fuente y la hora de origen se entrenan junto con la red, y la pérdida incluye la ecuación eikonal, que gobierna cómo avanza el frente de onda. En un medio uniforme el resultado coincide con la búsqueda clásica. La misma formulación sirve cuando la velocidad de las ondas cambia en el espacio y ya no existe una fórmula sencilla para el tiempo de viaje.',
+      cap: 'El mapa muestra seis estaciones sismológicas en una región de 200 km × 200 km. En modo directo, ubique el epicentro y observe cómo la onda llega a cada estación. Las barras indican los tiempos de llegada. En modo inverso el sismo está oculto, y su posición y hora de origen se obtienen minimizando el desajuste entre los tiempos medidos y los predichos. El sombreado muestra ese desajuste en todo el mapa, junto con la región de confianza del 95 %. La geometría de las estaciones determina la precisión. Si las estaciones rodean la fuente, la región es pequeña. Si están en línea, la región se alarga y aparece una solución espejo igual de buena. Si están agrupadas, la distancia queda mal determinada. Ejemplo sintético en un medio uniforme, con v = 6 km/s.',
     }
   : {
-      fwd: 'Forward', inv: 'Inverse',
-      fi: [': given the epicentre (the point on the surface above the earthquake) and the wave speed, compute when the first seismic wave (the P wave) reaches each station. ', ': from those arrival times alone, measured with noise, find where and when the earthquake happened.'],
-      mode: 'Mode', mFwd: 'forward: place the earthquake', mInv: 'inverse: locate a hidden one',
+      fwd: 'Forward problem.', inv: 'Inverse problem.',
+      fi: [' Given the epicentre and the wave speed, compute when the first seismic wave, the P wave, reaches each station. The epicentre is the point on the surface directly above the earthquake. ', ' Find where and when the earthquake happened using only those arrival times, measured with noise.'],
+      mode: 'Mode', mFwd: 'place an earthquake (forward)', mInv: 'locate a hidden one (inverse)',
       layout: 'Stations', lSpread: 'spread out', lLine: 'in a line', lCluster: 'clustered',
       noise: 'Noise on arrival times', replay: 'replay the waves', newq: 'new earthquake', reveal: 'reveal', hide: 'hide',
       arrivals: 'Arrival times', map: 'Map of 200 km × 200 km with seismic stations',
-      hint: 'Drag the stations (triangles)', hintFwd: ' or the epicentre (star); you can also click on the map.', hintInv: '; the misfit map is recomputed at once.',
+      hint: 'Drag the stations (triangles)', hintFwd: ' or the epicentre (star). You can also click on the map.', hintInv: '. The misfit map is recomputed at once.',
       legEst: 'estimate', legReg: '95 % region', legTrue: 'true',
       method: 'Method', mCls: 'misfit search (classical)', mPinn: 'PINN',
       train: 'train the PINN', stop: 'stop', legPinn: 'PINN', legIso: 'PINN isochrones', legCls: 'classical',
       lossLabel: 'The PINN minimises',
-      pinnCap: ' PINN option: a neural network describes the travel time from the source to any point; the source position and origin time are trained with it, and the loss includes the eikonal equation, which governs how the wavefront advances. In a uniform medium it agrees with the classical search; the same formulation also applies when the wave speed varies in space, where no simple formula for the travel time exists.',
-      cap: 'The map shows six seismic stations in a 200 km × 200 km region. In forward mode, place the epicentre and watch the wave reach each station; the bars give the arrival times. In inverse mode the earthquake is hidden: its position and origin time are found by minimising the misfit between measured and predicted times, and the shading shows that misfit over the whole map, with the 95 % confidence region. Station geometry sets the accuracy: stations around the source give a small region; stations in a line give an elongated region and an equally good mirror solution; clustered stations leave the distance poorly determined. Synthetic example in a uniform medium (v = 6 km/s).',
+      pinnCap: ' In the PINN option, a neural network describes the travel time from the source to any point. The source position and origin time are trained with it, and the loss includes the eikonal equation, which governs how the wavefront advances. In a uniform medium the result agrees with the classical search. The same formulation works when the wave speed varies in space and there is no longer a simple formula for the travel time.',
+      cap: 'The map shows six seismic stations in a 200 km × 200 km region. In forward mode, place the epicentre and watch the wave reach each station. The bars give the arrival times. In inverse mode the earthquake is hidden, and its position and origin time are found by minimising the misfit between measured and predicted times. The shading shows that misfit over the whole map, with the 95 % confidence region. Station geometry sets the accuracy. Stations that surround the source give a small region. Stations in a line give an elongated region and a mirror solution that fits equally well. Clustered stations leave the distance poorly determined. Synthetic example in a uniform medium, with v = 6 km/s.',
     };
 const client = { lang, legEst: T.legEst, legReg: T.legReg, legTrue: T.legTrue, reveal: T.reveal, hide: T.hide, hint: T.hint, hintFwd: T.hintFwd, hintInv: T.hintInv, train: T.train, stop: T.stop, legPinn: T.legPinn, legIso: T.legIso, legCls: T.legCls };
 ---
@@ -47,13 +47,13 @@ const client = { lang, legEst: T.legEst, legReg: T.legReg, legTrue: T.legTrue, r
   <p class="eng-fi"><em>{T.fwd}</em>{T.fi[0]}<em>{T.inv}</em>{T.fi[1]}</p>
 
   <div class="eng-switches">
-    <div class="eng-switch"><span>{T.mode}:</span>
+    <div class="eng-switch"><span>{T.mode}</span>
       <div class="seg" role="group" aria-label={T.mode}>
         <button type="button" data-q-mode="fwd" aria-pressed="true">{T.mFwd}</button>
         <button type="button" data-q-mode="inv" aria-pressed="false">{T.mInv}</button>
       </div>
     </div>
-    <div class="eng-switch" data-q-only="inv" hidden><span>{T.method}:</span>
+    <div class="eng-switch" data-q-only="inv" hidden><span>{T.method}</span>
       <div class="seg" role="group" aria-label={T.method}>
         <button type="button" data-q-method="cls" aria-pressed="true">{T.mCls}</button>
         <button type="button" data-q-method="pinn" aria-pressed="false">{T.mPinn}</button>
@@ -333,11 +333,11 @@ const client = { lang, legEst: T.legEst, legReg: T.legReg, legTrue: T.legTrue, r
         const order = times.map((t, i) => [t, i] as const).sort((a, b) => a[0] - b[0]);
         const [ta, a] = order[0], [tb, b] = order[order.length - 1];
         read.textContent = es
-          ? `Epicentro en (${Math.round(src.x)}, ${Math.round(src.y)}) km. Primera estación alcanzada: S${a + 1}, a los ${fmt1(ta)} s; última: S${b + 1}, a los ${fmt1(tb)} s.`
-          : `Epicentre at (${Math.round(src.x)}, ${Math.round(src.y)}) km. First station reached: S${a + 1}, after ${fmt1(ta)} s; last: S${b + 1}, after ${fmt1(tb)} s.`;
+          ? `Epicentro en (${Math.round(src.x)}, ${Math.round(src.y)}) km. La onda llega primero a S${a + 1}, a los ${fmt1(ta)} s, y al final a S${b + 1}, a los ${fmt1(tb)} s.`
+          : `Epicentre at (${Math.round(src.x)}, ${Math.round(src.y)}) km. The wave reaches S${a + 1} first, after ${fmt1(ta)} s, and S${b + 1} last, after ${fmt1(tb)} s.`;
       } else if (method === 'pinn') {
         if (!net) {
-          read.textContent = es ? 'Pulse «entrenar la PINN»: la red parte del centro del mapa, con una corrección nula.' : 'Press “train the PINN”: the network starts from the centre of the map, with a zero correction.';
+          read.textContent = es ? 'Pulse «entrenar la PINN». La red parte del centro del mapa, con una corrección nula.' : 'Press “train the PINN”. The network starts from the centre of the map, with a zero correction.';
         } else {
           const it = trainer?.iter ?? 0;
           let s = es

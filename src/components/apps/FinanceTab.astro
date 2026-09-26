@@ -12,42 +12,42 @@ const { lang = 'en', hidden = false } = Astro.props;
 const es = lang === 'es';
 const T = es
   ? {
-      fwd: 'Directo', fwdText: 'dadas la volatilidad σ, la tasa de interés r, el precio de ejercicio K y el plazo T, calcular el precio de una opción de compra europea.',
-      inv: 'Inverso', invText: 'dados precios de mercado con ruido, encontrar la volatilidad σ que los explica (calibración).',
-      mFwd: 'directo: valorar una opción', mInv: 'inverso: calibrar con el mercado',
+      fwd: 'Problema directo.', fwdText: 'Dadas la volatilidad σ, la tasa de interés r, el precio de ejercicio K y el plazo T, calcular el precio de una opción de compra europea.',
+      inv: 'Problema inverso.', invText: 'Encontrar la volatilidad σ que explica unos precios de mercado con ruido. Este paso se llama calibración.',
+      mFwd: 'valorar una opción (directo)', mInv: 'calibrar con el mercado (inverso)',
       sigma: 'Volatilidad σ', r: 'Tasa libre de riesgo r', K: 'Precio de ejercicio K', Tm: 'Plazo T', noise: 'Ruido de las cotizaciones',
       smile: 'Mercado con sonrisa de volatilidad', method: 'Método', classic: 'mínimos cuadrados',
       calib: 'calibrar', reveal: 'revelar la verdad', newM: 'nuevo mercado', train: 'entrenar la PINN', stop: 'detener',
-      pPrice: '(a) Precio de la opción', pSurf: '(b) Valor temporal V − (S − K)⁺', surfHint: 'horizontal: S · vertical: τ',
+      pPrice: '(a) Precio de la opción', pSurf: '(b) Valor temporal V − (S − K)⁺', surfHint: 'S en el eje horizontal, τ en el vertical',
       pIV: '(a) Volatilidad implícita por cotización', pRes: '(b) Residuo de precio (mercado − modelo)',
-      pPinn: '(a) Precios: cotizaciones y PINN', pSig: '(b) σ durante el entrenamiento',
+      pPinn: '(a) Cotizaciones y precios de la PINN', pSig: '(b) σ durante el entrenamiento',
       S: 'precio del subyacente S', V: 'precio de la opción', Kx: 'precio de ejercicio K', iv: 'volatilidad', res: 'residuo', it: 'iteración', sig: 'σ',
       leg: { tau: 'τ =', payoff: 'pago al vencimiento', q1: 'cotizaciones τ = 0,25', q2: 'cotizaciones τ = 1', fit: 'σ ajustada', truth: 'σ verdadera', pinn: 'PINN', bs: 'Black–Scholes (verdad)', quotes: 'cotizaciones' },
-      rd: { price: 'Precio en S = 100', delta: 'delta', fitted: 'σ ajustada', truth: 'σ verdadera', rms: 'RMS de precio', err: 'error', smileMsg: 'residuos sistemáticos: ninguna σ constante ajusta todas las cotizaciones (error de modelo, no ruido)', flatMsg: 'los residuos son ruido: el modelo describe este mercado', press: 'Pulse «calibrar» para estimar una sola σ.', pinnIdle: 'Pulse «entrenar la PINN»: parte de σ = 0,30.', pinnData: 'pérdida de datos', pinnPde: 'residuo de la EDP', priceErr: 'error de precio' },
+      rd: { price: 'Precio en S = 100', delta: 'delta', fitted: 'σ ajustada', truth: 'σ verdadera', rms: 'RMS de precio', err: 'error', smileMsg: 'residuos sistemáticos, porque ninguna σ constante ajusta todas las cotizaciones. Es un error del modelo y no ruido', flatMsg: 'los residuos son ruido y el modelo describe bien este mercado', press: 'Pulse «calibrar» para estimar una sola σ.', pinnIdle: 'Pulse «entrenar la PINN». El entrenamiento parte de σ = 0,30.', pinnData: 'pérdida de datos', pinnPde: 'residuo de la EDP', priceErr: 'error de precio' },
       lossLabel: 'La PINN minimiza',
-      cap: 'Una opción de compra europea da el derecho, no la obligación, de comprar un activo a un precio fijo K (el precio de ejercicio) en una fecha fija. El panel (a) muestra su precio en función del precio actual del activo S; el panel (b), su valor temporal, la parte del precio que excede la ganancia inmediata. El modelo de Black–Scholes calcula el precio a partir de la volatilidad σ, que mide cuánto fluctúa el precio del activo. El problema directo es valorar la opción para una σ dada; el inverso es encontrar la σ que reproduce los precios observados, y la σ obtenida de un solo precio se llama volatilidad implícita. Si el mercado se generó con una σ constante, un solo valor ajusta todas las cotizaciones y los residuos son ruido. Con la opción «sonrisa de volatilidad», la volatilidad depende del precio de ejercicio: ninguna σ única ajusta todo y los residuos forman un patrón, porque el modelo mismo es incorrecto. Modelos más ricos, como la volatilidad local de Dupire, son más difíciles de calibrar: el problema es mal planteado y requiere regularización. Datos sintéticos; no es una recomendación de inversión.',
-      pinnCap: 'PINN (red neuronal informada por la física): una red representa el precio V(S, τ) y se entrena junto con σ. Su función de pérdida combina el desajuste con las cotizaciones, la ecuación de Black–Scholes, el pago al vencimiento y las condiciones de borde; así aprende una superficie de precios que cumple el modelo sin recibir nunca la fórmula. La PINN usa las cotizaciones de un solo precio de ejercicio, registradas en varios días, por lo que la opción de sonrisa no se aplica.',
+      cap: 'Una opción de compra europea da el derecho a comprar un activo a un precio fijo K, llamado precio de ejercicio, en una fecha fija. Quien la tiene puede no ejercerla. El panel (a) muestra su precio en función del precio actual del activo S. El panel (b) muestra su valor temporal, la parte del precio que excede la ganancia inmediata. El modelo de Black–Scholes calcula el precio a partir de la volatilidad σ, que mide cuánto fluctúa el precio del activo. El problema directo es valorar la opción para una σ dada. El inverso es encontrar la σ que reproduce los precios observados, y la σ obtenida de un solo precio se llama volatilidad implícita. Si el mercado se generó con una σ constante, un solo valor ajusta todas las cotizaciones y los residuos son ruido. Con la opción «sonrisa de volatilidad», la volatilidad cambia con el precio de ejercicio. Entonces ninguna σ única ajusta todo y los residuos forman un patrón, porque el modelo mismo es incorrecto. Modelos más ricos, como la volatilidad local de Dupire, son más difíciles de calibrar, ya que el problema está mal planteado y necesita regularización. Datos sintéticos. No es una recomendación de inversión.',
+      pinnCap: 'En la opción PINN, una red neuronal representa el precio V(S, τ) y se entrena junto con σ. Su función de pérdida combina el desajuste con las cotizaciones, la ecuación de Black–Scholes, el pago al vencimiento y las condiciones de borde. Así aprende una superficie de precios que cumple el modelo sin recibir nunca la fórmula. La PINN usa las cotizaciones de un solo precio de ejercicio, registradas en varios días, y por eso la opción de sonrisa no se aplica.',
     }
   : {
-      fwd: 'Forward', fwdText: 'given the volatility σ, the interest rate r, the strike K and the time to maturity T, compute the price of a European call option.',
-      inv: 'Inverse', invText: 'given noisy market prices, find the volatility σ that explains them (calibration).',
-      mFwd: 'forward: price an option', mInv: 'inverse: calibrate to the market',
+      fwd: 'Forward problem.', fwdText: 'Given the volatility σ, the interest rate r, the strike K and the time to maturity T, compute the price of a European call option.',
+      inv: 'Inverse problem.', invText: 'Find the volatility σ that explains a set of noisy market prices. This step is called calibration.',
+      mFwd: 'price an option (forward)', mInv: 'calibrate to the market (inverse)',
       sigma: 'Volatility σ', r: 'Risk-free rate r', K: 'Strike K', Tm: 'Maturity T', noise: 'Quote noise',
       smile: 'Market with a volatility smile', method: 'Method', classic: 'least squares',
       calib: 'calibrate', reveal: 'reveal the truth', newM: 'new market', train: 'train the PINN', stop: 'stop',
-      pPrice: '(a) Option price', pSurf: '(b) Time value V − (S − K)⁺', surfHint: 'horizontal: S · vertical: τ',
+      pPrice: '(a) Option price', pSurf: '(b) Time value V − (S − K)⁺', surfHint: 'S on the horizontal axis, τ on the vertical',
       pIV: '(a) Implied volatility of each quote', pRes: '(b) Price residual (market − model)',
-      pPinn: '(a) Prices: quotes and PINN', pSig: '(b) σ during training',
+      pPinn: '(a) Quotes and PINN prices', pSig: '(b) σ during training',
       S: 'underlying price S', V: 'option price', Kx: 'strike K', iv: 'volatility', res: 'residual', it: 'iteration', sig: 'σ',
       leg: { tau: 'τ =', payoff: 'payoff at maturity', q1: 'quotes τ = 0.25', q2: 'quotes τ = 1', fit: 'fitted σ', truth: 'true σ', pinn: 'PINN', bs: 'Black–Scholes (truth)', quotes: 'quotes' },
-      rd: { price: 'Price at S = 100', delta: 'delta', fitted: 'fitted σ', truth: 'true σ', rms: 'price RMS', err: 'error', smileMsg: 'systematic residuals: no constant σ fits every quote (model error, not noise)', flatMsg: 'the residuals are noise: the model describes this market', press: 'Press “calibrate” to estimate a single σ.', pinnIdle: 'Press “train the PINN”: it starts from σ = 0.30.', pinnData: 'data loss', pinnPde: 'PDE residual', priceErr: 'price error' },
+      rd: { price: 'Price at S = 100', delta: 'delta', fitted: 'fitted σ', truth: 'true σ', rms: 'price RMS', err: 'error', smileMsg: 'systematic residuals, because no constant σ fits every quote. This is model error and not noise', flatMsg: 'the residuals are noise and the model describes this market well', press: 'Press “calibrate” to estimate a single σ.', pinnIdle: 'Press “train the PINN”. Training starts from σ = 0.30.', pinnData: 'data loss', pinnPde: 'PDE residual', priceErr: 'price error' },
       lossLabel: 'The PINN minimises',
-      cap: 'A European call option gives the right, but not the obligation, to buy an asset at a fixed price K (the strike) on a fixed date. Panel (a) shows its price as a function of today’s asset price S; panel (b) shows its time value, the part of the price above the immediate payoff. The Black–Scholes model computes the price from the volatility σ, which measures how much the asset price fluctuates. The forward problem is to price the option for a given σ; the inverse problem is to find the σ that reproduces observed prices, and the σ recovered from a single price is called the implied volatility. If the market was generated with a constant σ, one value fits every quote and the residuals are noise. With the “volatility smile” option the volatility depends on the strike: no single σ fits everything and the residuals form a pattern, because the model itself is wrong. Richer models, such as Dupire’s local volatility, are harder to calibrate: the problem is ill-posed and needs regularisation. Synthetic data; not investment advice.',
-      pinnCap: 'PINN (physics-informed neural network): a network represents the price V(S, τ) and is trained together with σ. Its loss combines the misfit to the quotes with the Black–Scholes equation, the payoff at maturity and the boundary conditions, so it learns a price surface that obeys the model without ever being given the formula. The PINN uses the quotes of a single strike, recorded on several days, so the smile option does not apply to it.',
+      cap: 'A European call option gives its holder the right to buy an asset at a fixed price K, called the strike, on a fixed date. The holder does not have to use it. Panel (a) shows its price as a function of today’s asset price S. Panel (b) shows its time value, the part of the price above the immediate payoff. The Black–Scholes model computes the price from the volatility σ, which measures how much the asset price fluctuates. The forward problem is to price the option for a given σ. The inverse problem is to find the σ that reproduces observed prices, and the σ recovered from a single price is called the implied volatility. If the market was generated with a constant σ, one value fits every quote and the residuals are noise. With the “volatility smile” option the volatility changes with the strike. Then no single σ fits everything and the residuals form a pattern, because the model itself is wrong. Richer models, such as Dupire’s local volatility, are harder to calibrate because the problem is ill-posed and needs regularisation. Synthetic data. Not investment advice.',
+      pinnCap: 'In the PINN option, a neural network represents the price V(S, τ) and is trained together with σ. Its loss combines the misfit to the quotes with the Black–Scholes equation, the payoff at maturity and the boundary conditions. It therefore learns a price surface that obeys the model without ever being given the formula. The PINN uses the quotes of a single strike, recorded on several days, so the smile option does not apply to it.',
     };
 ---
 <div class="eng-tab fi" data-eng-tab="finance" data-fi-text={JSON.stringify(T)} hidden={hidden}>
-  <p class="eng-fi"><em>{T.fwd}</em>: {T.fwdText} <em>{T.inv}</em>: {T.invText}</p>
+  <p class="eng-fi"><em>{T.fwd}</em> {T.fwdText} <em>{T.inv}</em> {T.invText}</p>
 
   <div class="eng-switches">
     <div class="eng-switch">
@@ -56,7 +56,7 @@ const T = es
         <button type="button" data-fi-mode="inv" aria-pressed="false">{T.mInv}</button>
       </div>
     </div>
-    <div class="eng-switch" data-fi-invui hidden><span>{T.method}:</span>
+    <div class="eng-switch" data-fi-invui hidden><span>{T.method}</span>
       <div class="seg" role="group" aria-label={T.method}><button type="button" data-fi-m="classic" aria-pressed="true">{T.classic}</button><button type="button" data-fi-m="pinn" aria-pressed="false">PINN</button></div>
     </div>
   </div>
@@ -150,7 +150,7 @@ const T = es
       const nx = 96, ny = 48, data = new Float64Array(nx * ny);
       for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) { const S = 40 + (120 * i) / (nx - 1); data[j * nx + i] = bsCall(S, K, r, sig, (Tm * j) / (ny - 1)) - Math.max(S - K, 0); }
       drawField(surf, data, { nx, ny, cmap: viridis, vmin: 0 });
-      read.textContent = `${T.rd.price}: ${fmt(bsCall(100, K, r, sig, Tm))} · ${T.rd.delta} ${fmt(bsDelta(100, K, r, sig, Tm))}`;
+      read.textContent = `${T.rd.price} ${fmt(bsCall(100, K, r, sig, Tm))} · ${T.rd.delta} ${fmt(bsDelta(100, K, r, sig, Tm))}`;
     };
 
     // ---- inverse, classical
@@ -208,7 +208,7 @@ const T = es
       let txt = T.rd.pinnIdle;
       if (pinn) {
         const s = sigmaOfNet(pinn);
-        txt = `PINN: ${T.it} ${pIter} · σ = ${fmt(s, 3)} · ${T.rd.pinnData} ${pLd.toExponential(1)} · ${T.rd.pinnPde} ${pLp.toExponential(1)}`;
+        txt = `PINN · ${T.it} ${pIter} · σ = ${fmt(s, 3)} · ${T.rd.pinnData} ${pLd.toExponential(1)} · ${T.rd.pinnPde} ${pLp.toExponential(1)}`;
         if (revealed) {
           let e = 0, n = 0;
           for (const tau of P_TAUS) { const v = evalFin(pinn, Sgrid, tau, P_K); Sgrid.forEach((S, i) => { e += (v[i] - bsCall(S, P_K, market.r, truthSig, tau)) ** 2; n++; }); }

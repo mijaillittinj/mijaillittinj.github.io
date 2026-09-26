@@ -20,7 +20,7 @@ export const software: Software[] = [
   {
     slug: 'pysat-abel',
     name: 'pysat-abel',
-    summary: 'Spline-based Abel transform (SAT): regularised reconstruction of radial profiles from line-of-sight measurements of axisymmetric objects, with optional correction of signal trapping (self-absorption).',
+    summary: 'The spline-based Abel transform (SAT) reconstructs radial profiles of axisymmetric objects from line-of-sight measurements, with regularisation and an optional correction for signal trapping, the reabsorption of light inside the object.',
     language: 'Python',
     status: 'released',
     links: [
@@ -29,11 +29,11 @@ export const software: Software[] = [
     ],
     paper: 'littin2024sat',
     license: 'MIT (package metadata)',
-    licenseNote: 'The 0.1.3 release also ships a GPL-3.0 licence file; the intended licence is being clarified.',
+    licenseNote: 'The 0.1.3 release also ships a GPL-3.0 licence file, and the intended licence is being clarified.',
     es: {
-      summary: 'Transformada de Abel basada en splines (SAT): reconstrucción regularizada de perfiles radiales a partir de mediciones integradas a lo largo de la línea de visión en objetos axisimétricos, con corrección opcional del atrapamiento de señal (autoabsorción).',
+      summary: 'La transformada de Abel basada en splines (SAT) reconstruye perfiles radiales de objetos axisimétricos a partir de mediciones integradas a lo largo de la línea de visión, con regularización y una corrección opcional del atrapamiento de señal, es decir, de la luz que se reabsorbe dentro del objeto.',
       license: 'MIT (metadatos del paquete)',
-      licenseNote: 'La versión 0.1.3 incluye además un archivo de licencia GPL-3.0; se está aclarando cuál es la licencia prevista.',
+      licenseNote: 'La versión 0.1.3 incluye además un archivo de licencia GPL-3.0, y se está aclarando cuál es la licencia prevista.',
       links: [
         { label: 'PyPI', href: 'https://pypi.org/project/pysat-abel/' },
         { label: 'Código fuente (GitLab de CORIA)', href: 'https://gitlab.coria-cfd.fr/littinm/pysat' },
@@ -62,13 +62,13 @@ export const methods: Method[] = [
   {
     id: 'pinn-multidiagnostic',
     name: 'Physics-informed inversion of several optical diagnostics',
-    summary: 'One neural network takes a position in the flame and returns the local soot properties there. Its loss contains the physics of light scattering by fractal aggregates and thermal emission, so it is trained directly on the measurements, without labelled data. Attenuation, emission and multi-angle scattering at several wavelengths are inverted together, and the calibration factors of the instruments are recovered as part of the solution. Outputs: temperature, volume fraction, aggregate volume, composition and optical-index fields.',
+    summary: 'One neural network takes a position in the flame and returns the local soot properties there. Its loss contains the physics of light scattering by fractal aggregates and thermal emission, so it is trained directly on the measurements, without labelled data. Attenuation, emission and multi-angle scattering at several wavelengths are inverted together, and the calibration factors of the instruments are recovered as part of the solution. The outputs are fields of temperature, volume fraction, aggregate volume, composition and optical index.',
     status: 'Published. Code available upon request.',
     paper: 'littin2026carbon',
     page: '/publications/carbon-2026/',
     es: {
       name: 'Inversión informada por la física de varios diagnósticos ópticos',
-      summary: 'Una red neuronal recibe una posición en la llama y entrega las propiedades locales del hollín en ese punto. Su función de pérdida contiene la física de la dispersión de luz por agregados fractales y de la emisión térmica, de modo que se entrena directamente con las mediciones, sin datos etiquetados. La atenuación, la emisión y la dispersión en varios ángulos, en varias longitudes de onda, se invierten en conjunto, y los factores de calibración de los instrumentos se obtienen como parte de la solución. Resultados: campos de temperatura, fracción volumétrica, volumen de agregados, composición e índice óptico.',
+      summary: 'Una red neuronal recibe una posición en la llama y entrega las propiedades locales del hollín en ese punto. Su función de pérdida contiene la física de la dispersión de luz por agregados fractales y de la emisión térmica, de modo que se entrena directamente con las mediciones, sin datos etiquetados. La atenuación, la emisión y la dispersión en varios ángulos, en varias longitudes de onda, se invierten en conjunto, y los factores de calibración de los instrumentos se obtienen como parte de la solución. El resultado son campos de temperatura, fracción volumétrica, volumen de agregados, composición e índice óptico.',
       status: 'Publicado. Código disponible a solicitud.',
     },
   },

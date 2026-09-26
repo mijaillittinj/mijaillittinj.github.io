@@ -11,39 +11,39 @@ const { lang = 'en', hidden = false } = Astro.props;
 const es = lang === 'es';
 const T = es
   ? {
-      fwd: 'Directo', fwdText: 'dadas las constantes de velocidad k₁ y k₂ de las reacciones consecutivas A → B → C en un reactor discontinuo, calcular cómo cambian en el tiempo las tres concentraciones.',
-      inv: 'Inverso', invText: 'a partir de unas pocas mediciones ruidosas del intermedio B, estimar k₁ y k₂.',
+      fwd: 'Problema directo.', fwdText: 'Dadas las constantes de velocidad k₁ y k₂ de las reacciones consecutivas A → B → C en un reactor discontinuo, calcular cómo cambian en el tiempo las tres concentraciones.',
+      inv: 'Problema inverso.', invText: 'Estimar k₁ y k₂ a partir de unas pocas mediciones ruidosas del intermedio B.',
       plot: 'Concentraciones', land: 'Mapa del desajuste', landHint: 'haga clic o arrastre sobre el mapa para fijar (k₁, k₂)',
       k1: 'Constante k₁', k2: 'Constante k₂', noise: 'Ruido de medición', unit: ' 1/min',
       scale: 'Factor de calibración del detector desconocido', measA: 'Medir también A',
       fit: 'ajustar', newExp: 'nuevo experimento', stop: 'detener', method: 'Método', classic: 'mínimos cuadrados', train: 'entrenar la PINN', lossLabel: 'La PINN minimiza',
-      pinn: { it: 'iteración', data: 'pérdida de datos', ode: 'residuo de las EDO', idle: 'Pulse «entrenar la PINN»; parte del punto marcado en el mapa.', key: ['PINN B', 'PINN A', 'PINN C'] },
-      pinnCap: 'Opción PINN: una red entrega A, B y C en función del tiempo y se entrena junto con k₁ y k₂; su pérdida suma los residuos de las tres ecuaciones de velocidad al desajuste con los datos, de modo que las constantes salen del ajuste. Con el detector sin calibrar también termina en uno de los dos mínimos.',
+      pinn: { it: 'iteración', data: 'pérdida de datos', ode: 'residuo de las EDO', idle: 'Pulse «entrenar la PINN». El entrenamiento parte del punto marcado en el mapa.', key: ['PINN B', 'PINN A', 'PINN C'] },
+      pinnCap: 'En la opción PINN, una red entrega A, B y C en función del tiempo y se entrena junto con k₁ y k₂. Su pérdida suma el desajuste con los datos y los residuos de las tres ecuaciones de velocidad, así que las constantes salen del mismo ajuste. Con el detector sin calibrar, también termina en uno de los dos mínimos.',
       t: 't (min)', c: 'concentración / A₀',
       leg: { A: 'modelo A', B: 'modelo B', sB: 'modelo s·B', C: 'modelo C', dB: 'B medido', dA: 'A medido' },
-      rd: { cur: 'Estimación', mis: 'desajuste', s: 'factor s', truth: 'valores verdaderos', err: 'error', twin: 'dos mínimos igual de buenos, (k₁, k₂) y (k₂, k₁): B por sí solo no distingue una primera etapa lenta de una segunda etapa lenta.', unique: 'mínimo único: ambas constantes quedan determinadas.' },
-      cap: 'Izquierda: concentraciones que predicen las constantes actuales, junto con las mediciones de B. Derecha: desajuste entre modelo y datos para cada par (k₁, k₂), en ejes logarítmicos; más oscuro indica un mejor ajuste. Haga clic en el mapa o pulse «ajustar» para buscar el mínimo. Con el detector calibrado hay un solo valle y ambas constantes quedan determinadas. Si el factor de calibración del detector es desconocido, aparece un segundo mínimo igual de bueno en (k₂, k₁): los datos no distinguen una primera etapa lenta de una segunda etapa lenta, un caso clásico de falta de identificabilidad. Medir también A elimina la ambigüedad. Datos sintéticos.',
+      rd: { cur: 'Estimación', mis: 'desajuste', s: 'factor s', truth: 'valores verdaderos', err: 'error', twin: 'hay dos mínimos igual de buenos, (k₁, k₂) y (k₂, k₁), porque B por sí solo no distingue una primera etapa lenta de una segunda etapa lenta', unique: 'mínimo único, ambas constantes quedan determinadas' },
+      cap: 'A la izquierda, las concentraciones que predicen las constantes actuales, junto con las mediciones de B. A la derecha, el desajuste entre modelo y datos para cada par (k₁, k₂), en ejes logarítmicos. Las zonas más oscuras ajustan mejor. Haga clic en el mapa o pulse «ajustar» para buscar el mínimo. Con el detector calibrado hay un solo valle y ambas constantes quedan determinadas. Si el factor de calibración es desconocido, aparece un segundo mínimo igual de bueno en (k₂, k₁). Los datos ya no distinguen una primera etapa lenta de una segunda etapa lenta, un caso clásico de falta de identificabilidad. Medir también A elimina la ambigüedad. Datos sintéticos.',
     }
   : {
-      fwd: 'Forward', fwdText: 'given the rate constants k₁ and k₂ of the consecutive reactions A → B → C in a batch reactor, compute how the three concentrations change in time.',
-      inv: 'Inverse', invText: 'from a few noisy measurements of the intermediate B, estimate k₁ and k₂.',
+      fwd: 'Forward problem.', fwdText: 'Given the rate constants k₁ and k₂ of the consecutive reactions A → B → C in a batch reactor, compute how the three concentrations change in time.',
+      inv: 'Inverse problem.', invText: 'Estimate k₁ and k₂ from a few noisy measurements of the intermediate B.',
       plot: 'Concentrations', land: 'Misfit map', landHint: 'click or drag on the map to set (k₁, k₂)',
       k1: 'Rate constant k₁', k2: 'Rate constant k₂', noise: 'Measurement noise', unit: ' 1/min',
       scale: 'Detector calibration factor unknown', measA: 'Also measure A',
       fit: 'fit', newExp: 'new experiment', stop: 'stop', method: 'Method', classic: 'least squares', train: 'train the PINN', lossLabel: 'The PINN minimises',
-      pinn: { it: 'iteration', data: 'data loss', ode: 'ODE residual', idle: 'Press “train the PINN”; it starts from the point marked on the map.', key: ['PINN B', 'PINN A', 'PINN C'] },
-      pinnCap: 'PINN option: one network gives A, B and C as functions of time and is trained together with k₁ and k₂; its loss adds the residuals of the three rate equations to the misfit with the data, so the constants come out of the fit. With an uncalibrated detector it also ends in one of the two minima.',
+      pinn: { it: 'iteration', data: 'data loss', ode: 'ODE residual', idle: 'Press “train the PINN”. Training starts from the point marked on the map.', key: ['PINN B', 'PINN A', 'PINN C'] },
+      pinnCap: 'In the PINN option, one network gives A, B and C as functions of time and is trained together with k₁ and k₂. Its loss adds the residuals of the three rate equations to the misfit with the data, so the constants come out of the same fit. With an uncalibrated detector it also ends in one of the two minima.',
       t: 't (min)', c: 'concentration / A₀',
       leg: { A: 'model A', B: 'model B', sB: 'model s·B', C: 'model C', dB: 'measured B', dA: 'measured A' },
-      rd: { cur: 'Estimate', mis: 'misfit', s: 'factor s', truth: 'true values', err: 'error', twin: 'two equally good minima, (k₁, k₂) and (k₂, k₁): B alone cannot distinguish a slow first step from a slow second step.', unique: 'single minimum: both constants are determined.' },
-      cap: 'Left: the concentrations predicted by the current constants, with the measurements of B. Right: the misfit between model and data for every pair (k₁, k₂), on logarithmic axes; darker is a better fit. Click the map or press “fit” to search for the minimum. With a calibrated detector there is one valley and both constants are determined. If the calibration factor of the detector is unknown, a second, equally good minimum appears at (k₂, k₁): the data cannot tell a slow first step from a slow second step, a classic loss of identifiability. Measuring A as well removes the ambiguity. Synthetic data.',
+      rd: { cur: 'Estimate', mis: 'misfit', s: 'factor s', truth: 'true values', err: 'error', twin: 'two equally good minima, (k₁, k₂) and (k₂, k₁), because B alone cannot tell a slow first step from a slow second step', unique: 'single minimum, both constants are determined' },
+      cap: 'The left panel shows the concentrations predicted by the current constants, with the measurements of B. The right panel shows the misfit between model and data for every pair (k₁, k₂), on logarithmic axes, and darker means a better fit. Click the map or press “fit” to search for the minimum. With a calibrated detector there is one valley and both constants are determined. If the calibration factor is unknown, a second minimum appears at (k₂, k₁) that fits just as well. The data can no longer tell a slow first step from a slow second step, which is a classic loss of identifiability. Measuring A as well removes the ambiguity. Synthetic data.',
     };
 ---
 <div class="eng-tab ch" data-eng-tab="chemical" data-ch-text={JSON.stringify(T)} hidden={hidden}>
-  <p class="eng-fi"><em>{T.fwd}</em>: {T.fwdText} <em>{T.inv}</em>: {T.invText}</p>
+  <p class="eng-fi"><em>{T.fwd}</em> {T.fwdText} <em>{T.inv}</em> {T.invText}</p>
 
   <div class="eng-switches">
-    <div class="eng-switch"><span>{T.method}:</span>
+    <div class="eng-switch"><span>{T.method}</span>
       <div class="seg" role="group" aria-label={T.method}><button type="button" data-ch-m="classic" aria-pressed="true">{T.classic}</button><button type="button" data-ch-m="pinn" aria-pressed="false">PINN</button></div>
     </div>
   </div>
@@ -257,7 +257,7 @@ const T = es
       if (scaleBox.checked) txt += ` · ${T.rd.s} ${s.toFixed(2)}`;
       if (revealed) {
         const e1 = Math.abs(10 ** l1 / 10 ** truth[0] - 1) * 100, e2 = Math.abs(10 ** l2 / 10 ** truth[1] - 1) * 100;
-        txt += ` · ${T.rd.truth}: ${fmtK(truth[0])}, ${fmtK(truth[1])} (${T.rd.err} ${e1.toFixed(0)} %, ${e2.toFixed(0)} %)`;
+        txt += ` · ${T.rd.truth} ${fmtK(truth[0])}, ${fmtK(truth[1])} (${T.rd.err} ${e1.toFixed(0)} %, ${e2.toFixed(0)} %)`;
       }
       txt += ' · ' + (scaleBox.checked && !aBox.checked ? T.rd.twin : T.rd.unique);
       read.textContent = txt;
@@ -279,10 +279,10 @@ const T = es
           { kind: 'line', x: tt, y: c.B.map((v) => sc * v), cls: 's-learned', label: T.pinn.key[0] },
           { kind: 'line', x: tt, y: c.C, cls: 's-muted', dash: true, label: T.pinn.key[2] },
         );
-        txt = `PINN: ${T.pinn.it} ${pIter} · k₁ = ${fmtK(k.l1)}, k₂ = ${fmtK(k.l2)} 1/min${scaleBox.checked ? ` · ${T.rd.s} ${k.s.toFixed(2)}` : ''} · ${T.pinn.data} ${pLd.toExponential(1)} · ${T.pinn.ode} ${pLp.toExponential(1)}`;
+        txt = `PINN · ${T.pinn.it} ${pIter} · k₁ = ${fmtK(k.l1)}, k₂ = ${fmtK(k.l2)} 1/min${scaleBox.checked ? ` · ${T.rd.s} ${k.s.toFixed(2)}` : ''} · ${T.pinn.data} ${pLd.toExponential(1)} · ${T.pinn.ode} ${pLp.toExponential(1)}`;
         if (revealed) {
           const e1 = Math.abs(10 ** k.l1 / 10 ** truth[0] - 1) * 100, e2 = Math.abs(10 ** k.l2 / 10 ** truth[1] - 1) * 100;
-          txt += ` · ${T.rd.truth}: ${fmtK(truth[0])}, ${fmtK(truth[1])} (${T.rd.err} ${e1.toFixed(0)} %, ${e2.toFixed(0)} %) · ` + (scaleBox.checked && !aBox.checked ? T.rd.twin : T.rd.unique);
+          txt += ` · ${T.rd.truth} ${fmtK(truth[0])}, ${fmtK(truth[1])} (${T.rd.err} ${e1.toFixed(0)} %, ${e2.toFixed(0)} %) · ` + (scaleBox.checked && !aBox.checked ? T.rd.twin : T.rd.unique);
         }
       }
       plot.render(series, { xlim: [0, 10], ylim: [-0.05, 1.05] });
