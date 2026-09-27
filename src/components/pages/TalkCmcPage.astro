@@ -14,9 +14,9 @@ const es = lang === 'es';
 const paper = byId('yap2026dual');
 const T = es
   ? {
-      title: '¿Dónde se forma y dónde se destruye el hollín?',
+      title: 'Caracterización simultánea de las propiedades del hollín producido en llamas de difusión inversas y normales mediante redes neuronales a dos longitudes de onda',
       eyebrow: 'Charla · Congreso de Mecánica Computacional 2026',
-      sub: 'Del campo de hollín medido al término fuente de los modelos',
+      sub: '¿Dónde se forma y dónde se destruye el hollín?',
       abstract: 'Las simulaciones de combustión predicen el hollín con una ecuación de transporte cuyo cierre es el término fuente, la tasa a la que el hollín se forma o se destruye. La charla muestra cómo mediciones de emisión y extinción en dos longitudes de onda, invertidas con una red neuronal, entregan la fracción volumétrica, la temperatura y la madurez del hollín en una llama normal y en una llama inversa. Leída al revés, la ecuación de transporte convierte esos campos en el término fuente local, que es la cantidad que predicen los modelos. La última parte presenta la calibración de un modelo de hollín de dos ecuaciones frente a ese objetivo, un trabajo todavía en curso.',
       openEs: 'Abrir la presentación en español', openEn: 'Open the presentation in English',
       howH: 'Cómo verla',
@@ -26,9 +26,9 @@ const T = es
       back: 'Publicaciones',
     }
   : {
-      title: 'Where is soot formed and where is it destroyed?',
+      title: 'Simultaneous characterization of soot properties in inverse and normal diffusion flames using dual-wavelength neural networks',
       eyebrow: 'Talk · Congreso de Mecánica Computacional 2026',
-      sub: 'From the measured soot field to the source term of the models',
+      sub: 'Where is soot formed and where is it destroyed?',
       abstract: 'Combustion simulations predict soot with a transport equation whose closure is the source term, the rate at which soot is formed or destroyed. The talk shows how emission and extinction measurements at two wavelengths, inverted with a neural network, give the soot volume fraction, temperature and maturity in a normal and an inverse flame. Read backwards, the transport equation turns these fields into the local source term, which is the quantity the models predict. The last part presents the calibration of a two-equation soot model against that target, work that is still in progress.',
       openEs: 'Abrir la presentación en español', openEn: 'Open the presentation in English',
       howH: 'How to view it',
@@ -42,7 +42,7 @@ const authors = ['V. Yap', 'J. Gallardo', 'M. Littin', 'F. Escudero', 'J. Yon', 
 <Base title={T.title} description={T.abstract}>
   <header class="page-head frame">
     <p class="eyebrow">{T.eyebrow}</p>
-    <h1>{T.title}</h1>
+    <h1 class="tk-title">{T.title}</h1>
     <p class="tk-sub"><em>{T.sub}</em></p>
     <p class="meta tk-auth">{authors.map((a, i) => <>{i > 0 && ', '}{a === 'M. Littin' ? <span class="me">{a}</span> : a}</>)}</p>
     <p class="abstract">{T.abstract}</p>
@@ -74,6 +74,7 @@ const authors = ['V. Yap', 'J. Gallardo', 'M. Littin', 'F. Escudero', 'J. Yon', 
 </Base>
 
 <style>
+  .tk-title { max-width: 34ch; font-size: var(--step-3); }
   .tk-sub { margin-top: var(--s-3); font-size: var(--step-0); }
   .tk-auth { margin-top: var(--s-2); }
   .tk-auth .me { font-variant: small-caps; font-family: var(--font-caps); text-transform: lowercase; font-size: 1.05em; color: var(--ink); }
