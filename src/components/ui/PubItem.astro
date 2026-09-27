@@ -7,7 +7,7 @@ const { pub: p, compact = false, headingLevel = 'h3', lang = 'en' } = Astro.prop
 const es = lang === 'es';
 const summary = es ? (p.summaryEs ?? p.summary) : p.summary;
 const W = es
-  ? { explainer: 'explicación', open: 'acceso abierto', slides: 'diapositivas (en inglés)' }
+  ? { explainer: 'explicación', open: 'acceso abierto', slides: 'diapositivas' }
   : { explainer: 'explainer', open: 'open access', slides: 'slides' };
 // internal pages: point to the Spanish route when it exists
 const page = p.page ? localized(p.page, lang) : undefined;
@@ -15,7 +15,6 @@ void headingLevel;
 const authorsHtml = p.authors
   .map((a) => (a === 'M. Littin' ? '<strong>M. Littin</strong>' : a))
   .join(', ');
-const loc = [p.volume, p.article].filter(Boolean).join(', ');
 const internal = (h: string) => (h.startsWith('/') ? localized(h, lang) : h);
 ---
 <article class="pub" data-year={p.year} data-themes={p.themes.join(' ')} data-ml={p.ml ? '1' : '0'} data-first={p.firstAuthor ? '1' : '0'}>
@@ -30,7 +29,7 @@ const internal = (h: string) => (h.startsWith('/') ? localized(h, lang) : h);
     {page && <li><a href={page}>{W.explainer}</a></li>}
     {p.doi && <li><a href={`https://doi.org/${p.doi}`}>doi:{p.doi}</a></li>}
     {p.access.kind === 'open' && p.access.pdf && <li><a href={p.access.pdf}>{W.open} ({p.access.license})</a></li>}
-    {p.slides && <li><a href={url(p.slides)}>{W.slides}</a></li>}
+    {p.slides && <li><a href={p.slides.startsWith('/') ? localized(p.slides, lang) : p.slides}>{W.slides}{es && p.slides.includes('carbon-2026') ? ' (en inglés)' : ''}</a></li>}
     {p.links?.map((l) => <li><a href={internal(l.href)}>{l.label}</a></li>)}
     {!compact && <li><a href={url(`/publications/bibtex/${p.id}.bib`)} download>bibtex</a></li>}
   </ul>

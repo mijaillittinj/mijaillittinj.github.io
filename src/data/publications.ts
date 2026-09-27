@@ -88,6 +88,7 @@ const curated: Publication[] = [
     summaryEs:
       'Una red neuronal reconstruye la fracción volumétrica de hollín, la temperatura y un indicador de la madurez del hollín a partir de mediciones en solo dos longitudes de onda, en llamas de difusión normales e inversas.',
     access: { kind: 'closed' },
+    slides: '/talks/cmc-2026/',
   },
   {
     id: 'mercado2026view',
