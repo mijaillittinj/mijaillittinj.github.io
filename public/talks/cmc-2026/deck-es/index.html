@@ -1,0 +1,748 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Manim Slides</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.0/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.0/theme/black.min.css">
+
+    <!-- Theme used for syntax highlighting of code -->
+    <!-- <link rel="stylesheet" href="lib/css/zenburn.css"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/zenburn.min.css">
+
+    <style>
+      :root {
+        --bg: #0D1117;
+        --fg: #E8EDF2;
+        --accent: #6FA8DC;
+        --dim: #5B6775;
+      }
+      html, body, .reveal { background: var(--bg); }
+      .reveal .slides section { height: 100%; }
+      /* thin progress bar in the presentation accent colour */
+      .reveal .progress { height: 4px; color: var(--accent); background: rgba(255,255,255,0.06); }
+      /* discreet state counter, hidden in the overview.  It sits in the top
+         right corner, which every slide leaves empty, because the bottom of
+         the frame already carries the section name and the source note. */
+      #deck-counter {
+        position: fixed; top: 12px; right: 18px; z-index: 30;
+        font-family: "Latin Modern Roman", Georgia, "Times New Roman", serif;
+        font-size: 15px; color: var(--dim); letter-spacing: 0.2px;
+        pointer-events: none; opacity: 0.8;
+      }
+      .reveal.overview #deck-counter { display: none; }
+      /* keep the arrows unobtrusive, the talk is driven by the keyboard */
+      .reveal .controls { opacity: 0.25; }
+      .reveal .controls:hover { opacity: 0.8; }
+    </style>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s00_e8bb013ca0b0050bf2db4dbdc7a772a12fbe06b7658a9f054e94d132cf5859c1.mp4"
+          data-background-video-muted
+          >
+            <aside class="notes" data-markdown>Esta charla recorre el camino que va desde una medición óptica de la llama hasta el término fuente de hollín, la cantidad que los modelos de combustión predicen. La imagen es el hollín medido en la llama normal, girado alrededor del eje y visto en perspectiva.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s01_38055edc752d7f119290a352e981b68253526d019b5fb409c4f3ed9c4042082b.mp4"
+          >
+            <aside class="notes" data-markdown>En una llama con hollín, las partículas dominan la radiación térmica. Un error en el hollín se propaga a la temperatura y al calor transferido.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s01_1b9da1067412815cd97d25cbf7a07fd1554eae75e1cc1d9fecdaed9c65318202.mp4"
+          >
+            <aside class="notes" data-markdown>El hollín importa también por las emisiones y por el diseño de los equipos de combustión.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s01_1a29f12884d45ee500d399a68f7193c5f70ce1b10f46f7e764abfe545e57f7e7.mp4"
+          >
+            <aside class="notes" data-markdown>Su predicción sigue limitada por la química de formación y por la dinámica de las partículas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s02_c936da57360f1fc01f9cabab91987a0b778c80bc5471be4e980f93b28bd21094.mp4"
+          >
+            <aside class="notes" data-markdown>Así entra el hollín en una simulación. Acumulación, convección, difusión y termoforesis, y un término fuente.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s02_b9a0b03d8d15cbf88f987bf68d69a93cd1e37996e226b3c9f051ccc4043ddeab.mp4"
+          >
+            <aside class="notes" data-markdown>El transporte es un problema resuelto. La dificultad está en el término fuente, que es un cierre y vale kilogramos de hollín por metro cúbico y por segundo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s02_4c2ff5cb86585f156154c826b2a76e2536fd98b6cfb1987f4d99d588a76eec48.mp4"
+          >
+            <aside class="notes" data-markdown>Dentro del término fuente hay nucleación, crecimiento superficial, condensación de aromáticos y oxidación. Cada uno es un sub modelo con parámetros inciertos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s03_31c835c794ae5b8658a380187ac3ff5b80e7b30c16734d5c66338864742d601a.mp4"
+          >
+            <aside class="notes" data-markdown>Un modelo hipotético que forma hollín rápido y después lo oxida con la misma intensidad. En azul la formación y en rojo la oxidación.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s03_c5f0a319b14e12dde20ee26eb365a8c26e559ed4468ab5cc79b8ab8e0e1f0cb5.mp4"
+          >
+            <aside class="notes" data-markdown>Otro modelo, más lento para formar y más débil para oxidar.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s03_e28b307e01947a8316144652c866321d70f3625b4c0b0e9cc106322907620121.mp4"
+          >
+            <aside class="notes" data-markdown>Integrando cada fuente a lo largo de la trayectoria, los dos modelos llegan al mismo máximo de hollín.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s03_5e2a40e14f1c9a7149e7643119e8e80c60e53507377b7361a083d2e4b75e692d.mp4"
+          >
+            <aside class="notes" data-markdown>Ajustar el máximo de hollín no determina el término fuente, porque los errores de formación y de oxidación se compensan entre sí.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s04_c8f98b639e24104d272cb16a054feaf0a7b606f3b28902c16e75f9255b2a9d37.mp4"
+          >
+            <aside class="notes" data-markdown>Ningún instrumento mide directamente una tasa de formación de hollín, de modo que debe inferirse a partir de otras magnitudes.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s05_94aea658576d5bb754e3b0a57bd72fed291f0176526831dd69d2413d797aaf1e.mp4"
+          >
+            <aside class="notes" data-markdown>En una simulación el modelo entrega el término fuente, el solver transporta el hollín y sale el campo de hollín.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s05_317d1eb8adba817131fdfdc3a6f4dd415ddd20d5540df2682d048d241708aab6.mp4"
+          >
+            <aside class="notes" data-markdown>El planteamiento se invierte. Con el campo de hollín reconstruido y la velocidad, la ecuación entrega el término fuente, que es la divergencia del flujo másico de hollín.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s05_fbb0210d55e00e8d3801602dabf1b5d525b3a3ba30e6978a0699764a5e4343f6.mp4"
+          >
+            <aside class="notes" data-markdown>La hoja de ruta de la charla queda fijada. Medir la fracción de hollín, la temperatura y la madurez. Las tres miniaturas son los campos medidos de la llama normal.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s06_4e28143b5f7a11d6ce4fdee8e817e10a14a7c10295ef3e000de2e3878c783f5f.mp4"
+          >
+            <aside class="notes" data-markdown>El quemador tiene tres tubos concéntricos. En la llama normal el combustible sale por el centro.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s06_8bb7f6c5255e4aa4dd6720fb63d7fc37e25ed97359290fb27316c38483e0f46d.mp4"
+          >
+            <aside class="notes" data-markdown>El hollín se forma dentro del frente de llama y, para salir, lo atraviesa y se oxida.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s06_7f8cc9bed3321c5944eac553aed09caa5b4d7760223e8c822ce15ec04f0420c0.mp4"
+          >
+            <aside class="notes" data-markdown>En la llama inversa el aire sale por el centro y el combustible por la corona, así que el hollín se forma fuera del frente.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s06_4a4c556dc2794a24150118064e89b21f96fdd8c2b985e7cb00ecf7582a807744.mp4"
+          >
+            <aside class="notes" data-markdown>Las dos llamas consumen la misma cantidad equivalente de combustible, fijada por el oxígeno disponible en la inversa. Son dos laboratorios complementarios.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s07_841ed711902782bef44e6835cf4b9f34683ef0e003a880501b9090943fb5b5c2.mp4"
+          >
+            <aside class="notes" data-markdown>Un LED modulado a 660 y 810 nanómetros atraviesa la llama y una cámara registra la imagen. La misma cámara mide con el LED encendido y con el LED apagado.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s07_64a194be32d14328243c7002c774f2cadb6b89eaed9030cc4f3a6dceefa7cf89.mp4"
+          >
+            <aside class="notes" data-markdown>Con el LED encendido, la llama deja su sombra en la imagen. Esa transmisividad acumula la extinción a lo largo de toda la línea de visión.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s07_fcd52f379cbeaf7f0a5c6da44e1f8a852b527583f4ce9a8cc1849d82b08314cc.mp4"
+          >
+            <aside class="notes" data-markdown>Con el LED apagado la cámara registra la emisión propia del hollín caliente, que lleva la temperatura dentro de la función de Planck.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s07_0a3f3d08f79039a0f6378c57b702df841c6aebb6aa755bc89d6b7a7443ef467a.mp4"
+          >
+            <aside class="notes" data-markdown>Las imágenes están integradas a lo largo de la línea de visión. La inversión de Abel las lleva al plano local, donde cada punto reúne cuatro señales medidas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s08_0e4037d30196ff45bdd78162dc06f466acb0fc12e68d405e5ebebed18d8642b4.mp4"
+          >
+            <aside class="notes" data-markdown>La extinción depende de la cantidad de hollín y de la capacidad de absorción del material. La emisión agrega la función de Planck, que trae la temperatura.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s08_b3e4b7621eb2d3d945077632ce9ebf06597e8af271ed54672a4bfb571364470e.mp4"
+          >
+            <aside class="notes" data-markdown>Medir a dos colores da la pendiente espectral de la absorción, que es el exponente de madurez. El hollín maduro absorbe de forma más plana que el hollín joven.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s08_931b50061fb9891e2f623ec2b494f3f1610358ac21580623ce5ce853ac3f7814.mp4"
+          >
+            <aside class="notes" data-markdown>En cada punto hay cuatro señales y cuatro incógnitas, y cada señal depende de varias incógnitas a la vez. La fracción de hollín y la madurez entran multiplicadas, y la función de Planck amplifica los errores de temperatura. El problema inverso está mal condicionado.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s09_1d524eaebc6fa17148dd1680435c77ec0937d0e5984627a42c68011775ee50cf.mp4"
+          >
+            <aside class="notes" data-markdown>La red toma las coordenadas y entrega los cuatro campos buscados, temperatura, madurez, fracción de hollín y dispersión. Cada punto del plano entra por la izquierda y sale como cuatro valores.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s09_a90314b8025b4d89b1125491731117180be75d15eb79e998aab63f9fdd264c07.mp4"
+          >
+            <aside class="notes" data-markdown>El modelo óptico convierte las salidas en señales predichas, la pérdida las compara con la medición y el gradiente actualiza los pesos. La física entra por la pérdida.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s09_c07bf0cb5b2a70f8ce872a8bffda006a54d7a5b1405b93eedfc01bba9292598b.mp4"
+          >
+            <aside class="notes" data-markdown>No hay datos de entrenamiento. Para ustedes es un PINN, una parametrización global con un residuo físico. La precisión se estima repitiendo la inversión cien veces.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s10_816c57acc0dc5721126e432879fab0e0c1177b5b2f5612960376a448e2f4f703.mp4"
+          >
+            <aside class="notes" data-markdown>La llama normal concentra el hollín en las alas, con un máximo cercano a 8 ppm, y la temperatura del hollín está entre 1650 y 1950 kelvin. A la izquierda la fracción de hollín y a la derecha la temperatura.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s10_91233f6cb93685775e8ae38a438207f1cd18d6ff77b4e761f3cabaa6cf748baa.mp4"
+          >
+            <aside class="notes" data-markdown>La llama inversa tiene un máximo siete veces menor, es más fría y coloca el hollín fuera del frente de llama.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s10_331aff799721608f5f68aed7005da7a8dc11623eda3fa0a05f8f5c9dcebe4adc.mp4"
+          >
+            <aside class="notes" data-markdown>Con el mismo consumo equivalente de carbono, las dos llamas producen estructuras de hollín opuestas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s11_0b42fe3a4f72f3c7cbad5194e012b9e483d4ba17eac53147c526ce1b60b8c8c2.mp4"
+          >
+            <aside class="notes" data-markdown>La madurez se traduce en una fracción grafítica. En la llama normal el hollín madura en las alas, donde pasa por las zonas más calientes.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s11_d39beea04166c6b5f8eb4da83b1d838f2e08d949ad5a315323a28148ce9e8060.mp4"
+          >
+            <aside class="notes" data-markdown>En la llama inversa el hollín permanece orgánico y joven.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s11_0ade7f09aab159282bf2508907ebca3feea89d5a91c7fc7f4a7ae922beb9056d.mp4"
+          >
+            <aside class="notes" data-markdown>La composición fija la densidad del material, entre 1300 y 1500 kilos por metro cúbico, y con ella la masa de hollín por unidad de volumen, que es lo que transporta la ecuación.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s12_3fd4012959e5a43558286c46294c84d69343056cd1b6cb3b63743b1ca0a6accd.mp4"
+          >
+            <aside class="notes" data-markdown>Partimos de la misma ecuación. En estado estacionario y con la difusión y la termoforesis despreciadas queda la divergencia del flujo másico de hollín.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s12_d1e43cbe7fcb4faaf0759e7aa9da2e97babb28a01a7f4218607e841c08781011.mp4"
+          >
+            <aside class="notes" data-markdown>En coordenadas axisimétricas, esta es la expresión que evaluamos punto a punto.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s12_84c73c1025b7625402711d483d9e61c08e8bb38c554f16ef013b7ed856b09478.mp4"
+          >
+            <aside class="notes" data-markdown>Los ingredientes son la densidad del material, que viene de la madurez, la fracción de hollín medida y el campo de velocidad de la simulación CoFlame, que arrastra al hollín hacia arriba y hacia afuera.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s12_a905fb8aa77ff6362d25b66d7e1a42f66a15f23080d95fe7b0b64d04a641face.mp4"
+          >
+            <aside class="notes" data-markdown>El resultado es el término fuente. Es una estimación híbrida, porque la simulación aporta la velocidad y el hollín viene del experimento.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s13_511e3fccd83123e49cbf11307d00a34c6c442ae5cd3b8db85bb03ae845336b22.mp4"
+          >
+            <aside class="notes" data-markdown>El campo reconstruido de fracción volumétrica de hollín. Dice cuánto hollín hay en cada punto.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s13_fa3c27f0d54da648f51a700b58e7f145e302d422bbadcc1c9547ce46c6d938e1.mp4"
+          >
+            <aside class="notes" data-markdown>La mitad derecha es el término fuente. Azul es formación neta, rojo es oxidación neta y blanco significa que el hollín solo se transporta.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s13_0ef47de4f272e3cdd9331a8327eeebcc573fc806099c2e1143394c9aa95c69bb.mp4"
+          >
+            <aside class="notes" data-markdown>El hollín se forma en las alas bajas y en la base del eje, y se oxida en la zona externa superior hasta la punta. Las partículas cambian de azul a rojo al subir.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s13_434355e497a1c4e4da07d67fc88ab3b3a040e558774c198a35a35e99113be9ad.mp4"
+          >
+            <aside class="notes" data-markdown>El máximo de concentración no coincide con el máximo de formación. Se ubica donde formación y oxidación se compensan.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s13_7162b7cdcc3df4777d8eb523a6dd85b5a2f89c2c84c1d7a20d261a89a19dd3b4.mp4"
+          >
+            <aside class="notes" data-markdown>Si giramos ese campo alrededor del eje, la formación es un anillo en la base de la llama y la oxidación una capa que cubre la parte alta y la punta.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s14_6135a99bb6d442105b60191a6f5018d979362ea4bfc1ea5793a5107b9198c651.mp4"
+          >
+            <aside class="notes" data-markdown>El hollín integrado en cada sección crece, alcanza su máximo cerca de 28 milímetros y después desaparece.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s14_186dc78187ce9fab1c4e623628aef9c739beea011f2159a015f285a8adbe5f33.mp4"
+          >
+            <aside class="notes" data-markdown>La fuente neta es positiva abajo, cruza el cero donde el hollín es máximo y se vuelve negativa arriba. El cursor recorre la llama y lee las dos curvas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s14_f6a3a9448ceaa079dc0d3f34080d2ed8d9fee47ab810771c471eccd37316ad06.mp4"
+          >
+            <aside class="notes" data-markdown>Tomemos dos alturas con la misma cantidad de hollín. En una el hollín se está formando y en la otra se está oxidando, con tasas de magnitud parecida y signo opuesto.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s14_cf45cc76992562dcc8bb25bc3f4b19e7201cbbad79008d51a2b8f12b5c8838c2.mp4"
+          >
+            <aside class="notes" data-markdown>La concentración coincide en ambas alturas. El término fuente las distingue y entrega una tasa directamente comparable con la del modelo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s15_fb3a68208c52fb2e4b971b2d5f946cab909071c206014b5ba6a10da695c15822.mp4"
+          >
+            <aside class="notes" data-markdown>La llama inversa concentra la formación cerca de la base, en una zona compacta, y la oxidación es débil. Las partículas se tiñen de azul al pasar por la zona de formación y casi no se vuelven rojas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s15_20dd1ec5591390dd8b48e75b133fd2a20a0f65d4a9ee0e95a9ba736c8d0544fc.mp4"
+          >
+            <aside class="notes" data-markdown>Comparando la fuente integrada de las dos llamas, la formación es del mismo orden y la oxidación de la inversa es mucho más débil.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s15_83318c19420fbc62b2f6d64389f479a7bebe6ee311b70731b712cf14acdc444f.mp4"
+          >
+            <aside class="notes" data-markdown>Sobre treinta milímetros la fuente neta es casi nula y el hollín restante abandona el dominio medido.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s16_8414e17965c89fb8a2da03f17ca735e637ccbab5a519742b2395b6131fa439ad.mp4"
+          >
+            <aside class="notes" data-markdown>Seguimos tres partículas que entran por distintas posiciones radiales, integrando el campo de velocidad.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s16_aa318bad0ecfd382518624fb99dea429ff1fdb5f3538cc636efc798cef4f376b.mp4"
+          >
+            <aside class="notes" data-markdown>La temperatura del hollín no es monótona a lo largo de la trayectoria. Las partículas atraviesan zonas más calientes.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s16_fa26e9b2302619ec53f319a9976899909037933aae542b93d0c003974d711a52.mp4"
+          >
+            <aside class="notes" data-markdown>La fracción grafítica sube mientras la partícula está caliente y después vuelve a bajar.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s16_893351e7cf76620a3b14238c0d0c98c0083feef619e7fb2b7ccad41cd6bbc1b3.mp4"
+          >
+            <aside class="notes" data-markdown>El término fuente pasa de positivo a negativo. En la llama inversa la temperatura cae desde el inicio, la fracción grafítica se desploma y la fuente se anula.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s17_d645d6c1bd4d299b24e0dcdd140a64c1d33d8940e7c22d6fc593e09475c7b4b6.mp4"
+          >
+            <aside class="notes" data-markdown>Ya construimos un solver diferenciable que resuelve el flujo laminar con un mecanismo reducido y un modelo de hollín de dos ecuaciones. El gradiente adjunto actualiza los parámetros contra el término fuente medido.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s17_08ca40b669870332286cac42e15bf09e73de6b4d2b59b50eab2c2af1706a62a4.mp4"
+          >
+            <aside class="notes" data-markdown>Eso define un problema de optimización ponderado por la incertidumbre que ya entrega el ensamble de inversiones.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s17_2dbb9d3cc0a671e5108319ee07cdcf6e57fa8b705fafce849676823bd4525433.mp4"
+          >
+            <aside class="notes" data-markdown>Antes de tocar los datos reales probamos el método en gemelos sintéticos. El modelo es poco identificable, la secuencia de dos llamas recupera los parámetros y el término fuente aporta entre nueve y veinticuatro por ciento.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s18_f4d52050a8b629069ad8f98a7c7c8ba81f25800a55843c28425805fc8335ccd1.mp4"
+          >
+            <aside class="notes" data-markdown>A la izquierda, el término fuente medido de la llama inversa, con su lóbulo de formación seguido de oxidación.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s18_5fa1a4eba0f5b54e90c569d9838e182181d3e3deb0f95a08045abba7ff29b636.mp4"
+          >
+            <aside class="notes" data-markdown>En la misma escala, el modelo de dos ecuaciones con los parámetros publicados queda casi vacío.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s18_fb44338733cf5e16da203bb4fac5c0ef7354e9dfd3b101f1a8051655240bd7ba.mp4"
+          >
+            <aside class="notes" data-markdown>Multiplicado por diez se ve la forma. El modelo produce una banda suave donde el experimento muestra formación intensa seguida de oxidación. Esa discrepancia es lo que la calibración debe corregir.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s19_5cfa78bac53c77840f3942682c8f839d9fef1d007faf1104f3ee54c9a51ee88a.mp4"
+          >
+            <aside class="notes" data-markdown>Primera idea. La concentración de hollín no determina la tasa local. El máximo de fracción volumétrica se ubica donde formación y oxidación se compensan, y dos alturas con la misma concentración pueden tener tasas de signo opuesto.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s19_3132fbc3d6fb3f6077f4f5ae3c1a7e48cbf57d6dbff6a6a14e7843a278cdf5c8.mp4"
+          >
+            <aside class="notes" data-markdown>Segunda idea. La reconstrucción espacial de fracción de hollín, temperatura y madurez, junto con la ecuación de transporte y la velocidad, entrega el término fuente en las dos llamas. Es una estimación híbrida, porque la velocidad es simulada.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s19_083221663a5a85f176068d44c9bb9bd2e8a67ba594e03c971ee0791a123f1170.mp4"
+          >
+            <aside class="notes" data-markdown>Tercera idea. Ese término fuente es la variable que los modelos predicen. La calibración en curso muestra que el modelo con parámetros de literatura no reproduce esa variable y que la combinación de ambas llamas mejora la identificabilidad de los parámetros.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_assets/s20_27b3a93e34f905ff44722c4af836be0e05742d2014d3096d749690dc7480bc15.mp4"
+          >
+            <aside class="notes" data-markdown>Gracias. Quedo atento a sus preguntas.</aside>
+        </section>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.0/reveal.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.0/plugin/notes/notes.min.js"></script>
+
+    <!-- To include plugins, see: https://revealjs.com/plugins/ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.2.0/plugin/markdown/markdown.min.js"></script>
+
+    <script>
+      Reveal.initialize({
+        /// The list of RevealJS plugins.
+        plugins: [ RevealMarkdown, RevealNotes ],
+        // The "normal" size of the presentation, aspect ratio will
+        // be preserved when the presentation is scaled to fit different
+        // resolutions. Can be specified using percentage units.
+        width: '100%',
+        height: '100%',
+        // Factor of the display size that should remain empty around
+        // the content
+        margin: 0.04,
+        // Bounds for smallest/largest possible scale to apply to content
+        minScale: 0.2,
+        maxScale: 2.0,
+        // Display presentation control arrows
+        controls: true,
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: true,
+        // Determines where controls appear, "edges" or "bottom-right"
+        // Fixed here because Manim Slides injects the value of
+        // `-ccontrols_layout` without the surrounding quotes.
+        controlsLayout: "edges",
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: "faded",
+        // Display a presentation progress bar
+        progress: true,
+        // Display the page number of the current slide
+        // - true:    Show slide number
+        // - false:   Hide slide number
+        //
+        // Can optionally be set as a string that specifies the number formatting:
+        // - "h.v":   Horizontal . vertical slide number (default)
+        // - "h/v":   Horizontal / vertical slide number
+        // - "c":   Flattened slide number
+        // - "c/t":   Flattened slide number / total slides
+        //
+        // Alternatively, you can provide a function that returns the slide
+        // number for the current slide. The function should take in a slide
+        // object and return an array with one string [slideNumber] or
+        // three strings [n1,delimiter,n2]. See #formatSlideNumber().
+        slideNumber: false,
+        // Can be used to limit the contexts in which the slide number appears
+        // - "all":      Always show the slide number
+        // - "print":    Only when printing to PDF
+        // - "speaker":  Only in the speaker view
+        showSlideNumber: 'all',
+        // Use 1 based indexing for # links to match slide number (default is zero
+        // based)
+        hashOneBasedIndex: false,
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: false,
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: false,
+        // Enable support for jump-to-slide navigation shortcuts
+        jumpToSlide: true,
+        // Push each slide change to the browser history.  Implies `hash: true`
+        history: true,
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+        // Optional function that blocks keyboard events when retuning false
+        //
+        // If you set this to 'focused', we will only capture keyboard events
+        // for embedded decks when they are in focus
+        keyboardCondition: null,
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+        // Enable the slide overview mode
+        overview: true,
+        // Vertical centering of slides
+        center: true,
+        // Enables touch navigation on devices with touch input
+        touch: true,
+        // Loop the presentation
+        loop: false,
+        // Change the presentation direction to be RTL
+        rtl: false,
+        // Changes the behavior of our navigation directions.
+        //
+        // "default"
+        // Left/right arrow keys step between horizontal slides, up/down
+        // arrow keys step between vertical slides. Space key steps through
+        // all slides (both horizontal and vertical).
+        //
+        // "linear"
+        // Removes the up/down arrows. Left/right arrows step through all
+        // slides (both horizontal and vertical).
+        //
+        // "grid"
+        // When this is enabled, stepping left/right from a vertical stack
+        // to an adjacent vertical stack will land you at the same vertical
+        // index.
+        //
+        // Consider a deck with six slides ordered in two vertical stacks:
+        // 1.1    2.1
+        // 1.2    2.2
+        // 1.3    2.3
+        //
+        // If you're on slide 1.3 and navigate right, you will normally move
+        // from 1.3 -> 2.1. If "grid" is used, the same navigation takes you
+        // from 1.3 -> 2.3.
+        navigationMode: 'default',
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+        // Turns fragments on and off globally
+        fragments: true,
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: true,
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+        // Flags if we should show a help overlay when the question-mark
+        // key is pressed
+        help: true,
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+        // Global override for autolaying embedded media (video/audio/iframe)
+        // - null:   Media will only autoplay if data-autoplay is present
+        // - true:   All media will autoplay, regardless of individual setting
+        // - false:  No media will autoplay, regardless of individual setting
+        autoPlayMedia: null,
+        // Global override for preloading lazy-loaded iframes
+        // - null:   Iframes with data-src AND data-preload will be loaded when within
+        //           the viewDistance, iframes with only data-src will be loaded when visible
+        // - true:   All iframes with data-src will be loaded when within the viewDistance
+        // - false:  All iframes with data-src will be loaded only when visible
+        preloadIframes: null,
+        // Can be used to globally disable auto-animation
+        autoAnimate: true,
+        // Optionally provide a custom element matcher that will be
+        // used to dictate which elements we can animate between.
+        autoAnimateMatcher: null,
+        // Default settings for our auto-animate transitions, can be
+        // overridden per-slide or per-element via data arguments
+        autoAnimateEasing: 'ease',
+        autoAnimateDuration: 1.0,
+        autoAnimateUnmatched: true,
+        // CSS properties that can be auto-animated. Position & scale
+        // is matched separately so there's no need to include styles
+        // like top/right/bottom/left, width/height or margin.
+        autoAnimateStyles: ['opacity', 'color', 'background-color', 'padding', 'font-size', 'line-height', 'letter-spacing', 'border-width', 'border-color', 'border-radius', 'outline', 'outline-offset'],
+        // Controls automatic progression to the next slide
+        // - 0:      Auto-sliding only happens if the data-autoslide HTML attribute
+        //           is present on the current slide or fragment
+        // - 1+:     All slides will progress automatically at the given interval
+        // - false:  No auto-sliding, even if data-autoslide is present
+        autoSlide: 0,
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+        // Use this method for navigation when auto-sliding (defaults to navigateNext)
+        autoSlideMethod: null,
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+        // Opens links in an iframe preview overlay
+        // Add `data-preview-link` and `data-preview-link="false"` to customize each link
+        // individually
+        previewLinks: false,
+        // Exposes the reveal.js API through window.postMessage
+        postMessage: true,
+        // Dispatches all reveal.js events to the parent window through postMessage
+        postMessageEvents: false,
+        // Focuses body when page changes visibility to ensure keyboard shortcuts work
+        focusBodyOnPageVisibilityChange: true,
+        // Transition style
+        transition: 'none', // none/fade/slide/convex/concave/zoom
+        // Transition speed
+        transitionSpeed: 'default', // default/fast/slow
+        // Transition style for full page slide backgrounds
+        backgroundTransition: 'none', // none/fade/slide/convex/concave/zoom
+        // The maximum number of pages a single slide can expand onto when printing
+        // to PDF, unlimited by default
+        pdfMaxPagesPerSlide: Number.POSITIVE_INFINITY,
+        // Prints each fragment on a separate slide
+        pdfSeparateFragments: true,
+        // Offset used to reduce the height of content within exported PDF pages.
+        // This exists to account for environment differences based on how you
+        // print to PDF. CLI printing options, like phantomjs and wkpdf, can end
+        // on precisely the total height of the document whereas in-browser
+        // printing has to end one pixel before.
+        pdfPageHeightOffset: -1,
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+        // The display mode that will be used to show slides
+        display: 'block',
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000
+      });
+      // Override SPACE to play / pause the video
+      Reveal.addKeyBinding(
+        {
+          keyCode: 32,
+          key: 'SPACE',
+          description: 'Play / pause video'
+        },
+        () => {
+          var currentVideos = Reveal.getCurrentSlide().slideBackgroundContentElement.getElementsByTagName("video");
+          if (currentVideos.length > 0) {
+            if (currentVideos[0].paused == true) currentVideos[0].play();
+            else currentVideos[0].pause();
+          } else {
+            Reveal.next();
+          }
+        }
+      );
+    </script>
+
+    <div id="deck-counter"></div>
+    <script>
+      (function () {
+        function refresh() {
+          var total = Reveal.getTotalSlides();
+          var idx = Reveal.getSlides().indexOf(Reveal.getCurrentSlide()) + 1;
+          var el = document.getElementById("deck-counter");
+          if (el) el.textContent = idx + " / " + total;
+        }
+        Reveal.on("ready", refresh);
+        Reveal.on("slidechanged", refresh);
+      })();
+    </script>
+  </body>
+</html>
