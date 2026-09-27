@@ -54,72 +54,51 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s01_c7705e148436f58a79f7f5c77d6d326fb62eb8c08cad1560fc4c150c9a05eed8.mp4"
+          data-background-video="presentation_en_assets/s01_259cb70b9110d2be7a7917014c7aef7162a20165126afe34327351bd1d228a28.mp4"
           >
-            <aside class="notes" data-markdown>In a sooting flame the particles dominate the thermal radiation. An error in the soot field propagates to the temperature and to the transferred heat.</aside>
+            <aside class="notes" data-markdown>Soot is carbon nanoparticles born in the fuel-rich zones of a flame, from polycyclic aromatic hydrocarbons. The primary particles, 20 to 40 nanometres across, stick together into fractal aggregates like this schematic.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s01_d5e0405cf850373d2ae78c9f6dd68e8bd2303ebd05adbdcf58a5cd1e6681e98e.mp4"
+          data-background-video="presentation_en_assets/s01_32cd5f544836561740878a1485f9b0e5823da23cbc14a9f5d0f05441741dcdcb.mp4"
           >
-            <aside class="notes" data-markdown>Soot also matters through emissions and through the design of combustion equipment.</aside>
+            <aside class="notes" data-markdown>It matters for three reasons. It is part of the fine particulate matter that harms health. Black carbon warms the climate because it absorbs sunlight. And in engineering its radiation dominates the heat leaving flames and furnaces, and aircraft engine emissions are now regulated.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s01_a742237622aa35efebf702722caf854e9bfaa036d0031031fee5739b708a7d76.mp4"
+          data-background-video="presentation_en_assets/s01_76f7828145818c1fbc9311bffecc09858c3678ffbd20e41fe08ecec31c7d8c49.mp4"
           >
-            <aside class="notes" data-markdown>Its prediction remains limited by the formation chemistry and by the particle dynamics.</aside>
+            <aside class="notes" data-markdown>To design cleaner equipment, the simulation must tell where soot is formed and where it is destroyed. That is still hard, and a measured field only says how much soot there is. That is the question of this talk.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s02_c362cc15846e33d11adc831477e5f5271535d37ddcdfee37a7ef59b49ae0f231.mp4"
           >
-            <aside class="notes" data-markdown>This is how soot enters a simulation. Accumulation, convection, diffusion and thermophoresis, and a source term.</aside>
+            <aside class="notes" data-markdown>This is how soot enters a simulation. Transport by convection and diffusion, and a source term that adds or removes mass.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s02_c6b4e6aa13cd21e3b934668059d0cb2478f1b7f83495d6f976fe206a9657c477.mp4"
+          data-background-video="presentation_en_assets/s02_04cb244d22a2b92cfd58618dcc701d45c130a6d9e7c420dd6b9a86bc26863e51.mp4"
           >
-            <aside class="notes" data-markdown>Transport is a solved problem. The difficulty is the source term, which is a closure and is measured in kilograms of soot per cubic metre and per second.</aside>
+            <aside class="notes" data-markdown>Transport is a solved problem. The source term is the closure delivered by the soot model, and it gathers nucleation, growth, condensation and oxidation, each with uncertain parameters.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s02_2456e3323ca501431af5763eb3aafd0ded5afc318407a17d078329c9fa11fdb5.mp4"
+          data-background-video="presentation_en_assets/s03_d8c233263b4cefd70aec147d4a5b5da89d979623f7088ccb2692724bc08168bf.mp4"
           >
-            <aside class="notes" data-markdown>Inside the source term there is nucleation, surface growth, condensation of aromatics and oxidation. Each one is a sub model with uncertain parameters.</aside>
+            <aside class="notes" data-markdown>Two hypothetical models. One forms soot fast and oxidises it strongly. The other forms it more slowly and oxidises less.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s03_babc2e3e292a2752d168f82f1a34889e92c8e59088b05f8c43d2219441cec00e.mp4"
+          data-background-video="presentation_en_assets/s03_acabe620ade7b522c1e54500982c81828f4e45d14915fbca0a25f29d0117dbe5.mp4"
           >
-            <aside class="notes" data-markdown>A hypothetical model that forms soot quickly and then oxidises it with the same intensity. Formation is shown in blue and oxidation in red.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s03_209d68d3c3925e206243feb25fb870ef98bb963e7662ab41a870ca531d53cf44.mp4"
-          >
-            <aside class="notes" data-markdown>A second model, slower to form and weaker to oxidise.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s03_9b17f6c706fd45d50510b9ddd32d2ca08feeacb1f95fe5e04223e0ed7e2677d5.mp4"
-          >
-            <aside class="notes" data-markdown>Integrating each source along the pathline, both models reach the same peak soot.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s03_cc160250363eb3bdfa97ada5740d8c0a199a2a22004ad761f1950823df669ac6.mp4"
-          >
-            <aside class="notes" data-markdown>Matching the peak soot does not determine the source term, because formation and oxidation errors compensate each other.</aside>
+            <aside class="notes" data-markdown>Both reach the same peak soot. Matching that peak does not determine the source term, because formation and oxidation compensate each other.</aside>
         </section>
         <section
           data-background-size='contain'
@@ -131,373 +110,219 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s05_af60caee8a151277650a1fb0ee77642e6cb84dda9de147ae615f721d5b6b354f.mp4"
+          data-background-video="presentation_en_assets/s05_1f7970fa645577d3ccbac003e82ad0c7c923fd1fc1a2fab2c38226e4ac6d5154.mp4"
           >
-            <aside class="notes" data-markdown>In a simulation the model gives the source term, the solver transports the soot and the soot field comes out.</aside>
+            <aside class="notes" data-markdown>In a simulation the model delivers the source term and the soot field comes out. Here the path is reversed. With the reconstructed soot and the velocity, the equation delivers the source term.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s05_70f36629b35a8aa3fa7018598e1686ece803db028b7fde910dba0428ee9cb8e0.mp4"
+          data-background-video="presentation_en_assets/s05_73ae21acedf98b0f5e2177b91c55efb4857bef9c30f003f51ec5dc2ec797cace.mp4"
           >
-            <aside class="notes" data-markdown>Inverting the argument, with the reconstructed soot field and a known velocity, the equation gives the source term as the divergence of the soot mass flux.</aside>
+            <aside class="notes" data-markdown>For that, three fields must be measured, the soot volume fraction, the temperature and the maturity.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s05_58297a950a67d259d8f442bc4f9c6e870a86a8bb0b72904d719bbdd0ad277956.mp4"
+          data-background-video="presentation_en_assets/s06_1af7d127c1beacfe33c5ee4400d29af6b8c13e753124e19aa2838f93447cde36.mp4"
           >
-            <aside class="notes" data-markdown>This fixes the roadmap of the talk. Measure the soot volume fraction, the temperature and the maturity. The three thumbnails are the measured fields of the normal flame.</aside>
+            <aside class="notes" data-markdown>In the normal flame the fuel leaves through the centre. Soot forms inside the front and crosses it on the way out, so it is oxidised.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s06_8553a1b5764552cbbf9328a74e97b0a368ab9a101c647d1662bb3c2b86cdcaa4.mp4"
+          data-background-video="presentation_en_assets/s06_6ccd4701afa04298913bed126de9a34a74fb05ca1e3eec215369dee5fa0bada1.mp4"
           >
-            <aside class="notes" data-markdown>The burner has three concentric tubes. In the normal flame the fuel leaves through the centre.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s06_dc511d9d9738c36435442914b20e39b280dfba376d3debc81a6e88928c4cc6d1.mp4"
-          >
-            <aside class="notes" data-markdown>Soot forms inside the flame front and, to leave, it crosses the front and oxidises.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s06_67ab519f356f8721d375f489179388211a974b2b25b4c9fd15513ef5b5c233cb.mp4"
-          >
-            <aside class="notes" data-markdown>In the inverse flame air leaves through the centre and fuel through the annulus, so soot forms outside the front.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s06_ae403089dec559465a0b34f4f5d0bd6d74160c40c5f73c4a3bd7fa255c578620.mp4"
-          >
-            <aside class="notes" data-markdown>Both flames consume the same equivalent amount of fuel, set by the oxygen available in the inverse one. They are two complementary laboratories.</aside>
+            <aside class="notes" data-markdown>In the inverse flame the air leaves through the centre. Soot forms outside the front and escapes without being oxidised. Both flames burn the same amount and are complementary laboratories.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s07_6b27ab672856611d49b2256a0a3d3ec57a440e4cbbe11dc4b4cb4a20315f67a6.mp4"
           >
-            <aside class="notes" data-markdown>A modulated LED at 660 and 810 nanometres crosses the flame and a camera records the image. The same camera measures with the LED on and with the LED off.</aside>
+            <aside class="notes" data-markdown>An LED at 660 and 810 nanometres crosses the flame and a camera records the image, with the LED on and off.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s07_ee9a7b6f457808512d0e47878f7cbb729159fa19744cd8494520cb0c1df71756.mp4"
+          data-background-video="presentation_en_assets/s07_17a4c9428a7df03f5f745d28aaa9da977045ac59ea89dbb10c0b0054054ceaf7.mp4"
           >
-            <aside class="notes" data-markdown>With the LED on, the flame leaves its shadow on the image. That transmissivity accumulates the extinction along the whole line of sight.</aside>
+            <aside class="notes" data-markdown>With the LED on, the camera sees the shadow of the flame, which gives the extinction. With it off, it sees the soot's own emission, which carries the temperature. An Abel inversion takes the images to the local plane, where each point gathers four signals.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s07_a1c8c9c2de996afcd9d0835948bebfbea71438e15c55f0f56a50f9bd7711efb3.mp4"
+          data-background-video="presentation_en_assets/s08_694e9c19188e160ce179d16166cb0a41ad743d45b65b27c1cb465ce3defdcba9.mp4"
           >
-            <aside class="notes" data-markdown>With the LED off the camera records the self emission of the hot soot, which carries the temperature inside the Planck function.</aside>
+            <aside class="notes" data-markdown>Extinction depends on the amount of soot and on its absorption. Emission adds Planck and the temperature. Measuring at two colours gives the spectral slope, which indicates the maturity.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s07_d05db818bf52940b7bdab546b4318a0ff12130fd826017c3827e39cc5c733da3.mp4"
+          data-background-video="presentation_en_assets/s08_1a964c0119ee695effe5c279696869f7eb8a6a4620dddcfef3086f26eb967161.mp4"
           >
-            <aside class="notes" data-markdown>The images are integrated along the line of sight. The Abel inversion brings them to the local plane, where each point carries four measured signals.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s08_6eaf17ed9e9987ca74d51959e5fce449e655fdcfb0694681f7b347036cdcee0a.mp4"
-          >
-            <aside class="notes" data-markdown>Extinction depends on the amount of soot and on the absorption capacity of the material. Emission adds the Planck function, which brings the temperature.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s08_4754bc4e0b4fd354a568987882fcbeeacab2e7ebc33305843f07ef4864db6771.mp4"
-          >
-            <aside class="notes" data-markdown>Measuring at two colours gives the spectral slope of the absorption, which is the maturity exponent. Mature soot absorbs more flatly than young soot.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s08_4efee5503d8218b8caf49b52f0c14fce68af9d8db5169d188c9b06db063bc75a.mp4"
-          >
-            <aside class="notes" data-markdown>Each point has four signals and four unknowns, and every signal depends on several unknowns at once. The soot volume fraction and the maturity enter multiplied, and the Planck function amplifies temperature errors. The inverse problem is ill conditioned.</aside>
+            <aside class="notes" data-markdown>At each point there are four signals and four coupled unknowns. The inverse problem is ill-conditioned.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s09_23619e27b52a81e3789b7da78576b33e43f5bc06905f7b8f84816eb5fa9abca0.mp4"
           >
-            <aside class="notes" data-markdown>The network takes the coordinates and returns the four unknown fields, temperature, maturity, soot volume fraction and scattering. Each point of the plane enters on the left and leaves as four values.</aside>
+            <aside class="notes" data-markdown>The network takes the coordinates and returns the four sought fields at every point of the plane.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s09_b862841989172c0fbef72df74cdd28ba79aa05a5a25df0e5b378ddb46d3d150e.mp4"
+          data-background-video="presentation_en_assets/s09_6ea1395b59ab870536bd7164b55ffd4d5d18cd20e731690f437f36a3855ac239.mp4"
           >
-            <aside class="notes" data-markdown>The optical model turns the outputs into predicted signals, the loss compares them with the measurement and the gradient updates the weights. The physics enters through the loss.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s09_256e6544698b53879c001fef9bcbb4c1a1e957f534e7b74b0aa7f6867f27381b.mp4"
-          >
-            <aside class="notes" data-markdown>There is no training data. For this audience it is a PINN, a global parameterisation with a physical residual. The precision is estimated by repeating the inversion a hundred times.</aside>
+            <aside class="notes" data-markdown>An optical model turns those outputs into signals, the loss compares them with the measurement and the gradient corrects the weights. There is no training data. It is a PINN with an optical residual, and an ensemble of one hundred inversions gives the uncertainty.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s10_038e84c2041679a9903a8fb3c61579a4c26c2b4a970d6f34ffc17e214d0524fa.mp4"
           >
-            <aside class="notes" data-markdown>The normal flame concentrates soot on the wings, with a peak near 8 ppm, and the soot temperature lies between 1650 and 1950 kelvin. The soot volume fraction is on the left and the temperature on the right.</aside>
+            <aside class="notes" data-markdown>The normal flame concentrates soot in the wings, about 8 ppm, between 1650 and 1950 kelvin.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s10_9fa40fea49c0955d77db7084af11874cc054bd0db7e2ca755c441fab016a6756.mp4"
+          data-background-video="presentation_en_assets/s10_1c5af703fc98375446fad2d336af794156242265f4704c50312d9de455e81975.mp4"
           >
-            <aside class="notes" data-markdown>The inverse flame has a peak seven times lower, is colder and places the soot outside the flame front.</aside>
+            <aside class="notes" data-markdown>The inverse flame has seven times less soot, is colder and places it outside the front, with the same carbon consumption.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s10_3b6135e6c70bb299cd6360821d4da7563e9e7c4f7fd4f0dc852723551c3196b9.mp4"
+          data-background-video="presentation_en_assets/s11_6d4e222a67c5e669613a52e155e68018a66ff55beeb435a6bd3eef7048767610.mp4"
           >
-            <aside class="notes" data-markdown>At the same equivalent carbon consumption, the two flames produce opposite soot structures.</aside>
+            <aside class="notes" data-markdown>Maturity is read as a graphitic fraction. In the normal flame soot matures in the hot wings. In the inverse flame it stays young.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s11_ed720fa57e01e63c415f91e8b5302b584b32bcae71ff4ab0aaff54eeb8325787.mp4"
+          data-background-video="presentation_en_assets/s11_55c16e40bfaf82ed36cd9ceba5378f7259fe930bdeb643d642183e2650f81bd0.mp4"
           >
-            <aside class="notes" data-markdown>Maturity translates into a graphitic fraction. In the normal flame soot matures on the wings, where it passes through the hottest zones.</aside>
+            <aside class="notes" data-markdown>The composition fixes the material density, and with it the soot mass that the equation transports.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s11_067e4f03ef707e19d9f77169fee64d9435597c87f0df1d524dcb9b7f319efd55.mp4"
+          data-background-video="presentation_en_assets/s12_cc71074c17bf9b427cf691be22bfb6e13d0894c66a81e2dc3132c3b23dfda07b.mp4"
           >
-            <aside class="notes" data-markdown>In the inverse flame the soot stays organic and young.</aside>
+            <aside class="notes" data-markdown>We read the transport equation backwards. At steady state, without diffusion or thermophoresis, the source term is the divergence of the soot mass flux, evaluated point by point.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s11_d51a942d9430a8655c4fa7732e12c44bbb0add48d393907097ac5a0857f1fb1f.mp4"
+          data-background-video="presentation_en_assets/s12_0edd92973b97fedce4f7f1b1dd4609269e1895b671f42dd1c20f89aa76218704.mp4"
           >
-            <aside class="notes" data-markdown>The composition sets the material density, between 1300 and 1500 kilograms per cubic metre, and with it the soot mass per unit volume, which is what the equation transports.</aside>
+            <aside class="notes" data-markdown>Three ingredients. The material density comes from maturity, the soot volume fraction from the experiment and the velocity from the CoFlame simulation. Differentiating their product gives the source term, a hybrid estimate in which no soot sub-model is involved.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s12_6cbc18884274cf54f6276e1e1682752f7ea81f51d1c10d269828113750bf1a07.mp4"
+          data-background-video="presentation_en_assets/s13_207442fa5244b39dca37ea48a9869535f308861ea5708df547ae07c806c1185a.mp4"
           >
-            <aside class="notes" data-markdown>We start from the same equation. In steady state, with diffusion and thermophoresis neglected, the divergence of the soot mass flux remains.</aside>
+            <aside class="notes" data-markdown>On the left, how much soot there is. On the right, the source term. Blue is net formation, red is net oxidation and white means the soot is only transported.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s12_850f27036275daed4f8609575e9468884d81bdd447ba66d5fcc61641aace3361.mp4"
+          data-background-video="presentation_en_assets/s13_422284ae9a127e37f5fba239519b4f6034657cf1b65dca4df53e2da7a8a58a9c.mp4"
           >
-            <aside class="notes" data-markdown>In axisymmetric coordinates this is the expression we evaluate point by point.</aside>
+            <aside class="notes" data-markdown>It forms in the low wings and at the base of the axis, and it is oxidised higher up, all the way to the tip. The particles turn from blue to red as they rise. The concentration peak, at about thirty millimetres, sits where formation and oxidation balance.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s12_61cff03f63820a8f2038b9261193254a9c56a4f65f2b56cda9b702a85cee919d.mp4"
-          >
-            <aside class="notes" data-markdown>The ingredients are the material density, which comes from maturity, the measured soot volume fraction and the velocity field of the CoFlame simulation, which carries the soot upwards and outwards.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s12_5c65749f17129aa010beab77ac1407c62d5b918478f4f78119689c3bc0638152.mp4"
-          >
-            <aside class="notes" data-markdown>The result is the source term. It is a hybrid estimate, because the simulation provides the velocity and the soot comes from the experiment.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s13_ee8ca1d0de21405bf08c79ee7e82548402231c4eb8eeb56da78fdf5183417d20.mp4"
-          >
-            <aside class="notes" data-markdown>The reconstructed field of soot volume fraction. It tells how much soot there is at each point.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s13_74e085bdfe835f41428122dfd8d46f884cf829ec3484fb9931467c5396e0c82b.mp4"
-          >
-            <aside class="notes" data-markdown>The right half is the source term. Blue means net formation, red means net oxidation and white means transport with no change of mass.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s13_08fc06bd9d505ac429c6d3c491d006836dba471969d1c72b1909c4007e4c3e66.mp4"
-          >
-            <aside class="notes" data-markdown>Soot forms on the lower wings and at the base of the axis, and is oxidised in the upper outer zone up to the tip. The particles turn from blue to red as they rise.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s13_1ecc2f3de6f99ccaa42641e10b6641de26f1bb154d8f14f7f2de6537e6f90784.mp4"
-          >
-            <aside class="notes" data-markdown>The peak concentration does not coincide with the peak formation. It sits where formation and oxidation compensate.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s13_278e5d07e801df962836829d0a73028d847f61d39d9323c3725d2ca0dbf9a809.mp4"
+          data-background-video="presentation_en_assets/s13_e7497f2b5c6e18cb9611352c7aaddf76c64966dbc0aed889f498a1c501cf4e0c.mp4"
           >
             <aside class="notes" data-markdown>If we revolve that field about the axis, formation is a ring at the base of the flame and oxidation a layer that covers the upper part and the tip.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s14_2ae251d2394c11dbbfdcce25eee08de360d458e714cd33cfbf4e3c0d8c3f1c88.mp4"
+          data-background-video="presentation_en_assets/s14_6d8c5abd585bb963d1753dca471a3f6a7f4e95808dc886e29b9a68ca032f8bf5.mp4"
           >
-            <aside class="notes" data-markdown>The soot integrated over each cross section grows, peaks near 28 millimetres and then disappears.</aside>
+            <aside class="notes" data-markdown>We integrate over each section. The soot grows, peaks near 28 millimetres and disappears. The net source is positive low in the flame, crosses zero at that peak and becomes negative higher up.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s14_06b0140d9c967e5bac58d9c7778e8e8a3c62f208fff42b2e994eab98f6cba4dc.mp4"
+          data-background-video="presentation_en_assets/s14_7934ca7ede5c3a733fee53cf54e0bcfb9bb29d9d0aa64874c6d5b645f0945016.mp4"
           >
-            <aside class="notes" data-markdown>The net source is positive below, crosses zero where the soot peaks and becomes negative above. The cursor climbs the flame and reads both curves.</aside>
+            <aside class="notes" data-markdown>Two heights with the same amount of soot. At one it forms and at the other it is oxidised, with similar rates of opposite sign. The concentration cannot tell them apart and the source term can.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s14_5a29e8bc35e40ec1968274fe239c2ace94a55cf7ea44dbdcf6fe1f7473d6823b.mp4"
-          >
-            <aside class="notes" data-markdown>Take two heights with the same amount of soot. At one the soot is forming and at the other it is oxidising, with rates of similar magnitude and opposite sign.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s14_15d3ed1ab95c6c7432c82363be100001be117d58561775cf081cf62ee5c96f17.mp4"
-          >
-            <aside class="notes" data-markdown>The concentration is the same at both heights. The source term separates them and gives a rate that compares directly with the model.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s15_330be1b0890aeed27e12d76894268def8e9d379bfead8c9bc1676845ea0ae560.mp4"
+          data-background-video="presentation_en_assets/s15_e82c538ee00a73e3f4926daf8bd6be934bb7971b775f730582fe78add41e1185.mp4"
           >
             <aside class="notes" data-markdown>The inverse flame concentrates formation near the base, in a compact zone, and oxidation is weak. The particles turn blue as they cross the formation zone and hardly ever turn red.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s15_8bd8c869d2858518997146d2867cdb38b91c84d1c085615bd947dcf0fb28b3bb.mp4"
+          data-background-video="presentation_en_assets/s15_9fe75bab1b02c29e6b9c55fb5c525ed93a687811bb27f1aa50e75ad48a461c5c.mp4"
           >
-            <aside class="notes" data-markdown>Comparing the integrated source of the two flames, the formation is of the same order and the oxidation of the inverse one is much weaker.</aside>
+            <aside class="notes" data-markdown>Integrated formation is of the same order in the two flames and oxidation in the inverse flame is much weaker. Above thirty millimetres the net source is almost zero and the remaining soot leaves the measured domain.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s15_8af007faab32279e964b7acd1892cda6c156a83e691789531002a4636c55b333.mp4"
+          data-background-video="presentation_en_assets/s16_36ecfdeacac16e1e4aa1f13b7949d770b40fe361d700add8cb58ca7bdc8d013f.mp4"
           >
-            <aside class="notes" data-markdown>Above thirty millimetres the net source is almost zero and the remaining soot leaves the measured domain.</aside>
+            <aside class="notes" data-markdown>We built a differentiable solver with a two-equation soot model. The adjoint gradient fits the parameters against the measured source term, weighted by the uncertainty of the ensemble of inversions.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s16_8427811123522cbebe1dc2a90d286533503df7889447e9b07e5d1470f2619438.mp4"
-          >
-            <aside class="notes" data-markdown>We follow three particles entering at different radial positions, integrating the velocity field.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s16_9e69b69c0f0436c6edc4d13c80a56c7a19c2a73d37ed81109f2f2e594dec05fe.mp4"
-          >
-            <aside class="notes" data-markdown>The soot temperature is not monotonic along the pathline. The particles cross hotter zones.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s16_ebed109f4167fa79de2d250077243247f3f2482d2d9569bb6de308ca4ca26ad2.mp4"
-          >
-            <aside class="notes" data-markdown>The graphitic fraction rises while the particle is hot and then falls again.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s16_be5e42933827e506ac4b2763f338fdfecd30618e2d35b9ee13c0cadab23a37b1.mp4"
-          >
-            <aside class="notes" data-markdown>The source term goes from positive to negative. In the inverse flame the temperature falls from the start, the graphitic fraction collapses and the source vanishes.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s17_3ae2d3f17e8789dc05ebc379fe191d8eaa8468287132a16a60eb04cec7081eba.mp4"
-          >
-            <aside class="notes" data-markdown>We have built a differentiable solver that solves the laminar flow with a reduced mechanism and a two equation soot model. The adjoint gradient updates the parameters against the measured source term.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s17_361a6b9d23376eed0d2ced2d0e63e038f1e52444b1d48cd946e24d83772f87ef.mp4"
-          >
-            <aside class="notes" data-markdown>That defines an optimisation problem weighted by the uncertainty that the ensemble of inversions already provides.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s17_b070e3e144065d932079829c35b0698d6fa839ee8737babacb2ea66c69aa8874.mp4"
+          data-background-video="presentation_en_assets/s16_b070e3e144065d932079829c35b0698d6fa839ee8737babacb2ea66c69aa8874.mp4"
           >
             <aside class="notes" data-markdown>Before touching the real data we tested the method on synthetic twins. The model is poorly identifiable, the two flame sequence recovers the parameters and the source term adds between nine and twenty four per cent.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s18_b0624974973472f086f9a344f315701eb18dd356c9148de7ae0b01f595a45c32.mp4"
+          data-background-video="presentation_en_assets/s17_6d9fad969f57aa80c25d0025fb912d3f4d83ac3be083031970d40c3065e447b2.mp4"
           >
-            <aside class="notes" data-markdown>On the left, the measured source term of the inverse flame, with its formation lobe followed by oxidation.</aside>
+            <aside class="notes" data-markdown>On the left, the measured source term of the inverse flame, with formation followed by oxidation. On the same scale, the model with the published parameters is almost empty.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s18_b5a637e7093a001850ec151594e2bcf16daf5496b328d4a6b58f1e9d37362e24.mp4"
-          >
-            <aside class="notes" data-markdown>On the same scale, the two equation model with the published parameters is almost empty.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s18_0e4436637c142295ed958ae4119b1c2ae27f0d805e8f6969fb91a20d14b3fa9f.mp4"
+          data-background-video="presentation_en_assets/s17_0e4436637c142295ed958ae4119b1c2ae27f0d805e8f6969fb91a20d14b3fa9f.mp4"
           >
             <aside class="notes" data-markdown>Multiplied by ten the shape becomes visible. The model produces a smooth band where the experiment shows intense formation followed by oxidation. That discrepancy is what the calibration must correct.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s19_281f74d065665d11bcc18e44e820573bcd4301f866ba57180955c2b32d2736ed.mp4"
+          data-background-video="presentation_en_assets/s18_3255cfa474cd0d467c2336ea99f90f155de62d436ae7d7a42c4d9d511980f126.mp4"
           >
-            <aside class="notes" data-markdown>First idea. The soot concentration does not determine the local rate. The peak volume fraction sits where formation and oxidation compensate, and two heights with the same concentration can carry rates of opposite sign.</aside>
+            <aside class="notes" data-markdown>Two ideas. The soot concentration does not determine the local rate, and its peak sits where formation and oxidation balance. With the reconstructed fields, the transport equation and the velocity we obtain the source term in both flames, as a hybrid estimate.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s19_8f83af634a0a37f7284f1c16901b77fb1d88019b95f1b1eaec9c8cc9347428a3.mp4"
+          data-background-video="presentation_en_assets/s18_03922f009a383f801f6b31f50ca28f0d22ea29a227d92883c37922fce106636d.mp4"
           >
-            <aside class="notes" data-markdown>Second idea. The spatial reconstruction of soot volume fraction, temperature and maturity, together with the transport equation and the velocity, gives the source term in both flames. It is a hybrid estimate, because the velocity is simulated.</aside>
+            <aside class="notes" data-markdown>Third idea. That source term is what the models predict. The calibration in progress shows that the literature model does not reproduce it, and the two flames together make its parameters identifiable.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s19_b4b54d4a2b1157f69690bf833b6558aa5614f24fe016362c465810c8bb615538.mp4"
-          >
-            <aside class="notes" data-markdown>Third idea. That source term is the variable that models predict. The calibration in progress shows that the model with literature parameters does not reproduce it and that combining the two flames improves the identifiability of the parameters.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="presentation_en_assets/s20_f34ea694afa620ab9b07cb93c937e363bb322a04d168a1a8e17c7ca2ceb3f977.mp4"
+          data-background-video="presentation_en_assets/s19_f34ea694afa620ab9b07cb93c937e363bb322a04d168a1a8e17c7ca2ceb3f977.mp4"
           >
             <aside class="notes" data-markdown>Thank you. I am happy to take questions.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="presentation_en_assets/s20_73aacc8ae668b0415b0e8ae9e3319eb76a32a9539531a95f881aa1cea69a5d73.mp4"
+          >
+            <aside class="notes" data-markdown>Backup slide. Three particles follow the simulated velocity. The temperature is not monotonic, the graphitic fraction rises while the particle is hot and the source term goes from positive to negative. Soot first forms and then is oxidised.</aside>
         </section>
       </div>
     </div>
