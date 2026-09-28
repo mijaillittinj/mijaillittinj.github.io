@@ -1,0 +1,88 @@
+---
+/**
+ * Course page: ILN222 Gestión Energética II (UTFSM). Lists the animated lectures
+ * published so far. Each lecture is a static Manim Slides export copied into
+ * public/teaching/iln222/<slug>/ from ~/Desktop/Cursos/ILN222/manim_clases/<class>/
+ * (see scripts/import-lecture.sh).
+ */
+import Base from '../../layouts/Base.astro';
+import { url, localized } from '../../i18n/utils';
+import type { Lang } from '../../i18n/ui';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const es = lang === 'es';
+const base = '/teaching/iln222/clase05-factor-forma/';
+const T = es
+  ? {
+      title: 'Gestión Energética II', eyebrow: 'Docencia · ILN222 · UTFSM · 2026',
+      lede: 'Los tres modos de transferencia de calor, conducción, convección y radiación, y la transferencia de masa, con demostraciones computacionales y un proyecto de modelación durante el semestre.',
+      lectures: 'Clases animadas',
+      l1: 'Factor de forma. Intercambio de radiación entre superficies',
+      l1Text: 'Definición del factor de forma, ángulo sólido e intensidad, deducción completa desde la ley de Lambert, reciprocidad, regla de la suma, superposición y simetría, intercambio entre superficies negras y dos ejemplos resueltos, un domo hemisférico y un cortafuego.',
+      open: 'Abrir la presentación', pdf: 'PDF con un estado por página', widget: 'Ejemplo interactivo, elemento frente a un disco',
+      howH: 'Cómo verla',
+      how: 'Es una presentación animada en español. Las flechas o la barra espaciadora avanzan, la tecla F activa la pantalla completa, la tecla S abre la vista de orador con las notas y la tecla O muestra todos los estados. Funciona mejor en un computador.',
+      refH: 'Bibliografía', ref: 'Y. A. Çengel y A. J. Ghajar, Transferencia de calor y masa, capítulos 12 y 13.',
+      back: 'Docencia',
+    }
+  : {
+      title: 'Energy Management II', eyebrow: 'Teaching · ILN222 · UTFSM · 2026',
+      lede: 'The three modes of heat transfer, conduction, convection and radiation, and mass transfer, taught with computational demonstrations and a semester-long modelling project. The course is taught in Spanish.',
+      lectures: 'Animated lectures',
+      l1: 'View factors. Radiation exchange between surfaces (in Spanish)',
+      l1Text: 'Definition of the view factor, solid angle and intensity, a full derivation from Lambert’s law, reciprocity, the summation rule, superposition and symmetry, exchange between black surfaces and two worked examples, a hemispherical dome and a fire break.',
+      open: 'Open the presentation', pdf: 'PDF, one state per page', widget: 'Interactive example, element facing a disk',
+      howH: 'How to view it',
+      how: 'This is an animated presentation in Spanish. The arrow keys or the space bar move forward, F turns on full screen, S opens the speaker view with the notes and O shows every state. It works best on a computer.',
+      refH: 'Reference', ref: 'Y. A. Çengel and A. J. Ghajar, Heat and Mass Transfer, chapters 12 and 13.',
+      back: 'Teaching',
+    };
+---
+<Base title={`${T.title} · ILN222`} description={T.lede}>
+  <header class="page-head frame">
+    <p class="eyebrow">{T.eyebrow}</p>
+    <h1>{T.title}</h1>
+    <p class="lede">{T.lede}</p>
+  </header>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="row__label nonum">{T.lectures}</h2>
+      <article class="lecture">
+        <p class="meta">Clase 05 · 2026-09-29</p>
+        <h3><a href={url(base)}>{T.l1}</a></h3>
+        <p class="desc">{T.l1Text}</p>
+        <p class="links">
+          <a class="btn" href={url(base)}>{T.open}</a>
+          <a class="more" href={url(base + 'clase05_factor_forma.pdf')}>{T.pdf}</a>
+          <a class="more" href={url(base + 'interactive/factor_forma_disco.html')}>{T.widget}</a>
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="row__label nonum">{T.howH}</h2>
+      <div class="prose"><p>{T.how}</p></div>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="row__label nonum">{T.refH}</h2>
+      <div class="prose">
+        <p>{T.ref}</p>
+        <p><a class="more" href={localized('/teaching/', lang)}>{T.back}</a></p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .lecture h3 { font-size: var(--step-2); margin-top: var(--s-1); }
+  .lecture h3 a { color: var(--ink); text-decoration: none; }
+  .lecture h3 a:hover { color: var(--accent); }
+  .desc { margin-top: var(--s-2); color: var(--ink-2); max-width: 44rem; }
+  .links { margin-top: var(--s-4); display: flex; flex-wrap: wrap; align-items: center; gap: 0.5em 1.4em; }
+</style>
