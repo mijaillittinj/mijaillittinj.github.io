@@ -41,6 +41,7 @@ export const courses: Course[] = [
       en: 'The three modes of heat transfer (conduction, convection and radiation) and mass transfer, taught with short computational demonstrations and a semester-long modelling project.',
       es: 'Los tres modos de transferencia de calor (conducción, convección y radiación) y la transferencia de masa, con demostraciones computacionales breves y un proyecto de modelación durante el semestre.',
     },
+    page: '/teaching/iln222/',
     current: true,
   },
   {
