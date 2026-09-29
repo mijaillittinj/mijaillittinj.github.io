@@ -1,0 +1,735 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Colectores solares térmicos, ILN222</title>
+
+    <link rel="stylesheet" href="../lib/reveal.js/5.2.0/reveal.min.css">
+    <link rel="stylesheet" href="../lib/reveal.js/5.2.0/theme/white.min.css">
+
+    <!-- Theme used for syntax highlighting of code -->
+    <!-- <link rel="stylesheet" href="../lib/css/zenburn.css"> -->
+    <!-- <link rel="stylesheet" href="index.css"> -->
+
+    <style>
+      :root {
+        --bg: #FFFFFF;
+        --fg: #111418;
+        --accent: #1F5FA8;
+        --dim: #5E6A78;
+      }
+      html, body, .reveal { background: var(--bg); }
+      .reveal .slides section { height: 100%; }
+      /* thin progress bar in the presentation accent colour */
+      .reveal .progress { height: 4px; color: var(--accent); background: rgba(0,0,0,0.08); }
+      /* discreet state counter, hidden in the overview.  It sits in the top
+         right corner, which every slide leaves empty, because the bottom of
+         the frame already carries the section name and the source note. */
+      #deck-counter {
+        position: fixed; top: 12px; right: 18px; z-index: 30;
+        font-family: "Latin Modern Roman", Georgia, "Times New Roman", serif;
+        font-size: 15px; color: var(--dim); letter-spacing: 0.2px;
+        pointer-events: none; opacity: 0.8;
+      }
+      .reveal.overview #deck-counter { display: none; }
+      /* keep the arrows unobtrusive, the talk is driven by the keyboard */
+      .reveal .controls { opacity: 0.25; }
+      .reveal .controls:hover { opacity: 0.8; }
+    </style>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s00_aeda65e0c4628ca04cb67bbfb72eb1aa87665c5dc052cad905138bf1bc5cd3a0.mp4"
+          data-background-video-muted
+          >
+            <aside class="notes" data-markdown>Buenos días. Hoy pasamos de la física de la radiación a un equipo concreto, el colector solar térmico. Es el que ven en los techos calentando agua, y no genera electricidad. Todo lo que vimos sobre absortividad, emisividad, efecto invernadero y factor de forma se junta en este equipo. Pregunto al curso quién ha visto uno en su casa o en un edificio (pausa). Al final de la clase sabrán estimar cuánta energía entrega y de qué depende su eficiencia.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s01_9036ef10bfce5c16a3e82cf1c2691e7949c8b9ff6bef4a3173069a8cfb802087.mp4"
+          >
+            <aside class="notes" data-markdown>Este es el plan de hoy. Primero vemos qué es un colector plano y cómo se combate cada pérdida de calor. Luego el recurso, cuánta radiación llega y cómo cambia con la inclinación del colector, donde reaparece el factor de forma de la clase pasada. Después los sistemas, con circulación natural o forzada. El centro de la clase es el balance de energía del colector. Terminamos con la eficiencia instantánea, que es la curva que trae cualquier catálogo. El número del capítulo actual aparece siempre abajo a la izquierda.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s02_ec8f3396b0c5fb78aff9e9fe16dc0f37309bd5dcbc37b1d6fcacb95540fe516a.mp4"
+          >
+            <aside class="notes" data-markdown>Partimos por la definición. Un colector solar plano es un intercambiador de calor, como los que ya estudiaron, con una particularidad. La fuente caliente es la radiación del Sol, en amarillo, y el sumidero es un fluido, en celeste, casi siempre agua. En medio está la placa absorbedora, en naranja, que recibe la radiación y se calienta. Ojo con la confusión frecuente. Este equipo no genera electricidad, calienta agua, y eso lo distingue del panel fotovoltaico. Ahora vemos de qué está hecho.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s02_b78ea04dbbe668b26e9a727c6cd5fa64fe5b82e9cef420bed7b4a087f8e1a5ac.mp4"
+          >
+            <aside class="notes" data-markdown>Aquí está el corte transversal, armado capa por capa. Es un esquema, no está a escala. Uno es el marco y la caja, que sostienen todo. Dos es el vidrio templado, arriba. Tres es la placa absorbedora, metálica, con un recubrimiento selectivo. Cuatro son los tubos soldados a la placa, por donde circula el fluido en celeste. Cinco y seis son la aislación inferior y lateral, en gris. Pregunto al curso para qué sirve cada capa (pausa). Vamos a responderlo siguiendo la energía.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s02_29d4124866a99f76e433776fba4e86f05776a62f3129470893962b75b6900342.mp4"
+          >
+            <aside class="notes" data-markdown>Seguimos la energía. El Sol, arriba a la izquierda, emite con su máximo cerca de medio micrón. Esa radiación de onda corta, en amarillo, atraviesa el vidrio casi sin pérdida, porque el vidrio es transparente en el visible. La placa la absorbe y se calienta. El calor pasa por conducción a los tubos y de ahí por convección al fluido. Ahora falta ver qué hace la placa caliente.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s02_a6eeeca8d0b25912fc3745eaa049b10a71045a9125f5d4a619fe65d466a85088.mp4"
+          >
+            <aside class="notes" data-markdown>La placa caliente también emite, a una temperatura mucho menor que el Sol, así que emite en el infrarrojo lejano, las flechas ámbar. El vidrio es casi opaco en esas longitudes de onda y la devuelve hacia la placa. Es el efecto invernadero que vimos en la clase de propiedades, el mismo del auto al sol. El colector deja entrar la onda corta y retiene la onda larga. Con eso tenemos la idea del equipo, y lo que sigue es ver por dónde se escapa el calor.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s03_2f6dcd0c0bae00b136522038e215d8f3728c1f590966f41454fc54b623ab61e5.mp4"
+          >
+            <aside class="notes" data-markdown>Antes de las ecuaciones, algo de historia. La pintura de Giulio Parigi, del siglo diecisiete, muestra a Arquímedes incendiando barcos romanos con espejos en Siracusa. Probablemente es un mito, y muestra que la idea tiene más de dos mil años. El problema de ingeniería no es captar, porque cualquier superficie negra capta. El problema es retener el calor, porque una placa caliente pierde por los tres mecanismos a la vez. Pregunto al curso cuáles son esos tres mecanismos (pausa). Vamos a atacarlos uno por uno.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s03_ebcf40fda3478c945f769e9903a3874003ffcf497e193e21b43db5838a2421bc.mp4"
+          >
+            <aside class="notes" data-markdown>Aquí está la placa sola, en naranja, con sus tubos, caliente al sol. Pierde calor por los tres mecanismos, todas las flechas ámbar. Hacia abajo y hacia los lados por conducción, a la estructura que la sostiene. Hacia arriba por convección, porque el viento arrastra el aire caliente. Y por radiación infrarroja hacia el cielo. Una placa así calienta agua solo unos pocos grados sobre el ambiente. Cada mejora de la historia del colector ataca una de estas flechas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s03_924378db36d69074e4937397d9a949d9581f675bd746c8830da8f58fb6768840.mp4"
+          >
+            <aside class="notes" data-markdown>Primera mejora, la aislación inferior y lateral, en gris, dentro de una caja. Las flechas de conducción se achican. No desaparecen, porque ningún aislante es perfecto, y quedan pequeñas frente a las demás. A la derecha anotamos la mejora y la pérdida que ataca. Es la misma resistencia térmica de conducción que usaron para aislar cañerías.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s03_e8dd1db9dbb86172418c4e81fba2ce62c70293228d574d72bf96030c0e49c0f3.mp4"
+          >
+            <aside class="notes" data-markdown>Segunda mejora, la cubierta de vidrio. El viento ya no toca la placa, así que la convección exterior queda sobre el vidrio, que está más frío, y se achica. El vidrio además devuelve casi toda la radiación infrarroja de la placa, las flechas que rebotan. Aparece un mecanismo nuevo, la convección del aire encerrado entre placa y vidrio, las celdas curvas. Pregunto al curso cómo podríamos eliminar esa convección interna (pausa). Antes de eso, atacamos la emisión de la placa.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s03_65a3fe471ab038bbdfe88a54fc43fa0db6c44ca5137fd60fc9acc4ec03227fd5.mp4"
+          >
+            <aside class="notes" data-markdown>Tercera mejora, un recubrimiento selectivo sobre la placa, la línea oscura. Es lo que vimos en la clase de propiedades. Absortividad solar alta, cerca de nueve décimas, y emisividad infrarroja baja, cerca de una décima, como el cromo negro. La placa sigue absorbiendo el sol y emite mucho menos, así que las flechas infrarrojas se reducen. Queda la convección interna.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s03_09f07118f0b797f217b107c89123b2f7e074e77488e8d47718d518c97e5a2a39.mp4"
+          >
+            <aside class="notes" data-markdown>Cuarta mejora, sacar el aire. Sin aire no hay convección interna, y las celdas desaparecen. En la práctica esto se hace con tubos de vidrio al vacío, porque una caja plana no resiste la presión atmosférica. Cada paso de esta lista reduce pérdidas y sube el costo. Elegir el colector es una decisión técnica y económica a la vez.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s03_e3cebd0ac698c3755c4237fa6dff87bba14ec2dcfd902bc83f3ba173f29dff5d.mp4"
+          >
+            <aside class="notes" data-markdown>El compromiso más usado es el colector plano con vidrio y superficie selectiva, sin vacío. Es sencillo, robusto y rinde bien hasta unos ochenta grados. Por eso sus aplicaciones son de baja temperatura. La principal es el agua caliente sanitaria, porque una ducha necesita entre treinta y ocho y cuarenta grados. También calefacción, secado y precalentamiento de agua en la industria. Para saber cuánto calor entrega necesitamos primero saber cuánta radiación llega, y ese es el capítulo dos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s04_15d3e1456fcc67f03509617ea9968e73d175ce2e74b420fde5cd5632acac807c.mp4"
+          >
+            <aside class="notes" data-markdown>Partimos por el recurso. Esto ya lo vimos en las clases de radiación, así que va rápido. Arriba, en amarillo, la constante solar, mil trescientos setenta y tres watts por metro cuadrado fuera de la atmósfera. Con el balance entre la superficie del Sol y la esfera que pasa por la Tierra sale una temperatura solar cercana a cinco mil setecientos ochenta kelvin, y por eso tratamos al Sol como cuerpo negro. En el suelo, un día claro, llegan cerca de novecientos cincuenta watts por metro cuadrado. Pregunto al curso cuánta potencia recibe entonces un colector de dos metros cuadrados (pausa). Cerca de dos kilowatts, lo mismo que un calefón chico. Ahora veamos por qué caminos llega esa radiación.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s04_1c919c291524dbfd5d0914dbb99a06251dc8c0476a2e632a8daa37dcc9999c56.mp4"
+          >
+            <aside class="notes" data-markdown>La radiación llega al colector por tres caminos. La flecha amarilla es la directa, viene del Sol sin desviarse y es la que proyecta sombras nítidas. Las flechas azules son la difusa, la parte que la atmósfera dispersó y que llega desde todo el cielo. La flecha celeste es la reflejada, la que el suelo devuelve y que solo ve una superficie inclinada. La suma es la radiación global. Un día completamente nublado toda la radiación es difusa, y un colector plano sigue funcionando, con menos potencia. Primero miremos la directa, que depende del ángulo con que llega.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s04_8de2dc52d3294cf516bada3c0b37e3101d254be563d39886ac7b263b57324356.mp4"
+          >
+            <aside class="notes" data-markdown>Ya lo vimos con la radiación, y ahora importa para el colector. La banda amarilla es un haz de rayos directos con una sección fija. Al inclinar el haz, la mancha azul sobre la superficie se alarga, y la misma potencia se reparte sobre más área. A sesenta grados el coseno vale un medio y el flujo por metro cuadrado cae a la mitad. Por eso la directa sobre una superficie horizontal es G D coseno de theta, y la difusa se suma sin coseno porque llega de todo el cielo. Este coseno explica las estaciones y la inclinación de los colectores. Ahora pasamos de potencia a energía de un día.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s04_0b5642605c1ce8d2c68f0b86425a9c00b37ffe2e8a216b55353b551fefa629b4.mp4"
+          >
+            <aside class="notes" data-markdown>Para dimensionar un sistema no basta la potencia de un instante. Arriba, I T en amarillo, es potencia, watts por metro cuadrado. Debajo, H es la energía de un día completo, en kilowatt hora por metro cuadrado y por día. Es la misma diferencia entre Q punto y Q de la primera clase. H cero es la energía que llegaría sin atmósfera, y se calcula con astronomía. El cociente K T mide cuán despejado es el cielo. En el norte de Chile anda cerca de cero coma siete. Santiago recibe cerca de cinco kilowatt hora por metro cuadrado al día, y Atacama más de siete, de los valores más altos del planeta. Los colectores rara vez son horizontales, así que el paso siguiente es inclinarlos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s05_0367754556396b4b6988d2cafdb4a4c5cd40541c43e99a4a61f5dcf7db86f969.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora inclinamos el colector un ángulo beta desde la horizontal. La radiación difusa llega del cielo, y la reflejada llega del suelo. La fracción de su entorno que el colector ve como cielo es exactamente un factor de forma, el de la clase de ayer. Para un plano inclinado frente a un cielo y un suelo muy grandes, el factor hacia el cielo es uno más coseno de beta, sobre dos, y hacia el suelo, uno menos coseno de beta, sobre dos. La línea punteada es el plano de la placa extendido, arriba de ella está lo que ve. Miren el contador mientras la placa se inclina. Horizontal ve solo cielo. Vertical ve mitad cielo y mitad suelo. Y siempre suman uno, que es la regla de la suma.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s05_c8421fdd47b66e8345edbced30ede105c6da7c4a0ae145192dd0baba212f6df4.mp4"
+          >
+            <aside class="notes" data-markdown>Algunos valores concretos. A treinta y tres grados, la latitud de Santiago y Valparaíso, el colector ve cero coma nueve uno nueve de cielo. A cuarenta y cinco, cero coma ocho cinco cuatro. Vertical, como una fachada, justo la mitad. Estos valores los comprobamos integrando la emisión difusa sobre el hemisferio, igual que en la clase anterior. Pregunto al curso qué le pasa a la radiación difusa que capta una fachada vertical (pausa). Recibe solo la mitad del cielo, y a cambio ve más suelo. Con esto armamos el factor que lleva la radiación de horizontal a inclinado.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s05_2915fce28206966f659389d4adbb3708ee844696773709dfe423c454fdd70ded.mp4"
+          >
+            <aside class="notes" data-markdown>Las estaciones miden la energía diaria sobre un plano horizontal. El colector está inclinado, así que multiplicamos por un factor R barra. R barra junta tres aportes. La directa se corrige con la geometría del Sol, con un factor R b que depende del mes y la latitud. La difusa se multiplica por el factor de forma al cielo que acabamos de ver. Y la reflejada por el albedo del suelo y el factor de forma al suelo. El pasto refleja cerca de un veinte por ciento y la nieve cerca de un setenta, por eso en la nieve un colector vertical rinde bien. Veamos cómo queda R barra durante el año.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s05_a9b0c5a295e3c5a41dae7457aaa95f6403b3ee436fe6aa5930d329776b8fee2f.mp4"
+          >
+            <aside class="notes" data-markdown>Esta carta es del material del curso, para latitud cuarenta y ocho sur, la zona de Aysén. En el eje horizontal van los meses, y cada curva es una inclinación, de treinta y tres a sesenta y tres grados. En invierno el Sol va bajo, y una superficie inclinada lo mira mucho más de frente que una horizontal, así que R barra pasa de dos. En verano el Sol va alto y R barra queda cerca de uno. En Santiago y Valparaíso, a treinta y tres grados, el Sol de invierno va más alto y el efecto es más suave. Esto es el coseno de hace un rato, sumado en todo un día. De aquí salen las reglas de inclinación.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s05_919a17f2d90133914d683f655d38bf71268c0c55110a19b800dddf1f16f515bb.mp4"
+          >
+            <aside class="notes" data-markdown>Las reglas prácticas del curso. Para captar lo máximo en el año, se inclina igual a la latitud. Si la demanda pesa más en invierno, se suma doce grados, y el colector mira más al Sol bajo. Si pesa en verano, como una piscina, se resta doce. La orientación va al norte astronómico, porque estamos en el hemisferio sur, y un desvío de diez grados casi no se nota. La decisión depende de la demanda, no solo del recurso. Probemos con un caso.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s05_f8db52aa59b4de6882ce239a48bd2f6bdb00f0173b63ee81b379821da7f3243b.mp4"
+          >
+            <aside class="notes" data-markdown>Pregunta de control. Un hotel en Valparaíso, a treinta y tres grados sur, necesita agua caliente más o menos pareja todo el año. Pregunto al curso qué inclinación le darían (esperar respuestas antes de avanzar). Piensen en qué época del año el recurso es escaso y la demanda sigue igual.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s05_79f1de5361e49164784548f45edc4e34f2c90dd16f536c2e630ac89e758ac709.mp4"
+          >
+            <aside class="notes" data-markdown>La respuesta es cerca de cuarenta y cinco grados, la latitud más doce. La demanda del hotel es pareja, y lo que falta es radiación en invierno. Entonces conviene sesgar el colector al invierno. Lo que se pierde en verano importa poco, porque en verano sobra sol. El verano además trae el riesgo de estancamiento, que veremos en el capítulo cuatro. Queda ver de dónde sacar los datos de radiación de un sitio.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s05_a5ba6791d04a153937a4c596cdfb7b7ec6abfb66a187ad726d59cf1a812200b1.mp4"
+          >
+            <aside class="notes" data-markdown>Para un sitio real, los datos salen del Explorador Solar, del Ministerio de Energía y la Universidad de Chile. Si hay internet en la sala, conviene abrirlo y buscar la dirección de la universidad. Entrega radiación y temperatura hora a hora, modeladas desde satélite para todo Chile, y es el insumo del taller de RETScreen. Para un proyecto grande esos datos se validan con al menos un año de mediciones en terreno. Con el recurso claro, pasamos a los sistemas que lo aprovechan.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s06_a750cb03bac93af88d0236f2cd054c83248cf2f0b66d2e752a546b64ec8aaa72.mp4"
+          >
+            <aside class="notes" data-markdown>Pasamos del colector solo al sistema completo. El primer esquema es el termosifón, la instalación típica de las casas en Chile. El colector, en naranja, calienta el agua. El agua caliente, en rojo, es menos densa y sube sola hasta el estanque. El agua fría, en celeste, baja por el otro tubo y vuelve al colector. Es convección natural, sin bomba ni control. La condición está marcada en amarillo, el estanque tiene que ir más arriba que el colector. Por eso se ven estanques sobre los techos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s06_ff3e84927bc7464c5f419039678b299e56ada50d85ca3852147d64819d45f7b3.mp4"
+          >
+            <aside class="notes" data-markdown>Segundo esquema, la circulación forzada. Ahora una bomba mueve el fluido, así que el estanque puede ir abajo, en una sala de máquinas, y los colectores donde haya sol. Aparece un control, en azul, que mide la temperatura del colector y la del estanque. Según las notas del curso, la bomba parte cuando el colector supera al estanque en cinco a ocho grados y se detiene cerca de dos grados. Esa diferencia entre encendido y apagado se llama histéresis y evita que la bomba cicle. Pregunto al curso qué pasaría si la bomba siguiera funcionando de noche (pausa). El colector enfriaría el estanque.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s06_08ddb33ced90970367f0f15b6cce88f68b898496c5be5e07a189279d0a320785.mp4"
+          >
+            <aside class="notes" data-markdown>Una segunda clasificación, según qué fluido pasa por el colector. En el sistema directo el agua que se consume pasa por el colector. Es simple, y queda expuesta al congelamiento, a las incrustaciones del agua dura y a la corrosión. En el indirecto el circuito del colector, ahora en verde, es cerrado, lleva agua con glicol anticongelante y entrega su calor al estanque con un serpentín. Ese intercambiador se dimensiona con la diferencia de temperatura media logarítmica o con efectividad y NUT, como en la unidad de intercambiadores. Agrega una resistencia térmica y el colector trabaja algo más caliente.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s06_90eb7fc390e65f2a3739338ce95ecfb6372f322c4704431fe6a8bc5303048e3f.mp4"
+          >
+            <aside class="notes" data-markdown>Último elemento del sistema, el respaldo, en amarillo. Puede ser una caldera o una resistencia eléctrica que termina de calentar el agua cuando el sol no alcanza. Según las notas del curso, un sistema solar térmico se dimensiona para cubrir cerca del sesenta a setenta por ciento de la demanda anual. Sobredimensionarlo lleva al estancamiento en verano, el problema que veremos con números en el capítulo siguiente. Este es el esquema que van a modelar en RETScreen. Ahora entramos al colector y escribimos su balance de energía.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s07_c8b27f8670f9a2c8208df9700b40d2e5ad8c8d26c0e263138293068704bc7f83.mp4"
+          >
+            <aside class="notes" data-markdown>Pasamos al balance de energía del colector. A la izquierda está el corte simplificado, la cubierta de vidrio arriba, la placa absorbedora en naranja a temperatura T p y el fluido en celeste debajo. Arriba está el ambiente a T a. Antes de escribir cualquier término fijamos la convención de signo. Todo lo que entra a la placa cuenta positivo y todo lo que sale cuenta negativo. Con esa regla armamos el balance término por término.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s07_3e171eaf6d4987439ba9294ab60e40f87ab68a545303003175a8a721f8e03b50.mp4"
+          >
+            <aside class="notes" data-markdown>Primer término, la ganancia óptica, en amarillo. La irradiancia I T llega a la cubierta. El vidrio deja pasar una fracción tau y la placa absorbe una fracción alfa de lo que pasa. Por unidad de área entra tau alfa por I T, y por toda el área de captación A c queda tau alfa A c I T. Un valor típico de tau alfa es cero coma setenta y cinco, con un vidrio de tau cerca de cero coma nueve y una placa de alfa cerca de cero coma nueve. Es la superficie selectiva de las clases de radiación trabajando.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s07_b3adee0e8bf48e5062ca44f311b714a5c2845c746c27a604b16d5102aa42cc79.mp4"
+          >
+            <aside class="notes" data-markdown>Segundo término, las pérdidas, en ámbar. La placa está más caliente que el ambiente y pierde hacia arriba a través de la cubierta, por convección y radiación, y hacia abajo y los costados a través de la aislación, por conducción. Todo eso se resume en un coeficiente global U L. La pérdida es U L A c por la diferencia entre T p y T a. Escrita como resistencia, es la diferencia de temperatura dividida por R L, igual que en las clases de conducción y convección. Valores típicos de U L van de cuatro a ocho watts por metro cuadrado y kelvin.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s07_f88236af388750c32b1eff56818158b5d9b681c4946ecf091da0ec88a6e4e0ed.mp4"
+          >
+            <aside class="notes" data-markdown>De dónde sale U L. Hacia arriba el calor cruza varias resistencias en serie, la convección y la radiación entre la placa y el vidrio, que forman el primer término, y después la del vidrio al aire exterior. Hacia abajo cruza la aislación. Los dos caminos actúan en paralelo, porque parten de la misma placa y llegan al mismo ambiente. U L es el inverso de esa resistencia equivalente por unidad de área. Pregunto al curso qué capa conviene mejorar si el viento es fuerte (pausa). La superior, porque ahí está la convección al aire.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s07_0750aeea5e9b3869150bdd4c22c3ee99fdbd5b1484007a5872f8951b5ca17358.mp4"
+          >
+            <aside class="notes" data-markdown>El balance completo. Lo que queda disponible en la placa, P neto, es la ganancia óptica menos las pérdidas. Es la primera ley con una resistencia global, nada más. La flecha verde es ese calor neto, que la placa puede entregar al fluido. Fíjense en el signo de la pérdida. Si la placa se calienta, las pérdidas crecen y P neto baja. Ese detalle explica todo lo que viene. Primero miramos qué pasa si nadie saca calor del colector.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s08_db74a2e7f74528e8d1cd1cc044e3d9773013378c00550ec7ab0a660a679f27ba.mp4"
+          >
+            <aside class="notes" data-markdown>Primer caso límite del balance, el colector sin extracción. Nadie saca agua caliente, así que la energía neta no tiene adónde ir y calienta el propio colector. A la izquierda de la ecuación está el calor acumulado, m c p por la derivada de la temperatura de la placa, en naranja. A la derecha, la ganancia óptica en amarillo menos la pérdida en ámbar. Usamos la capacidad térmica efectiva del código de la clase, treinta kilojoules por kelvin. Es una ecuación lineal de primer orden, la misma forma que el enfriamiento de un cuerpo con resistencia global.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s08_a570de4420fd80d718dcfe1a4018f70edac25e384bea5f83bf8969393f6938a1.mp4"
+          >
+            <aside class="notes" data-markdown>Reordenamos. Dividimos todo por U L A c y agrupamos. Aparecen dos cantidades con significado físico. La constante de tiempo tau c, igual a m c p sobre U L A c, que mide qué tan lento responde el colector. Y la temperatura máxima, T a más tau alfa I T sobre U L, donde la derivada se anula porque la pérdida iguala a la ganancia. Revisen las unidades de tau c. Joules por kelvin divididos por watts por kelvin dan segundos, como corresponde a un tiempo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s08_fdc47a90a8f211c3b1b14910a4c3d296d2b4f0e1be52d0b822852a27e4afcb4a.mp4"
+          >
+            <aside class="notes" data-markdown>Separamos variables, T menos T máx a un lado y el tiempo al otro, e integramos desde el arranque en frío, con la placa a temperatura ambiente. El logaritmo se invierte y queda la exponencial del recuadro naranja. La placa parte en T a y sube hacia T máx. Revisemos los extremos. En t igual a cero la exponencial vale uno y T vale T a. Cuando t crece la exponencial se apaga y T tiende a T máx. Ahora ponemos números.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s08_cfaa6ec6fd8935d3da541392be10fbe71d479c9525901a957a92a1c9ac160b76.mp4"
+          >
+            <aside class="notes" data-markdown>Números de la clase. Tau alfa cero coma setenta y cinco, irradiancia de ochocientos watts por metro cuadrado, U L de cinco, ambiente a veinte grados y dos metros cuadrados de colector. La placa absorbe seiscientos watts por metro cuadrado. La temperatura máxima es veinte más seiscientos sobre cinco, ciento cuarenta grados. La constante de tiempo es tres mil segundos, cincuenta minutos. Pregunto al curso si ciento cuarenta grados es alcanzable con agua a presión atmosférica (pausa). Con agua a presión atmosférica no, el agua hierve a cien grados. Por eso estos circuitos trabajan presurizados, y eso es parte del problema del estancamiento.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s08_d40e9eba20960644093063ce86ea0570db3708fa544656bc5d6e9f6c84689ac3.mp4"
+          >
+            <aside class="notes" data-markdown>El gráfico traza la solución a lo largo del tiempo, en naranja. La línea punteada naranja es la asíntota de ciento cuarenta grados. La tangente inicial, en gris, corta la asíntota justo en tau c, cincuenta minutos. Es la lectura gráfica de la constante de tiempo, la pendiente inicial es la ganancia neta dividida por la capacidad térmica. Si la placa siguiera subiendo con esa pendiente llegaría al máximo en una constante de tiempo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s08_011ce5117e6c6f8a2f7d7d183b61f10c2cb4b81e95aea65b3aa314e2e5c4d5a5.mp4"
+          >
+            <aside class="notes" data-markdown>Dos puntos de control sobre la curva, en amarillo. En una constante de tiempo la placa recorre el sesenta y tres por ciento del camino y llega a noventa y cinco coma nueve grados. En tres constantes de tiempo, dos horas y media, ya recorrió el noventa y cinco por ciento. El código que usaremos en la sesión de programación resuelve esta misma ecuación con Euler explícito y paso de diez segundos, y se separa de la solución exacta en menos de una décima de grado.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s08_38716787192a19eb5cadf328184edf045bf92d01861938e5ab4566ecb35b7f50.mp4"
+          >
+            <aside class="notes" data-markdown>Por qué importa este caso. Pasa en la práctica cada vez que una casa se va de vacaciones en verano y nadie usa agua caliente. El colector sube hasta el estancamiento, la presión del circuito sube, el glicol del circuito se degrada y salta la válvula de seguridad. Por eso los sistemas se dimensionan para una fracción solar y no para cubrir toda la demanda. En estancamiento toda la ganancia se va como pérdida y la potencia útil es cero. Ahora conectamos una extracción de calor.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s09_77e550627fdb253e6861dd24834770e7fb0d30ff492ce230597b44629cd916bd.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora conectamos una extracción. Circula agua por los tubos, entra fría a T e y sale más caliente a T s. En régimen permanente la temperatura de la placa ya no cambia, así que todo el calor neto de la placa pasa al fluido. La potencia útil P u, en verde, se puede escribir de dos maneras. Como el balance de la placa del capítulo, con T p. O como lo que gana el agua, caudal por calor específico por el aumento de temperatura.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s09_8006eb0f6f4e292a201f68c1c05b99a3f60148ca7e52f795d124f51b4daba8d8.mp4"
+          >
+            <aside class="notes" data-markdown>El problema práctico es que la temperatura de la placa no es una sola, varía entre la entrada y la salida y entre los tubos, y nadie la mide. La temperatura de entrada del fluido sí se mide. Por eso se reescribe el mismo balance con T e y se agrega un factor, F R, el factor de remoción de calor. Es la ecuación de Hottel, Whillier y Bliss, en el recuadro verde. F R es menor que uno porque la entrada está más fría que la placa y usar T e subestima las pérdidas. F R no es la fracción del calor que pasa de la placa al fluido. En régimen permanente esa fracción es uno.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s09_941149e0ad3e9c85d5cad812117cba79b3c4e02457364cc33430e077cfaf52c6.mp4"
+          >
+            <aside class="notes" data-markdown>Un ejemplo con los datos del código de la clase. F R cero coma ochenta y cinco, agua que entra a la temperatura ambiente, veinte grados, caudal de treinta gramos por segundo y dos metros cuadrados. Como T e es igual a T a, el término de pérdida con T e se anula, y la potencia útil es dos por cero coma ochenta y cinco por seiscientos, mil veinte watts. Es la situación más favorable, fluido a temperatura ambiente.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s09_3979abdcaf5828e3303ba7e52fe9c431a088c34c534a41d2a5e133ed284b8c55.mp4"
+          >
+            <aside class="notes" data-markdown>Con esa potencia el agua sube de veinte a veintiocho coma un grados. Es la temperatura de salida, en celeste. La placa, en naranja, queda en treinta y ocho grados, que sale de despejar T p del balance con T p. Fíjense que la placa está bastante más caliente que el agua que entra. Esa diferencia es justamente la razón de ser de F R.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s09_99cf9c6930519aa384a157d0005597a95b9db264192ee89dfa8ac9823de43b41.mp4"
+          >
+            <aside class="notes" data-markdown>Comprobación. Si evaluamos el balance original con la temperatura de placa de treinta y ocho grados, la pérdida es cinco por dieciocho, noventa watts por metro cuadrado, y la potencia útil vuelve a dar mil veinte watts. Las dos formas dan lo mismo, la de T p y la de T e con F R. Pregunto al curso qué pasa con la potencia útil si el agua entra a sesenta grados (pausa). Baja, porque el término de pérdida con T e ya no se anula.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s09_40f6ef47ea25bc2c3ea64b21ce4c77565c8814c946f50947374fb8c652ab8fbc.mp4"
+          >
+            <aside class="notes" data-markdown>El segundo modo de operación es un estanque cerrado que se va calentando. Con cien litros de agua y un kilowatt útil, la temperatura sube ocho coma seis grados por hora. Una mañana de cuatro horas de buen sol sube el estanque unos treinta y cinco grados. Esa es la lógica de un calefón solar. En el capítulo siguiente dividimos la potencia útil por la radiación incidente y obtenemos la eficiencia.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s10_a42bc22afc8858a0c39f3bb2ce35466ced4ed45805267185a696db2806e35825.mp4"
+          >
+            <aside class="notes" data-markdown>Llegamos a la cantidad que aparece en todos los catálogos, la eficiencia instantánea. Es un cociente simple. Arriba, en verde azulado, la potencia útil que recibe el fluido. Abajo, en amarillo, la irradiancia sobre el plano del colector multiplicada por el área de captación. Se llama instantánea porque compara potencias en un momento dado, con el sol y las temperaturas de ese momento. Ahora le ponemos adentro el balance que armamos en el capítulo anterior.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s10_18529538b7be709e0e00f0ef1ea1212253b651e68cd889d511834fb08139f5f4.mp4"
+          >
+            <aside class="notes" data-markdown>Arriba queda la potencia útil escrita con la temperatura de entrada del fluido, la forma de Hottel, Whillier y Bliss con el factor de remoción F R. Dividimos todo por el área y por la irradiancia. El área se cancela y la irradiancia pasa a dividir la diferencia de temperaturas. Quedan dos términos. El primero, F R por tau alfa, no depende de la temperatura. El segundo resta pérdidas en proporción a la diferencia entre la entrada, en celeste, y el ambiente, en verde claro. Pregunto al curso qué forma tiene esta expresión si llamamos x a esa fracción (pausa).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s10_b09feb41594b1d63e5985711c6dbd77858add24d8e9a2f13a482eb47bb715d11.mp4"
+          >
+            <aside class="notes" data-markdown>Es una recta. En el eje horizontal va la temperatura reducida x, la diferencia entre entrada y ambiente dividida por la irradiancia. En el vertical, la eficiencia. La recta cian parte en el intercepto F R por tau alfa. Con F R igual a cero coma ochenta y cinco y tau alfa igual a cero coma setenta y cinco da cero coma seis tres siete cinco. Es la eficiencia máxima, cuando el fluido entra a la temperatura del aire y no hay pérdidas. El triángulo ámbar marca la pendiente, menos F R por U L, que vale cuatro coma veinticinco. Una recta con dos parámetros resume el colector completo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s10_a61ae975994838da734c4c9e426611bcb0750507e8d57a7c7889872952f46cf0.mp4"
+          >
+            <aside class="notes" data-markdown>Miremos dónde la recta corta el eje, el punto amarillo. Ahí la eficiencia es cero. Despejando, x vale tau alfa sobre U L, cero coma quince kelvin metro cuadrado por watt. Con ochocientos watts por metro cuadrado eso es una diferencia de ciento veinte kelvin. Es exactamente la temperatura de estancamiento que obtuvimos en el capítulo cuatro, ciento cuarenta grados con aire a veinte. Dos caminos distintos, el balance transiente y la recta de eficiencia, dan el mismo número. Un colector que no entrega calor útil se calienta hasta ese punto.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s10_bf4e15fd68d0fb7fd26282da3a3ba56ff873da9cb35eff32a7a764dae6857c83.mp4"
+          >
+            <aside class="notes" data-markdown>Así se obtiene la recta en la práctica. En un banco de ensayo se fija el caudal y se miden la irradiancia, las temperaturas de entrada y salida y la del aire, en varios puntos de operación. Cada punto blanco es una medición. Estos puntos son ilustrativos, no vienen de un ensayo real, y así lo dice la etiqueta. La dispersión viene del viento, que cambia U L, y del ángulo de incidencia, que cambia tau alfa. La recta de mínimos cuadrados entrega los dos números del catálogo. En el laboratorio del curso van a levantar esta misma curva con el colector del techo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s10_0010bfbaa5bea671c32d5cc7a57dd78ac6e98a0505019f20f53cef9c8f9c7519.mp4"
+          >
+            <aside class="notes" data-markdown>Una última conexión con las clases de radiación. La ley de Wien ubica el máximo del Sol, a cinco mil setecientos ochenta kelvin, en cero coma cincuenta micrones, en amarillo. Una placa a ochenta grados emite su máximo cerca de ocho coma dos micrones, en naranjo. Son rangos del espectro que casi no se tocan. Por eso una superficie selectiva puede absorber bien el sol y emitir poco en el infrarrojo. Menos emisión significa un U L más bajo, y la recta se aplana, como la línea punteada. Con esta recta podemos comparar tecnologías distintas, que es lo que sigue.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s11_075dedeeeeda91b71e8d5382c34d84281ff5846ade202816501467677c3c9dd0.mp4"
+          >
+            <aside class="notes" data-markdown>La recta de la lámina anterior es la versión más simple. Las normas de ensayo, EN 12975 e ISO 9806, escriben la curva de otra forma. Usan la temperatura media del fluido, T m, el promedio entre entrada y salida, que representa mejor a qué temperatura trabaja el colector. Y agregan un término cuadrático con a dos. La razón es física. La placa pierde por radiación, que crece con la cuarta potencia de la temperatura, así que U L no es constante y las pérdidas crecen más rápido que la diferencia de temperaturas. Con tres números, eta cero, a uno y a dos, queda descrito un colector.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s11_1101329400fa7735cce505caa202872d9ef55d8b2da3f68560e7dabc95dae3b2.mp4"
+          >
+            <aside class="notes" data-markdown>La tabla trae valores típicos de catálogo para tres tecnologías, los mismos del demo del curso. El colector sin cubierta, en azul acero, es una placa negra sin vidrio, como los de piscina. Tiene el eta cero más alto porque nada le quita radiación, y un a uno enorme porque el viento se lleva el calor. El plano selectivo, en cian, tiene vidrio y superficie selectiva. Los tubos de vacío, en rosado, pierden muy poco por convección. Fíjense en el patrón. Más protección baja el a uno y también baja un poco el eta cero, porque cada capa agrega pérdidas ópticas. Veamos qué significa eso en una curva.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s11_fc8c6e9b991dddb1377ddd1dabae37bdcce29bfa32f7c438c51da7a8bc5d49ad.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora las tres curvas a ochocientos watts por metro cuadrado. En el eje horizontal va la diferencia entre la temperatura media del fluido y el aire. La curva azul acero parte más arriba y cae muy rápido. Llega a cero cerca de cuarenta y dos kelvin, así que un colector sin cubierta no sirve para agua de ducha en invierno. La cian del plano cae más lento, y la rosada de los tubos es casi plana. Las curvas se cruzan, y esos cruces son lo que decide la elección.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s11_cbebe998d8a7f62b418e1b3dd97c2325f1d8b7dd303b4e9035e7f7a7a22b154c.mp4"
+          >
+            <aside class="notes" data-markdown>Recorremos el eje con la línea gris. Los tres puntos se mueven sobre sus curvas y a la derecha se leen las tres eficiencias. Con el fluido a la temperatura del aire gana el colector sin cubierta. Los cruces están marcados en amarillo. A los seis kelvin el plano supera al sin cubierta. A los dieciocho coma ocho kelvin los tubos superan al plano, por metro cuadrado. Dejamos la línea en treinta kelvin, un caso típico de agua caliente sanitaria, para hacer el cálculo completo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s11_a8e0652b9028a8440fab73eb47598198e3848abc0db3b4659e291c863ffddb2e.mp4"
+          >
+            <aside class="notes" data-markdown>El ejemplo del curso. Un plano selectivo con ochocientos watts por metro cuadrado, aire a veinte grados y fluido a cincuenta de temperatura media. Primero la temperatura reducida, treinta dividido por ochocientos, cero coma cero tres siete cinco. Después reemplazamos en la curva normalizada. Eta cero es cero coma ochenta. El término lineal resta tres coma cinco por esa fracción. El cuadrático resta cero coma cero quince por treinta al cuadrado sobre ochocientos. Pregunto al curso cuál de los dos términos pesa más (pausa).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s11_35ac7ab7c9145130cd6ad9f62d3badaab80cac23244fe40db9730d8faff85235.mp4"
+          >
+            <aside class="notes" data-markdown>El término lineal resta cero coma ciento treinta y uno y el cuadrático cero coma cero diecisiete. A esta temperatura manda el lineal. La eficiencia queda en cero coma seis cinco dos. Con dos metros cuadrados de colector la potencia útil es eta por G por el área, mil cuarenta y tres watts, un kilowatt aproximadamente. Es el orden de un calefón pequeño funcionando a pleno sol. En la curva es el punto cian sobre la línea de treinta kelvin.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s11_0eec0e4740c0da500370f3284db364b44d6588bf9297fbdd0e1c36ab779714d9.mp4"
+          >
+            <aside class="notes" data-markdown>Una pregunta antes de cerrar. Una piscina se temperiza con agua muy cerca de la temperatura del aire, así que la diferencia en el eje horizontal es casi cero. Pregunto al curso qué colector conviene ahí, mirando las curvas (esperar respuestas antes de avanzar).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s11_7f4b50ab0cf56350d671f337770097aaa9a98e304a08e767712c68fef1bd5ea5.mp4"
+          >
+            <aside class="notes" data-markdown>La respuesta es el colector sin cubierta. Con la diferencia de temperaturas cerca de cero tiene la eficiencia más alta de los tres, y además es el más barato. Por eso los techos de las piscinas usan placas negras de polímero sin vidrio. La etiqueta marca la segunda idea como interpretación. No existe un mejor colector absoluto. Con estos parámetros los tubos rinden más por metro cuadrado desde unos diecinueve kelvin, y aun así el plano selectivo domina el agua caliente sanitaria porque cuesta menos por kilowatt útil. Estos tres parámetros son los que va a pedir RETScreen en el taller.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s12_231dbcdedd29983bfdd11130ac0733ceef27ec8aad10c1a58c6fc5972e1f07e0.mp4"
+          >
+            <aside class="notes" data-markdown>Antes de cerrar, reunimos en una lámina toda la notación de la clase. Pueden sacarle una foto. A la izquierda están las magnitudes del recurso y del colector, con los mismos colores de toda la clase, amarillo para la radiación, ámbar para las pérdidas, naranja para la placa y celeste para el fluido. A la derecha están las tres relaciones que conviene llevarse, la eficiencia instantánea, la temperatura de estancamiento y los parámetros de ensayo que trae cualquier catálogo. Con esto pasamos a la próxima clase.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_colectores_sala_assets/s13_995dda42e70a6c9e4f6ad6dad89f7555f22c3b95f1ee63b3d00c5fd88447676b.mp4"
+          >
+            <aside class="notes" data-markdown>Para cerrar, a la izquierda están las hipótesis que usamos hoy. El colector opera en régimen cuasi estacionario, el coeficiente de pérdidas es constante y el cielo emite la difusa igual en todas las direcciones. A la derecha, la próxima clase es el taller de RETScreen número dos. Ahí dimensionamos un sistema completo con los parámetros de hoy, definimos la fracción solar y el respaldo, y hacemos la evaluación económica. La tarea sugerida está abajo. Traigan su computador con RETScreen instalado.</aside>
+        </section>
+      </div>
+    </div>
+
+    <script src="../lib/reveal.js/5.2.0/reveal.min.js"></script>
+    <script src="../lib/reveal.js/5.2.0/plugin/notes/notes.min.js"></script>
+
+    <!-- To include plugins, see: https://revealjs.com/plugins/ -->
+    <script src="../lib/reveal.js/5.2.0/plugin/markdown/markdown.min.js"></script>
+
+    <!-- <script src="index.js"></script> -->
+    <script>
+      Reveal.initialize({
+        /// The list of RevealJS plugins.
+        plugins: [ RevealMarkdown, RevealNotes ],
+        // The "normal" size of the presentation, aspect ratio will
+        // be preserved when the presentation is scaled to fit different
+        // resolutions. Can be specified using percentage units.
+        width: '100%',
+        height: '100%',
+        // Factor of the display size that should remain empty around
+        // the content
+        margin: 0.04,
+        // Bounds for smallest/largest possible scale to apply to content
+        minScale: 0.2,
+        maxScale: 2.0,
+        // Display presentation control arrows
+        controls: true,
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: true,
+        // Determines where controls appear, "edges" or "bottom-right"
+        // Fixed here because Manim Slides injects the value of
+        // `-ccontrols_layout` without the surrounding quotes.
+        controlsLayout: "edges",
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: "faded",
+        // Display a presentation progress bar
+        progress: true,
+        // Display the page number of the current slide
+        // - true:    Show slide number
+        // - false:   Hide slide number
+        //
+        // Can optionally be set as a string that specifies the number formatting:
+        // - "h.v":   Horizontal . vertical slide number (default)
+        // - "h/v":   Horizontal / vertical slide number
+        // - "c":   Flattened slide number
+        // - "c/t":   Flattened slide number / total slides
+        //
+        // Alternatively, you can provide a function that returns the slide
+        // number for the current slide. The function should take in a slide
+        // object and return an array with one string [slideNumber] or
+        // three strings [n1,delimiter,n2]. See #formatSlideNumber().
+        slideNumber: false,
+        // Can be used to limit the contexts in which the slide number appears
+        // - "all":      Always show the slide number
+        // - "print":    Only when printing to PDF
+        // - "speaker":  Only in the speaker view
+        showSlideNumber: 'all',
+        // Use 1 based indexing for # links to match slide number (default is zero
+        // based)
+        hashOneBasedIndex: false,
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: false,
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: false,
+        // Enable support for jump-to-slide navigation shortcuts
+        jumpToSlide: true,
+        // Push each slide change to the browser history.  Implies `hash: true`
+        history: true,
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+        // Optional function that blocks keyboard events when retuning false
+        //
+        // If you set this to 'focused', we will only capture keyboard events
+        // for embedded decks when they are in focus
+        keyboardCondition: null,
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+        // Enable the slide overview mode
+        overview: true,
+        // Vertical centering of slides
+        center: true,
+        // Enables touch navigation on devices with touch input
+        touch: true,
+        // Loop the presentation
+        loop: false,
+        // Change the presentation direction to be RTL
+        rtl: false,
+        // Changes the behavior of our navigation directions.
+        //
+        // "default"
+        // Left/right arrow keys step between horizontal slides, up/down
+        // arrow keys step between vertical slides. Space key steps through
+        // all slides (both horizontal and vertical).
+        //
+        // "linear"
+        // Removes the up/down arrows. Left/right arrows step through all
+        // slides (both horizontal and vertical).
+        //
+        // "grid"
+        // When this is enabled, stepping left/right from a vertical stack
+        // to an adjacent vertical stack will land you at the same vertical
+        // index.
+        //
+        // Consider a deck with six slides ordered in two vertical stacks:
+        // 1.1    2.1
+        // 1.2    2.2
+        // 1.3    2.3
+        //
+        // If you're on slide 1.3 and navigate right, you will normally move
+        // from 1.3 -> 2.1. If "grid" is used, the same navigation takes you
+        // from 1.3 -> 2.3.
+        navigationMode: 'default',
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+        // Turns fragments on and off globally
+        fragments: true,
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: true,
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+        // Flags if we should show a help overlay when the question-mark
+        // key is pressed
+        help: true,
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+        // Global override for autolaying embedded media (video/audio/iframe)
+        // - null:   Media will only autoplay if data-autoplay is present
+        // - true:   All media will autoplay, regardless of individual setting
+        // - false:  No media will autoplay, regardless of individual setting
+        autoPlayMedia: null,
+        // Global override for preloading lazy-loaded iframes
+        // - null:   Iframes with data-src AND data-preload will be loaded when within
+        //           the viewDistance, iframes with only data-src will be loaded when visible
+        // - true:   All iframes with data-src will be loaded when within the viewDistance
+        // - false:  All iframes with data-src will be loaded only when visible
+        preloadIframes: null,
+        // Can be used to globally disable auto-animation
+        autoAnimate: true,
+        // Optionally provide a custom element matcher that will be
+        // used to dictate which elements we can animate between.
+        autoAnimateMatcher: null,
+        // Default settings for our auto-animate transitions, can be
+        // overridden per-slide or per-element via data arguments
+        autoAnimateEasing: 'ease',
+        autoAnimateDuration: 1.0,
+        autoAnimateUnmatched: true,
+        // CSS properties that can be auto-animated. Position & scale
+        // is matched separately so there's no need to include styles
+        // like top/right/bottom/left, width/height or margin.
+        autoAnimateStyles: ['opacity', 'color', 'background-color', 'padding', 'font-size', 'line-height', 'letter-spacing', 'border-width', 'border-color', 'border-radius', 'outline', 'outline-offset'],
+        // Controls automatic progression to the next slide
+        // - 0:      Auto-sliding only happens if the data-autoslide HTML attribute
+        //           is present on the current slide or fragment
+        // - 1+:     All slides will progress automatically at the given interval
+        // - false:  No auto-sliding, even if data-autoslide is present
+        autoSlide: 0,
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+        // Use this method for navigation when auto-sliding (defaults to navigateNext)
+        autoSlideMethod: null,
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+        // Opens links in an iframe preview overlay
+        // Add `data-preview-link` and `data-preview-link="false"` to customize each link
+        // individually
+        previewLinks: false,
+        // Exposes the reveal.js API through window.postMessage
+        postMessage: true,
+        // Dispatches all reveal.js events to the parent window through postMessage
+        postMessageEvents: false,
+        // Focuses body when page changes visibility to ensure keyboard shortcuts work
+        focusBodyOnPageVisibilityChange: true,
+        // Transition style
+        transition: 'none', // none/fade/slide/convex/concave/zoom
+        // Transition speed
+        transitionSpeed: 'default', // default/fast/slow
+        // Transition style for full page slide backgrounds
+        backgroundTransition: 'none', // none/fade/slide/convex/concave/zoom
+        // The maximum number of pages a single slide can expand onto when printing
+        // to PDF, unlimited by default
+        pdfMaxPagesPerSlide: Number.POSITIVE_INFINITY,
+        // Prints each fragment on a separate slide
+        pdfSeparateFragments: true,
+        // Offset used to reduce the height of content within exported PDF pages.
+        // This exists to account for environment differences based on how you
+        // print to PDF. CLI printing options, like phantomjs and wkpdf, can end
+        // on precisely the total height of the document whereas in-browser
+        // printing has to end one pixel before.
+        pdfPageHeightOffset: -1,
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+        // The display mode that will be used to show slides
+        display: 'block',
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000
+      });
+      // Override SPACE to play / pause the video
+      Reveal.addKeyBinding(
+        {
+          keyCode: 32,
+          key: 'SPACE',
+          description: 'Play / pause video'
+        },
+        () => {
+          var currentVideos = Reveal.getCurrentSlide().slideBackgroundContentElement.getElementsByTagName("video");
+          if (currentVideos.length > 0) {
+            if (currentVideos[0].paused == true) currentVideos[0].play();
+            else currentVideos[0].pause();
+          } else {
+            Reveal.next();
+          }
+        }
+      );
+    </script>
+
+    <div id="deck-counter"></div>
+    <script>
+      (function () {
+        function refresh() {
+          var total = Reveal.getTotalSlides();
+          var idx = Reveal.getSlides().indexOf(Reveal.getCurrentSlide()) + 1;
+          var el = document.getElementById("deck-counter");
+          if (el) el.textContent = idx + " / " + total;
+        }
+        Reveal.on("ready", refresh);
+        Reveal.on("slidechanged", refresh);
+      })();
+    </script>
+  </body>
+</html>
