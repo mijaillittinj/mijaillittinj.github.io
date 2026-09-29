@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eficiencia de colectores solares</title>
+<link rel="stylesheet" href="vendor/katex/katex.min.css">
+<style>
+  :root { --bg:#0D1117; --fg:#E8EDF2; --muted:#B8C4D0; --dim:#6E7B8A; --accent:#6FA8DC;
+          --warn:#F2B705; --panel:#141B24; --eff:#6FE3E3;
+          --unglazed:#8FB8D8; --flat:#6FE3E3; --tubes:#F07FC0; --useful:#59C3A5; }
+  html, body { background: var(--bg); color: var(--fg); margin: 0; }
+  body { font-family: "Latin Modern Roman", "CMU Serif", Georgia, serif; font-size: 18px; line-height: 1.45; }
+  main { max-width: 1100px; margin: 0 auto; padding: 20px 16px 40px; }
+  h1 { font-size: 28px; margin: 4px 0 2px; }
+  h1 + p { color: var(--muted); margin-top: 0; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 22px; }
+  @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: var(--panel); border: 1px solid #263140; border-radius: 10px; padding: 14px 16px; }
+  label { display: block; margin: 12px 0 4px; color: var(--muted); }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  .val { float: right; color: var(--fg); font-variant-numeric: tabular-nums; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  td, th { padding: 6px 4px; border-bottom: 1px solid #263140; text-align: right; }
+  td:first-child, th:first-child { text-align: left; font-weight: normal; }
+  .unglazed { color: var(--unglazed); } .flat { color: var(--flat); } .tubes { color: var(--tubes); }
+  button { background: transparent; color: var(--accent); border: 1px solid var(--accent); border-radius: 6px;
+           padding: 6px 14px; font: inherit; cursor: pointer; margin-top: 14px; }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--warn); outline-offset: 2px; }
+  svg { width: 100%; height: auto; display: block; }
+  .note { color: var(--dim); font-size: 15px; margin-top: 10px; }
+  .eq { margin: 6px 0 10px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Eficiencia instantánea de colectores solares</h1>
+  <p>Curva normalizada de ensayo con parámetros típicos de catálogo. Mueva la irradiancia y las temperaturas.</p>
+  <div class="grid">
+    <section class="panel" aria-label="Controles">
+      <div class="eq" id="eq1"></div>
+      <div class="eq" id="eq2"></div>
+      <label for="G">Irradiancia <span data-tex="G"></span> <span class="val" id="Gv"></span></label>
+      <input id="G" type="range" min="200" max="1100" step="10" value="800">
+      <label for="Ta">Temperatura del aire <span data-tex="T_a"></span> <span class="val" id="Tav"></span></label>
+      <input id="Ta" type="range" min="-10" max="40" step="1" value="20">
+      <label for="Tm">Temperatura media del fluido <span data-tex="T_m"></span> <span class="val" id="Tmv"></span></label>
+      <input id="Tm" type="range" min="0" max="150" step="1" value="50">
+      <button id="reset" type="button">Volver a 800 W/m², 20 °C y 50 °C</button>
+      <p class="note">Área de captación 2 m². Eficiencia recortada en cero, que corresponde al estancamiento.
+        Parámetros típicos de catálogo, no de un producto específico.</p>
+    </section>
+    <section class="panel" aria-label="Resultados">
+      <table>
+        <tr><th>Colector</th><th>η₀, a₁, a₂</th><th>η</th><th>P<sub>u</sub> [W]</th></tr>
+        <tr class="unglazed"><td>Sin cubierta</td><td>0,90 · 17 · 0</td><td id="eta_unglazed"></td><td id="pu_unglazed"></td></tr>
+        <tr class="flat"><td>Plano selectivo</td><td>0,80 · 3,5 · 0,015</td><td id="eta_flat"></td><td id="pu_flat"></td></tr>
+        <tr class="tubes"><td>Tubos de vacío</td><td>0,75 · 1,5 · 0,008</td><td id="eta_tubes"></td><td id="pu_tubes"></td></tr>
+      </table>
+      <svg id="plot" viewBox="0 0 560 320" role="img" aria-label="Eficiencia en función de la diferencia de temperaturas"></svg>
+      <p class="note">Eje horizontal, diferencia entre la temperatura media del fluido y el aire. La línea vertical marca el punto de operación elegido.</p>
+    </section>
+  </div>
+</main>
+<script src="vendor/katex/katex.min.js"></script>
+<script src="eta_collector.js"></script>
+<script>
+(function () {
+  var D = { G: 800, Ta: 20, Tm: 50 };
+  var COL = { unglazed: '#8FB8D8', flat: '#6FE3E3', tubes: '#F07FC0' };
+  var $ = function (id) { return document.getElementById(id); };
+  function tex(el, s, display) {
+    try { katex.render(s, el, { displayMode: !!display, throwOnError: false }); }
+    catch (e) { el.textContent = s; }
+  }
+  tex($('eq1'), '\\eta=\\eta_0-a_1\\,\\frac{T_m-T_a}{G}-a_2\\,\\frac{(T_m-T_a)^2}{G}', true);
+  tex($('eq2'), 'P_u=\\eta\\,G\\,A_c,\\qquad A_c=2\\ \\mathrm{m^2}', true);
+  document.querySelectorAll('[data-tex]').forEach(function (el) { tex(el, el.getAttribute('data-tex'), false); });
+  function fmt(x, d) { return x.toFixed(d).replace('.', ','); }
+  var W = 560, H = 320, m = { l: 48, r: 14, t: 12, b: 42 }, dmax = 130;
+  function sx(d) { return m.l + d / dmax * (W - m.l - m.r); }
+  function sy(e) { return H - m.b - e * (H - m.t - m.b); }
+  function draw(st) {
+    var out = '';
+    [0, 0.2, 0.4, 0.6, 0.8, 1].forEach(function (e) {
+      out += '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + sy(e) + '" y2="' + sy(e) + '" stroke="#263140"/>';
+      out += '<text x="' + (m.l - 8) + '" y="' + (sy(e) + 5) + '" fill="#B8C4D0" font-size="14" text-anchor="end">' + fmt(e, 1) + '</text>';
+    });
+    [0, 20, 40, 60, 80, 100, 120].forEach(function (d) {
+      out += '<text x="' + sx(d) + '" y="' + (H - m.b + 20) + '" fill="#B8C4D0" font-size="14" text-anchor="middle">' + d + '</text>';
+    });
+    out += '<text x="' + ((W + m.l) / 2) + '" y="' + (H - 4) + '" fill="#B8C4D0" font-size="15" text-anchor="middle">T<tspan baseline-shift="sub" font-size="11">m</tspan> − T<tspan baseline-shift="sub" font-size="11">a</tspan> [K]</text>';
+    EtaCollector.TECH.forEach(function (t) {
+      var s = '';
+      for (var i = 0; i <= 260; i++) {
+        var d = dmax * i / 260;
+        s += (i ? 'L' : 'M') + sx(d).toFixed(1) + ' ' + sy(EtaCollector.eta(t, d, st.G)).toFixed(1);
+      }
+      out += '<path d="' + s + '" stroke="' + COL[t.key] + '" stroke-width="3" fill="none"/>';
+    });
+    var d0 = Math.max(0, Math.min(dmax, st.Tm - st.Ta));
+    out += '<line x1="' + sx(d0) + '" x2="' + sx(d0) + '" y1="' + m.t + '" y2="' + (H - m.b) + '" stroke="#6E7B8A" stroke-dasharray="3 4"/>';
+    EtaCollector.TECH.forEach(function (t) {
+      out += '<circle cx="' + sx(d0) + '" cy="' + sy(EtaCollector.eta(t, d0, st.G)) + '" r="6" fill="' + COL[t.key] + '"/>';
+    });
+    $('plot').innerHTML = out;
+  }
+  function update() {
+    var st = { G: +$('G').value, Ta: +$('Ta').value, Tm: +$('Tm').value };
+    $('Gv').textContent = st.G + ' W/m²';
+    $('Tav').textContent = st.Ta + ' °C';
+    $('Tmv').textContent = st.Tm + ' °C';
+    var r = EtaCollector.evaluate(st.G, st.Ta, st.Tm);
+    r.forEach(function (x) {
+      $('eta_' + x.key).textContent = fmt(x.eta, 3);
+      $('pu_' + x.key).textContent = fmt(x.Pu, 0);
+    });
+    draw(st);
+    window.__widgetState = { st: st, r: r };
+  }
+  ['G', 'Ta', 'Tm'].forEach(function (id) { $(id).addEventListener('input', update); });
+  // arrow keys on a focused slider must not reach any presentation that embeds the page
+  ['G', 'Ta', 'Tm'].forEach(function (id) {
+    $(id).addEventListener('keydown', function (e) { e.stopPropagation(); });
+  });
+  $('reset').addEventListener('click', function () {
+    $('G').value = D.G; $('Ta').value = D.Ta; $('Tm').value = D.Tm; update();
+  });
+  update();
+  window.__widgetReady = true;
+})();
+</script>
+</body>
+</html>
