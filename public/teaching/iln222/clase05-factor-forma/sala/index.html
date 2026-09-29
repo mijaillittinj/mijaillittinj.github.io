@@ -1,0 +1,903 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Factor de forma, ILN222</title>
+
+    <link rel="stylesheet" href="../lib/reveal.js/5.2.0/reveal.min.css">
+    <link rel="stylesheet" href="../lib/reveal.js/5.2.0/theme/white.min.css">
+
+    <!-- Theme used for syntax highlighting of code -->
+    <!-- <link rel="stylesheet" href="../lib/css/zenburn.css"> -->
+    <!-- <link rel="stylesheet" href="index.css"> -->
+
+    <style>
+      :root {
+        --bg: #FFFFFF;
+        --fg: #111418;
+        --accent: #1F5FA8;
+        --dim: #5E6A78;
+      }
+      html, body, .reveal { background: var(--bg); }
+      .reveal .slides section { height: 100%; }
+      /* thin progress bar in the presentation accent colour */
+      .reveal .progress { height: 4px; color: var(--accent); background: rgba(0,0,0,0.08); }
+      /* discreet state counter, hidden in the overview.  It sits in the top
+         right corner, which every slide leaves empty, because the bottom of
+         the frame already carries the section name and the source note. */
+      #deck-counter {
+        position: fixed; top: 12px; right: 18px; z-index: 30;
+        font-family: "Latin Modern Roman", Georgia, "Times New Roman", serif;
+        font-size: 15px; color: var(--dim); letter-spacing: 0.2px;
+        pointer-events: none; opacity: 0.8;
+      }
+      .reveal.overview #deck-counter { display: none; }
+      /* keep the arrows unobtrusive, the talk is driven by the keyboard */
+      .reveal .controls { opacity: 0.25; }
+      .reveal .controls:hover { opacity: 0.8; }
+    </style>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s00_c1109a967f548fde776f9386ac8589b608c221247625b23220d85004b43aa750.mp4"
+          data-background-video-muted
+          >
+            <aside class="notes" data-markdown>Buenos días. Hoy dedicamos la clase completa a una sola idea, el factor de forma. En las cuatro clases anteriores estudiamos cuánto emite y cuánto absorbe una superficie. Falta saber cuánto de lo que sale de una superficie llega a otra que la ve solo en parte. Esa pregunta aparece en las paredes de un horno, en la placa y la cubierta de un colector solar y en una casa frente a un incendio forestal. Seguimos la sección 13-1 de Çengel y Ghajar, con la deducción completa en pantalla.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s01_1ae8b62f13ac875a87f7a0e5ad4cbf9f0c8f0732b114bd93259539eff9002ae3.mp4"
+          >
+            <aside class="notes" data-markdown>Este es el plan de hoy. En el capítulo uno definimos el factor de forma y fijamos la intuición. En el dos preparamos dos herramientas, el ángulo sólido y la intensidad. El tres es el centro de la clase, la deducción paso a paso. En el cuatro vemos las reglas que evitan casi todas las integrales. En el cinco pasamos del factor de forma al calor intercambiado, con dos ejemplos. El número del capítulo actual aparece siempre abajo a la izquierda.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s02_c5767145edcdf5dd116968de6eb1cb7bf0a62b3b93b6414b5b75b1721fad93bd.mp4"
+          >
+            <aside class="notes" data-markdown>Partimos con un repaso rápido de lo que ya saben. Arriba, un cuerpo negro emite sigma T a la cuarta por unidad de área, con T siempre en kelvin, y emite igual en todas las direcciones. Debajo, una superficie real emite una fracción épsilon de eso. En una superficie opaca lo que no se absorbe se refleja. La aproximación gris y difusa vuelve constantes las propiedades, con alfa igual a épsilon. Hoy usamos todo esto sin volver a deducirlo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s02_fb7df842f71e89fc5c8a5013b17f3e091b154f92f6922abe41554b925bad0ee0.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora el resultado que más usaron hasta aquí. Un cuerpo pequeño, en azul, dentro de un recinto mucho mayor, en rosado. La tasa neta es épsilon sigma A por la diferencia de las cuartas potencias. Piensen en una persona dentro de una pieza o en una cañería dentro de un galpón. Miren las flechas ámbar. Todas las que salen del cuerpo terminan en el recinto, en cualquier dirección. La fórmula lleva escondida esa hipótesis geométrica.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s02_af4a210abc9a70d0808e8892fee23c4b3905988b53e90312f6ee03285b1af081.mp4"
+          >
+            <aside class="notes" data-markdown>En la fórmula del recinto la geometría no aparece porque la fracción que llega vale uno. Pregunto al curso qué pasa entre dos paredes de un horno, o entre una fogata y la casa del vecino. (pausa) Esas superficies se ven solo en parte, y la fracción que llega es menor que uno. Depende de tamaños, distancias y orientaciones. Esa fracción, en cian abajo, es el factor de forma, y calcularla es el tema de toda la clase.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s03_7b4cc8afc47db417ded6e10a48538b78297d4af549c2500190825cf5b81243ea.mp4"
+          >
+            <aside class="notes" data-markdown>Empecemos por lo que ya sabemos tratar. En la tabla, las temperaturas y las propiedades radiativas vienen de las clases anteriores. Lo nuevo, en cian, es la orientación relativa. A la derecha hay tres parejas de placas del mismo tamaño y a la misma distancia. La de la izquierda se ve de frente, la del centro inclinada y la de la derecha casi de canto. Con las mismas temperaturas, la pareja de la derecha casi no intercambia radiación. Hace falta un número que capture esa diferencia.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s03_8a96e9beb23a8a75485aafe10a17eb7dc144d768915f3f6c4d5588912e672a3d.mp4"
+          >
+            <aside class="notes" data-markdown>Ese número es el factor de forma, en el recuadro cian. F i flecha j es la fracción de la radiación que sale de la superficie i y llega directamente a la superficie j. El primer subíndice siempre es la superficie que emite. Cuenta toda la radiación que sale, la emitida y la reflejada, porque al receptor no le importa su origen. Ahora leemos la definición palabra por palabra.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s03_d857b908b6d034ffcffaf4d7a338d227a46851b4b27ab5e25e54267af2bac3f5.mp4"
+          >
+            <aside class="notes" data-markdown>Tres palabras de la definición llevan toda la información. Fracción significa cociente de dos potencias, así que F no tiene unidades y queda entre cero y uno. Directamente significa en línea recta, sin rebotes en otras superficies. Geometría pura es una afirmación que demostramos en el capítulo tres. A la derecha, los casos límite. Dos placas espalda con espalda no se ven y F vale cero. Una esfera azul dentro de una cavidad rosada envía todo a la cavidad y F vale uno. Todo factor de forma queda entre esos dos extremos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s03_f27b578b45ff062d597f37793d370053e14cb093ae04b4ebd61180d43ce287f8.mp4"
+          >
+            <aside class="notes" data-markdown>Una aplicación real antes de las ecuaciones. Son dos simulaciones de fuego en una pendiente de veinte grados, con dos bloques de combustible separados por un cortafuego. A la izquierda la separación es de dos metros y a la derecha de tres. Miren el segundo bloque en cada una. (pausa) Con dos metros la llama alcanza el segundo bloque. Con tres metros el segundo bloque no se enciende en el tiempo simulado. Parte importante del calor que precalienta el combustible vecino llega por radiación, y el factor de forma entre la llama y el combustible cae con la distancia. Esta lectura es una interpretación, y al final de la clase la cuantificamos. Para calcular esa fracción necesitamos medir direcciones en tres dimensiones, y la herramienta es el ángulo sólido.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s04_79cd7378329b7aff0a0f9b6c6490b61f46054ea6d3c7d66ab09fc92ab47b69d1.mp4"
+          >
+            <aside class="notes" data-markdown>Primera herramienta, el ángulo sólido. A la izquierda, el ángulo plano que ya conocen, arco dividido por radio, en radianes, y la circunferencia completa mide dos pi. A la derecha su versión en tres dimensiones, un área sobre la esfera dividida por el radio al cuadrado, en estereorradianes. La esfera completa mide cuatro pi. El ángulo sólido mide qué porción del campo visual ocupa un objeto visto desde un punto. La Luna y el Sol ocupan casi el mismo ángulo sólido en el cielo, y por eso la Luna puede tapar al Sol en un eclipse. El cuatro pi lo comprobamos después en coordenadas esféricas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s04_a00b5a471540ba10b5cab69b7d24150e6b705e16d20d44439864f804323ff69f.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora un elemento de área visto desde un punto, a la izquierda. La línea punteada blanca es la línea de visión, de largo r. El elemento rosado está de frente, con su normal apuntando hacia el punto de vista. La barra naranja de la derecha es su proyección sobre un plano normal a la línea de visión. Con theta igual a cero la proyección es el elemento completo. El ángulo sólido es simplemente d S sobre r al cuadrado, como en la esfera.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s04_bb8d6370942d76a1e064ee2f50f17404187d88e298be1c5f2bef73a3f5491a40.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora inclinamos el elemento. Theta es el ángulo entre su normal y la línea de visión. Miren la barra naranja mientras gira. La proyección se acorta como coseno de theta, y a sesenta grados queda la mitad, como marca el contador. El ángulo sólido depende del área proyectada, así que d omega es d A coseno de theta sobre r al cuadrado, en el recuadro naranja. Es el mismo coseno que vieron en la radiación solar sobre una superficie inclinada.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s04_4917234a521dffcd2f1798efc70a25bea8ad09b24194209a52b164b7e6673054.mp4"
+          >
+            <aside class="notes" data-markdown>Llevamos la inclinación a ochenta y ocho grados. La proyección casi desaparece y el ángulo sólido tiende a cero. Prueben con una hoja de papel. De frente tapa buena parte de la vista y de canto casi no se ve. Esta fórmula da el ángulo sólido que ocupa d A dos visto desde d A uno. Antes de usarla vemos cómo se cuentan direcciones en coordenadas esféricas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s05_dc22d9731df4bbaa901abee82acc78c59befc073d9abd2a3d15dcc2ffcecb58d.mp4"
+          >
+            <aside class="notes" data-markdown>Para contar direcciones en tres dimensiones usamos coordenadas esféricas. Un punto sobre la esfera queda dado por su distancia r al origen y dos ángulos. Theta, en azul, es el ángulo polar, medido desde el eje z, y va de cero a pi. Phi, en beige, es el ángulo azimutal, medido en el plano x y desde el eje x, y va de cero a dos pi. Giramos la esfera para ver la profundidad. En una superficie que emite, el eje z será su normal y theta el mismo ángulo de la ley del coseno.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s05_865c04ac3187395d3986eaa786e03e0a37fc231e54f8449d2b3f075968ba5310.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora aumentamos theta en d theta y phi en d phi. Se forma un parche naranja sobre la esfera, agrandado para que se vea. Su lado a lo largo del meridiano, en azul, mide r d theta. Su lado a lo largo del paralelo, en beige, mide r seno de theta d phi, porque ese paralelo es un círculo de radio r seno de theta, la línea punteada. El área del parche es el producto, r cuadrado seno de theta d theta d phi. Cerca del polo los paralelos se achican, igual que los husos horarios se juntan en los polos, y por eso aparece el seno.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s05_ebd0599d7f43cafd769739a334ebd3996c8d9dd101a7fc3aa1e6342459149f10.mp4"
+          >
+            <aside class="notes" data-markdown>Dividimos por r al cuadrado y obtenemos el ángulo sólido del parche visto desde el centro, en el recuadro naranja. D omega es seno de theta d theta d phi. No depende del radio, como corresponde a un ángulo. Este es el elemento que integramos para obtener la radiosidad.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s05_1389ab12652662cde8f94ce22bc7d544407ae772aabe0fd5b182b737f61b19fc.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora fijamos theta y recorremos phi de cero a dos pi. El parche barre un anillo completo alrededor del eje z. Nada depende de phi, así que integrar en phi es multiplicar por dos pi. El anillo ocupa dos pi seno de theta d theta estereorradianes. El paso siguiente es sumar anillos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s05_e6fc75dd86d1cb466ac004adeb9cfe43c4f7e08cee38ace66d10d7d13ebc95f1.mp4"
+          >
+            <aside class="notes" data-markdown>Sumamos los anillos desde el polo. El casquete crece y el contador de abajo muestra su ángulo sólido exacto, dos pi por uno menos coseno de theta. Al llegar al ecuador, con theta igual a noventa grados, tenemos el hemisferio, dos pi estereorradianes, seis coma dos ocho. Pregunto al curso hacia qué direcciones emite una superficie plana. (pausa) Hacia este hemisferio, porque no emite hacia atrás de sí misma.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s05_539e86b09b9dfd0459e879f895f7a8bc5baa02fb3019036c6ea1ffe323d66a91.mp4"
+          >
+            <aside class="notes" data-markdown>Seguimos hasta theta igual a pi y cubrimos la esfera completa, cuatro pi estereorradianes, doce coma cinco siete. Es el valor que anunciamos con la analogía del ángulo plano. Con el elemento seno de theta d theta d phi podemos sumar la intensidad sobre el hemisferio, que es lo que hacemos ahora.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s06_8965465b3b89c44d10a86caf5dcb67786b4778d2a9ef91a2efbd885ebcb8e91c.mp4"
+          >
+            <aside class="notes" data-markdown>Segunda herramienta, la intensidad. Es la potencia que sale por unidad de área proyectada y por unidad de ángulo sólido. Una superficie difusa, como el cuerpo negro, tiene la misma intensidad en todas las direcciones. La flecha verde marca una dirección theta desde la normal. La barra azul en su punta es el elemento visto desde esa dirección, y su ancho cae como coseno de theta. Por eso la potencia dentro de d omega es I coseno de theta d A d omega, la ley del coseno de Lambert. Una estufa de panel mirada de lado tiene la misma intensidad y entrega menos potencia porque se ve de canto.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s06_e03dbdc80394316b2f48dbdd1692685fbeefa7f097c5bbf22d06d2b03fb320ff.mp4"
+          >
+            <aside class="notes" data-markdown>Dibujamos una flecha por cada dirección, de largo proporcional a I coseno de theta. Los largos siguen exactamente el coseno. Las puntas caen sobre un círculo tangente a la superficie, la firma de un emisor difuso. La dirección normal recibe más y las direcciones rasantes casi nada. Ahora sumamos todas estas contribuciones.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s06_49d51a15f3f750f0f3c3b509982bbd3e43ebf0513217c006547f8a3c49a2765d.mp4"
+          >
+            <aside class="notes" data-markdown>La radiosidad J es toda la potencia que sale de la superficie por unidad de área, la emitida más la reflejada, hacia todo el hemisferio. Se obtiene sumando I coseno de theta sobre todas las direcciones, es decir, integrando sobre el ángulo sólido. Para eso escribimos d omega en coordenadas esféricas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s06_a6e21db9b8be8c695d007ad7d05a3c2fb6d3a0e4e7a6dbd475a2006ffac1a1da.mp4"
+          >
+            <aside class="notes" data-markdown>Usamos el elemento que obtuvimos con la esfera, seno de theta d theta d phi. El hemisferio es phi de cero a dos pi y theta de cero a pi medios. La intensidad es constante porque la superficie es difusa, así que sale de la integral. Quedan dos integrales independientes, una en phi y otra en theta.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s06_2cac939fe9f417505f6af37be8f4891a983f3a8359d09aa52da20e7ecc7d957d.mp4"
+          >
+            <aside class="notes" data-markdown>La integral en phi da dos pi. La de coseno por seno es seno cuadrado medio, que entre cero y pi medios vale un medio. El resultado, en el recuadro verde, es J igual a pi por I para una superficie difusa. En un cuerpo negro J es sigma T a la cuarta, así que su intensidad es sigma T a la cuarta sobre pi. Este pi es el mismo que aparece en el factor de forma.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s06_2bb49a1109240cfa147e77c27211d3e070ea00ef9f808e35e0fc1ce94fd17b10.mp4"
+          >
+            <aside class="notes" data-markdown>Arriba, en rojo y tachado, un error frecuente. Consiste en multiplicar la intensidad por el ángulo sólido del hemisferio y obtener J igual a dos pi I. El hemisferio sí mide dos pi estereorradianes, y cada dirección aporta en proporción a su coseno. El promedio del coseno sobre el hemisferio es un medio, y dos pi por un medio da pi. Es la misma lectura del lóbulo, donde las direcciones rasantes casi no aportan. Con el ángulo sólido y la radiosidad listos, pasamos a la deducción.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s07_c57ab0c9c3eaeedb01215f5790b24186e3bfb19ee3549d60fa61389a74bac950.mp4"
+          >
+            <aside class="notes" data-markdown>Tenemos el ángulo sólido y la intensidad. Ahora armamos la geometría sobre la que las vamos a usar. En pantalla hay dos superficies con orientación arbitraria, A uno en azul y A dos en rosado. Es un esquema, no un equipo real. Fíjense en el código de colores, porque se mantiene hasta el final de la clase. Todo lo que lleva subíndice uno es azul y todo lo que lleva subíndice dos es rosado. Primero vamos a mirar un pedacito de cada superficie.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s07_2fdfc63c1f4c868082e150c04cad0b5744f393f1523fbef1830127fcf8745994.mp4"
+          >
+            <aside class="notes" data-markdown>Sobre cada superficie tomamos un elemento de área diferencial, d A uno y d A dos. En el dibujo están agrandados para que se vean desde el fondo de la sala. Cada elemento tiene su normal unitaria, n uno en azul y n dos en rosado. La normal apunta hacia el lado por el que la superficie emite. Las normales son la referencia contra la que vamos a medir todos los ángulos. Ahora unimos los dos elementos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s07_69087cf0422ec30343cb07d7cf4e2c8c6a0f6c577044db47f2701d988e5d7099.mp4"
+          >
+            <aside class="notes" data-markdown>La recta blanca une los centros de los dos elementos y su largo es r. Theta uno es el ángulo entre la normal n uno y esa recta. Theta dos es el ángulo entre la normal n dos y la misma recta, recorrida desde d A dos hacia d A uno. En este dibujo theta uno vale unos 44 grados y theta dos unos 34 grados. Pregunto al curso desde dónde se mide theta, desde la superficie o desde la normal. (pausa) Desde la normal. Medirlo desde la superficie es el error más frecuente al usar la fórmula. Ahora giramos la figura.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s07_ed37e3389401340b8e419e5811bf9ba2a7a3fc494a2c34dc856d23754f9c0d6a.mp4"
+          >
+            <aside class="notes" data-markdown>Giramos la vista para ver la profundidad. La proyección en pantalla cambia todo el tiempo. Los valores de abajo, r igual a 4,51 y los dos ángulos, no cambian, porque se calculan en tres dimensiones. Con r, theta uno y theta dos queda determinada toda la geometría del par de elementos. Falta una condición, la visibilidad. La recta que los une no puede atravesar otra superficie. Si un obstáculo la corta, ese par no intercambia radiación directamente y su aporte es cero. Nos queda por ver cuánto espacio ocupa d A dos visto desde d A uno.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s07_650e9a1010b9634c6763b60942f390dd015201a4ac72a19ee33975ed699fcbc3.mp4"
+          >
+            <aside class="notes" data-markdown>Desde d A uno, el elemento d A dos ocupa un cono pequeño de direcciones, las líneas naranjas. Su abertura es el ángulo sólido d omega dos uno. Por lo que vimos con el ángulo sólido, vale el área de d A dos proyectada normal a la recta, d A dos por coseno de theta dos, dividida por r al cuadrado. Theta dos entra por la proyección del receptor. Theta uno todavía no aparece. Va a entrar en la escena siguiente, por la forma en que d A uno emite en esa dirección. Con esta pieza ya podemos escribir cuánta radiación va de un elemento al otro.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s08_155c75781e63eedaa91cb42aafa62bb609110fadd056e8436d467bdb54e65516.mp4"
+          >
+            <aside class="notes" data-markdown>Pasamos a la deducción. A la izquierda queda el recordatorio de la geometría, con los mismos colores, y abajo las hipótesis. Superficie uno difusa, intensidad uniforme, medio que no absorbe y elementos que se ven. Primer paso, lo que va de d A uno a d A dos. La ley de Lambert dice que d A uno emite en la dirección theta uno con intensidad I uno por coseno de theta uno por d A uno. Esa potencia por unidad de ángulo sólido se multiplica por el ángulo sólido que ocupa d A dos, d omega dos uno. Los rótulos de abajo indican de dónde sale cada factor. Ahora reemplazamos d omega.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s08_93cf959eb88ceda58ba40c033d3306f3e6311ec71af201033f9b2cad10a0cee9.mp4"
+          >
+            <aside class="notes" data-markdown>Reemplazamos d omega dos uno por lo que obtuvimos con la geometría, d A dos coseno de theta dos sobre r al cuadrado. El reemplazo es directo, porque es el mismo ángulo sólido. Miren la expresión que queda. El uno y el dos entran de la misma forma, un coseno y un elemento de área cada uno, y el r al cuadrado es compartido. Guarden esta simetría, porque de ella sale la reciprocidad en el capítulo siguiente sin ningún trabajo extra. Ahora necesitamos el total que sale de d A uno.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s08_704cea1b7bd325ce19c4d2700768307a3a9fea123fd77b3d036b9c3479cc9beb.mp4"
+          >
+            <aside class="notes" data-markdown>Segundo paso, todo lo que sale de d A uno hacia el hemisferio completo. Eso es la radiosidad J uno por el área d A uno. La superficie es difusa, así que usamos el resultado del capítulo anterior, J igual a pi por I. Queda pi por I uno por d A uno. Pregunto al curso qué pasaría si hubiéramos usado dos pi en vez de pi. (pausa) Todas las fracciones saldrían la mitad de lo correcto. Ya tenemos lo que llega y lo que sale, y podemos dividir.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s08_2e33224bcedfd0043dbd23b65c13b0d6c9627937569e74a5340645806e3cc65e.mp4"
+          >
+            <aside class="notes" data-markdown>Tercer paso. El factor de forma diferencial es, por definición, lo que llega dividido por lo que sale. Escribimos el cociente completo, sin simplificar todavía. Arriba está el numerador del primer paso y abajo el denominador del segundo. Antes de avanzar, miren arriba y abajo y busquen qué factores se repiten. (pausa) Hay dos que aparecen en los dos pisos de la fracción.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s08_f5b57ba79ea23e68d0865f503084283eb2b3334506be12f817591b5fd7d5d6ba.mp4"
+          >
+            <aside class="notes" data-markdown>La intensidad I uno aparece arriba y abajo, así que se cancela. El elemento emisor d A uno también aparece arriba y abajo, y también se cancela. Queda coseno de theta uno por coseno de theta dos por d A dos, dividido por pi r al cuadrado, el resultado del recuadro. Es el resultado central de la clase. Como la intensidad desapareció, el factor de forma no depende de la temperatura ni de la emisividad. Depende solo de r y de los dos ángulos. Así queda demostrada la afirmación que hicimos al definirlo, que el factor de forma es geometría pura. Antes de usarlo lo vamos a revisar.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s08_78dd37e97e2510d3d06a9a3f61bc3f16ec22cb27f9ff21f352761189e766aa93.mp4"
+          >
+            <aside class="notes" data-markdown>Revisamos el resultado de tres formas. Unidades. Área dividida por distancia al cuadrado no tiene dimensión, como corresponde a una fracción. Cierre. Si la superficie dos es un hemisferio completo de radio r centrado en d A uno, cada elemento está de frente, coseno de theta dos vale uno y d A dos es r al cuadrado d omega. La integral de coseno de theta uno d omega sobre pi da exactamente uno, la misma integral que dio J igual a pi I. Todo lo que sale llega al hemisferio. Origen de cada factor. El coseno de theta uno viene de Lambert, el coseno de theta dos y el r al cuadrado del ángulo sólido, y el pi de la radiosidad. Ahora pasamos de elementos a superficies de tamaño real.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s09_855fe04174da16091560a147234bb1257a558e04afd22ee9d0683124d80c1b74.mp4"
+          >
+            <aside class="notes" data-markdown>Tenemos el factor de forma entre dos elementos. En la práctica las superficies son finitas. Empezamos desde un solo elemento d A uno hacia toda la superficie A dos. Las fracciones que llegan a cada elemento d A dos se suman, porque son partes distintas de lo que sale. Esa suma es una integral sobre A dos. Cada elemento de A dos tiene su propia distancia y sus propios ángulos, y la integral los recorre todos. Falta el último paso, que la superficie emisora también sea finita.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s09_1d8546f6094e2b2839e6a8d06f9ca7b2463781fc14e9f5fd4d60b9b6ca3bcdcc.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora el emisor es toda la superficie A uno. Lo que sale de A uno es J uno por A uno. Lo que llega a A dos es la integral sobre A uno de J uno por el factor de forma de cada elemento. Si la radiosidad J uno es igual en toda la superficie, sale de la integral y se cancela con la de abajo. Queda la integral doble del recuadro, con el uno sobre A uno delante. La etiqueta amarilla marca la hipótesis, radiosidad uniforme en cada superficie. Si una superficie tiene zonas muy calientes y zonas frías, se divide en partes más pequeñas y se aplica a cada una. Veamos qué significa ese promedio con un caso concreto.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s09_a48c4ac1f9f239fb70c2470c603623bba5dec8e1dc500ce16a1e1a706b587af8.mp4"
+          >
+            <aside class="notes" data-markdown>Un ejemplo con números. Dos placas cuadradas de un metro de lado, paralelas y alineadas, a un metro de distancia. El mapa es la placa uno vista desde arriba. El color indica el factor de forma de cada punto hacia la placa dos, más claro significa mayor. En el centro vale 0,239, porque desde ahí la placa dos se ve de frente y completa. En una esquina vale 0,139, porque una buena parte de lo que sale se escapa por los costados. Pregunto al curso qué valor esperan para toda la placa, más cerca del centro o de la esquina. (pausa) Lo calculamos a continuación.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s09_3ca38b933a27b0433e1745015863fa780147586c8b16bdd3001c436caa5e9bc1.mp4"
+          >
+            <aside class="notes" data-markdown>El promedio del mapa sobre toda la placa da 0,1998. La fórmula de tablas para placas paralelas alineadas da el mismo valor. Eso es lo que dice la integral doble, el factor de forma entre superficies es el promedio del factor de forma local. En la práctica esta integral casi nunca se hace a mano. Para las geometrías comunes ya está resuelta en tablas y gráficos, y para geometrías complejas se calcula numéricamente. En el capítulo siguiente vemos las reglas que ahorran casi todas esas integrales, empezando por la reciprocidad.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s10_9542c7b75e04d833133ab4cccf69265114562e4f7fa125f2ac93dfdba989c5dc.mp4"
+          >
+            <aside class="notes" data-markdown>Entramos al capítulo de las reglas. La primera es la reciprocidad, y sale en dos líneas. Arriba está la definición de F uno dos con la que cerramos el capítulo anterior, multiplicada por el área A uno. El uno sobre A uno desaparece y queda la integral doble sola. Fíjense en los colores. Lo azul pertenece a la superficie uno y lo rosado a la dos. Ahora hacemos lo mismo partiendo de la otra superficie.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s10_e06abdd7fa888da0349505fc53d64f2833d88607f2d63a542ad0d17863e660eb.mp4"
+          >
+            <aside class="notes" data-markdown>Repetimos la deducción desde la superficie dos. Basta intercambiar los índices uno y dos en todos los pasos. Queda A dos F dos uno igual a otra integral doble. Pregunto al curso qué diferencias ven entre las dos expresiones (pausa para respuestas).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s10_3b20a6b1f392258f6aa3bf0507e483eb1c385a4b24af08c930ebaa3f7cfdd989.mp4"
+          >
+            <aside class="notes" data-markdown>Se destacan los dos integrandos. Son iguales, porque coseno de theta uno por coseno de theta dos es lo mismo en cualquier orden, y la distancia r entre dos elementos es la misma medida desde cualquiera de los dos. El dominio también es el mismo, todos los pares de elementos. Solo cambió el orden de integración, y eso no altera el valor. Queda A uno F uno dos igual a A dos F dos uno, la relación de reciprocidad. Vale con las mismas hipótesis de la deducción, superficies difusas y radiosidad uniforme en cada una. Veamos qué significa con números.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s10_ea2bb4a384777a37d3d0750b51025113eb4c568a87dc0208e0c7a7addc00ad8a.mp4"
+          >
+            <aside class="notes" data-markdown>Pregunta de control. A la izquierda hay dos discos coaxiales y paralelos a un metro de distancia. El azul, abajo, tiene medio metro de radio. El rosado, arriba, tiene un metro. Pregunto al curso si el factor de forma del disco chico al grande es igual al del grande al chico. Pidan que levanten la mano por sí o por no (esperar respuestas antes de avanzar).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s10_430b35090dd09bc598ac6abba99be58c56bde0b226f55bb94f63ac0255d059c9.mp4"
+          >
+            <aside class="notes" data-markdown>No son iguales. Con la fórmula de discos coaxiales de la tabla, desde el disco chico al grande el factor es cero coma cuatro seis nueve. Casi la mitad de lo que sale del chico llega al grande. Desde el grande al chico es cero coma uno uno siete, cuatro veces menos. Lo que se conserva es el producto del área por el factor, y los dos productos valen cero coma tres seis ocho metros cuadrados. Suponer F uno dos igual a F dos uno es el error más frecuente con esta regla, y por eso aparece tachado en rojo. En la práctica se calcula el factor fácil, casi siempre desde la superficie chica, y la reciprocidad entrega el otro. La segunda regla sale de la conservación de la energía.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s11_a32b9cff7eaae7534252ebd4dcc3f0d82571ca35740d39b8de2a83bb07c13231.mp4"
+          >
+            <aside class="notes" data-markdown>La segunda regla es la regla de la suma, y viene de la conservación de la energía. En el dibujo hay un recinto cerrado de cinco superficies. La radiación que sale de la superficie uno, abajo en azul, no tiene por dónde escapar. Todos los rayos terminan en alguna pared del recinto. Por eso las fracciones que salen de una superficie suman uno. Los rayos son un esquema y solo muestran el destino. La regla exige un recinto cerrado. Si hay una abertura, como la puerta de un horno, se cierra con una superficie negra ficticia a la temperatura del entorno. Queda un detalle en la suma, el término de la superficie consigo misma.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s11_a0457ae63e41d4de56c53b938aa72a551aa5b28632f01dddea8c6932de89c8e4.mp4"
+          >
+            <aside class="notes" data-markdown>La suma incluye F i i, el factor de forma de una superficie hacia sí misma. A la izquierda, una placa plana. Emite solo hacia su lado y ningún rayo vuelve a tocarla, así que F uno uno vale cero. Al centro, una esfera. Es convexa y todo rayo que sale de ella se aleja, así que también vale cero. A la derecha, un domo. Es cóncavo, el rayo sale del domo y vuelve a caer en él, y F uno uno es mayor que cero. Olvidar F i i en una superficie cóncava es el error más común al aplicar esta regla. Ahora comprobamos la regla con números.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s11_f210aedb7b0b028b1bae4cfc9fc32e807f03b2bc62d05ac5f729543775a3d652.mp4"
+          >
+            <aside class="notes" data-markdown>Una comprobación con un cubo de un metro de arista. La cara inferior, en azul, es la que emite. Es plana y no se ve a sí misma. Ve la cara opuesta con factor cero coma uno nueve nueve ocho, según la fórmula de placas paralelas. Ve cada una de las cuatro caras laterales con cero coma dos, según la fórmula de placas perpendiculares. La suma da uno con cuatro decimales. Las dos fórmulas son independientes, así que el resultado comprueba la regla. Con las dos reglas juntas podemos contar cuántos factores hay que calcular.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s11_22ddece180c63e441b4e4ecc65f1424bd4a0baa7fb5452d79e85b257fb4249e1.mp4"
+          >
+            <aside class="notes" data-markdown>Contemos. Un recinto de N superficies tiene N al cuadrado factores de forma. Con tres superficies son nueve, los de la matriz. La reciprocidad da una ecuación por cada par, N por N menos uno partido por dos, y llena un triángulo de la matriz a partir del otro. La regla de la suma da una ecuación por fila, N en total. Quedan N por N menos uno partido por dos factores por calcular con tablas o integrales. Con dos superficies basta uno y con tres bastan tres. Un horno de tres paredes se resuelve con tres lecturas de tabla. Antes de seguir, una pregunta.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s11_5dbb965a3e6430eab1c83ffd767565b7cfa4e2aa8acc879c50bf5b46b8fd1fc9.mp4"
+          >
+            <aside class="notes" data-markdown>Pregunta de control. Pregunto al curso si un factor de forma puede ser mayor que uno, y si la suma de dos factores de forma puede serlo. La segunda parte depende de qué factores se suman, así que conviene escuchar dos o tres opiniones (esperar respuestas antes de avanzar).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s11_11202f85482a7515fbfc5a15d5904cecfc7ffc191ccfe0dfe210a2526353091d.mp4"
+          >
+            <aside class="notes" data-markdown>La respuesta. Un factor aislado nunca supera uno, porque es una fracción de lo que sale del emisor. Los factores de un mismo emisor hacia destinos distintos suman a lo más uno, y exactamente uno en un recinto cerrado. Los factores de emisores distintos no tienen cota. Dos esferas pequeñas dentro de una cavidad envían casi todo a la cavidad, cada factor vale casi uno y la suma vale casi dos. Con esto pasamos a dos reglas más que ahorran trabajo, la superposición y la simetría.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s12_a7f31b20041e18a39c8e25fdd8f7759b12de9d2bb8b859639ce50bda72d8d11a.mp4"
+          >
+            <aside class="notes" data-markdown>La tercera regla es la superposición. A la izquierda hay un piso horizontal en azul, A uno, y una pared vertical de dos metros dividida en dos mitades, A dos abajo en rosado y A tres arriba en lavanda. Lo que sale del piso y llega a la pared entera llega a una sola de las dos mitades. Las partes no se traslapan, así que las fracciones se suman. F uno hacia dos tres es F uno dos más F uno tres. Es la regla de la suma aplicada a un grupo de superficies. Veamos para qué sirve.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s12_5bc779ea4980f9d38f66e45e7093cf6701cf16463bc58740434c10da16092f9a.mp4"
+          >
+            <aside class="notes" data-markdown>Un uso típico. La tabla de rectángulos perpendiculares con arista común da el factor desde el piso hacia una pared que parte en la arista. Para la pared completa de dos metros la fórmula da cero coma dos tres tres. Para la mitad baja, A dos, da cero coma dos. La franja alta A tres no toca el piso y no está en la tabla. Sale por diferencia, cero coma cero tres tres. Recibe poco porque está más lejos y se ve más de canto desde el piso. Pregunto al curso cómo tratarían una ventana en la parte alta de la pared de una pieza (pausa para respuestas). Ahora la regla al revés.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s12_5823f669690bdca12bb872a4bbc511239ad6b51592fcca1823caf0ab6cd37230.mp4"
+          >
+            <aside class="notes" data-markdown>Cuando la pared compuesta es la que emite, sumar los factores es un error, y por eso aparece tachado. F es una fracción de lo que sale del emisor, y la pared compuesta emite desde un área mayor que cada mitad. Lo que se suma son las potencias, área por factor de forma. Con reciprocidad, A dos tres por F dos tres uno es A dos F dos uno más A tres F tres uno. Cada mitad mide un metro cuadrado, así que el factor de la pared entera al piso es cero coma dos más cero coma cero tres tres, dividido por dos, cero coma uno uno seis. La suma directa, cero coma dos tres tres, sobreestima al doble. La última regla es la simetría.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s12_73575a967ca90d808cb1d946585353147b3135be9a38edb20e14775ab2ef98ac.mp4"
+          >
+            <aside class="notes" data-markdown>La regla de simetría. Si varias superficies están ubicadas de la misma forma respecto del emisor, reciben la misma fracción. En el cubo, la base emite en azul y las cuatro paredes laterales, en lavanda, están ubicadas igual respecto de ella. El factor desde la base hacia cada pared es el mismo y basta calcularlo una vez. La simetría se verifica con el dibujo. Una pared con una puerta ya no es simétrica con las otras. Probemos las reglas juntas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s12_557a71288e4c9aafa6b04d1d99a8f496013965ea31ed49726718c0b1c67e0425.mp4"
+          >
+            <aside class="notes" data-markdown>Pregunta para el curso. Una tabla de placas paralelas entrega el factor desde la base hacia el techo del cubo, cero coma dos. Con eso y las reglas de hoy, cuánto vale el factor desde la base hacia cada pared lateral. La pista es que se combinan dos reglas (esperar una propuesta antes de avanzar).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s12_a06cb0ee2d898aaaf2d4e0672bd895d221f9e57576f714aeb44f2a252a9424f5.mp4"
+          >
+            <aside class="notes" data-markdown>La respuesta usa la regla de la suma y la simetría. Lo que sale de la base se reparte entre la base misma, el techo y las cuatro paredes. La base es plana, así que su término propio es cero. Por simetría las cuatro paredes tienen el mismo factor. Despejando, cada pared recibe uno menos cero coma dos, dividido por cuatro, cero coma dos. La fórmula de placas perpendiculares da cero coma dos cero cero cero, el mismo valor. Una sola lectura de tabla bastó para los seis factores de la base. Queda ver cómo se leen esas tablas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s13_d2d968f258c70f13e9c29d339bb221293034a811d2736a99fa5b4f4ce518e3e8.mp4"
+          >
+            <aside class="notes" data-markdown>Las tablas. Para las geometrías frecuentes la integral doble ya está resuelta. En pantalla hay dos expresiones de la tabla trece uno de Çengel, rectángulos paralelos alineados y discos paralelos coaxiales. Ambas salen de integrar exactamente la expresión diferencial que dedujimos. No hay que memorizarlas. Las variables son siempre cocientes adimensionales, el tamaño dividido por la distancia, y con esos cocientes se entra a cualquier tabla o gráfico. Veamos la versión gráfica.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s13_5c874561fe493748b43860d511a2a38074d5e7db3ff11b20b17d5c281e0c0550.mp4"
+          >
+            <aside class="notes" data-markdown>La fórmula de rectángulos en forma de gráfico. El eje horizontal es X sobre L en escala logarítmica, y cada curva es un valor de Y sobre L. Las curvas suben hacia la derecha, porque placas grandes comparadas con su separación se ven casi completas. Hacia la izquierda caen a cero, porque placas chicas y lejanas se ven poco. El error típico es entrar con el cociente invertido, L sobre X en vez de X sobre L. Hagamos un ejercicio de lectura.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s13_ecb126f6964f0784e8ad2553513ff0d99f1b102ac31ceb943f8cf8e0a327f74b.mp4"
+          >
+            <aside class="notes" data-markdown>Dos cuadrados de un metro de lado, paralelos y alineados, a medio metro, a un metro y a dos metros. El primer paso es siempre calcular los cocientes. Como son cuadrados, X sobre L e Y sobre L son iguales. A medio metro valen dos, a un metro valen uno y a dos metros valen cero coma cinco. Pregunto al curso qué curva usa cada caso (pausa para respuestas). Cada caso cae en la curva cuyo Y coincide con su X.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s13_f04cf763174479e00f1d00eab9fc920e7c199a37a3c911be6d5467c23ee0eb57.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora la lectura. Entramos con el cociente en el eje horizontal, subimos hasta la curva y leemos en el eje vertical, siguiendo las líneas punteadas amarillas. A medio metro el factor es cero coma cuatro uno cinco, casi la mitad de lo que sale de una placa llega a la otra. A un metro es cero coma dos. A dos metros es cero coma cero seis nueve. El factor cae con la distancia. Miremos cómo cae.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s13_fdf6bd0644edc73fc7f0e713dc7403992ec3a50f265c5ce6d108c7181fa050d7.mp4"
+          >
+            <aside class="notes" data-markdown>Pregunta de control. Entre uno y dos metros la distancia se duplica. Si el factor siguiera la ley del inverso del cuadrado, caería a la cuarta parte. Pregunto al curso si eso ocurre, usando los dos números de la pantalla (esperar que alguien haga la división antes de avanzar).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s13_e8aaca0fa098140b4ce5755344e0ea032dc5bd1ea6700cdabf2ee7643065de8a.mp4"
+          >
+            <aside class="notes" data-markdown>La respuesta es no. Cero coma dos dividido por cero coma cero seis nueve da cerca de dos coma nueve, no cuatro. La ley del inverso del cuadrado es un límite. Vale cuando las placas son pequeñas frente a la distancia, la aproximación de fuente puntual. A un metro las placas miden lo mismo que la separación y todavía no estamos en ese límite. Al seguir alejándolas, el cociente entre duplicaciones se acerca a cuatro. Esta idea vuelve en el ejemplo del cortafuego.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s13_500e1ad0ee4b1e273c022432bc8c2b56b07b2d2f1bbf23155501f019838a9881.mp4"
+          >
+            <aside class="notes" data-markdown>El gráfico equivalente para discos coaxiales. El eje horizontal es el radio del disco emisor dividido por la distancia, y cada curva es una razón de radios. Para discos iguales con radio igual a la distancia el factor vale cero coma tres ocho dos, el valor de la fórmula especial de discos iguales. Cuando el receptor es el doble del emisor y los discos se acercan, casi todo lo que sale del chico llega al grande y el factor tiende a uno. Es la reciprocidad vista en un gráfico, el disco chico ve mucho al grande. Con las reglas completas, pasamos a calcular calor.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s14_d08d185df95916961832c1d46a2e305147ed91aa8e6f50032d1dc0c36a81eb75.mp4"
+          >
+            <aside class="notes" data-markdown>Último capítulo. Pasamos del factor de forma a una tasa de calor. En el dibujo hay dos superficies negras, la uno en azul a temperatura T uno y la dos en rosado a T dos. Las hipótesis están a la derecha. Una superficie negra no refleja, así que todo lo que sale de ella es emisión propia, sigma T a la cuarta. El aire entre ellas no absorbe ni emite. Fijamos el signo antes de escribir. Q punto uno dos es positivo cuando el flujo neto va de uno a dos. Es una tasa en un instante, así que no hace falta suponer régimen estacionario.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s14_12f7ac71da9fae5efd14986bd3e350f542f2996e30edca642f52f2dcf771a328.mp4"
+          >
+            <aside class="notes" data-markdown>Escribimos los dos flujos. De la superficie uno sale A uno sigma T uno a la cuarta. La fracción F uno dos llega a la dos, que por ser negra la absorbe completa. Es la flecha azul. Con el mismo argumento, de la dos llega a la uno A dos F dos uno sigma T dos a la cuarta, la flecha rosada. Son dos flujos en sentidos opuestos, y el neto es su diferencia.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s14_2b1288774664f10903a98a3e44d2b2f2d16d6d6f21780efd1d6019e45020fd5c.mp4"
+          >
+            <aside class="notes" data-markdown>El neto es la diferencia de los dos flujos. Así escrito no se puede factorizar, porque cada término tiene su área y su factor. Aquí entra la reciprocidad, A dos F dos uno es igual a A uno F uno dos. Al reemplazar, los dos términos comparten A uno F uno dos sigma, y queda A uno F uno dos sigma por la diferencia de las cuartas potencias, en watts. La reciprocidad es la que deja el resultado en una línea.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s14_9a5a94f72a42a1e8762734673f402ba8838e92d05d2dfb4c631d89d766db8d07.mp4"
+          >
+            <aside class="notes" data-markdown>Dos controles. Si T uno es igual a T dos, el neto se anula, como debe ocurrir en equilibrio térmico. La estructura es la de todo el curso, una conductancia por una fuerza impulsora, y aquí la fuerza impulsora es la diferencia de cuartas potencias. Además hay una distinción que mantener. F es una fracción geométrica, sin unidades. Q punto es una tasa en watts, que necesita además áreas, temperaturas y propiedades de superficie. Con superficies grises hace falta la radiosidad, sección trece tres de Çengel. Ahora un ejemplo completo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s15_7c889565695720130ad116189f0378fdd86f6f9fdd79802b8eef13e59aad8682.mp4"
+          >
+            <aside class="notes" data-markdown>Un ejemplo completo sin tablas ni integrales. Un domo hemisférico de dos metros de radio, en azul, cubre un piso circular del mismo radio, en rosado. Piensen en un horno de bóveda. Es un recinto cerrado de dos superficies. El domo es la uno, a trescientos kelvin, y el piso la dos, a quinientos. Ambas son negras. Buscamos tres factores de forma y el intercambio neto. Con dos superficies el conteo dice que basta encontrar un factor.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s15_3dd178243e1308f67d9899bf5ad6ba1283489b89209fb830c680a1d177065f8c.mp4"
+          >
+            <aside class="notes" data-markdown>Primer paso, por inspección. El piso es plano y emite solo hacia arriba, y hacia arriba solo está el domo. Los rayos del dibujo salen del piso con densidad proporcional al coseno, como una emisión difusa en el plano del corte, y todos terminan en el domo. Entonces F dos uno vale uno exactamente. Pregunto al curso qué regla usamos ahora para el factor del domo al piso (pausa para respuestas).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s15_f6fffda74d7b1928f3da3c962fc56d675210b915b28d0c4ae9f3290a530574f9.mp4"
+          >
+            <aside class="notes" data-markdown>Segundo paso, reciprocidad. A uno F uno dos es igual a A dos F dos uno. El área del domo es media esfera, dos pi R cuadrado, y la del piso es pi R cuadrado. El radio se cancela y F uno dos vale un medio. La mitad de lo que sale del domo llega al piso. El factor fácil salió de la superficie plana y el otro se obtuvo sin integrar. Falta el domo consigo mismo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s15_e993facf935a84ed0e50ca84704fbb23a52d090222d0ec383c3672e18b9c50dc.mp4"
+          >
+            <aside class="notes" data-markdown>Tercer paso, la regla de la suma. El recinto está cerrado, así que F uno uno más F uno dos vale uno. Entonces F uno uno vale un medio. La otra mitad de lo que sale del domo vuelve al domo. Coincide con la forma, el domo es cóncavo y se ve a sí mismo. En el dibujo un rayo parte del domo y cae en el domo, y el otro llega al piso. Podemos comprobarlo contando rayos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s15_ccc541157855b7ff496d2a89e7981b8a8de1d043791e878070a9dc8765a1625e.mp4"
+          >
+            <aside class="notes" data-markdown>La comprobación por conteo. Se lanzan doscientos mil rayos desde puntos uniformes del domo, con direcciones según la ley del coseno, y se cuenta cuántos vuelven al domo. La fracción es cero coma cuatro nueve nueve siete, con un error estándar de cero coma cero cero once. Coincide con un medio dentro del error estadístico. Así se calculan factores de forma en geometrías complicadas, con muchos rayos. Ahora el calor.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s15_fdef028f518301606b57e716d72aaf0330ee3f2f4dfaffadf718cfefb7c15ce5.mp4"
+          >
+            <aside class="notes" data-markdown>Cuarto paso, el intercambio neto. Conviene escribirlo desde el piso, cuyo factor es uno. Q punto dos uno es A dos por F dos uno por sigma por la diferencia de cuartas potencias. El área del piso es pi por dos al cuadrado, doce coma cinco siete metros cuadrados. Con las temperaturas en kelvin resulta cerca de treinta y ocho coma ocho kilowatts. Es positivo, el flujo neto va del piso caliente al domo. Escrito desde el domo, con F uno dos igual a un medio y el doble de área, da lo mismo por reciprocidad.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s15_dc121cb291c5e5b4a3ea4a50277f62d7774b51c4b1adf2222fd97cc980974ea6.mp4"
+          >
+            <aside class="notes" data-markdown>Pregunta de control. Si pintamos el domo de negro mate, o si duplicamos su temperatura, cambia alguno de los tres factores de forma. Pregunto al curso (esperar varias respuestas antes de avanzar).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s15_365b7b55e83c28aba039f74115ac03ca95bc95b07b961474f75f22f655f9127e.mp4"
+          >
+            <aside class="notes" data-markdown>La respuesta es no. Los tres factores dependen solo de la geometría, y el radio incluso se canceló. Lo que cambia es la tasa de calor, que depende de la cuarta potencia de las temperaturas y de las propiedades de las superficies. Si otra pintura hace que el domo deje de ser negro, parte de lo que llega se refleja y el cálculo necesita la radiosidad, sección trece tres de Çengel. Si quedan dudas, se vuelve a la deducción y se muestra dónde se canceló la intensidad. El caso siguiente sí se integra a mano.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s16_157a3ab0201203f14eb27ce1437f299cb3260c27b3b770cfa91f3d34236bb1d6.mp4"
+          >
+            <aside class="notes" data-markdown>Un caso que sí se integra a mano, y que lleva al cortafuego. Un elemento d A uno, abajo en azul, mira hacia arriba. Encima, a distancia L, hay un disco coaxial de radio R, en rosado. Por simetría dividimos el disco en anillos de radio rho y ancho d rho. A la derecha están las tres piezas. El área del anillo es dos pi rho d rho. Como el disco es paralelo al elemento, los dos ángulos son iguales y su coseno es L sobre r. Y r al cuadrado es L cuadrado más rho cuadrado.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s16_a20d4fab8bd5421bddf07326b6deaf52a4ce71790da941461e680082ba047cd4.mp4"
+          >
+            <aside class="notes" data-markdown>Reemplazamos en la expresión diferencial y sumamos los anillos de cero a R. El pi del anillo se cancela con el pi de la radiosidad. Queda la integral de dos L cuadrado rho d rho, dividido por L cuadrado más rho cuadrado, al cuadrado. Pregunto al curso qué cambio de variable sirve aquí (pausa para respuestas).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s16_a37e24ee37a0ec0ebe71c204cddc021fe4b9c68930c4a6620b2d321c4ea84458.mp4"
+          >
+            <aside class="notes" data-markdown>Con u igual a L cuadrado más rho cuadrado la integral es inmediata. Evaluada entre cero y R da L cuadrado por uno sobre L cuadrado menos uno sobre L cuadrado más R cuadrado. Simplificando, el factor de forma es R cuadrado sobre R cuadrado más L cuadrado. No tiene dimensión y queda entre cero y uno, como corresponde. Veamos qué dice en los extremos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s16_ac542dbe8d37f6b5730f23e4fe3a2e0202c8af503ef52f1889e6595465baf52f.mp4"
+          >
+            <aside class="notes" data-markdown>Barremos la distancia. El gráfico es la fórmula exacta en función de L sobre R. Cuando el disco se acerca, L tiende a cero y el factor tiende a uno, porque el disco llena todo el hemisferio que ve el elemento. Es el caso del recinto que rodea por completo. Cuando se aleja, el factor tiende a R cuadrado sobre L cuadrado, la curva amarilla punteada, la ley del inverso del cuadrado. Cerca, esa aproximación es mala y llega a pasar de uno, lo que es imposible para un factor de forma.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s16_efb0653ebec0d5875d415021196793308db68b9d8b9d90b97bb6d7bfaa855dc7.mp4"
+          >
+            <aside class="notes" data-markdown>La forma lejana se escribe con el área del disco, A igual a pi R cuadrado. El factor es aproximadamente A sobre pi L cuadrado. Es la aproximación de fuente puntual, y vale solo lejos. En ese régimen, duplicar la distancia divide el factor por cuatro. Con esto podemos estimar cuánto calor recibe una casa frente a un incendio.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s17_0af49f46b22531191c08460401bfa0ca270fa863fd59a5611a6d7a63db94eb7e.mp4"
+          >
+            <aside class="notes" data-markdown>Volvemos al incendio del comienzo de la clase. El frente de llama se modela como un disco negro de diez metros cuadrados a mil doscientos kelvin. El objetivo, una casa o un árbol, es una superficie pequeña de frente a la llama, a distancia L. El dibujo es un esquema. El poder emisivo de la llama es sigma T a la cuarta, unos ciento dieciocho kilowatts por metro cuadrado. Falta saber qué fracción de eso llega al objetivo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s17_76bc6538a074e59152c33b845ad9398d20ed514f59cbcdf36521b24384055199.mp4"
+          >
+            <aside class="notes" data-markdown>Este paso separa el factor de forma del flujo de calor. La potencia que sale de la llama y llega al objetivo es A f por F llama objetivo por E b. Por reciprocidad, A f F llama objetivo es d A por F objetivo llama. Dividiendo por el área del objetivo, el flujo incidente es E b por el factor desde el objetivo hacia la llama. El factor es la fracción geométrica. El flujo, en kilowatts por metro cuadrado, necesita además la temperatura de la llama.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s17_8eb9a0055d02361dd0174fa94cacee20ec8361b18e37f8548ffe2c9702f751b0.mp4"
+          >
+            <aside class="notes" data-markdown>La tabla compara dos cálculos del flujo incidente. La primera columna usa la fuente puntual, A f sobre pi L cuadrado. La segunda usa el disco exacto con la misma área, de radio uno coma siete ocho metros. A cinco metros la fuente puntual da quince kilowatts por metro cuadrado y el disco exacto trece coma tres. La fuente puntual sobreestima en trece por ciento, porque trata todo el disco como si estuviera de frente y a la distancia mínima, cuando sus bordes están más lejos y se ven inclinados. A veinte metros las dos coinciden. Pregunto al curso a qué distancia pondrían una casa (pausa para respuestas).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s17_19d268c5142749e8bbb2c1124eb8460cbb635e03129931eccade43a13cda46a3.mp4"
+          >
+            <aside class="notes" data-markdown>La lectura. Entre diez y veinte metros el flujo cae casi a la cuarta parte, porque ahí el factor ya se comporta como uno sobre L cuadrado. El cortafuego actúa sobre esa dependencia. Los límites del modelo también cuentan. Un frente real es mucho más extenso que diez metros cuadrados y se parece a una pared, cuyo factor cae más lento con la distancia. La llama no es un cuerpo negro, y el modelo no incluye convección, viento ni pavesas, que en incendios reales propagan el fuego a distancia. El orden de magnitud y la tendencia son correctos. Un cortafuego real se dimensiona con factores de superficies extensas y márgenes de seguridad. Antes de cerrar, reunimos en una lámina toda la notación de la clase.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s18_0a1b97c11f2b7d400768c8665158fde6b1a38b523eef640d9b3ccdc4efe5d0d5.mp4"
+          >
+            <aside class="notes" data-markdown>Esta lámina reúne la notación de la clase y está pensada para fotografiarla. Arriba están las dos definiciones centrales, el factor diferencial y el factor entre superficies finitas, que es un promedio sobre la superficie emisora. A la izquierda está la geometría. Theta uno y theta dos se miden siempre desde la normal de cada superficie hacia la recta que une los elementos, nunca desde la superficie. A la derecha están las cantidades radiativas y las tres relaciones de trabajo, reciprocidad, la regla de la suma y el intercambio entre superficies negras (pausa para las fotos antes de cerrar).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_factor_forma_sala_assets/s19_4f9cd2c87dcd9feab6f41c81d15dbdf34ec784ab1d4c72940c3ca4b5a28770aa.mp4"
+          >
+            <aside class="notes" data-markdown>Para cerrar, a la izquierda están las hipótesis que usamos hoy. Superficies negras, un medio que no participa y superficies difusas, con J igual a pi I. A la derecha, el tema de la próxima clase, los colectores solares térmicos. Ahí vuelven la absortividad solar y la emisividad de las superficies selectivas de las clases anteriores. El intercambio por radiación entre la placa y la cubierta usa las ideas de hoy. Terminaremos con la eficiencia instantánea del colector. La lectura sugerida está en la parte inferior.</aside>
+        </section>
+      </div>
+    </div>
+
+    <script src="../lib/reveal.js/5.2.0/reveal.min.js"></script>
+    <script src="../lib/reveal.js/5.2.0/plugin/notes/notes.min.js"></script>
+
+    <!-- To include plugins, see: https://revealjs.com/plugins/ -->
+    <script src="../lib/reveal.js/5.2.0/plugin/markdown/markdown.min.js"></script>
+
+    <!-- <script src="index.js"></script> -->
+    <script>
+      Reveal.initialize({
+        /// The list of RevealJS plugins.
+        plugins: [ RevealMarkdown, RevealNotes ],
+        // The "normal" size of the presentation, aspect ratio will
+        // be preserved when the presentation is scaled to fit different
+        // resolutions. Can be specified using percentage units.
+        width: '100%',
+        height: '100%',
+        // Factor of the display size that should remain empty around
+        // the content
+        margin: 0.04,
+        // Bounds for smallest/largest possible scale to apply to content
+        minScale: 0.2,
+        maxScale: 2.0,
+        // Display presentation control arrows
+        controls: true,
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: true,
+        // Determines where controls appear, "edges" or "bottom-right"
+        // Fixed here because Manim Slides injects the value of
+        // `-ccontrols_layout` without the surrounding quotes.
+        controlsLayout: "edges",
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: "faded",
+        // Display a presentation progress bar
+        progress: true,
+        // Display the page number of the current slide
+        // - true:    Show slide number
+        // - false:   Hide slide number
+        //
+        // Can optionally be set as a string that specifies the number formatting:
+        // - "h.v":   Horizontal . vertical slide number (default)
+        // - "h/v":   Horizontal / vertical slide number
+        // - "c":   Flattened slide number
+        // - "c/t":   Flattened slide number / total slides
+        //
+        // Alternatively, you can provide a function that returns the slide
+        // number for the current slide. The function should take in a slide
+        // object and return an array with one string [slideNumber] or
+        // three strings [n1,delimiter,n2]. See #formatSlideNumber().
+        slideNumber: false,
+        // Can be used to limit the contexts in which the slide number appears
+        // - "all":      Always show the slide number
+        // - "print":    Only when printing to PDF
+        // - "speaker":  Only in the speaker view
+        showSlideNumber: 'all',
+        // Use 1 based indexing for # links to match slide number (default is zero
+        // based)
+        hashOneBasedIndex: false,
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: false,
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: false,
+        // Enable support for jump-to-slide navigation shortcuts
+        jumpToSlide: true,
+        // Push each slide change to the browser history.  Implies `hash: true`
+        history: true,
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+        // Optional function that blocks keyboard events when retuning false
+        //
+        // If you set this to 'focused', we will only capture keyboard events
+        // for embedded decks when they are in focus
+        keyboardCondition: null,
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+        // Enable the slide overview mode
+        overview: true,
+        // Vertical centering of slides
+        center: true,
+        // Enables touch navigation on devices with touch input
+        touch: true,
+        // Loop the presentation
+        loop: false,
+        // Change the presentation direction to be RTL
+        rtl: false,
+        // Changes the behavior of our navigation directions.
+        //
+        // "default"
+        // Left/right arrow keys step between horizontal slides, up/down
+        // arrow keys step between vertical slides. Space key steps through
+        // all slides (both horizontal and vertical).
+        //
+        // "linear"
+        // Removes the up/down arrows. Left/right arrows step through all
+        // slides (both horizontal and vertical).
+        //
+        // "grid"
+        // When this is enabled, stepping left/right from a vertical stack
+        // to an adjacent vertical stack will land you at the same vertical
+        // index.
+        //
+        // Consider a deck with six slides ordered in two vertical stacks:
+        // 1.1    2.1
+        // 1.2    2.2
+        // 1.3    2.3
+        //
+        // If you're on slide 1.3 and navigate right, you will normally move
+        // from 1.3 -> 2.1. If "grid" is used, the same navigation takes you
+        // from 1.3 -> 2.3.
+        navigationMode: 'default',
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+        // Turns fragments on and off globally
+        fragments: true,
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: true,
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+        // Flags if we should show a help overlay when the question-mark
+        // key is pressed
+        help: true,
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+        // Global override for autolaying embedded media (video/audio/iframe)
+        // - null:   Media will only autoplay if data-autoplay is present
+        // - true:   All media will autoplay, regardless of individual setting
+        // - false:  No media will autoplay, regardless of individual setting
+        autoPlayMedia: null,
+        // Global override for preloading lazy-loaded iframes
+        // - null:   Iframes with data-src AND data-preload will be loaded when within
+        //           the viewDistance, iframes with only data-src will be loaded when visible
+        // - true:   All iframes with data-src will be loaded when within the viewDistance
+        // - false:  All iframes with data-src will be loaded only when visible
+        preloadIframes: null,
+        // Can be used to globally disable auto-animation
+        autoAnimate: true,
+        // Optionally provide a custom element matcher that will be
+        // used to dictate which elements we can animate between.
+        autoAnimateMatcher: null,
+        // Default settings for our auto-animate transitions, can be
+        // overridden per-slide or per-element via data arguments
+        autoAnimateEasing: 'ease',
+        autoAnimateDuration: 1.0,
+        autoAnimateUnmatched: true,
+        // CSS properties that can be auto-animated. Position & scale
+        // is matched separately so there's no need to include styles
+        // like top/right/bottom/left, width/height or margin.
+        autoAnimateStyles: ['opacity', 'color', 'background-color', 'padding', 'font-size', 'line-height', 'letter-spacing', 'border-width', 'border-color', 'border-radius', 'outline', 'outline-offset'],
+        // Controls automatic progression to the next slide
+        // - 0:      Auto-sliding only happens if the data-autoslide HTML attribute
+        //           is present on the current slide or fragment
+        // - 1+:     All slides will progress automatically at the given interval
+        // - false:  No auto-sliding, even if data-autoslide is present
+        autoSlide: 0,
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+        // Use this method for navigation when auto-sliding (defaults to navigateNext)
+        autoSlideMethod: null,
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+        // Opens links in an iframe preview overlay
+        // Add `data-preview-link` and `data-preview-link="false"` to customize each link
+        // individually
+        previewLinks: false,
+        // Exposes the reveal.js API through window.postMessage
+        postMessage: true,
+        // Dispatches all reveal.js events to the parent window through postMessage
+        postMessageEvents: false,
+        // Focuses body when page changes visibility to ensure keyboard shortcuts work
+        focusBodyOnPageVisibilityChange: true,
+        // Transition style
+        transition: 'none', // none/fade/slide/convex/concave/zoom
+        // Transition speed
+        transitionSpeed: 'default', // default/fast/slow
+        // Transition style for full page slide backgrounds
+        backgroundTransition: 'none', // none/fade/slide/convex/concave/zoom
+        // The maximum number of pages a single slide can expand onto when printing
+        // to PDF, unlimited by default
+        pdfMaxPagesPerSlide: Number.POSITIVE_INFINITY,
+        // Prints each fragment on a separate slide
+        pdfSeparateFragments: true,
+        // Offset used to reduce the height of content within exported PDF pages.
+        // This exists to account for environment differences based on how you
+        // print to PDF. CLI printing options, like phantomjs and wkpdf, can end
+        // on precisely the total height of the document whereas in-browser
+        // printing has to end one pixel before.
+        pdfPageHeightOffset: -1,
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+        // The display mode that will be used to show slides
+        display: 'block',
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000
+      });
+      // Override SPACE to play / pause the video
+      Reveal.addKeyBinding(
+        {
+          keyCode: 32,
+          key: 'SPACE',
+          description: 'Play / pause video'
+        },
+        () => {
+          var currentVideos = Reveal.getCurrentSlide().slideBackgroundContentElement.getElementsByTagName("video");
+          if (currentVideos.length > 0) {
+            if (currentVideos[0].paused == true) currentVideos[0].play();
+            else currentVideos[0].pause();
+          } else {
+            Reveal.next();
+          }
+        }
+      );
+    </script>
+
+    <div id="deck-counter"></div>
+    <script>
+      (function () {
+        function refresh() {
+          var total = Reveal.getTotalSlides();
+          var idx = Reveal.getSlides().indexOf(Reveal.getCurrentSlide()) + 1;
+          var el = document.getElementById("deck-counter");
+          if (el) el.textContent = idx + " / " + total;
+        }
+        Reveal.on("ready", refresh);
+        Reveal.on("slidechanged", refresh);
+      })();
+    </script>
+  </body>
+</html>
