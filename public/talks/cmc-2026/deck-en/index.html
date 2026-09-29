@@ -49,294 +49,294 @@
           data-background-video="presentation_en_assets/s00_fa418d20e88ee4aa5a270c65bcca8a6fec1386f3045d7c171187d205da339e80.mp4"
           data-background-video-muted
           >
-            <aside class="notes" data-markdown>**What it shows.** The title, the authors, the conference and a picture of a laminar diffusion flame like the ones we study. **How to read the figure.** The picture is a flame seen in perspective. The yellow and orange glow marks where soot is, and it is brighter where there is more. **What to say.** Introduce yourself and the work, published in Proceedings of the Combustion Institute. With images of a flame taken at two wavelengths and a neural network we obtain several soot properties at once. With them we answer a simple question, where soot is formed and where it is destroyed.</aside>
+            <aside class="notes" data-markdown>Hello everyone. I am Mijail Littin. With images of a flame taken at two colours and a neural network we obtain several properties of soot, and with them we answer a simple question. Where is soot formed, and where is it destroyed? [advance]</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s01_259cb70b9110d2be7a7917014c7aef7162a20165126afe34327351bd1d228a28.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** A sketch of a soot particle and three ideas that define it. **How to read the figure.** It is a drawing, not a microscope image. Each grey sphere is a primary particle of 20 to 40 nanometres. Together they form a branched aggregate of hundreds of nanometres, which is the scale of the white bar. **What to say.** Soot is made of carbon nanoparticles. They are born where the flame has excess fuel, from large aromatic molecules called PAHs. The primary particles collide and stick, and form aggregates hundreds of times smaller than the width of a hair. **If asked.** Why fractal? Because the aggregate is open and branched, and its mass grows with its size with a non-integer exponent, close to 1.8.</aside>
+            <aside class="notes" data-markdown>Let me start with the basics. What is soot? [wait for the animation] Soot is made of carbon nanoparticles. They are born where the flame has too much fuel, from large aromatic molecules that we call PAHs. Particles of 20 to 40 nanometres stick together into aggregates of a few hundred nanometres.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s01_32cd5f544836561740878a1485f9b0e5823da23cbc14a9f5d0f05441741dcdcb.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** Three reasons why soot matters. **How to read the figure.** The lungs stand for health. The sun and the particle that warms up stand for climate. On the right is the soot map of a flame, and the red arrows are the heat leaving as radiation. The references are at the bottom. **What to say.** First, health. Soot is part of the fine particulate matter, PM2.5, which reaches deep into the lungs. Second, climate. Black carbon absorbs sunlight and is among the strongest warming agents we emit. Third, engineering. In flames and furnaces soot radiation dominates the heat transfer, and aircraft engines already have particle emission standards. **If asked.** Which standard? ICAO adopted non-volatile particulate matter standards for aircraft engines, applied to engines built from 2020.</aside>
+            <aside class="notes" data-markdown>Why should we care? First, health. Soot is part of the fine particulate matter, PM2.5, that reaches deep into the lungs. Second, climate. Black carbon absorbs sunlight and is among the strongest warming agents we emit. And third, engineering. In flames and furnaces, soot radiation dominates the heat transfer, and aircraft engines now have particle emission standards.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s01_2e92c8a5004d032064c0ca56ee004a5028beb89cd8ab17082e14b15f08830a04.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** A sketch of a coflow burner and the flame it produces, together with what diffusion and laminar mean. **How to read the figure.** The burner tubes are at the bottom. The red central tube delivers the fuel, ethylene, and the blue tubes deliver air around it. The orange curve is the flame front, where fuel and air meet. The grey bands are the soot, which forms on the fuel side. **What to say.** It is called a diffusion flame because fuel and air arrive separately and mix right at the front, unlike a premixed flame. It is laminar because it is steady, smooth and axisymmetric, and it repeats the same way every time. That is why it can be measured point by point with optical techniques and simulated in detail with codes such as CoFlame. It also contains the same soot processes as the turbulent flames of engines and furnaces. **If asked.** Why ethylene? It is a reference fuel, it forms a fair amount of soot and there is plenty of data to compare with.</aside>
+            <aside class="notes" data-markdown>To study it we use flames like this one, a laminar diffusion flame. [point to the burner] Ethylene comes out of the central tube and air flows around it. It is a diffusion flame because fuel and air arrive separately and meet at the flame front, this orange line. Soot forms on the fuel side. And it is laminar because it is steady and repeats itself every time. That is why we can measure it point by point and simulate it in detail.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s01_9140924dfc1ab5ab7e556ddff2d37125383f081de6e6dab5feabd3e6fa6f8b0b.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The measured soot map of the normal flame, with two regions marked as questions. **How to read the figure.** The horizontal axis is r, the distance from the flame axis in millimetres, and the image is shown on both sides of the axis. The vertical axis is z, the height above the burner in millimetres. The colour is the soot volume fraction f_s in parts per million, from 0 to 8 on the colour bar. The blue circle low in the wing is a possible formation region, and the red one at the tip a possible oxidation region. **What to say.** To design cleaner devices, simulations must say where soot is formed and where it is destroyed, and that is still hard. A map like this one says how much soot there is at each point, but not where it is born or where it dies. That is the question of this talk. **If asked.** What does ppm mean? Parts per million by volume. One ppm is one cubic centimetre of soot per cubic metre of gas.</aside>
+            <aside class="notes" data-markdown>This is the soot measured in one of these flames. On the vertical axis we have the height above the burner, in millimetres, and on the horizontal axis the radius. The colour is the soot volume fraction, in parts per million. It tells us how much there is, but not where it is born or dies. [point to the two circles] Is it formed down here, in the wings? Is it destroyed at the tip? That is the question of this talk.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s02_c362cc15846e33d11adc831477e5f5271535d37ddcdfee37a7ef59b49ae0f231.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The equation with which any combustion simulation transports soot. **How to read the figure.** Each term has its name below it. The first is accumulation, how the soot mass changes in time. The second is convection, soot carried by the gas velocity u. The third is diffusion and thermophoresis, the small motion of the particles relative to the gas. The last one, in violet, is the source term omega_s. Below, Y_s is defined as the soot mass fraction and rho_s as the soot mass per unit volume. **What to say.** This is how soot enters a simulation. The first three terms only move soot from one place to another. The source term is the only one that creates or destroys soot mass. **If asked.** What is thermophoresis? It is the drift of particles from hot regions towards cold ones, pushed by the gas molecules.</aside>
+            <aside class="notes" data-markdown>In a combustion simulation, soot enters through this transport equation. The first three terms only move it from one place to another. The last one, in purple, is the source term, omega s. It is the only one that creates or destroys soot mass.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s02_04cb244d22a2b92cfd58618dcc701d45c130a6d9e7c420dd6b9a86bc26863e51.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The source term split into the processes that make it up. **How to read the figure.** In blue are the processes that add mass, nucleation, surface growth and condensation of aromatics. In red is oxidation by oxygen and by the OH radical, which removes mass. The source term is the sum of all of them, and it is measured in kilograms of soot per cubic metre and per second. **What to say.** Transport is a solved problem. The source term is the closure provided by the soot model. Each process is a sub-model with uncertain parameters, and that is why the available models differ widely. **If asked.** What is surface growth? It is mass added on the particle surface by reactions with gas species, mostly acetylene.</aside>
+            <aside class="notes" data-markdown>That source term is the sum of several processes. Nucleation, surface growth and condensation of aromatics add mass, and oxidation by oxygen and OH removes it. Each process is a sub-model with uncertain parameters, which is why the available models differ so much from each other.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s03_d8c233263b4cefd70aec147d4a5b5da89d979623f7088ccb2692724bc08168bf.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The source term of two hypothetical models along the path of a particle. It is a conceptual sketch, with no data. **How to read the figure.** The horizontal axis is time while the particle rises through the flame. The vertical axis is the source term omega_s. The dashed line is zero, net formation is above it and net oxidation below. The yellow curve is model A and the green one model B. The blue and red shading shows the formation and oxidation of model A. **What to say.** Model A forms soot quickly and then oxidises it strongly. Model B forms it more slowly and oxidises less. These are two very different histories.</aside>
+            <aside class="notes" data-markdown>Let me show you why this is a problem. Two made-up models, just a sketch. The horizontal axis is time as a particle rises through the flame, and the vertical axis is the source term. Model A, in yellow, forms soot quickly and then oxidises it strongly. Model B, in green, forms it more slowly and oxidises less.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s03_2e9187d9012036122f161d39f58479e0196104ca9ccb6115a54abe6604549abe.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The amount of soot produced by each model. **How to read the figure.** The bottom chart uses the same time axis. The vertical axis is the soot volume fraction f_s, which is what is usually measured. The horizontal white line marks the peak, and both curves reach the same value. **What to say.** Both models predict the same peak soot. If we only compare that peak with a measurement, both look correct, although their formation and oxidation are very different. The errors compensate and the peak hides them. That is why it pays to compare the source term directly. **If asked.** Does this happen with real models? Yes, it is common to tune a model to the peak soot and obtain very different formation and oxidation rates across models.</aside>
+            <aside class="notes" data-markdown>But if I look at how much soot they predict, [wait for the animation] both reach the same peak. Compared only against that peak, both look right. The errors in formation and oxidation cancel out, and the peak hides them.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s04_60f3127cef95fc8b08118c4f41f6870960a7c758d3c315f96336fba280dd17fb.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The central question of the talk. **How to read the figure.** There is no figure, only the question and one sentence of context. **What to say.** No instrument directly measures how much soot is formed or destroyed per second at a point of the flame. That rate has to be inferred from what can be measured. That is what we will do.</aside>
+            <aside class="notes" data-markdown>So the question is whether we can measure that source term directly. There is no sensor that does it. We have to infer it from what we can measure.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s05_1f7970fa645577d3ccbac003e82ad0c7c923fd1fc1a2fab2c38226e4ac6d5154.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** Two paths. On top the path of a simulation and below the path of this work. **How to read the figure.** Each box is a step and the arrows give the order. On top, in grey, the model with parameters theta gives the source term, transport is solved with the velocity u and the soot field rho_s comes out at every point r, z. Below, in blue, we start from the reconstructed soot, compute the divergence of the soot flux with the simulated velocity and obtain the source term. The equation summarises that calculation. **What to say.** In a simulation the model comes first and soot is the result. Here we reverse the path. If we know the soot mass at every point and the velocity, the transport equation gives us the source term. This holds in a steady flame where convection dominates. **If asked.** Where does the velocity come from? From a CoFlame simulation of the same flame, so the result is a hybrid estimate.</aside>
+            <aside class="notes" data-markdown>The idea is to walk the path backwards. In a simulation, at the top, the model comes first and the soot is the result. In this work, at the bottom, we start from the reconstructed soot, combine it with the simulated velocity, and the transport equation gives us the source term.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s05_73ae21acedf98b0f5e2177b91c55efb4857bef9c30f003f51ec5dc2ec797cace.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The three fields that must be measured to apply the idea. **How to read the figure.** They are three thumbnails of the normal flame. The first is the soot volume fraction f_s, how much soot there is. The second is the temperature T. The third is the soot maturity, which sets the particle density. In each thumbnail the lighter colour means higher values. **What to say.** To get the soot mass we need how much soot there is and its density, which depends on its maturity. Temperature appears because it is coupled to the optical signal we measure. This is the roadmap for the rest of the talk.</aside>
+            <aside class="notes" data-markdown>For that we need to measure three fields. How much soot there is, its temperature, which is coupled to the optical signal, and its maturity, which sets the density of the particles.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s06_1af7d127c1beacfe33c5ee4400d29af6b8c13e753124e19aa2838f93447cde36.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The sketch of the normal flame, called NDF. **How to read the figure.** The tubes are at the bottom. The red central one delivers ethylene and the blue ones air. The orange curve is the flame front and the grey bands the soot. The yellow dot is a soot particle rising, and it turns red when it reaches the tip, where it is oxidised. **What to say.** In the normal flame the fuel leaves through the centre. Soot forms inside the front and, to get out, it has to cross it. When it crosses the region with oxygen it is oxidised.</aside>
+            <aside class="notes" data-markdown>We work with two flames. In the normal flame, the NDF, ethylene comes out of the centre. Soot forms inside the front and has to cross it to escape. [point to the tip] There, in the region with oxygen, it is oxidised.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s06_6ccd4701afa04298913bed126de9a34a74fb05ca1e3eec215369dee5fa0bada1.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The sketch of the inverse flame, called IDF, next to the normal one. **How to read the figure.** In the inverse flame the central tube delivers air, the red ring ethylene and the outer green ring nitrogen. Soot, in grey, forms outside the orange front. The yellow dot rises away from the oxidiser and leaves the flame without being oxidised, which is why the label says it is emitted. **What to say.** In the inverse flame air leaves through the centre, soot forms outside the front and escapes almost without oxidation. Both flames burn ethylene with the same equivalent carbon consumption, so they are two complementary laboratories. One separates formation well and the other oxidation. **If asked.** What is the outer nitrogen for? It shields the flame from the surrounding air, so that no second flame forms outside.</aside>
+            <aside class="notes" data-markdown>In the inverse flame, the IDF, it is the other way round. Air comes out of the centre and soot forms outside the front, so it escapes almost without being oxidised. Carbon consumption is the same. One shows us formation clearly and the other shows oxidation.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s07_6b27ab672856611d49b2256a0a3d3ec57a440e4cbbe11dc4b4cb4a20315f67a6.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The optical bench and a photograph of the flame under study. **How to read the figure.** The setup is on the left. The LED source emits at 660 and 810 nanometres, the beam crosses the burner and reaches the camera. The photograph of the normal flame is on the right. **What to say.** An LED lights the flame at two colours, red and near infrared, and a camera records the image. The LED is switched on and off, so the camera sees in turn the light that crosses the flame and the light the flame itself emits.</aside>
+            <aside class="notes" data-markdown>This is how we measure. An LED lights the flame at two colours, 660 and 810 nanometres, and a camera records the image. The LED switches on and off. When it is on, the camera sees the light that crosses the flame. When it is off, it sees the light emitted by the hot soot itself.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s07_17a4c9428a7df03f5f745d28aaa9da977045ac59ea89dbb10c0b0054054ceaf7.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** What the camera records and how to go from the image to the local value at each point. **How to read the figure.** First comes the image with the LED on, the transmissivity, which measures how much LED light crosses the flame. Then the image with the LED off, the soot's own emission. The two frames stand for the two wavelengths. Each camera pixel adds up everything along its line of sight. The axisymmetric tomography arrow turns that sum into the local value, shown in the map on the right with r and z in millimetres and the soot volume fraction in parts per million. **What to say.** With the LED on, the camera sees the shadow of the flame, which gives the extinction. With the LED off, it sees the light emitted by hot soot, which carries the temperature. Since the flame is axisymmetric, an Abel inversion recovers the value at each point. In the end each point of the plane gathers four signals, two colours with the LED and two without it.</aside>
+            <aside class="notes" data-markdown>Each pixel adds up everything along its line of sight. Because the flame is axisymmetric, an Abel inversion recovers the value at each point, as in this map. In the end, every point of the flame has four signals, two colours with the LED and two without it.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s08_18b070c0cab1189313ab8f343843e730c026edeb987288364d1529bd6d262b07.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The physical relations between what is measured and the soot properties, and how maturity changes the absorption with colour. **How to read the figure.** There are three equations on the left. The first says that the absorption kappa_abs grows with the soot volume fraction f_s and with the absorption function E, and decreases with the wavelength lambda. The second says that the measured extinction is absorption plus scattering, with alpha the scattering fraction. The third says that the emission is the absorption times the Planck function, which depends on temperature. On the right, the horizontal axis is the wavelength in nanometres, with vertical lines at 660 and 810, the two we measure. The vertical axis is E, in relative units. The orange curve is a mature soot, with beta 0.3 and nearly flat, and the blue one a young soot, with beta 1 and steeper. **What to say.** Absorption depends on how much soot there is and on how well it absorbs. The extinction we measure adds a little scattering, which is taken as zero at 810 nanometres. The emission adds Planck and with it the temperature. By measuring at two colours we obtain the slope beta, which indicates maturity. **If asked.** What is E? The absorption function of the soot refractive index. It measures how well the material absorbs light, and it changes with its composition.</aside>
+            <aside class="notes" data-markdown>How do these signals connect to soot? The absorption grows with the soot volume fraction and with its absorption function E. The extinction we measure adds a little scattering, alpha. And the emission is the absorption times the Planck function, which brings in the temperature. Mature soot, in orange, is almost flat and young soot, in blue, drops more. So two colours give the maturity, beta.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s08_da31891823648e76a8e6abdbd61f2375d5dcdae47ce109c3bf0f2e946b094f69.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The inverse problem at each point of the flame, four measurements and four unknowns. **How to read the figure.** On the left, in white, the four measured signals, extinction and emission at 660 and at 810 nanometres. On the right, in violet, the four unknowns, the soot volume fraction f_s, the temperature T, the maturity beta and the scattering fraction alpha. Each line joins a measurement to an unknown it depends on, and everything is joined to everything. **What to say.** Each signal depends on several unknowns at once, so they cannot be solved one by one. The soot volume fraction and the maturity enter multiplied together, and the Planck function is very sensitive to temperature, so a small error in the signal grows in the result. It is an ill-conditioned inverse problem, and that is why we use a neural network with the physics built in.</aside>
+            <aside class="notes" data-markdown>So at each point we have four signals and four unknowns, the soot volume fraction, the temperature, the maturity and the scattering. Everything is coupled to everything, and Planck amplifies the errors in temperature. It is an ill-conditioned inverse problem. [If asked: E is the absorption function of the soot refractive index, and it changes with composition.]</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s09_23619e27b52a81e3789b7da78576b33e43f5bc06905f7b8f84816eb5fa9abca0.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The neural network that represents the unknown fields. **How to read the figure.** On the left, in blue, the inputs r and z, the position of a point in the flame. The grey circles are the neurons of the hidden layers. On the right, in violet, the four outputs T, beta, f_s and alpha. The travelling dots show how information flows from input to output. **What to say.** The network receives a position and returns the four soot properties at that point. The fields are thus represented as continuous functions of the coordinates, without a fixed grid.</aside>
+            <aside class="notes" data-markdown>To solve it we use a neural network. It takes a position in the flame, r and z, and returns the four properties at that point. So the fields become continuous functions.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s09_6ea1395b59ab870536bd7164b55ffd4d5d18cd20e731690f437f36a3855ac239.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** How the network is trained without training data. **How to read the figure.** The arrow takes the network outputs to the orange box, the optical model, which computes the extinction and emission that would be expected. Those signals are compared with the measurement in the loss box. The curved violet arrow returns the error to the network and updates its weights, and the travelling pulse shows one training step. The text on the right gives the uncertainty. **What to say.** The network proposes fields, the optical model turns them into signals and the loss measures how far they are from the measurement. The gradient corrects the network and the loop repeats. There is no labelled dataset, the physics acts as the teacher. It is a physics-informed network, a PINN, with an algebraic optical residual instead of a differential equation. We repeat the inversion a hundred times and the spread gives the uncertainty, below 2 % in temperature and below 30 % in soot volume fraction. **If asked.** Why is the uncertainty of f_s larger? Because f_s and maturity enter multiplied together and partly compensate each other, as we saw on the previous slide.</aside>
+            <aside class="notes" data-markdown>We have no labelled data. Physics is the teacher. The network proposes the fields, the optical model computes the signals, and the mismatch with the measurement corrects it. We repeat everything a hundred times to estimate the uncertainty, below 2 percent in temperature and below 30 percent in soot volume fraction.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s10_038e84c2041679a9903a8fb3c61579a4c26c2b4a970d6f34ffc17e214d0524fa.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The reconstructed fields of the normal flame. **How to read the figure.** It is a map split by the symmetry axis, the vertical line in the middle. The left half shows the soot volume fraction f_s in parts per million, with its colour bar on top. The right half shows the temperature in kelvin, with its own bar. The horizontal axis is r in millimetres and the vertical one the height z above the burner, also in millimetres. **What to say.** In the normal flame soot concentrates in the wings, forming a ring, and reaches about 8 ppm. The soot temperature goes from about 1650 to 1950 kelvin.</aside>
+            <aside class="notes" data-markdown>This is the result in the normal flame. Left of the axis, the soot volume fraction, and right of the axis, the temperature. Soot forms a ring in the wings and reaches about 8 ppm. The temperature goes from about 1650 to 1950 kelvin.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s10_1c5af703fc98375446fad2d336af794156242265f4704c50312d9de455e81975.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The same fields for the inverse flame, next to the normal one. **How to read the figure.** The format is the same, soot on the left and temperature on the right of each map. Watch the colour bars. In the inverse flame the soot scale only reaches 1.15 ppm, seven times less than in the normal one, and the temperature scale goes from 1200 to 1800 kelvin. **What to say.** The inverse flame has about seven times less soot, around 1.1 ppm, and it is colder, between 1300 and 1700 kelvin. The soot also sits outside the front. All of this with the same carbon consumption, so the difference comes from where and how soot forms.</aside>
+            <aside class="notes" data-markdown>And this is the inverse flame. Look at the colour bars. It has about seven times less soot, around 1.1 ppm, and it is colder, between 1300 and 1700 kelvin. All with the same carbon consumption.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s11_6d4e222a67c5e669613a52e155e68018a66ff55beeb435a6bd3eef7048767610.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The soot maturity in both flames, expressed as the graphitic fraction. **How to read the figure.** Both maps use the same axes, r and z in millimetres. The colour is the graphitic fraction f_G, dimensionless, from 0 to 0.3 on the vertical bar. The faint grey marks where there is soot but little graphitic fraction. The organic fraction is the rest, since both add up to one. **What to say.** Young soot is organic and mature soot becomes graphitic, closer to graphite. In the normal flame soot matures in the wings, where it passes through the hottest regions. In the inverse flame it stays young and organic almost everywhere. **If asked.** How is f_G obtained? From the slope beta, by representing the soot refractive index as a mixture of reference indices for graphitic and organic carbon, following the model of Bescond and co-workers.</aside>
+            <aside class="notes" data-markdown>The network also gives us the maturity, as a graphitic fraction. Young soot is organic and mature soot is closer to graphite. In the normal flame it matures in the hot wings. In the inverse flame it stays young almost everywhere.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s11_a7994a1e86fa55875804b33c11e49ca6005bee3defcf4e5439dc0f9e70f5385f.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** How composition turns into the material density and into the soot mass. **How to read the figure.** The maps switch to the material density rho_pp, in kilograms per cubic metre, from 1300 to 1550 on the new bar. The first equation mixes the density of graphitic and organic carbon according to their fractions. The second says that the soot mass per unit volume, rho_s, is that density times the soot volume fraction. **What to say.** Mature soot is denser than young soot. From the composition we obtain the particle density, and multiplying it by the soot volume fraction we get the soot mass, which is exactly the quantity the equation transports. **If asked.** Where do the densities come from? They are reference values from the literature, 1320 kilograms per cubic metre for organic carbon and 1740 for graphitic carbon.</aside>
+            <aside class="notes" data-markdown>And maturity sets the density of the particles. Mature soot is denser. Multiplying that density by the soot volume fraction gives us the soot mass, which is exactly what the equation transports.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s12_cc71074c17bf9b427cf691be22bfb6e13d0894c66a81e2dc3132c3b23dfda07b.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The soot transport equation read backwards to isolate the source term ωₛ. **How to read the figure.** In the first equation the time derivative is crossed out because the flame is steady. The term with jₛ, the flux due to Brownian diffusion and thermophoresis, is also crossed out because it is neglected. What remains is that ωₛ, in purple, equals the divergence of the soot mass flux ρₛu, in yellow. The second equation is the same divergence written in cylindrical coordinates, with r radial and z vertical, because the flame is axisymmetric. ρₛ is the soot mass per unit volume and u_r, u_z are the velocity components. **What to say.** If we know how much soot there is at each point and how fast it moves, we can compute how much is created or destroyed there. It is a mass balance on a small volume, what leaves minus what enters. **If asked** about thermophoresis. It can bias the radial component locally near the flame front, but the source integrated over each section does not change, because the radial flux integrates to zero.</aside>
+            <aside class="notes" data-markdown>Now we read the equation backwards. The flame is steady and we neglect diffusion, so the source term is the divergence of the soot mass flux. With axial symmetry it becomes this expression in r and z. It is a balance, what goes out minus what comes in.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s12_0edd92973b97fedce4f7f1b1dd4609269e1895b671f42dd1c20f89aa76218704.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The three ingredients of the calculation and its result. **How to read the figure.** These are four maps of half of the normal flame. The vertical axis is the height z above the burner, from 10 to 55 mm, and the horizontal axis is the radius r, from the flame axis outwards. The first map is the density of the particulate material ρₚₚ, in kilograms per cubic metre, between 1330 and 1430, which comes from the maturity. The second is the measured soot volume fraction fₛ, in parts per million, from 0 to 8. The third is the magnitude of the velocity simulated with CoFlame, in metres per second, between 0.5 and 1.5. The white dots are particles that follow this flow upwards. The fourth map is the result, ωₛ in kilograms per cubic metre per second, with blue for net formation and red for net oxidation. **What to say.** We multiply density by volume fraction to get the soot mass, transport it with the velocity and take the derivative. The soot comes from the experiment and only the velocity comes from the simulation. No soot submodel enters the calculation, which is why this is a measurement of the source term and not a prediction. **If asked** why a simulated velocity is used. We do not measure the velocity. It is computed by CoFlame, a code validated for laminar flames, and the soot, which is the uncertain part, is measured.</aside>
+            <aside class="notes" data-markdown>These are the ingredients. The density, from the maturity, times the measured soot volume fraction, times the simulated velocity. [wait for the animation] And the result is the source term, blue where soot is formed and red where it is oxidised. No soot model enters the calculation.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s13_207442fa5244b39dca37ea48a9869535f308861ea5708df547ae07c806c1185a.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The normal flame with two fields side by side. **How to read the figure.** The vertical axis is the height z above the burner in millimetres, from 10 to 55. The horizontal axis is the radius r in millimetres, and zero is the flame axis. The left half shows fₛ, the soot volume fraction in parts per million, with the upper colour bar, from 0 to 8. The right half shows ωₛ in kilograms per cubic metre per second, with the lower bar, from minus 1 to 1. Blue is net formation, red is net oxidation and white is close to zero, where soot is only transported. Because the flame is axisymmetric, each half represents the whole flame. **What to say.** On the left we see how much soot there is and on the right what is happening to it. They are two different questions, and the second one is what matters to a model.</aside>
+            <aside class="notes" data-markdown>Here is the normal flame with both fields. On the left, how much soot there is, and on the right, what is happening to it. Blue is net formation, red is net oxidation, and white is where soot is only transported.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s13_422284ae9a127e37f5fba239519b4f6034657cf1b65dca4df53e2da7a8a58a9c.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** Where soot is formed and where it is oxidised, with particles following the flow. **How to read the figure.** The blue circle marks the lower wings, near r equal to 2.7 mm and z equal to 20 mm, where formation dominates. The red circle marks the upper outer region, towards the tip, where oxidation dominates. The moving dots are soot particles carried by the simulated velocity. They turn blue where soot forms and red where it is oxidised. **What to say.** Soot is born low, on the wings, and consumed higher up. The concentration peak, 8.1 ppm near z equal to 30 mm, sits exactly where formation and oxidation balance, not where most soot is formed. **If asked** what oxidises soot. Molecular oxygen and the OH radical, in the outer region reached by the air.</aside>
+            <aside class="notes" data-markdown>[point to the blue circle] Soot is born low, in the wings and at the base. [point to the red circle] And it is consumed higher up, in the outer region towards the tip. And the soot peak, 8.1 ppm near 30 millimetres, sits exactly where formation and oxidation balance, not where most soot is formed. [If asked: it is oxidised by molecular oxygen and the OH radical, in the region the air reaches.]</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s13_e7497f2b5c6e18cb9611352c7aaddf76c64966dbc0aed889f498a1c501cf4e0c.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The same ωₛ field revolved about the axis and seen in perspective. **How to read the figure.** The colour scale is the same, blue for formation and red for oxidation. The view tilts slowly to show the three-dimensional shape. There are no new data, it is the same measurement revolved. **What to say.** In three dimensions, formation is a ring at the base of the flame and oxidation is a layer covering the upper part and the tip. This is what the source term that a CFD simulation must reproduce looks like.</aside>
+            <aside class="notes" data-markdown>If we rotate the field around the axis, formation is a ring at the base and oxidation covers the upper part. This is the source term that a simulation should reproduce.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s14_6d8c5abd585bb963d1753dca471a3f6a7f4e95808dc886e29b9a68ca032f8bf5.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The soot and the net source summed at each height of the normal flame. **How to read the figure.** The horizontal axis is the height z in millimetres, from 0 to 55. The yellow curve is Bₛ, the soot integrated over the section, in ppm times square millimetres, with its scale on the left, from 0 to 180. The blue curve is αₛ, the integrated net source, in units of 10⁻⁵ kilograms per metre per second, with its scale on the right, from minus 2 to 2. The grey line is zero. The formulas on the right define both integrals, which sum over rings of radius r. The vertical cursor climbs the flame. Its dot on the blue curve is blue where there is net formation and red where there is net oxidation. **What to say.** The total soot grows, peaks near 28 mm and then disappears. The net source is positive low in the flame, crosses zero exactly at the soot peak and becomes negative higher up. **If asked** why integrate. It gives a single number per height, easy to compare with models and with other flames, and it reduces local noise.</aside>
+            <aside class="notes" data-markdown>To compare heights, we add up each cross-section. The yellow curve is the total soot and the blue curve is the net source. The net source is positive low in the flame, crosses zero right at the peak and becomes negative higher up.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s14_7934ca7ede5c3a733fee53cf54e0bcfb9bb29d9d0aa64874c6d5b645f0945016.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** Two heights with the same amount of soot but opposite dynamics. **How to read the figure.** The horizontal yellow line marks Bₛ equal to 100 ppm times square millimetres, which the curve crosses twice, near z equal to 17 mm and 40 mm. The arrows drop to the blue curve and read αₛ at those heights, positive at the first and negative at the second. The text on the right gives the values. **What to say.** At 17 mm soot is being formed and at 40 mm it is being oxidised, at similar rates in magnitude. A concentration measurement would say that both heights are the same. The source term tells them apart, and that is exactly what a model must get right.</aside>
+            <aside class="notes" data-markdown>Look at these two heights, 17 and 40 millimetres. They have the same amount of soot. But at the first one soot is being formed, and at the second one it is being oxidised. A concentration measurement would say they are the same. The source term tells them apart.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s15_e82c538ee00a73e3f4926daf8bd6be934bb7971b775f730582fe78add41e1185.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The inverse flame, in the same format as the normal flame. **How to read the figure.** The vertical axis is the height z in millimetres, from 0 to 55, and the horizontal axis is the radius r in millimetres, up to 8. The left half is fₛ in ppm, with a scale from 0 to 1.15, about seven times lower than in the normal flame. The right half is ωₛ in kilograms per cubic metre per second, with a scale from minus 0.5 to 0.5, also lower. Blue is formation and red is oxidation. The particles follow the simulated velocity and are coloured by ωₛ. **What to say.** In the inverse flame the air comes out through the centre and the fuel outside it, so soot forms away from the oxidising region. Formation is concentrated near the base and there is almost no oxidation. The particles turn blue and hardly ever turn red.</aside>
+            <aside class="notes" data-markdown>In the inverse flame the scales are much smaller. Soot forms far from the oxidising region, near the base, and is hardly oxidised. The particles turn blue and almost never turn red.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s15_68f8d92d2da2803f9196b5d7ca6d4130177dacff0e710a8fd722391df34a6c0d.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The net source integrated at each height in both flames. **How to read the figure.** The horizontal axis is the height z in millimetres and the vertical axis is αₛ in units of 10⁻⁵ kilograms per metre per second. The blue curve is the inverse flame and the grey one the normal flame. Above zero there is net formation and below it net oxidation. **What to say.** The integrated formation is of the same order in both flames. The difference is in the oxidation, which is 22 percent of the formation in the inverse flame and 104 percent in the normal one. Above about 30 mm the net source of the inverse flame is almost zero and the remaining soot leaves the measured domain. **If asked** why two flames. A flame with almost no oxidation lets us fit the formation first, and the normal flame then pins down the oxidation.</aside>
+            <aside class="notes" data-markdown>When we integrate, formation is of the same order in both flames. The difference is oxidation, 22 percent of formation in the inverse flame and 104 percent in the normal one. That is why one flame helps us fit formation and the other fits oxidation.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s16_fefb5ca62dca1b0b1bf51859d08c2ec6cbb5561bffae452c9821e67a88941769.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** Three soot particles followed along the flow in the normal flame, and what they experience on the way. **How to read the figure.** On the left is the map of fₛ in ppm, from 0 to 8, with the height z in millimetres on the vertical axis and the radius r in millimetres on the horizontal axis. Each particle appears where its measured data begin. The green one starts at z equal to 10 mm, the yellow one at 18 mm and the blue one at 21 mm, and they rise with the simulated velocity leaving a trail in their colour, blue near the axis, yellow midway and green on the outside. On the right there are three plots against the time t in milliseconds since the start of its measured history, from 0 to about 28 ms. At the top is the temperature T in kelvin, between 1650 and 1890. In the middle, the graphitic fraction f_G, dimensionless, which indicates maturity. At the bottom, ωₛ, with a blue band for formation and a red band for oxidation. Each curve has the colour of its particle. **What to say.** A particle crosses the measured region in about 25 to 28 milliseconds. In that time its temperature changes, it matures and it goes from being formed to being oxidised. Along a trajectory, soot is first formed and then oxidised. **If asked** how the trajectories were computed. By integrating the CoFlame velocity field with a 0.2 ms step and reading the reconstructed fields at each point.</aside>
+            <aside class="notes" data-markdown>Now let us follow three soot particles through the normal flame. Each one starts where our measured data begin. [wait for the animation] On the right, over time, temperature at the top, maturity in the middle and the source term at the bottom, with blue for formation and red for oxidation. In 25 to 28 milliseconds, each particle heats up, matures and goes from being formed to being oxidised.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s16_e49b8905e6a99b4564ed596bdae7aabf9b786e161ad758f45fb5ec4716d2a67a.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** Why this history matters for modelling. **How to read the figure.** The blue box gathers the three plots, temperature, maturity and source term along the flight time. **What to say.** A soot model takes the temperature and the gas chemistry and must predict how much soot is formed and oxidised at each instant. These curves are exactly that, but measured. With them we can compare directly the rates the model computes, and not only the final amount of soot. That is what we use in the calibration, which I present next.</aside>
+            <aside class="notes" data-markdown>And this is what matters for modelling. A soot model receives the temperature and the gas chemistry, and it has to predict how much soot is formed and oxidised at every instant. These curves are exactly that, but measured. With them we can calibrate a model, which is what I show you next.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s17_36ecfdeacac16e1e4aa1f13b7949d770b40fe361d700add8cb58ca7bdc8d013f.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** How we use the measured source term to fit a soot model. This is work in progress. **How to read the figure.** The diagram reads from left to right. θ are the parameters of the soot model, for nucleation, growth and oxidation. The differentiable solver solves the flame with those parameters and returns the model source term, ωₛ,mod. That result is compared with the measured source term, the map on the right. The purple arrow is the adjoint gradient, which tells how to change θ to reduce the difference. The equation below is the objective, minimising the difference between model and experiment divided by σ_ω, the uncertainty of the inversion estimated with the ensemble. **What to say.** Instead of fitting the model so that it gets the amount of soot right, we fit it so that it gets right where and how much soot is formed and destroyed. Each point is weighted by how much we trust the measurement. **If asked** which model. The two-equation model of Leung, Lindstedt and Jones with oxidation by OH, solved in JAX with an adjoint gradient.</aside>
+            <aside class="notes" data-markdown>This part is work in progress. We take a soot model with parameters theta, solve it with a differentiable solver and compare its source term with the measured one. The adjoint gradient tells us how to change the parameters. And each point is weighted by the uncertainty of the measurement.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s17_b070e3e144065d932079829c35b0698d6fa839ee8737babacb2ea66c69aa8874.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** What we learned by testing the method on synthetic twins, that is, simulated flames in which we know the true parameters. **How to read the figure.** The three results are in the right-hand column. **What to say.** Only three pre-exponential parameters can be identified with these data. Using first the inverse flame and then the normal one recovers the parameters, and a single flame leaves a 20 percent error. Adding the source term to the mass field reduces the uncertainty by 9 to 24 percent. **If asked** what identifiable means. That the data are enough to pin down that parameter without another one being able to compensate for it.</aside>
+            <aside class="notes" data-markdown>We tested it on synthetic twins, simulated flames where we know the answer. Only three parameters can be identified. Using the inverse flame and then the normal one recovers them, while a single flame leaves a 20 percent error. And adding the source term reduces the uncertainty by 9 to 24 percent.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s18_6d9fad969f57aa80c25d0025fb912d3f4d83ac3be083031970d40c3065e447b2.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** A preliminary result in the inverse flame, the measured source term against the one predicted by the model with the published parameters. **How to read the figure.** These are maps of half of the flame, with the height z in millimetres on the vertical axis and the radius r in millimetres on the horizontal axis. The colour is ωₛ in kilograms per cubic metre per second, with a scale from minus 0.4 to 0.4, blue for formation and red for oxidation. On the left is the experiment and in the middle the model, with the same colour scale. **What to say.** The experiment shows intense formation followed by oxidation. With the same scale the model is almost blank, which means it predicts much lower rates.</aside>
+            <aside class="notes" data-markdown>This is a preliminary result in the inverse flame. On the left, the measured source term, and in the middle, the model with its literature parameters, on the same scale. The model is almost blank.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s18_0e4436637c142295ed958ae4119b1c2ae27f0d805e8f6969fb91a20d14b3fa9f.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The same model multiplied by ten so that its shape can be seen. **How to read the figure.** The third map is the model times ten, with the same colour scale. The three points on the right summarise the comparison. **What to say.** Multiplied by ten the shape appears, a smooth band where the experiment shows an intense region. The model underestimates ωₛ by about a factor of ten, places the source incorrectly, with a correlation of 0.29, and its soot mass comes from nucleation and not from surface growth. That difference is what the calibration must correct. **If asked** whether the result is final. No. It is preliminary and only for the inverse flame, and the calibration is still converging.</aside>
+            <aside class="notes" data-markdown>If we multiply it by ten, we can see its shape. The model underestimates the source term by about a factor of ten, puts it in the wrong place, with a correlation of 0.29. That discrepancy is what the calibration has to fix. [If asked: it is preliminary, only for the IDF, and the calibration is still converging.]</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s19_3255cfa474cd0d467c2336ea99f90f155de62d436ae7d7a42c4d9d511980f126.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The first two conclusions, each with a small data thumbnail. **How to read the figure.** Each thumbnail is half a flame with fₛ on the left and ωₛ on the right, for the normal and the inverse flame. **What to say.** First, the soot concentration does not determine the local formation or oxidation rate, and the peak of fₛ sits where the two compensate. Second, with the reconstruction of fₛ, temperature and maturity, plus the transport equation and the velocity, we obtain the source term in both flames as a hybrid estimate.</aside>
+            <aside class="notes" data-markdown>To close, three ideas. The first is that the soot concentration does not tell us where soot is formed or oxidised, and the peak appears where both processes balance. The second is that with the soot volume fraction, temperature and maturity, plus the transport equation, we obtain the source term in both flames.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s19_03922f009a383f801f6b31f50ca28f0d22ea29a227d92883c37922fce106636d.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The third conclusion. **How to read the figure.** The thumbnail shows the experiment against the model times ten in the inverse flame. **What to say.** Third, that source term is the variable the models predict. The ongoing calibration shows that the literature model does not reproduce it, and that the two flames together make its parameters identifiable.</aside>
+            <aside class="notes" data-markdown>And the third is that this source term is exactly what models predict. The ongoing calibration already shows that the literature model does not reproduce it.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
           data-background-video="presentation_en_assets/s20_f34ea694afa620ab9b07cb93c937e363bb322a04d168a1a8e17c7ca2ceb3f977.mp4"
           >
-            <aside class="notes" data-markdown>**What it shows.** The closing slide, with the paper reference and the funding. The image is the normal laminar diffusion flame seen in perspective, slowly rotating. **What to say.** Thank you for your attention. The paper is published in the Proceedings of the Combustion Institute. I am happy to take your questions.</aside>
+            <aside class="notes" data-markdown>Thank you very much for your attention. I am happy to take your questions.</aside>
         </section>
       </div>
     </div>

@@ -12,6 +12,7 @@ interface Props { lang: Lang }
 const { lang } = Astro.props;
 const es = lang === 'es';
 const base = '/teaching/iln222/clase05-factor-forma/';
+const base6 = '/teaching/iln222/clase06-colectores/';
 const T = es
   ? {
       title: 'Gestión Energética II', eyebrow: 'Docencia · ILN222 · UTFSM · 2026',
@@ -20,6 +21,9 @@ const T = es
       l1: 'Factor de forma. Intercambio de radiación entre superficies',
       l1Text: 'Definición del factor de forma, ángulo sólido e intensidad, deducción completa desde la ley de Lambert, reciprocidad, regla de la suma, superposición y simetría, intercambio entre superficies negras y dos ejemplos resueltos, un domo hemisférico y un cortafuego.',
       open: 'Abrir la presentación', sala: 'Versión para proyectar, fondo claro', pdf: 'PDF con un estado por página', widget: 'Ejemplo interactivo, elemento frente a un disco',
+      l6: 'Colectores solares térmicos',
+      l6Text: 'El colector plano como intercambiador de calor, el recurso solar sobre una superficie inclinada, sistemas de circulación natural y forzada, el balance de energía de Hottel y Whillier con estancamiento y extracción, y la eficiencia instantánea con la comparación de tecnologías.',
+      widget6: 'Ejemplo interactivo, eficiencia de tres colectores',
       howH: 'Cómo verla',
       how: 'Es una presentación animada en español. Las flechas o la barra espaciadora avanzan, la tecla F activa la pantalla completa, la tecla S abre la vista de orador con las notas y la tecla O muestra todos los estados. Funciona mejor en un computador.',
       refH: 'Bibliografía', ref: 'Y. A. Çengel y A. J. Ghajar, Transferencia de calor y masa, capítulos 12 y 13.',
@@ -32,6 +36,9 @@ const T = es
       l1: 'View factors. Radiation exchange between surfaces (in Spanish)',
       l1Text: 'Definition of the view factor, solid angle and intensity, a full derivation from Lambert’s law, reciprocity, the summation rule, superposition and symmetry, exchange between black surfaces and two worked examples, a hemispherical dome and a fire break.',
       open: 'Open the presentation', sala: 'Projection version, light background', pdf: 'PDF, one state per page', widget: 'Interactive example, element facing a disk',
+      l6: 'Solar thermal collectors (in Spanish)',
+      l6Text: 'The flat-plate collector as a heat exchanger, the solar resource on a tilted surface, natural and forced circulation systems, the Hottel–Whillier energy balance with stagnation and heat extraction, and instantaneous efficiency with a comparison of technologies.',
+      widget6: 'Interactive example, efficiency of three collectors',
       howH: 'How to view it',
       how: 'This is an animated presentation in Spanish. The arrow keys or the space bar move forward, F turns on full screen, S opens the speaker view with the notes and O shows every state. It works best on a computer.',
       refH: 'Reference', ref: 'Y. A. Çengel and A. J. Ghajar, Heat and Mass Transfer, chapters 12 and 13.',
@@ -48,8 +55,9 @@ const T = es
   <section class="section frame">
     <div class="row">
       <h2 class="row__label nonum">{T.lectures}</h2>
+      <div>
       <article class="lecture">
-        <p class="meta">Clase 05 · 2026-09-29</p>
+        <p class="meta">Clase 05</p>
         <h3><a href={url(base)}>{T.l1}</a></h3>
         <p class="desc">{T.l1Text}</p>
         <p class="links">
@@ -59,6 +67,18 @@ const T = es
           <a class="more" href={url(base + 'interactive/factor_forma_disco.html')}>{T.widget}</a>
         </p>
       </article>
+      <article class="lecture">
+        <p class="meta">Clase 06</p>
+        <h3><a href={url(base6)}>{T.l6}</a></h3>
+        <p class="desc">{T.l6Text}</p>
+        <p class="links">
+          <a class="btn" href={url(base6)}>{T.open}</a>
+          <a class="more" href={url(base6 + 'sala/')}>{T.sala}</a>
+          <a class="more" href={url(base6 + 'clase06_colectores.pdf')}>{T.pdf}</a>
+          <a class="more" href={url(base6 + 'interactive/eficiencia_colector.html')}>{T.widget6}</a>
+        </p>
+      </article>
+      </div>
     </div>
   </section>
 
@@ -81,6 +101,7 @@ const T = es
 </Base>
 
 <style>
+  .lecture + .lecture { margin-top: var(--s-6); padding-top: var(--s-5); border-top: 1px solid var(--rule); }
   .lecture h3 { font-size: var(--step-2); margin-top: var(--s-1); }
   .lecture h3 a { color: var(--ink); text-decoration: none; }
   .lecture h3 a:hover { color: var(--accent); }
