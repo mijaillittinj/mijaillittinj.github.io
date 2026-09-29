@@ -19,7 +19,7 @@ const T = es
       lectures: 'Clases animadas',
       l1: 'Factor de forma. Intercambio de radiación entre superficies',
       l1Text: 'Definición del factor de forma, ángulo sólido e intensidad, deducción completa desde la ley de Lambert, reciprocidad, regla de la suma, superposición y simetría, intercambio entre superficies negras y dos ejemplos resueltos, un domo hemisférico y un cortafuego.',
-      open: 'Abrir la presentación', pdf: 'PDF con un estado por página', widget: 'Ejemplo interactivo, elemento frente a un disco',
+      open: 'Abrir la presentación', sala: 'Versión para proyectar, fondo claro', pdf: 'PDF con un estado por página', widget: 'Ejemplo interactivo, elemento frente a un disco',
       howH: 'Cómo verla',
       how: 'Es una presentación animada en español. Las flechas o la barra espaciadora avanzan, la tecla F activa la pantalla completa, la tecla S abre la vista de orador con las notas y la tecla O muestra todos los estados. Funciona mejor en un computador.',
       refH: 'Bibliografía', ref: 'Y. A. Çengel y A. J. Ghajar, Transferencia de calor y masa, capítulos 12 y 13.',
@@ -31,7 +31,7 @@ const T = es
       lectures: 'Animated lectures',
       l1: 'View factors. Radiation exchange between surfaces (in Spanish)',
       l1Text: 'Definition of the view factor, solid angle and intensity, a full derivation from Lambert’s law, reciprocity, the summation rule, superposition and symmetry, exchange between black surfaces and two worked examples, a hemispherical dome and a fire break.',
-      open: 'Open the presentation', pdf: 'PDF, one state per page', widget: 'Interactive example, element facing a disk',
+      open: 'Open the presentation', sala: 'Projection version, light background', pdf: 'PDF, one state per page', widget: 'Interactive example, element facing a disk',
       howH: 'How to view it',
       how: 'This is an animated presentation in Spanish. The arrow keys or the space bar move forward, F turns on full screen, S opens the speaker view with the notes and O shows every state. It works best on a computer.',
       refH: 'Reference', ref: 'Y. A. Çengel and A. J. Ghajar, Heat and Mass Transfer, chapters 12 and 13.',
@@ -54,6 +54,7 @@ const T = es
         <p class="desc">{T.l1Text}</p>
         <p class="links">
           <a class="btn" href={url(base)}>{T.open}</a>
+          <a class="more" href={url(base + 'sala/')}>{T.sala}</a>
           <a class="more" href={url(base + 'clase05_factor_forma.pdf')}>{T.pdf}</a>
           <a class="more" href={url(base + 'interactive/factor_forma_disco.html')}>{T.widget}</a>
         </p>
