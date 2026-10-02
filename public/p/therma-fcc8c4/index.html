@@ -1,0 +1,1273 @@
+<!doctype html>
+<html>
+  <head><meta name="robots" content="noindex, nofollow, noarchive">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>THERMA · Lección, MGA USM</title>
+
+    <link rel="stylesheet" href="lib/reveal.js/5.2.0/reveal.min.css">
+    <link rel="stylesheet" href="lib/reveal.js/5.2.0/theme/white.min.css">
+
+    <!-- Theme used for syntax highlighting of code -->
+    <!-- <link rel="stylesheet" href="lib/css/zenburn.css"> -->
+    <!-- <link rel="stylesheet" href="index.css"> -->
+
+    <style>
+      :root {
+        --bg: #FFFFFF;
+        --fg: #111418;
+        --accent: #1F5FA8;
+        --dim: #5E6A78;
+      }
+      html, body, .reveal { background: var(--bg); }
+      .reveal .slides section { height: 100%; }
+      /* thin progress bar in the presentation accent colour */
+      .reveal .progress { height: 4px; color: var(--accent); background: rgba(0,0,0,0.08); }
+      /* discreet state counter, hidden in the overview.  It sits in the top
+         right corner, which every slide leaves empty, because the bottom of
+         the frame already carries the section name and the source note. */
+      #deck-counter {
+        position: fixed; top: 12px; right: 18px; z-index: 30;
+        font-family: "Latin Modern Roman", Georgia, "Times New Roman", serif;
+        font-size: 15px; color: var(--dim); letter-spacing: 0.2px;
+        pointer-events: none; opacity: 0.8;
+      }
+      .reveal.overview #deck-counter { display: none; }
+      /* keep the arrows unobtrusive, the talk is driven by the keyboard */
+      .reveal .controls { opacity: 0.25; }
+      .reveal .controls:hover { opacity: 0.8; }
+    </style>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s00_155671a370381066cbbaa2da49b75dd4710a008f2899e1f2663dbb4cb82f79d9.mp4"
+          data-background-video-muted
+          >
+            <aside class="notes" data-markdown>Bienvenidos. Hoy vamos a decidir cómo mantener un intercambiador de calor del que depende el agua de una mina de cobre. En gris tienen las tres decisiones del día, cuándo limpiarlo, cómo recuperarlo más rápido cuando falla y cuándo conviene comprar una segunda unidad. El caso es ficticio, la planta Bahía Clara en la costa de Antofagasta, y sus cifras son supuestos didácticos. Primero les cuento el caso y los conceptos, y después lo resuelven en grupos con la herramienta THERMA.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s00_5653c7fb3f0dcb5b7acfd4fca5340e7de978c439f05da07d419e736e329cc899.mp4"
+          >
+            <aside class="notes" data-markdown>Abran esta dirección, mijaillittinj punto github punto io barra mga guion therma, en el computador que el grupo va a usar después. Ahí está esta misma lección, con una explicación y una pregunta de comprobación bajo cada diapositiva, y después el caso. (pausa) Espero a que cada grupo la tenga abierta. Partamos por el contexto, de dónde sale el agua que usa la minería del cobre.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s01_7a096de1a6e99f630a3f11a8cef8867420f914aa7fddfa74dd91b52f0c22eb81.mp4"
+          >
+            <aside class="notes" data-markdown>Partamos por el contexto. Las grandes faenas de cobre de Chile están en el desierto y en altura, donde el agua dulce escasea. Recorran el perfil de izquierda a derecha. A la izquierda, en azul, el océano Pacífico y una planta costera que desaliniza el agua y la impulsa. La línea azul segmentada es la tubería que sube por el desierto hasta la faena, arriba a la derecha. Es un esquema, sin distancias ni alturas del caso. (pausa) ¿Qué necesita esa tubería para que el agua suba?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s01_eb045d3e312b0e8a0471983738d46f25b31c3f882527d9c146cf6f114a38eeef.mp4"
+          >
+            <aside class="notes" data-markdown>Cada vez más agua viene del mar. Cochilco proyecta que el agua de mar pase del 40,7 por ciento del consumo hídrico de la minería del cobre en 2024 al 67,6 por ciento en 2034. Son las dos barras azules, y es una proyección para el sector, cada faena tiene su propia situación. Lo importante para hoy está abajo. Esa agua se trata en la costa y se bombea cuesta arriba, así que los equipos que mantienen funcionando la impulsión también sostienen la producción. Un activo pequeño puede limitar uno grande. Ahora acerquémonos a una planta concreta de esa costa, Bahía Clara.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s02_179481af27a6d81faa8eaad3a86585aa436249762757fdc13cdd7cff861e59fb.mp4"
+          data-autoslide="3450.0"
+          >
+            <aside class="notes" data-markdown>Así podría verse Bahía Clara. Es una planta ficticia y el dibujo es un esquema, sin escala. Las flechas muestran hacia dónde corre el agua. El tubo azul grueso es la captación, que trae agua de mar hasta la planta desaladora, y la captación más pequeña, abajo, es el agua de mar para enfriar. El agua desalada sale de las membranas por el tubo gris hacia la estación de impulsión, la del techo azul, desde ella la tubería sube por el desierto hasta la faena en altura, y la salmuera vuelve al mar por la descarga. (pausa) Si la estación de impulsión se detiene, ¿qué le pasa a la faena? Vamos a acercarnos a esa estación.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s02_8691cc3eee33e9b8e6fefa0e7b00f557e5be691f7393c96c61e7c6c06137a523.mp4"
+          data-background-video-loop
+          >
+            <aside class="notes" data-markdown>Así podría verse Bahía Clara. Es una planta ficticia y el dibujo es un esquema, sin escala. Las flechas muestran hacia dónde corre el agua. El tubo azul grueso es la captación, que trae agua de mar hasta la planta desaladora, y la captación más pequeña, abajo, es el agua de mar para enfriar. El agua desalada sale de las membranas por el tubo gris hacia la estación de impulsión, la del techo azul, desde ella la tubería sube por el desierto hasta la faena en altura, y la salmuera vuelve al mar por la descarga. (pausa) Si la estación de impulsión se detiene, ¿qué le pasa a la faena? Vamos a acercarnos a esa estación.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s02_e1c7037f082b37aa47504bfd9327437561e65033baf36b012a7dda43e989aad2.mp4"
+          data-autoslide="5450.0"
+          >
+            <aside class="notes" data-markdown>Nos acercamos a la estación de impulsión. Las flechas grises son el agua desalada, que sale del bastidor de membranas, entra a las bombas grandes y sube por la tubería hacia la faena. Esa agua va siempre por el tubo gris y nunca pasa por el E-101. Los motores, los variadores y el aceite de estas bombas se calientan al operar, y ese calor hay que sacarlo. Veamos cómo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s02_a9379e2d74871792e18972efb5b349d95852483c934088ddc20eec700984e953.mp4"
+          data-background-video-loop
+          >
+            <aside class="notes" data-markdown>Nos acercamos a la estación de impulsión. Las flechas grises son el agua desalada, que sale del bastidor de membranas, entra a las bombas grandes y sube por la tubería hacia la faena. Esa agua va siempre por el tubo gris y nunca pasa por el E-101. Los motores, los variadores y el aceite de estas bombas se calientan al operar, y ese calor hay que sacarlo. Veamos cómo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s02_de3a17cc57484f988c25c0f1a3985013f9c3b78d5f66cd9d4d18fddaf20b77df.mp4"
+          data-autoslide="1750.0"
+          >
+            <aside class="notes" data-markdown>Ese calor lo saca un circuito cerrado de refrigeración. El tubo naranja lleva el agua caliente desde las bombas hasta el intercambiador de placas E-101, y el retorno, en naranja claro, devuelve el agua ya enfriada a los equipos, con la bomba P-101. Los tubos azules traen agua de mar, que mueve la bomba roja P-201, y dentro del E-101 las dos corrientes corren en contracorriente sin mezclarse. La misma bomba P-201 sirve también a otras unidades por el ramal que sale hacia abajo, y el agua de mar, ya más tibia, vuelve al mar por la descarga. Ese pequeño sistema auxiliar es lo que estudia el caso. (pausa) ¿Qué le pasa a ese circuito si P-201 se detiene? Ahora lo ordenamos como una cadena.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s02_4ce4ba5429d44c8898c6b8988c30363e1501347614827d0562ca0f1257c6559e.mp4"
+          data-background-video-loop
+          >
+            <aside class="notes" data-markdown>Ese calor lo saca un circuito cerrado de refrigeración. El tubo naranja lleva el agua caliente desde las bombas hasta el intercambiador de placas E-101, y el retorno, en naranja claro, devuelve el agua ya enfriada a los equipos, con la bomba P-101. Los tubos azules traen agua de mar, que mueve la bomba roja P-201, y dentro del E-101 las dos corrientes corren en contracorriente sin mezclarse. La misma bomba P-201 sirve también a otras unidades por el ramal que sale hacia abajo, y el agua de mar, ya más tibia, vuelve al mar por la descarga. Ese pequeño sistema auxiliar es lo que estudia el caso. (pausa) ¿Qué le pasa a ese circuito si P-201 se detiene? Ahora lo ordenamos como una cadena.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s03_e32e683034cac89eaf79884d01d66cf80f8a8d1adaf0e9246c067f1053de6e1a.mp4"
+          >
+            <aside class="notes" data-markdown>Ordenemos lo que vimos en 3D como una cadena, la misma de una planta real. Recorran los cuatro bloques de arriba. Primero se capta agua de mar, después se desaliniza por ósmosis inversa, una estación de impulsión la bombea y llega a la faena de cobre. Si la impulsión se detiene o se limita, la faena recibe menos agua. Por eso la estación de impulsión tiene el borde continuo, es el eslabón que nos interesa.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s03_93b8514665dab3a58e51f468937e008625667fe4766821630be9ac93417613c9.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora bajen por la línea naranja desde la estación de impulsión. Las bombas grandes tienen motores, variadores de frecuencia y aceite de lubricación que se calientan al operar, y ese calor hay que retirarlo. De eso se encarga el enfriamiento auxiliar, el recuadro naranjo. Un circuito cerrado de refrigeración lleva el calor al intercambiador E-101, que lo entrega al agua de mar, y la bomba P-201 mueve esa agua de mar para todas las unidades. Nosotros dejamos fuera la desaladora y estudiamos este sistema más pequeño. Entremos a ese recuadro para ver cómo se enfrían las bombas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s04_bc4031babfeb502363c279a1b70225f9144188fff8a2f88dca8a37fce56f698b.mp4"
+          >
+            <aside class="notes" data-markdown>Entremos al recuadro, donde arriba, en gris, está el proceso principal que ya vimos, como contexto sin modelar. La flecha gris segmentada dice que el enfriamiento auxiliar habilita la impulsión, un supuesto didáctico del caso. Dentro del límite, sigan la línea naranja. El agua de refrigeración recoge los 2,0 megawatts de motores, variadores y aceite, llega a unos 60 grados al intercambiador de placas E-101 y ahí entrega su calor al agua de mar, la línea azul que entra a 20 grados con 50 kilos por segundo. La refrigeración vuelve enfriada, empujada por la bomba del lazo P-101, y las dos corrientes nunca se mezclan. En este esquema el color indica la temperatura, por eso el agua de refrigeración ya enfriada aparece en azul, la misma que en la vista 3D se veía en naranja claro. Los círculos TT y FT son transmisores de temperatura y caudal, los vamos a necesitar en la sección nueve.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s04_e2460611fb1a81f574f9cd53dfbe7647b8aa037b36be57df73acf443dc0f82b5.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora la bomba roja, P-201. Mueve el agua de mar y es común a todas las unidades de intercambio, así que es un servicio compartido que puede fallar. Ojo con lo que dice abajo, aquí hay dos aguas distintas. Este circuito sólo refrigera los equipos de bombeo, y el agua desalinizada que va a la faena es otra y no se calienta. (pausa) ¿En qué parte del esquema se separan las sales del agua de mar? En la desaladora, fuera del límite. Con el sistema delimitado, definamos qué tiene que lograr el E-101.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s05_5ea2b0802d0a79b28c945053ccf43fc328be49e928bc81b4660ceaa8a49528b0.mp4"
+          >
+            <aside class="notes" data-markdown>Con el sistema delimitado, definamos qué tiene que lograr el E-101. La barra granate es la capacidad, el calor que el intercambiador puede retirar hoy con las temperaturas y caudales del día. Limpio y con el mar a 20 grados retira 2,407 megawatts. La línea gris segmentada es la demanda, los 2,0 megawatts que los motores, variadores y aceite necesitan evacuar en forma continua. La pregunta técnica es si la barra queda sobre la línea.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s05_f83c3a5606b1d14b04e917af38d419b75d3d011ca208201ff3267d1310e407e0.mp4"
+          >
+            <aside class="notes" data-markdown>Lo que sobra es el margen térmico, capacidad menos demanda. Con el equipo limpio son 2,407 menos 2,000, o sea 0,407 megawatts, un 20 por ciento. Es el tramo marcado con la llave sobre la línea de demanda. Ese margen es el colchón que el comité tiene que cuidar. (pausa) ¿Qué creen ustedes que se come ese margen con el tiempo?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s05_2195768190922860fec93b5a78cd516a87bc0e97f31430088a329fe392d1c310.mp4"
+          >
+            <aside class="notes" data-markdown>Tres cosas se comen ese margen o detienen la unidad. En café, los depósitos que el agua de mar deja en las placas. En rojo, las fallas, como una junta rota. En verde azulado, la espera de repuestos después de una falla. Si la capacidad baja a 1,9 megawatts, la barra queda bajo la línea y hay falla de función con el equipo encendido. El caso cuenta esa pérdida en forma proporcional, se pierde el 5 por ciento del servicio. Ese margen ya se está achicando, y así parte el caso.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s06_e37892b4dbeb262ec2fd8a2c623d77ae68ba46db6d08a83fe4b8bd6493e18cad.mp4"
+          >
+            <aside class="notes" data-markdown>Ese margen ya se está achicando, y así parte el caso. A las 08:15 operaciones avisa que el circuito sigue en marcha y que el E-101 retira cada día un poco menos de calor. En el esquema, la línea granate de la capacidad baja día a día hacia la línea gris de la demanda. Es un dibujo sin datos, la causa probable es el ensuciamiento. El equipo sigue funcionando y el margen se está perdiendo. Cada área de la planta propone algo distinto, veamos qué.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s06_6e8462ed6a1d178d09bd8562d243abd2f9c9e78c9cebdef01b000bc600ebbb3b.mp4"
+          >
+            <aside class="notes" data-markdown>Recorran la lista fila por fila. Mantenimiento, en café, propone adelantar la limpieza. Operaciones, en verde, quiere postergarla para cumplir el compromiso semanal de agua. Abastecimiento advierte que una falla de juntas podría demorar por falta de repuestos, y Finanzas pregunta si conviene instalar una segunda unidad. Cada propuesta es sensata y choca con las otras. Ustedes forman el comité de activos, con un presupuesto limitado, y tienen que ordenar esas prioridades con evidencia. Esas cuatro propuestas se ordenan en cuatro preguntas para el comité.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s07_8ec5e2a3783d8c28e950da72e5ed32ac9d31be77ec1ffb6542f8c01dc2b5c4cd.mp4"
+          >
+            <aside class="notes" data-markdown>Esas cuatro propuestas se ordenan en cuatro preguntas para el comité. Uno, en café, cuándo limpiar. Dos, en verde azulado, cómo recuperar más rápido la función tras una falla. Tres, en ocre, cuándo comprar una segunda unidad. Cuatro, en oliva, cómo decidir si el ensuciamiento no se mide directamente. Éstas son las preguntas del día, y al final cada grupo tendrá una respuesta para cada una y la defenderá frente al curso.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s07_e6993ec0523628a66edad86c04c9b04f240f54ac8a82ce932277f46e92aba2cd.mp4"
+          >
+            <aside class="notes" data-markdown>A la derecha está de qué depende cada respuesta, y eso ordena el resto de la lección. La primera depende de cuánto ensuciamiento tolera el equipo. La segunda, de cuánto demora recuperar la función. La tercera, de cuánto servicio protege una segunda unidad y cuánto cuesta. La cuarta aparece porque el ensuciamiento se estima con temperaturas y caudales. En el caso, la franja Hilo de la decisión se completa con lo que el grupo concluye en cada misión. Antes de estudiar nada, registremos la intuición del curso con un voto.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s08_2fd10806b54a750bcd3134c3a750e6f635525cd6d461234aef1fbb3dbdc615c5.mp4"
+          >
+            <aside class="notes" data-markdown>Antes de estudiar nada, registremos la intuición del curso con un voto. El número grande, en verde, es la disponibilidad inherente del intercambiador con los datos del caso, 99,70 por ciento. Abajo están las tres opciones, sí, parece sano, no, hay un problema, o no se puede saber con este dato. Les pido una intuición rápida. Voten en el computador que usará el grupo en el caso, o anoten el voto en la hoja de registro. (pausa) Espero a que todos los grupos hayan votado.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s08_4f9fda05a9b1902b78952f0405c5fe22e2e231de53e3cc0881c3b4e6205f672b.mp4"
+          >
+            <aside class="notes" data-markdown>Gracias, el voto quedó registrado y el caso lo recupera en su primera pantalla, la C.1. Precisemos qué mide el número verde. La disponibilidad inherente es la fracción del tiempo en que el equipo está libre de fallas correctivas. No les voy a decir todavía quién acertó. En la sección cinco veremos qué cuenta este indicador y qué deja fuera, y al final de la sesión votarán otra vez. Para juzgar ese número, primero separemos las formas en que se pierde la función.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s09_4dbc1b128f1fb8ded5abd280f586ed0f80109739d4208db8d7d4283fbe39eef1.mp4"
+          >
+            <aside class="notes" data-markdown>Para juzgar ese 99,70 por ciento, primero separemos las formas en que se pierde la función. Son cuatro, y a la derecha cada una tiene un esquema de la capacidad en el tiempo. La falla dura, en rojo, una junta rota que saca la unidad de servicio. La degradación, en café, los depósitos que reducen la capacidad poco a poco. La limpieza, en verde, una detención de 8 horas según un plan. Y la demora, en verde azulado, el tiempo que se espera por repuestos o personal.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s09_d376c1a12e32920f301d401d3a3de876bcb75a301bc747e0cfb5176bdc1e66bf.mp4"
+          >
+            <aside class="notes" data-markdown>El modelo trata estos cuatro fenómenos por separado. La falla dura ocurre al azar y se describe con el tiempo medio entre fallas, el MTBF, y la degradación es gradual y se describe con la resistencia de ensuciamiento, R f. La limpieza es planificada y restaura la capacidad, y la demora es la espera antes de reparar. (pausa) ¿Una limpieza reduce la probabilidad de una falla de juntas? En este modelo no, y reparar una junta deja los depósitos donde están. Cuando alguien diga que el equipo falló, pregunten cuál de los cuatro. La degradación depende de cómo trabaja el intercambiador, así que vamos a su física.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s10_09d7687df987cb58313d2d9ecbcdd80b1cad6406dcdfd5d7e641212a35e458b9.mp4"
+          >
+            <aside class="notes" data-markdown>Antes de calcular nada, miremos cómo es el equipo por dentro. Es un paquete de placas metálicas corrugadas, aquí separado para que se vean los canales. En la realidad las placas van apretadas entre dos marcos y cada canal queda sellado con una junta. Entre placa y placa pasa una corriente, alternadas, en naranjo el agua de refrigeración que viene caliente de las bombas y en azul el agua de mar. Con agua de mar las placas suelen ser de titanio, por la corrosión. Fíjense en las flechas, las naranjas van hacia un lado y las azules hacia el otro. Ahora aplastamos el paquete y lo miramos de costado.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s10_9b8d57bf288e366127527bb0e21e12609ac0fa01faf8cd7ca534727bc8c4d0d6.mp4"
+          >
+            <aside class="notes" data-markdown>Al mirarlo de costado, el paquete se convierte en el esquema de canales que tienen en su lección. Las líneas gruesas son las placas. Arriba entra el agua de refrigeración a 60 grados y avanza hacia la derecha, abajo entra el agua de mar a 20 grados y avanza hacia la izquierda. Las flechitas granate son el calor, que cruza cada placa desde el canal naranjo al azul sin que el agua se mezcle. Que avancen en sentidos opuestos se llama contracorriente. (pausa) ¿Por qué conviene? Porque el agua de mar más tibia se encuentra con el agua de refrigeración más caliente, y la diferencia de temperatura se mantiene pareja a lo largo del equipo. Para calcular cuánto calor cruza, encerramos el equipo en un volumen de control.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s11_b8af8efc7b05f02b9c297cb529c0fb222a2a0e5130b58a137bc9f70b7854a6af.mp4"
+          >
+            <aside class="notes" data-markdown>Para aplicar la conservación de la energía primero delimitamos el sistema. El rectángulo discontinuo es el volumen de control y encierra todo el intercambiador E-101. Por su frontera cruzan cuatro corrientes. Arriba, en naranjo, el agua de refrigeración entra a 60 grados y sale más fría. Abajo, en azul, el agua de mar entra a 20 grados por el otro extremo y sale más tibia. Dentro, la línea gruesa es la placa, y la flecha granate Q es el calor que la cruza de arriba hacia abajo. Ahora fijemos las hipótesis con que vamos a trabajar.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s11_373c77cd53f3233c63452054415a964116433ca79a98744f6b88cd02edcff828.mp4"
+          >
+            <aside class="notes" data-markdown>Estas son las hipótesis del análisis. Régimen permanente, es decir, nada se acumula dentro del equipo. Carcasa adiabática y sin trabajo, la carcasa no intercambia calor ni trabajo con el ambiente. Ninguna corriente cambia de fase, la energía cinética y la potencial son despreciables frente a la entalpía y los calores específicos son constantes. (pausa) ¿Cuál de ellas garantiza que todo el calor que cede el agua de refrigeración llega al agua de mar? La carcasa adiabática, que acabo de destacar. Con estas hipótesis el único intercambio de energía ocurre entre las dos corrientes, a través de la placa. A ese volumen le aplicamos la primera ley completa, con su término de acumulación.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s12_13eb6f1e9b42449ad572628c705a8766168b64ac8d36190674bedd6e5f665779.mp4"
+          >
+            <aside class="notes" data-markdown>Antes de simplificar, escribimos la primera ley completa para el volumen de control que dibujamos en la diapositiva anterior. A la izquierda, en azul, está la energía que se acumula dentro del equipo, el agua y el metal de las placas. A la derecha está todo lo que cruza la frontera, el calor, el trabajo y la entalpía que traen y se llevan las cuatro corrientes, la naranja que llega a 60 grados y la azul que entra a 20. Esta ecuación vale siempre, también cuando el equipo arranca o cambia de caudal. Ahora vamos a ver qué términos sobran en nuestro caso.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s12_ef63a69eb2a48ceb973929e66a85d71a479b301633ae3bdbee8be384a2bad28c.mp4"
+          >
+            <aside class="notes" data-markdown>Primer recorte. La carcasa no intercambia calor con el ambiente, así que el calor de la frontera es cero. El intercambiador no tiene ejes ni pistones, así que el trabajo también es cero. Los tachamos en rojo. Quedan solo dos cosas, la acumulación a la izquierda y los flujos de entalpía de las corrientes a la derecha. La pregunta siguiente es cuánto pesa la acumulación.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s12_73edaa9f2856f5a7cba407a42709d710ea92f696df79c04a93ad6bb02dc2ff1e.mp4"
+          >
+            <aside class="notes" data-markdown>La acumulación es la masa de agua y metal dentro del equipo, por su calor específico, por cuánto cambia su temperatura media en el tiempo. Un intercambiador de placas contiene poca agua. Después de un cambio, por ejemplo una partida o un cambio de caudal, la temperatura media se acomoda como en esta curva y se estabiliza en segundos o minutos. Es un esquema, sin datos del caso. (pausa) ¿Qué pasa con la acumulación cuando la curva ya se aplanó?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s12_9b7cc37592e6945a5c9a99b55b07937fe1043536f767c573b1db03d4ee075d93.mp4"
+          >
+            <aside class="notes" data-markdown>Cuando la curva se aplana, la derivada vale cero y no se acumula nada. Eso es el régimen permanente. La energía que entra con las corrientes es igual a la que sale. Este recuadro es el punto de partida de la diapositiva siguiente, donde lo escribimos para cada corriente por separado.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s12_58a48b7870c458de6cc804e17495f9126c70e6692be59cadfaa3f1bfb1294837.mp4"
+          >
+            <aside class="notes" data-markdown>Hay algo que sí cambia en el tiempo, el ensuciamiento, en café. Crece durante semanas y cae con cada limpieza, como en este esquema. Las temperaturas se estabilizan en minutos y el ensuciamiento cambia en semanas, así que cada día calculamos el equipo en régimen permanente con el R f de ese día. A eso se le llama régimen cuasi estacionario. Guarden esta idea, porque en la sección nueve un modelo aprende justamente cómo crece R f en el tiempo. Ahora sí, escribimos el balance para cada corriente.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s13_a16316a0cc7bbd8750732b28ea565f500a187c632f8da654804ee0dd0432de0c.mp4"
+          >
+            <aside class="notes" data-markdown>Con la acumulación en cero, miramos una sola corriente que cruza el volumen de control, como en el dibujo de la derecha. Entra con entalpía h de entrada, sale con h de salida y en el camino recibe el calor Q, en granate. No hay trabajo y la energía cinética y potencial no pesan. Entonces el calor que recibe es el caudal másico por el cambio de entalpía. Ésta es la ecuación seis. Ahora traducimos la entalpía a temperatura.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s13_fa863c8fd7dd49c213ee147d159842ca554c7316c0470990e9f07618fa8c9e81.mp4"
+          >
+            <aside class="notes" data-markdown>El agua es un líquido que no cambia de fase dentro del equipo, y su calor específico c p es prácticamente constante. En ese caso el cambio de entalpía es c p por el cambio de temperatura. (pausa) ¿Qué pasaría si el agua de mar hirviera dentro del equipo? Esta igualdad dejaría de valer, porque aparecería el calor latente. Con esto ya podemos escribir el balance de cada corriente.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s13_53fa6f1734e7090a84f45fdd4d5984a7971b90fa37211dfd208e25f82ffc55cd.mp4"
+          >
+            <aside class="notes" data-markdown>Aplicamos lo mismo a las dos corrientes. En naranjo, el agua de refrigeración, con subíndice h, cede calor. Por eso escribimos su temperatura de entrada menos la de salida. En azul, el agua de mar, con subíndice c, recibe calor, y escribimos salida menos entrada. Así los dos calores quedan positivos. Falta una sola idea para cerrar el balance.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s13_04a0b9f93ef440a12b0a1d557cb6babdb63e1870d9221c2aa9cc14ec72db38b7.mp4"
+          >
+            <aside class="notes" data-markdown>La carcasa es adiabática, así que no se pierde nada hacia afuera. Todo el calor que cede el agua de refrigeración lo recibe el agua de mar. Los dos calores son el mismo número, y lo llamamos Q, sin subíndice. Ése es el balance de energía del intercambiador. El producto de caudal por calor específico aparece en ambos balances, así que le damos nombre.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s14_ec3c101267bbdefe3aaca9efc7115917505d14229a640e397e6cd102f8466341.mp4"
+          >
+            <aside class="notes" data-markdown>El producto del caudal másico por el calor específico aparecía en los dos balances, así que le damos un nombre, la capacidad calorífica C, en watts por kelvin. Es la potencia necesaria para cambiar en un kelvin la temperatura de esa corriente. Con ella el balance queda muy corto, Q es C h por la caída de la caliente, en naranjo, e igual a C c por la subida de la fría, en azul. Veamos cuánto valen en el caso.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s14_1b0e586312d8d7bfdb800c4dac6a0ff4b5a1996a6534ecdb63238f85b0f5d6ae.mp4"
+          >
+            <aside class="notes" data-markdown>El agua de refrigeración circula a 40 kilos por segundo con un calor específico de 4.180 joules por kilo y kelvin, y da 167,2 kilowatts por kelvin. El agua de mar circula a 50 kilos por segundo, con un calor específico algo menor por la sal, 3.990, y da 199,5. (pausa) Si ambas intercambian el mismo calor, ¿cuál cambia más de temperatura?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s14_01c70f6cd29ec147762ed6d18d31c7afe6ce257f2099844b4d166e0f59952b53.mp4"
+          >
+            <aside class="notes" data-markdown>Como el calor es el mismo, la corriente de menor C cambia más de temperatura, y el cociente de los cambios es el inverso del cociente de las capacidades, 1,19. Abajo lo ven con la unidad limpia, que retira 2.407 kilowatts. El agua de refrigeración baja 14,4 kelvin, de 60 a 45,6 grados, y el agua de mar sube 12,1, de 20 a 32,1. La barra naranja es más larga. Esa corriente de menor capacidad será C mínimo y limita el calor máximo. El balance dice cuánto calor pasa, ahora veamos qué lo frena al cruzar la placa.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s15_445c0e1b981732b4d2ce3f6f85e08f0052b13b40b37fa5d1dcf32d089d0ca23a.mp4"
+          >
+            <aside class="notes" data-markdown>El balance dice cuánto calor pasa si conocemos las temperaturas de salida. Para saber cuánto calor puede pasar necesitamos una ecuación de transferencia. Piensen en un circuito eléctrico. La diferencia de temperatura entre el agua caliente, en naranjo, y el agua de mar, en azul, empuja el calor, y una resistencia térmica lo frena. El calor por unidad de área es la diferencia dividida por la resistencia R biprima. Veamos de qué está hecha esa resistencia.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s15_bdb9a1cf5ec8021dd7fb14ac06d5e8ba4ebb9960ed62baa229f6c74b10dd9767.mp4"
+          >
+            <aside class="notes" data-markdown>El calor atraviesa cuatro capas, una detrás de otra. Primero la película de agua caliente pegada a la placa, después la placa metálica de espesor e y conductividad k, después la capa de depósitos en café y al final la película de agua de mar. La línea negra es un esquema de cómo cae la temperatura en cada capa. Como en un circuito, las resistencias en serie se suman. Los coeficientes h de película crecen con la velocidad del agua. (pausa) ¿Cuál de estos términos cambia con el ensuciamiento y cuál con el caudal?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s15_63a78fb6bc71f750008fbc7c8e0badefe5199ed42184b4b99f014519022d7a3e.mp4"
+          >
+            <aside class="notes" data-markdown>El coeficiente global U es el inverso de la resistencia total, en watts por metro cuadrado y kelvin. Las dos películas y la placa juntas forman la resistencia del equipo limpio, uno sobre U limpio, y el caso da U limpio igual a 1.500. Los depósitos suman R f encima. El ensuciamiento agrega R f, el caudal cambia las h y la placa no cambia. De aquí sale la relación que usaremos en la sección tres, uno sobre U igual a uno sobre U limpio más R f. Ahora volvemos a la ecuación de transferencia.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s15_b31fdd05a776537d7da76dbc904361f2e2d3d3a14dec4af3ff6afed870bf6736.mp4"
+          >
+            <aside class="notes" data-markdown>Reemplazando R biprima por uno sobre U, el calor que cruza un pedacito de área dA es U por la diferencia local de temperaturas por dA. Ésta es la ecuación de transferencia. Ojo, vale en un punto, porque la diferencia entre la caliente y la fría cambia de un extremo al otro del equipo. Como esa diferencia cambia a lo largo del equipo, miremos una franja delgada de área dA.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s16_e27bdcff180cb092d5f4101e24c507e120985219b0ad1ecf467cbcf9b5532197.mp4"
+          >
+            <aside class="notes" data-markdown>Como la diferencia de temperaturas cambia a lo largo del equipo, miramos una franja delgada, la franja gris de área dA, a una distancia x de la entrada caliente. Arriba avanza el agua de refrigeración hacia más x, en naranjo, y abajo el agua de mar hacia menos x, en azul. A la izquierda de la franja las temperaturas son T h y T c, a la derecha cambiaron un poquito. Por la franja cruza el calor delta Q, la flecha granate, y vale U por la diferencia local por dA. Es la ecuación que dejamos en la diapositiva anterior.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s16_f906fd8a697c178f21dffbde97c5b2eb8989e5f71e03bf6b8ea96f5464aa6fc9.mp4"
+          >
+            <aside class="notes" data-markdown>Ese calor sale de la corriente caliente. Al cruzar la franja, el agua de refrigeración pasa de T h a T h más d T h, lo que marqué en naranjo. Como se enfría al avanzar hacia más x, d T h es negativo. El calor que pierde es C h por ese cambio, y le ponemos un signo menos para que delta Q quede positivo. Ahora viene el punto delicado, la corriente fría.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s16_da01597d1b085d7ff8e94c1ecfe451e6d2c663f32f098459e940e0b8fd203003.mp4"
+          >
+            <aside class="notes" data-markdown>El agua de mar avanza hacia menos x y se calienta a medida que avanza. Nosotros recorremos el equipo hacia más x, en el sentido de la caliente, o sea vamos hacia la entrada del agua de mar, donde está más fría. Por eso su temperatura también baja al aumentar x, y d T c es negativo. (pausa) ¿Por qué lleva signo menos el balance de la fría? Porque d T c es negativo y el signo menos deja delta Q positivo. Con los dos balances de la franja, restamos e integramos a lo largo del área.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s17_a9343ce3b6a6fbe8d7fb89fd97114d0d60ff5c5016c259f75b40a5ec5ebaf915.mp4"
+          >
+            <aside class="notes" data-markdown>Partimos de los dos balances de la franja. De cada uno despejamos el cambio de temperatura, d T h es menos delta Q sobre C h y d T c es menos delta Q sobre C c. Si los restamos, obtenemos cuánto cambia la diferencia de temperaturas entre las dos corrientes al avanzar una franja. Queda delta Q por el paréntesis con uno sobre C h menos uno sobre C c. Ahora reemplazamos delta Q.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s17_5c141dc178fae71a65fd5b6012722433c92ffc7a4099410a4af20114a9add648.mp4"
+          >
+            <aside class="notes" data-markdown>Llamamos delta T a la diferencia entre la caliente y la fría, y reemplazamos delta Q por U delta T d A, la ecuación de transferencia. Dividimos por delta T a ambos lados. Fíjense en lo que queda, el cambio de delta T es proporcional a delta T misma. Es una ecuación de variables separables, la misma forma que un decaimiento exponencial. (pausa) Si C h fuera igual a C c, ¿qué diría esta ecuación sobre la diferencia de temperaturas?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s17_b9adb66fcaf3d8f9466a79585eb4b790f33107e545075824d0050741374fd552.mp4"
+          >
+            <aside class="notes" data-markdown>Si C h es igual a C c, el paréntesis vale cero y la diferencia es la misma en todo el equipo. En nuestro caso no son iguales, así que integramos. Vamos desde la entrada caliente, donde la diferencia se llama delta T uno, hasta la salida caliente, donde se llama delta T dos. U y las capacidades son constantes y salen de la integral. A la derecha queda la integral de d A, que es el área total A.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s17_a733c8c7e45b8e53feeca75b5b003d752328ef8146f77e5f74dd67d8dd202c87.mp4"
+          >
+            <aside class="notes" data-markdown>La integral de d delta T sobre delta T es el logaritmo, así que el resultado es el logaritmo del cociente de las diferencias extremas igual a menos U A por el paréntesis. U A, en morado, es el tamaño térmico del equipo. Esta ecuación conecta lo que pasa en los extremos con el tamaño del equipo. El resultado todavía tiene las capacidades caloríficas, y el balance global las reemplaza por temperaturas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s18_a2d4bb76750843e42829982ba96c969585f830a1d8b67ae579feae3982cc9b28.mp4"
+          >
+            <aside class="notes" data-markdown>El resultado de la integral todavía tiene uno sobre C h y uno sobre C c. El balance global de cada corriente nos permite cambiarlos por temperaturas. Como Q es C h por la caída de la caliente, uno sobre C h es esa caída dividida por Q. Lo mismo para la fría, con su subida. Ahora restamos estas dos expresiones.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s18_dcf1cbf92a61d0e26d822a214222a0dcc51f12fef90ac7f3ae780c20e4549062.mp4"
+          >
+            <aside class="notes" data-markdown>Al restar, reordenamos los cuatro términos de temperatura. Aparecen justamente las diferencias de los extremos. En la entrada caliente se enfrentan el agua de refrigeración que entra y el agua de mar que sale, eso es delta T uno. En la salida caliente se enfrentan el agua de refrigeración que sale y el agua de mar que entra, eso es delta T dos. Recuerden que en contracorriente cada extremo junta una entrada con una salida.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s18_742ee4eb40f351bc514e6e83232bc75ed051aaed9b443a00c06d5ffd956a7e99.mp4"
+          >
+            <aside class="notes" data-markdown>Llevamos esa diferencia al resultado de la integral. El signo menos desaparece porque invertimos el cociente dentro del logaritmo, delta T uno sobre delta T dos en vez de dos sobre uno. Ya no quedan capacidades caloríficas, sólo temperaturas, U A y Q. Falta despejar Q.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s18_8a7a23b5022d1a6e34f5650a44a282087572dcd822cf3c240449ef49ca942b34.mp4"
+          >
+            <aside class="notes" data-markdown>Despejando Q llegamos a la ecuación de diseño. Q es U A por una diferencia media muy específica, la diferencia media logarítmica, delta T L M. No es el promedio aritmético de los extremos, porque la diferencia cambia de forma exponencial a lo largo del equipo. (pausa) ¿Qué vale si delta T uno es igual a delta T dos? Esa misma diferencia, el límite del cociente. Pongamos los números del caso en esta fórmula.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s19_4d1fefe7527744c0a27e59a8ff3d92d269ea971bd21c1be22d130eae57afa807.mp4"
+          >
+            <aside class="notes" data-markdown>Aplicamos la fórmula a la unidad limpia con el mar a 20 grados. El gráfico es el perfil exacto de temperaturas a lo largo del área. La curva naranja baja de 60 a 45,6 grados y la azul, que entra por el otro extremo a 20, sale a 32,1. Estas salidas corresponden a un ensayo de capacidad máxima con las entradas fijas. En la entrada caliente la diferencia es delta T uno, 27,93 kelvin, y en la salida caliente es delta T dos, 25,60 kelvin.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s19_ab735a35451e9784f9de0e9d61f44a04a5dea9bf1972ce710b31985fa73bb9a0.mp4"
+          >
+            <aside class="notes" data-markdown>La diferencia media logarítmica da 26,75 kelvin. El promedio aritmético de los extremos sería 26,77, casi lo mismo, porque las dos diferencias se parecen y las curvas son casi paralelas. (pausa) ¿Cuándo se separarían más el promedio y la media logarítmica? Cuando los extremos sean muy distintos. Ahora multiplicamos por U A.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s19_0166b0249f4c66ea2887a3824988fc3cde4d24b4c84100934f31e96aef6ed6c4.mp4"
+          >
+            <aside class="notes" data-markdown>U limpio es 1.500 watts por metro cuadrado y kelvin, y el área es 60 metros cuadrados, así que la conductancia U A del equipo limpio es 90 kilowatts por kelvin. Por 26,75 kelvin da 2.407 kilowatts. Ésa es la capacidad del equipo limpio, y es el número que vamos a usar todo el día. Comprobemos con los balances.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s19_7fc634db22fff6e3d08662491eb7e0b571861821650400e5f94746e8236ff779.mp4"
+          >
+            <aside class="notes" data-markdown>El agua de refrigeración, con 167,2 kilowatts por kelvin, baja de 60 a 45,60 grados, y entrega 2.407 kilowatts. El agua de mar, con 199,5, sube de 20 a 32,07, y recibe lo mismo. Los dos balances cierran con el mismo calor, lo que confirma la cuenta. Esta cuenta pidió las cuatro temperaturas, veamos qué hacer cuando sólo se conocen las entradas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s20_d6543bb3acaea8d0b1213942b99897355e96620941e980893f354196207b3b30.mp4"
+          >
+            <aside class="notes" data-markdown>La diferencia media logarítmica exige las cuatro temperaturas. Al evaluar un equipo existente lo usual es conocer sólo las entradas, 60 y 20 grados, y querer saber cuánto calor puede retirar. Las salidas dependen justamente de ese calor, así que habría que iterar. El método de la efectividad evita eso. Partimos del máximo termodinámico, el calor que habría si la corriente de menor capacidad, el agua de refrigeración, recorriera toda la diferencia de entradas. Son 6.688 kilowatts, la barra vacía de abajo. (pausa) ¿Por qué se usa C mínimo y no C máximo?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s20_37170cbef80b4e05b186c7c2c4e7d8326addf3871669571a2eee5fb334124bd0.mp4"
+          >
+            <aside class="notes" data-markdown>Con C máximo, la corriente de menor capacidad tendría que cruzar la temperatura de entrada de la otra, y eso es imposible. La efectividad épsilon es la fracción de ese máximo que el equipo logra, un número entre cero y uno. La barra granate muestra la unidad limpia, que retira 2.407 kilowatts, o sea épsilon igual a 0,360. Lo que nos falta es una forma de calcular épsilon sin conocer las salidas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s20_4c39b03e6d4253911d5b53f5fc067591e5afab00db6b1b996ef7e73ba5fa359a.mp4"
+          >
+            <aside class="notes" data-markdown>Para eso definimos dos números sin dimensiones. NTU, el número de unidades de transferencia, compara la conductancia U A del equipo con la capacidad menor, 90 dividido por 167,2, 0,538. Mide el tamaño térmico del equipo. La razón de capacidades C r compara las dos corrientes, 167,2 sobre 199,5, 0,838. Ahora reescribimos la misma integral con NTU y C r para conectarla con la efectividad.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s21_dbd1155a233433f7b762c23dc8495e387f7e7675f1b11da964c685e419ae31e1.mp4"
+          >
+            <aside class="notes" data-markdown>Volvemos al resultado de la integral y lo escribimos con los números sin dimensiones. En el caso la corriente caliente es la de menor capacidad, así que U A sobre C h es justamente NTU, y C h sobre C c es C r. El logaritmo del cociente de las diferencias extremas queda igual a menos NTU por uno menos C r. Abajo tienen de nuevo el perfil de temperaturas del equipo limpio. Ahora escribimos cada diferencia extrema con épsilon.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s21_dc6e47a9f1e4264a1962a91a8bc2f7de36ba06535a22c3c4fad63d02f463afa6.mp4"
+          >
+            <aside class="notes" data-markdown>Primero la salida caliente, el extremo derecho del gráfico. Delta T máximo es la diferencia entre las dos entradas, 60 menos 20, 40 kelvin, la llave negra de la derecha. Como Q es épsilon por C h por delta T máximo, la caliente baja épsilon por delta T máximo desde su entrada. Lo que le queda frente al agua de mar que entra es uno menos épsilon por delta T máximo. Ahora el otro extremo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s21_84b9d1dd574dda2e5127ee19ffd9445a3ad5779d5f9badba26fc1e12682040fe.mp4"
+          >
+            <aside class="notes" data-markdown>En la entrada caliente se enfrentan el agua de refrigeración a 60 y el agua de mar que sale. El agua de mar recibe el mismo calor con una capacidad mayor, así que sube sólo C r por épsilon por delta T máximo. (pausa) En el caso, ¿cuánto sube el agua de mar si épsilon vale 0,360? 0,838 por 0,360 por 40, unos 12,1 kelvin, y sale a 32,1 grados. Igualamos esas dos expresiones con la exponencial y despejamos épsilon.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s22_a0896a5caf2d61ba2afb8e79246d5e6c228036da5cacdad118d8755ef351f680.mp4"
+          >
+            <aside class="notes" data-markdown>Tomamos las dos diferencias extremas que acabamos de escribir y las dividimos. Delta T máximo se cancela y queda uno menos épsilon sobre uno menos C r épsilon. Por la integral, ese cociente es la exponencial de menos NTU por uno menos C r. A esa exponencial la llamamos E para escribir menos. Ahora despejamos épsilon.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s22_c65b805dec52e2991464101a0aaff16a479b0358b78c06dbb7d5b7d046c28926.mp4"
+          >
+            <aside class="notes" data-markdown>Es una ecuación lineal en épsilon. Multiplicamos, uno menos épsilon es E menos C r épsilon E, juntamos los términos con épsilon y despejamos. Queda la fórmula de la efectividad en contracorriente, en el recuadro. Sólo pide NTU y C r, o sea U A y las entradas, sin las temperaturas de salida. Conviene revisar dos límites.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s22_138587c7939bf32024968f7cc23fb3d9709a287c1c235beb6a220f31f9a22fa7.mp4"
+          >
+            <aside class="notes" data-markdown>Primer límite, C r tiende a cero. Eso pasa cuando una corriente tiene una capacidad enorme y su temperatura casi no cambia, como el vapor que condensa en un condensador. La exponencial queda sólo con NTU y épsilon es uno menos e a la menos NTU. El segundo límite es más delicado.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s22_357ca50aff86157122850a183aa245996c27277d12645596b59ddb5a7841530b.mp4"
+          >
+            <aside class="notes" data-markdown>Si las dos capacidades son iguales, C r vale uno, E vale uno y la fórmula queda cero sobre cero. Usamos la expansión de primer orden de la exponencial. El numerador queda NTU por uno menos C r y el denominador uno más NTU por uno menos C r. El factor común se cancela y épsilon tiende a NTU sobre uno más NTU. (pausa) Con C r igual a uno y nuestro NTU, ¿cuánto daría? Lo vemos con el caso.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s22_9b6bb6be3725c515ecd0a89cf71729c1f6be0c24e0097c02249926ab10e632b3.mp4"
+          >
+            <aside class="notes" data-markdown>Con C r igual a uno daría 0,538 sobre 1,538, 0,350. Ahora el caso real, NTU 0,538 y C r 0,838. Uno menos C r es 0,162, la exponencial vale 0,9165 y épsilon es 0,0835 sobre 0,2319, o sea 0,360. Es exactamente el mismo valor que nos dio la diferencia media logarítmica, 2.407 dividido por 6.688. Los dos caminos coinciden. La curva de esa fórmula muestra cuánto rinde agregar área.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s23_dec00af126c4ccc4fc5f86799248ec5e33e3dab8fe413096a66084ae85a9f931.mp4"
+          >
+            <aside class="notes" data-markdown>Si van atrasados, pueden saltar esta. La capacidad es una fracción épsilon del máximo, 6.688 kilowatts, y esa fracción depende de NTU, U por A dividido por C mínimo. La curva azul es la fórmula exacta de contracorriente con C r 0,838. El punto negro es la unidad limpia, NTU 0,54 y épsilon 0,36. Fíjense en la forma, sube rápido al principio y después se aplana. Veamos qué pasa cuando cambia U.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s23_9ac3c93847c8185ed8125bc798f111cda86d38fbecdc53d03b7b307a82356b87.mp4"
+          >
+            <aside class="notes" data-markdown>Si el equipo se ensucia, U baja. Con la misma área y el mismo C mínimo, NTU baja y el punto se corre hacia la izquierda, en café, por la parte empinada de la curva. Ahí la efectividad cae rápido y con ella la capacidad. Este punto café usa el ensuciamiento que veremos en la sección tres. (pausa) Y al revés, si duplicamos el área, ¿se duplica la capacidad?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s23_729cb9f0c03aba88cf081dbb58bca88d282da70ce38cc46a3c2f885c32e61331.mp4"
+          >
+            <aside class="notes" data-markdown>No. Con 120 metros cuadrados NTU sube a 1,08 y épsilon sólo a 0,54. El calor sube de 2,41 a 3,61 megawatts, un 50 por ciento más con el doble de área. La curva se aplana, así que cada metro cuadrado extra rinde menos que el anterior. Esto vuelve a aparecer cuando comparemos arquitecturas en la sección seis. Juntemos todo el cálculo de la unidad limpia en una sola tabla.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s24_70c7ceeef3b1179296c2241900bc486d5d9fd42a4d61efc1e7431c0eb1d4926e.mp4"
+          >
+            <aside class="notes" data-markdown>Si van atrasados, pueden saltar esta. Juntamos todo el cálculo de la unidad limpia en una tabla, fila por fila. C mínimo es el agua de refrigeración, 40 kilos por segundo por 4,18 kilojoules por kilo y kelvin, 167,2 kilowatts por kelvin. NTU es 1.500 por 60 dividido por 167.200, 0,538. La razón de capacidades es 167,2 sobre 199,5, 0,838. Con esos dos números entramos a la fórmula.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s24_93c1c16a1e3d54b7f742d63ba3a21198e8243c86ec7c70d0da87ebd8d3fb788c.mp4"
+          >
+            <aside class="notes" data-markdown>La fórmula de contracorriente con NTU y C r entrega épsilon igual a 0,360. La capacidad es épsilon por C mínimo por la diferencia de entradas, 0,360 por 167,2 por 40 grados, 2.407 kilowatts. Es el mismo número que obtuvimos con U A por la diferencia media logarítmica, así que los dos métodos concuerdan. Ésta es la cuenta que la herramienta reproduce.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s24_4cad0edc2af4c7e44ea562162bac5fdf0908b7c31884f26521e8279a8fc87423.mp4"
+          >
+            <aside class="notes" data-markdown>Comparemos con la demanda, la línea gris de 2,0 megawatts. La unidad limpia supera la demanda por 407 kilowatts, un 20 por ciento de margen. (pausa) ¿Qué se va a comer ese margen? El ensuciamiento, que es justamente el tema de la sección tres. Con dos métodos que dan el mismo número, falta decir cuándo conviene cada uno.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s25_b0a01640deca2fb3ce16b57060b12e5781768287dc532de3e590b0fad9ad3fb3.mp4"
+          >
+            <aside class="notes" data-markdown>Resumen de la derivación. Los dos métodos vienen de la misma ecuación y dan el mismo calor, como comprobamos con el caso. Se eligen según los datos que uno tiene. La diferencia media logarítmica sirve cuando se miden o se fijan las cuatro temperaturas, por ejemplo para dimensionar un equipo nuevo o para estimar U a partir de mediciones de planta.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s25_5863f50fa253f9c63152c3accb42cf1975b5802b957b6288bb7fcf064c3cadee.mp4"
+          >
+            <aside class="notes" data-markdown>Épsilon NTU sirve cuando se conocen U A y las entradas, para calcular la capacidad de un equipo que ya existe. En el caso lo usamos así, para calcular la capacidad del equipo con distintos R f y distintas temperaturas del mar, porque sólo conocemos las entradas. Ahora el uso inverso.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s25_d46aa4abc9b78847217be022a09a4918e582944fa1019a72d803c0e1e26035a3.mp4"
+          >
+            <aside class="notes" data-markdown>Al final de la lección aparece el uso inverso. En planta se miden las cuatro temperaturas y los caudales. Con ellos se calcula Q y la diferencia media logarítmica, se despeja U A y, comparándolo con el U limpio, se estima R f sin abrir el equipo. (pausa) ¿Qué método permite estimar el ensuciamiento desde las temperaturas? La diferencia media logarítmica. Ya tenemos la capacidad limpia, ahora veamos cómo los depósitos la reducen.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s26_fc472cf2de0a5777357079592f310a5b903e0a4bab49ccc88683f5681111aec4.mp4"
+          >
+            <aside class="notes" data-markdown>Pasamos del equipo limpio al ensuciamiento. A la izquierda, en naranja, el agua de refrigeración que llega caliente. Al centro, la placa metálica, y a la derecha, en azul, el agua de mar. El calor, la flecha granate, cruza todo eso en una sola dirección, de la corriente caliente a la fría. Hasta ahora el camino del calor tenía las resistencias del equipo limpio. Veamos qué le hace el agua de mar a la placa con el tiempo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s26_e6385920a11720513235bf86a210bcdba9f9b65f28554a37ea2c01c89204a76e.mp4"
+          >
+            <aside class="notes" data-markdown>Con las semanas, el agua de mar deja sobre la placa sales, sedimentos y organismos marinos. Esa capa café es el depósito. Conduce mal el calor, así que el calor tiene que atravesar una capa más. La medimos con una resistencia, R f, en metros cuadrados kelvin por watt, referida a un metro cuadrado de placa. (pausa) ¿Cómo se combinan resistencias que el calor cruza una tras otra?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s26_03606d8d961763345f7d089a97ed57122a9aa6d9780bb94a3a2de58415f27668.mp4"
+          >
+            <aside class="notes" data-markdown>El circuito equivalente lo dice de una vez. Primero, en morado, la resistencia del equipo limpio, uno sobre U limpio, que junta las dos películas de agua y la placa. Después, en café, la resistencia del depósito. El calor las cruza en serie, y las resistencias en serie se suman. Por eso uno sobre U es uno sobre U limpio más R f. Ahora pongamos números del caso.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s26_f958a24abfd5cd43d85893f8fdbf40a7afe4babb956fcc7e6ef6048751607977.mp4"
+          >
+            <aside class="notes" data-markdown>Con el equipo limpio, U vale 1.500 watts por metro cuadrado kelvin. Ahora hago crecer el depósito hasta R f igual a 3 por diez a la menos cuatro, uno de los valores del caso. Miren cómo cae U en la lectura de abajo, hasta 1.034, un 31 por ciento menos. Los textos de transferencia de calor dan del orden de 1 por diez a la menos cuatro para agua de mar, y el caso usa valores mayores a propósito. Si U baja con R f, la capacidad también baja, y en algún punto cruza la demanda.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s27_9d43dd878103cf938057689daa64a5c1a94185240054b91cac7cd371c9220e57.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora juntamos las dos piezas, la capacidad del método ε NTU y la resistencia del depósito. En el eje horizontal está R f, en café, y en el vertical la capacidad en megawatts. La curva granate es la capacidad con el mar a 20 grados, y la línea gris discontinua es la demanda de 2,0 megawatts. Con el equipo limpio partimos arriba, en 2,407. (pausa) ¿Qué creen que pasa cuando el depósito crece?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s27_65dd0fa39f0462d3e581a6fc24f871d87c7b307576510bbbfbad9366fed7f4cb.mp4"
+          >
+            <aside class="notes" data-markdown>Hagamos crecer el depósito. El punto granate baja por la curva, y a la derecha leen R f y la capacidad en kilowatts. Al subir R f baja U, baja NTU y la capacidad cae de forma gradual y no lineal. El punto se detiene donde la curva corta la demanda. Ese valor se llama R f crítico y vale 2,03 por diez a la menos cuatro. Desde ahí hacia la derecha el equipo ya no alcanza.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s27_bd72e8445c02f4b2a53cb6c18a1a5e73009c63453feb731dd7422b282ceb338f.mp4"
+          >
+            <aside class="notes" data-markdown>Si el punto sigue, con R f igual a 3 por diez a la menos cuatro la unidad retira 1.851 kilowatts, bajo la demanda. La franja roja es el servicio que falta. (pausa) ¿Cuánto tarda en llegar al crítico? Los depósitos crecen 1 por diez a la menos siete por hora de operación, así que el equipo limpio llega ahí en unas 2.030 horas. Desde ese momento sigue operando sin ninguna falla mecánica y aun así no cumple su función. Esa curva supone el mar a 20 grados, veamos qué pasa con agua más cálida.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s28_37da110dd112ca897023527971c0c2da6ba7c0eedda6ffe601d22bab5e2361da.mp4"
+          >
+            <aside class="notes" data-markdown>Partimos de lo que acabamos de ver, la curva granate con el mar a 20 grados, que cruza la demanda en 2,03 por diez a la menos cuatro. Esa curva supone una temperatura de entrada del mar. Ahora el equipo es exactamente el mismo, con las mismas placas y el mismo caudal, y cambiamos sólo el agua que entra. (pausa) ¿Qué esperan que pase con la capacidad si el mar llega más tibio?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s28_1d8a1a2ddb2d4b6e7b2c9aede723bc4a7716db464e3583f1c9d3192db99d38a2.mp4"
+          >
+            <aside class="notes" data-markdown>La capacidad es proporcional a la diferencia máxima de temperaturas de entrada. Con el mar a 26 grados esa diferencia baja de 40 a 34 kelvin. Aparece la curva roja discontinua, más abajo en todo su recorrido. Aun limpio, el equipo retira sólo 2.046 kilowatts, apenas sobre la demanda. Este es un ensayo de estrés sintético del caso, sin predicción oceanográfica. Miren qué poco espacio queda antes de la línea gris.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s28_3378a263a55f5febe0c0689724c6a70526e73a4f11b32ab2608e2f4790b73252.mp4"
+          >
+            <aside class="notes" data-markdown>El punto rojo recorre la curva a 26 grados y casi de inmediato toca la demanda. El R f crítico cae a 2,31 por diez a la menos cinco, que en esta escala es 0,23, casi nueve veces menos que con agua fría. Con la misma tasa de ensuciamiento se llega ahí en unas 230 horas de operación. Por eso una misma política de limpieza puede ser suficiente con agua fría e insuficiente con agua cálida, y volverá como evento en la Misión 3. Para mantener R f bajo el crítico hay que limpiar, y cada limpieza retira sólo parte de los depósitos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s29_f29a5c855499200381b16f6b9ebfedb5cbd70375365dec60ca5aa6aadf8ae074.mp4"
+          >
+            <aside class="notes" data-markdown>Para mantener R f bajo el crítico hay que limpiar. En el eje horizontal están las horas de operación y la línea gris discontinua es el R f crítico, 2,03. El depósito, en café, crece 1 por diez a la menos siete por hora. A las 1.500 horas llega a 1,5, y ahí se limpia. La unidad se detiene 8 horas y la limpieza retira el 90 por ciento. Fíjense que no vuelve a cero, queda un 10 por ciento pegado a la placa. (pausa) ¿Qué pasa con ese 10 por ciento en el ciclo siguiente?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s29_2fc52d64bd22ebf6fd078120b594c147963205a43d3ee5896aabb37863a810e0.mp4"
+          >
+            <aside class="notes" data-markdown>Seguimos con los ciclos siguientes. El 10 por ciento que queda se suma al crecimiento del ciclo nuevo, así que el segundo pico llega a 1,65, un poco más alto. El tercero y el cuarto quedan cerca de 1,67 y ya casi no suben. Todos los picos quedan bajo la línea gris del crítico, así que con la tasa media limpiar cada 1.500 horas alcanza. Veamos por qué el pico se estabiliza.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s29_080cf3b447e111a75003f66bc51dc1041e2747903e5346807da6901240e4d63c.mp4"
+          >
+            <aside class="notes" data-markdown>El pico se estabiliza cuando lo que retira la limpieza iguala lo que crece en un ciclo. La limpieza retira el 90 por ciento del pico P, y en 1.500 horas crecen 1,5. Igualando, P es 1,5 dividido por 0,9, cerca de 1,67, bajo el crítico de 2,03. Cada limpieza cuesta dinero y, con una sola unidad, 8 horas sin servicio. Limpiar más seguido mantiene más margen y cuesta más detenciones, y ése es el equilibrio que estudiarán en la Misión 2, donde además la tasa real varía entre ciclos. Hasta aquí la degradación, ahora pasamos a la falla dura y a cómo se mide.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s30_0bcb7b7071c2c05fe5617bafc1e9136da8c1fee508f6f50631a88d297c571682.mp4"
+          >
+            <aside class="notes" data-markdown>Pasamos de la degradación a la falla dura. Una falla correctiva saca la unidad de servicio y obliga a repararla, como una junta rota. En la línea de tiempo, los tramos verdes son horas de operación, 3.100, 5.200 y 3.700 horas, y las marcas rojas son las fallas con su reparación. Es una ilustración, con tramos inventados para el ejemplo. Mientras la unidad está detenida, el reloj de fallas se detiene. (pausa) ¿Cómo resumirían estos tramos en un solo número?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s30_c3c9e91d6c4d64d61adc0780f3e473b23d6d1580a1c9737a33f95998d2eb33ea.mp4"
+          >
+            <aside class="notes" data-markdown>Tomamos los tres tramos de operación y los ponemos uno detrás de otro. Si repartimos ese total en partes iguales, cada tramo mide 4.000 horas. Eso es el MTBF, el tiempo medio entre fallas, el promedio de las horas de operación entre una falla y la siguiente. En el caso vale justamente 4.000 horas. Fíjense que cuenta sólo horas de operación, las reparaciones y limpiezas no entran.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s30_6d228406699a83c557430edaf1d740a73e3f2c333b8992e398761e83a03f5742.mp4"
+          >
+            <aside class="notes" data-markdown>El inverso del MTBF es la tasa de falla, lambda, 2,5 por diez a la menos cuatro fallas por hora. En un año de operación continua, 8.760 horas, se esperan 8.760 dividido por 4.000, unas 2,2 fallas en promedio. Y ojo, un MTBF alto no dice nada sobre el ensuciamiento, el equipo de la sección anterior podía perder su función sin fallar ni una vez. Con el MTBF podemos calcular la probabilidad de operar un tiempo dado sin fallar.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s31_b45c6a49d7c86ea7436860dae8fae1e146b65e8e20bca91107083646ce5f2a7d.mp4"
+          >
+            <aside class="notes" data-markdown>Con el MTBF podemos calcular la probabilidad de operar un tiempo dado sin fallar. Eso es la confiabilidad, R de t, en verde. Si la tasa de falla es constante, los tiempos entre fallas siguen una distribución exponencial y R de t es e elevado a menos t sobre el MTBF, el recuadro azul. La curva parte en 1, porque recién partida la unidad no ha fallado, y decae con las horas de operación. Leamos dos puntos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s31_ba68475fbae0254af91316556ba82cf686fc1b097e529220b7610bcd1e02a439.mp4"
+          >
+            <aside class="notes" data-markdown>El punto verde avanza por la curva y se detiene en una semana, 168 horas. Ahí R vale 0,9589, o sea, un 96 por ciento de probabilidad de pasar una semana completa sin falla correctiva. Es alto, y eso calza con una unidad que falla unas dos veces por año. (pausa) ¿Qué probabilidad creen que hay de llegar al MTBF sin fallar?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s31_3a3131f6b3852c9a332b6e9652b06f8ea2d574417e1092160577d8b124255303.mp4"
+          >
+            <aside class="notes" data-markdown>Seguimos hasta t igual al MTBF, 4.000 horas. R vale 0,368. Sólo un 37 por ciento de las unidades llega al MTBF sin fallar, porque muchas fallan antes y unas pocas duran mucho más. Es un resultado poco intuitivo, el MTBF no es un plazo garantizado. La tasa constante es una simplificación del caso, un modelo de desgaste como Weibull daría otra curva. Cuando la falla ocurre, falta medir cuánto demora volver a servicio.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s32_57e7009242e41ee2c9fdfbb9059567e96e3328d6552e7002f6b891b280ad6aea.mp4"
+          >
+            <aside class="notes" data-markdown>Cuando ocurre una falla, la marca roja, la unidad no vuelve de inmediato. Recorramos la línea de tiempo. Primero se diagnostica y se aísla el equipo. Después viene la espera logística, en gris, repuestos y personal, 24 horas en promedio. Recién entonces la reparación activa, 12 horas, y al final la puesta en servicio. La barra gris y la verde azulada están a escala, fíjense cuál es más larga.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s32_97495c1960d95c65ea66b669c0cd75eaa52ee84ce0881a444c8fb9724e144ec6.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora separen reparar de recuperar. El MTTR, el tiempo medio de reparación, mide sólo la reparación activa, 12 horas en el caso. La demora total, de la falla al retorno, ronda las 36 horas, 24 de espera y 12 de reparación, si el diagnóstico y la puesta en servicio son breves. La espera es la parte más larga. (pausa) Si tuvieran presupuesto para una sola mejora, ¿dónde lo pondrían?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s32_9e23a7f9c8281d8cca65c751d9f3a8ce82dff3445e5a844546812dc9f3492395.mp4"
+          >
+            <aside class="notes" data-markdown>Un kit de repuestos en sitio ataca justamente la espera. Abajo dibujamos la misma intervención con el kit. La barra gris baja de 24 a 4 horas y todo lo demás llega antes. La reparación activa sigue igual, 12 horas, así que el MTTR no cambia y la demora total sí baja. Por eso un kit en sitio puede valer más que un técnico más rápido. La reparación activa también tiene su curva de probabilidad, la mantenibilidad.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s33_99c0790ae8e58664855a8511fcea54fdbf437cf7e77b78f8e5b55c9fd308f283.mp4"
+          >
+            <aside class="notes" data-markdown>Si van atrasados, pueden saltar esta. La mantenibilidad, M de t, es la probabilidad de terminar la reparación activa antes de t horas. Con tiempos exponenciales y un MTTR de 12 horas, M de t es uno menos e elevado a menos t sobre 12. La curva verde azulada parte en cero y sube, al revés de la confiabilidad, porque mide la probabilidad de haber terminado. Leamos dos puntos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s33_69f9d1a308b914fffa75ed0d3528aa76ff9a2f9ab1566a75838ce948f02adfc2.mp4"
+          >
+            <aside class="notes" data-markdown>El punto avanza hasta un turno de 8 horas. Ahí M vale 0,4866, o sea, en un turno se termina aproximadamente la mitad de las reparaciones. A las 12 horas, el MTTR, vale 0,632, un 63 por ciento. Esta curva describe sólo la reparación activa. Si además hay que esperar repuestos, la probabilidad de volver a servicio en un turno es mucho menor. Con MTBF, MTTR y logística ya podemos calcular la disponibilidad.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s34_f5cdd00d763211155f7f5321daf6b6bc58508db0f656af17b31f7a6e68c3fd47.mp4"
+          >
+            <aside class="notes" data-markdown>Con MTBF, MTTR y logística ya podemos calcular la disponibilidad, la fracción del tiempo en que la unidad puede operar. Arriba tienen un ciclo, sin escala, con la operación en verde, la reparación, la logística y las limpiezas. La disponibilidad inherente cuenta sólo la operación y la reparación activa, las dos piezas encendidas. Da 4.000 sobre 4.012, 0,99701. Vuelvan al voto inicial, ese 99,70 por ciento era justamente esta disponibilidad.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s34_96392450bb1022f118895f60ab8fb227907d9af30b427c157c20771dc00c96a5.mp4"
+          >
+            <aside class="notes" data-markdown>Encendemos la logística, la espera de repuestos y personal. Ahora el ciclo dura 4.000 más 12 más 24, o sea 4.036 horas, y la disponibilidad baja a 0,99108, un 99,11 por ciento. Mismo equipo, mismas fallas. Lo único que cambió es qué tiempos contamos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s34_4c48638cb0524bb384fd056639e2d3d2c312cf2022f59ed2d3542f6cc5781d31.mp4"
+          >
+            <aside class="notes" data-markdown>La disponibilidad operacional suma además las limpiezas y otras demoras, y en el caso se obtiene por simulación. Ahora la pregunta del voto. (pausa) ¿Por qué el 99,70 por ciento no garantizaba un activo sano? Porque ninguna de estas disponibilidades ve el ensuciamiento. Un equipo puede estar disponible el 99,70 por ciento del tiempo y aun así retirar menos calor del que se pide. Como la disponibilidad no ve el ensuciamiento, necesitamos un indicador de servicio.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s35_c170e16e7cdb7af2114369b4ea4ee5e04e5d0a179f8d48f48d0743070302a76d.mp4"
+          >
+            <aside class="notes" data-markdown>La disponibilidad dice si el equipo puede operar, el servicio dice si cumple la demanda. Arriba, la barra gris es la demanda, 2,0 megawatts. Abajo, en granate, la capacidad. Con el equipo limpio pasa de la demanda y la fracción de servicio s vale 1, porque la fórmula la limita a 1. Ahora la unidad se ensucia hasta R f de 3 por diez a la menos cuatro. Miren la lectura de s, se queda en 1 hasta cruzar la demanda y después baja, hasta 0,925 con 1,851 megawatts. El tramo rojo discontinuo es lo que falta.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s35_f86108381e0230fcba2f29b8070c1b619cabc33c40f3e59668c60bd5eee61bb0.mp4"
+          >
+            <aside class="notes" data-markdown>Con s igual a 0,925, cada hora en esa condición se pierde 0,075 horas de servicio completo. Al sumar esas pérdidas durante todo el año obtenemos las horas equivalentes perdidas, el indicador central del caso, que después se valoriza en dinero. (pausa) Una semana entera a 1.851 kilowatts, ¿cuántas horas equivalentes pierde? Son 168 por 0,075, 12,6 horas. Si el servicio se contara como todo o nada, serían las 168 horas completas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s35_c9dac7840ce000348b279294dab2588fc3d722ec0f860d7106a1b3360db1b850.mp4"
+          >
+            <aside class="notes" data-markdown>El caso informa además la disponibilidad mecánica, la A servicio, que es la fracción del tiempo con la demanda cubierta, y la energía atendida. Una política puede mejorar un indicador y empeorar otro, así que al comparar políticas lean las horas equivalentes junto con la A servicio. El servicio también depende de cómo se conectan los equipos, en serie o en paralelo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s36_2019c706873f379d7f9b208b35f12802815c3ce1c4fe4332f8b7c9731346342a.mp4"
+          >
+            <aside class="notes" data-markdown>Un diagrama lógico dice qué combinación de equipos debe funcionar para cumplir la función. Arriba, la bomba común P-201, en rojo, en serie con el intercambiador E-101. Los puntos azules son el agua de mar, y para pasar tiene que cruzar los dos. En serie deben funcionar todos, y la disponibilidad es el producto. La bomba tiene 0,99795, con un MTBF de 17.520 horas y 36 de recuperación. Por el intercambiador, 0,99701. El producto da 0,99496, menos que cualquiera de los dos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s36_ce0eebf12f16a9e70e767aba5dba89dc1a778207ef633020976e903cb8e2daeb.mp4"
+          >
+            <aside class="notes" data-markdown>Abajo, dos intercambiadores en paralelo ideal detrás de la misma bomba. Si E-101 falla, la cruz roja, el agua sigue pasando por E-102. En paralelo basta uno, así que se multiplican las indisponibilidades. Uno menos 0,99701, al cuadrado, es casi cero. Multiplicado por la bomba, la disponibilidad sube a 0,99794. (pausa) ¿Qué es lo que más limita ahora este número?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s36_ffcd8b27652035fcb0426ffd69fe9c3e2422d7cf86a091c27976e1d791f175d5.mp4"
+          >
+            <aside class="notes" data-markdown>La bomba. Si falla P-201, no pasa agua por ninguno de los dos intercambiadores. Incluso si las dos unidades nunca fallaran juntas, la bomba sola deja 0,99795, y el paralelo llega a 0,99794. Casi todo lo que falta viene de la bomba común, que sigue en serie. Esa fórmula de paralelo da por hecho que la unidad que queda alcanza, y ese supuesto hay que revisarlo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s37_9867e96b2d348c836235a239b7c88005681d3316d3583659cae465ce40b84fd9.mp4"
+          >
+            <aside class="notes" data-markdown>La fórmula del paralelo cuenta como éxito que funcione una sola unidad, sin preguntar si su capacidad alcanza la demanda. Eso depende del diseño. Aquí hay tres arquitecturas con el mismo caudal total, en naranja el agua de refrigeración. En A1, una unidad de 60 metros cuadrados con todo el caudal. En A2, dos de 30, cada una con la mitad del caudal como tope por ramal. En A3, dos de 60 que comparten el caudal.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s37_f3841dba8844a99bfba1f4c71fea024c7ff8945c0b6625a2c54479766722c614.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora sacamos una unidad en cada arquitectura, las cruces rojas. En A1 no queda nada. En A2 y A3 queda una, y la pregunta es si alcanza los 2,0 megawatts. (pausa) Piensen en el área de la unidad que queda y en el caudal que recibe. Una pista, repartir el caudal baja el coeficiente U de cada unidad, así que dos unidades juntas entregan menos del doble. Cuánto queda lo van a predecir y calcular en la Misión 3.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s37_182483e2eaa73c0e0233960ac160a000fdd4fb49f6e04de8d9e456a5e205ebda.mp4"
+          >
+            <aside class="notes" data-markdown>Y una cosa que ninguna de las tres arregla. Las tres dependen de la bomba común P-201, que sigue en serie con todas las unidades. Si falla la bomba, cualquiera de las tres arquitecturas pierde todo el servicio, y la redundancia de intercambiadores no la cubre. Con los equipos y sus indicadores claros, falta decidir cuándo limpiar.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s38_14331b894edf7a7aa1242c11e6cc87da62bad41712ba6685dc6f959a57ad2939.mp4"
+          >
+            <aside class="notes" data-markdown>Ya sabemos que el ensuciamiento baja la capacidad y que cada limpieza la recupera, así que la pregunta es cuándo detener la unidad para limpiar. Cada esquema muestra la capacidad en granate, que baja con el ensuciamiento y salta hacia arriba en cada limpieza, y la demanda de 2,0 megawatts en gris segmentado. La periódica limpia por calendario, por ejemplo cada 1.500 horas, mire o no la capacidad. La reactiva espera a que la capacidad ya no cubra la demanda, y la por condición limpia cuando la capacidad estimada se acerca a la demanda. Abajo, el kit de repuestos es otra palanca, que acorta la recuperación después de una falla y se combina con cualquiera de las tres. (pausa) ¿Cuál limpiaría menos veces?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s38_a6f3d191a021032c8c7e43e5a564643664df5ecdbbf3a5ecd02466702297706d.mp4"
+          >
+            <aside class="notes" data-markdown>Comparemos las reglas con la simulación del caso, mil años por política. Las barras rojas son las horas equivalentes perdidas por año. Primero con servicio proporcional, es decir, si falta un diez por ciento de capacidad se pierde un diez por ciento de servicio. La reactiva, enmarcada en verde, gana con unas 121 horas. Limpia menos veces, y el déficit breve antes de limpiar pesa menos que las 8 horas de detención de cada limpieza programada. Limpiar cada 1.000 horas sale peor que cada 1.500, porque suma detenciones. (pausa) ¿Qué pasa si la planta no tolera ningún déficit?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s38_a40cbd23c9f62f998a73956d6a508e93bc390fe0ed173416b88f2e972723692f.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora cambiamos el modelo de servicio a todo o nada. Basta un pequeño déficit para perder la hora completa. Miren cómo crecen las barras. La periódica cada 1.500 horas sube a unas 312 horas por año y la reactiva a 297, porque ambas pasan tiempo bajo la demanda. Cada 1.000 horas queda en 160 y por condición en unas 135, las dos enmarcadas en verde. La mejor regla depende de cómo se pierde el servicio en la planta. Para comparar esas políticas con fallas al azar, simulamos muchos años.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s39_e0fe8c5e80bf0154c1a663d2093d53b0aab9f7bd8a46cb8ec5835948543c21c3.mp4"
+          >
+            <aside class="notes" data-markdown>Las fallas ocurren al azar, así que un solo año simulado puede salir afortunado o desafortunado. Aquí vemos tres réplicas del mismo año. Las marcas grises son las limpiezas programadas, que caen siempre en el mismo lugar. Los bloques rojos son fallas con su reparación, y cambian de réplica en réplica porque se sortean según el MTBF y la demora. Es un esquema, sin cifras del caso. (pausa) ¿Cuál de estas tres réplicas perdió más horas? Ahora juntamos muchas réplicas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s39_42c21d9d8378d380efd64d46248088cb1fb4e5236771e53d4fa5e1e79c5cac35.mp4"
+          >
+            <aside class="notes" data-markdown>Cada réplica deja un número, sus horas perdidas en ese año. Los cuadraditos rojos caen en su rango del histograma. Repetimos eso mil veces y aparecen las barras. La mayoría de los años pierde pocas horas, y unos pocos años con fallas largas pierden muchas, por eso la cola larga hacia la derecha. Esto es lo que se llama simulación Monte Carlo. (pausa) ¿Qué número informamos de toda esta distribución?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s39_4dc6aa79162ee3b838cbc60b3ad38920a15680aefc97ab0e2934066b5b2ad9b2.mp4"
+          >
+            <aside class="notes" data-markdown>Sobre el histograma marcamos la media en azul y los percentiles 5 y 95 en gris segmentado. Entre p05 y p95 cae el noventa por ciento central de los años. Además de las fallas, se sortea la rapidez del ensuciamiento de cada ciclo, k f, que varía un treinta por ciento alrededor de su media. Algunos ciclos se ensucian más rápido y cruzan el R f crítico antes de la limpieza, por eso aun limpiando cada 1.500 horas aparecen algunas horas perdidas. La semilla fija los dados, así todos obtienen lo mismo y las políticas se comparan con la misma suerte. Con muchas réplicas hay que informar la media junto con su error y su dispersión.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s40_c64afd6807d85024ff653c934de1d2c976978afc4e352cfd1a5ff67add9009c6.mp4"
+          >
+            <aside class="notes" data-markdown>Con muchas réplicas informamos dos cosas distintas. Arriba a la derecha está la primera, la media con su error estándar, EE, que es sigma sobre raíz de n. Sigma es la desviación estándar entre años y n el número de réplicas. En la figura, la media es la línea azul y su error es la barra azul de abajo. La segunda es el rango de p05 a p95, la barra negra, donde cae el noventa por ciento central de los años. (pausa) ¿Qué le pasa a cada barra si simulamos más años?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s40_5f01e53559c4210bfec010659ae732fbb9e220736db17ca721df5f13c4e20d3f.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora aumentamos el número de réplicas. Miren la barra azul. El error estándar se achica como uno sobre raíz de n, así que cuatro veces más réplicas lo dejan a la mitad. La barra negra no se mueve, porque mide cuánto cambia un año real respecto de otro, y eso no depende de cuánto simulemos. Precisión de la media y variabilidad entre años son dos preguntas distintas. Veamos el caso.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s40_cf2e6b3a738a898e54ff2f88416734223797d8bed2af64c020b1b3eaf2a911f8.mp4"
+          >
+            <aside class="notes" data-markdown>Un ejemplo del caso. Limpiando cada 1.500 horas con servicio proporcional, mil réplicas dan 135,8 más o menos 2,4 horas por año, y el rango de 41 a 285 horas es lo que puede pasar en un año cualquiera. En la herramienta, la misión 2 corre 200 réplicas y verán unas 141 más o menos 6 horas, un error mayor porque hay cinco veces menos réplicas. Abajo, la regla práctica. (pausa) Si dos políticas difieren en 3 horas por año y el error de esa diferencia es 4, ¿son distintas? No se puede afirmar, y como todas las políticas usan los mismos años sorteados, el error de la diferencia es menor que la suma de ambos. Las horas perdidas simuladas se convierten en dinero para comparar estrategias.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s41_e40cdd7b441c4839eb883499b0fd32d1d8aabb8483d135e5f9766344050b0a3f.mp4"
+          >
+            <aside class="notes" data-markdown>Para comparar estrategias sumamos sus costos con una misma base, millones de pesos reales de 2026. Primero la inversión inicial, el CAPEX, en ocre. Una segunda unidad completa cuesta 220 millones y un kit de repuestos 20. La línea gris segmentada es el presupuesto de 250. (pausa) ¿Caben las dos cosas juntas en el presupuesto? Sí, justo, 240. Ahora los costos que se repiten cada año.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s41_6ed762f106287008eb78b79e40f82b2e26f8fceba333294d86c3237b81a50027.mp4"
+          >
+            <aside class="notes" data-markdown>Los costos anuales. Cada limpieza cuesta 2 millones y cada reparación 6. La energía de bombeo varía poco entre estrategias. La fila roja es la más pesada, el servicio perdido, 3 millones por hora equivalente perdida. Es un proxy acordado para la clase, que representa lo que la operación deja de producir. A la izquierda, en el caso limpiando cada 1.500 horas, el servicio perdido de unos 407 millones al año aplasta a las limpiezas y reparaciones. Las horas perdidas se cobran una sola vez, a través de ese proxy.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s41_698efb0fd5c2cceb4857fa38628dd19da10dfcdf5376273ffea5adff7b2713a3.mp4"
+          >
+            <aside class="notes" data-markdown>Comprobemos. (pausa) Si se pierden 100 horas equivalentes en un año, ¿cuánto cuestan? Cien por tres, 300 millones por año. Más que una segunda unidad completa, cada año. Por eso el valor de la hora perdida es un supuesto que vamos a poner a prueba. Esos costos ocurren en años distintos, así que los llevamos a valor presente.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s42_7bb1fbe48a2bf3e4311071d3430bf361c584c9c0a9e1e029115b46999b87128e.mp4"
+          >
+            <aside class="notes" data-markdown>Los costos y ahorros ocurren en años distintos. Tomemos un ejemplo propio. En el año cero se invierten 220 millones, la barra roja hacia abajo. Del año uno al diez la estrategia ahorra 50 millones por año, las barras azules. A la derecha, el VAN incremental es el costo del ciclo de vida de la referencia menos el de la estrategia. Si es positivo, la estrategia cuesta menos. (pausa) ¿Vale lo mismo el ahorro del año diez que el del año uno?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s42_af014f61e75c7ce71018056b14100011cd8f9f2f2fd827b3ccf8e91e7d01cb5c.mp4"
+          >
+            <aside class="notes" data-markdown>Un peso de hoy vale más que un peso dentro de diez años. Cada ahorro se divide por 1,08 elevado al año en que ocurre. Miren cómo baja el relleno azul de cada barra, cada vez más hacia el año diez. Si sumamos esos factores para diez años al 8 por ciento, obtenemos 6,71. Ese número se llama factor de anualidad. Recibir 1 millón por año durante diez años equivale a 6,71 millones de hoy.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s42_b0e430b8c8c8982aa978b21f29578be21c8460093c221fee75e65522e5deca01.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora juntamos todos los rellenos azules en una sola barra. Suman 50 por 6,71, es decir 335,5 millones de hoy. Debajo, en rojo, la inversión de 220, y la diferencia en ocre es el VAN, 335,5 menos 220, más 115,5 millones. Positivo significa que la estrategia sale más barata que la referencia en diez años. (pausa) Si el ahorro fuera 30 por año, ¿convendría? No, porque 30 por 6,71 no alcanza a cubrir los 220. Ese VAN depende de supuestos, y el más pesado es el valor del servicio perdido.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s43_14d125cc41ab4b49a02cbfa6302bdb8bb9451a83fa7c445337f2b37f6b53f210.mp4"
+          >
+            <aside class="notes" data-markdown>Una recomendación vale tanto como los supuestos que la sostienen. Volvamos a un ejemplo propio. Una inversión de 220 millones evita 100 horas perdidas por año. Si cada hora vale c millones, el ahorro anual es c por 100, y por el factor de anualidad 6,71 llega a valor presente. La recta azul es el VAN en función de c. Parte en menos 220 cuando la hora perdida no vale nada. (pausa) ¿Dónde cambia de signo?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s43_d7fedb3a19bfedcc61ade155aef5028ade31754acaea1cb40908402541beefcc.mp4"
+          >
+            <aside class="notes" data-markdown>Movamos c. El punto verde recorre la recta hacia la izquierda, y al cruzar el cero se vuelve rojo. El VAN cambia de signo en c igual a 220 dividido por 100 por 6,71, unos 0,33 millones por hora. Ése es el punto de equilibrio, el punto rojo. A la izquierda la inversión no conviene. A la derecha conviene invertir. Ése es el número que el comité debe discutir.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s43_3db1b8a35bed809f2f53d4180abad228e8c6fe5e5990394508299b07fb55a4f1.mp4"
+          >
+            <aside class="notes" data-markdown>El análisis de sensibilidad recalcula el VAN cambiando un dato a la vez, y el punto de equilibrio es el valor que da vuelta la decisión. Abajo, en ocre, el proxy de aula vale 3 millones por hora, muy a la derecha, fuera del gráfico. En el caso buscarán este punto para su estrategia y lo informarán como sensibilidad decisiva, junto con el dato que les convendría medir primero. Todas estas decisiones suponen conocer R f, y en planta nadie lo mide directamente.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s44_af63ef3c43e8e95008d08417c607d48f377e4b0df1b63ea74275021fb8839260.mp4"
+          >
+            <aside class="notes" data-markdown>Todas las decisiones que vimos suponen conocer R f, y en planta nadie lo mide directamente. Lo que sí se mide son cuatro temperaturas y dos caudales, el cuadro naranjo. Con los balances calculamos el calor Q y la diferencia media logarítmica. Su cociente da la conductancia UA, y dividida por el área, el coeficiente U. Es la misma cadena de la sección 2, recorrida al revés. (pausa) ¿Basta U para saber cuánto depósito hay?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s44_efecde94f90bf0c823241922e1ae575faf7add9916c35bf37e32a117c38a210d.mp4"
+          >
+            <aside class="notes" data-markdown>U solo no basta. Para pasar de U a R f se necesita un U limpio de referencia, medido después de una limpieza, el cuadro gris de abajo. R f es uno sobre U menos uno sobre U limpio, el cuadro azul, lo inferido. Sin esa referencia, la pérdida podría venir del agua más cálida o de otro caudal, y no se puede atribuir al ensuciamiento. Además las mediciones tienen ruido, así que cada estimación lleva su incertidumbre.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s44_ba7404597bb03e0cdf99b45bcbb00782f4d8f6d9d86d635fa3eb03b59557362c.mp4"
+          >
+            <aside class="notes" data-markdown>Recuerden la diapositiva 12. Las temperaturas se acomodan en minutos y el ensuciamiento cambia en semanas, el régimen cuasi estacionario. Cada hora de operación calculamos el equipo en régimen permanente con el R f de ese momento, la ecuación de la izquierda. En la demostración del caso compararemos este método físico con una red neuronal y con una red informada por la física. Esa red usa justamente esta separación de escalas, y además exige que R f crezca en el tiempo según dR f sobre dh igual a k, en verde oliva, con h las horas de operación. Con esto tienen todos los conceptos, veamos cómo se organiza el caso.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s45_752e55ef20c83c5efa091c6503ed5169238483c7bcf7c19b7e0095044fef1eaf.mp4"
+          >
+            <aside class="notes" data-markdown>Con esto tienen todos los conceptos, y el caso se organiza en seis etapas. En el inicio fijan la función, el criterio y la capacidad real del E-101. La misión 1 pregunta cuánto ensuciamiento tolera. La misión 2, qué política de limpieza conviene, con la simulación que acabamos de ver. Después inferir, cómo estimar R f sin medirlo. La misión 3, cuándo comprar redundancia, y al final la decisión, con su recomendación, la defensa y el voto final.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="therma_leccion_sala_assets/s45_0f7e86776daa1cd8d0c32aecd00c8f6cd45090f7e0ce3d57254e8a793808507c.mp4"
+          >
+            <aside class="notes" data-markdown>La Parte B se hace en grupos de tres o cuatro personas, con roles de operaciones, mantenimiento y finanzas. El caso está en la herramienta THERMA, en la dirección que ven en el recuadro. Formen grupos y pulsen Ir al caso, y abran también la hoja de registro, donde anotan los resultados del grupo. Si necesitan repasar un concepto, cada misión enlaza la sección correspondiente de esta lección. Ahora pasamos a la Parte B, cada grupo abre el caso y parte por la pantalla de inicio.</aside>
+        </section>
+      </div>
+    </div>
+
+    <script src="lib/reveal.js/5.2.0/reveal.min.js"></script>
+    <script src="lib/reveal.js/5.2.0/plugin/notes/notes.min.js"></script>
+
+    <!-- To include plugins, see: https://revealjs.com/plugins/ -->
+    <script src="lib/reveal.js/5.2.0/plugin/markdown/markdown.min.js"></script>
+
+    <!-- <script src="index.js"></script> -->
+    <script>
+      Reveal.initialize({
+        /// The list of RevealJS plugins.
+        plugins: [ RevealMarkdown, RevealNotes ],
+        // The "normal" size of the presentation, aspect ratio will
+        // be preserved when the presentation is scaled to fit different
+        // resolutions. Can be specified using percentage units.
+        width: '100%',
+        height: '100%',
+        // Factor of the display size that should remain empty around
+        // the content
+        margin: 0.04,
+        // Bounds for smallest/largest possible scale to apply to content
+        minScale: 0.2,
+        maxScale: 2.0,
+        // Display presentation control arrows
+        controls: true,
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: true,
+        // Determines where controls appear, "edges" or "bottom-right"
+        // Fixed here because Manim Slides injects the value of
+        // `-ccontrols_layout` without the surrounding quotes.
+        controlsLayout: "edges",
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: "faded",
+        // Display a presentation progress bar
+        progress: true,
+        // Display the page number of the current slide
+        // - true:    Show slide number
+        // - false:   Hide slide number
+        //
+        // Can optionally be set as a string that specifies the number formatting:
+        // - "h.v":   Horizontal . vertical slide number (default)
+        // - "h/v":   Horizontal / vertical slide number
+        // - "c":   Flattened slide number
+        // - "c/t":   Flattened slide number / total slides
+        //
+        // Alternatively, you can provide a function that returns the slide
+        // number for the current slide. The function should take in a slide
+        // object and return an array with one string [slideNumber] or
+        // three strings [n1,delimiter,n2]. See #formatSlideNumber().
+        slideNumber: false,
+        // Can be used to limit the contexts in which the slide number appears
+        // - "all":      Always show the slide number
+        // - "print":    Only when printing to PDF
+        // - "speaker":  Only in the speaker view
+        showSlideNumber: 'all',
+        // Use 1 based indexing for # links to match slide number (default is zero
+        // based)
+        hashOneBasedIndex: false,
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: false,
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: false,
+        // Enable support for jump-to-slide navigation shortcuts
+        jumpToSlide: true,
+        // Push each slide change to the browser history.  Implies `hash: true`
+        history: true,
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+        // Optional function that blocks keyboard events when retuning false
+        //
+        // If you set this to 'focused', we will only capture keyboard events
+        // for embedded decks when they are in focus
+        keyboardCondition: null,
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+        // Enable the slide overview mode
+        overview: true,
+        // Vertical centering of slides
+        center: true,
+        // Enables touch navigation on devices with touch input
+        touch: true,
+        // Loop the presentation
+        loop: false,
+        // Change the presentation direction to be RTL
+        rtl: false,
+        // Changes the behavior of our navigation directions.
+        //
+        // "default"
+        // Left/right arrow keys step between horizontal slides, up/down
+        // arrow keys step between vertical slides. Space key steps through
+        // all slides (both horizontal and vertical).
+        //
+        // "linear"
+        // Removes the up/down arrows. Left/right arrows step through all
+        // slides (both horizontal and vertical).
+        //
+        // "grid"
+        // When this is enabled, stepping left/right from a vertical stack
+        // to an adjacent vertical stack will land you at the same vertical
+        // index.
+        //
+        // Consider a deck with six slides ordered in two vertical stacks:
+        // 1.1    2.1
+        // 1.2    2.2
+        // 1.3    2.3
+        //
+        // If you're on slide 1.3 and navigate right, you will normally move
+        // from 1.3 -> 2.1. If "grid" is used, the same navigation takes you
+        // from 1.3 -> 2.3.
+        navigationMode: 'default',
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+        // Turns fragments on and off globally
+        fragments: true,
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: true,
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+        // Flags if we should show a help overlay when the question-mark
+        // key is pressed
+        help: true,
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+        // Global override for autolaying embedded media (video/audio/iframe)
+        // - null:   Media will only autoplay if data-autoplay is present
+        // - true:   All media will autoplay, regardless of individual setting
+        // - false:  No media will autoplay, regardless of individual setting
+        autoPlayMedia: null,
+        // Global override for preloading lazy-loaded iframes
+        // - null:   Iframes with data-src AND data-preload will be loaded when within
+        //           the viewDistance, iframes with only data-src will be loaded when visible
+        // - true:   All iframes with data-src will be loaded when within the viewDistance
+        // - false:  All iframes with data-src will be loaded only when visible
+        preloadIframes: null,
+        // Can be used to globally disable auto-animation
+        autoAnimate: true,
+        // Optionally provide a custom element matcher that will be
+        // used to dictate which elements we can animate between.
+        autoAnimateMatcher: null,
+        // Default settings for our auto-animate transitions, can be
+        // overridden per-slide or per-element via data arguments
+        autoAnimateEasing: 'ease',
+        autoAnimateDuration: 1.0,
+        autoAnimateUnmatched: true,
+        // CSS properties that can be auto-animated. Position & scale
+        // is matched separately so there's no need to include styles
+        // like top/right/bottom/left, width/height or margin.
+        autoAnimateStyles: ['opacity', 'color', 'background-color', 'padding', 'font-size', 'line-height', 'letter-spacing', 'border-width', 'border-color', 'border-radius', 'outline', 'outline-offset'],
+        // Controls automatic progression to the next slide
+        // - 0:      Auto-sliding only happens if the data-autoslide HTML attribute
+        //           is present on the current slide or fragment
+        // - 1+:     All slides will progress automatically at the given interval
+        // - false:  No auto-sliding, even if data-autoslide is present
+        autoSlide: 0,
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+        // Use this method for navigation when auto-sliding (defaults to navigateNext)
+        autoSlideMethod: null,
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+        // Opens links in an iframe preview overlay
+        // Add `data-preview-link` and `data-preview-link="false"` to customize each link
+        // individually
+        previewLinks: false,
+        // Exposes the reveal.js API through window.postMessage
+        postMessage: true,
+        // Dispatches all reveal.js events to the parent window through postMessage
+        postMessageEvents: false,
+        // Focuses body when page changes visibility to ensure keyboard shortcuts work
+        focusBodyOnPageVisibilityChange: true,
+        // Transition style
+        transition: 'none', // none/fade/slide/convex/concave/zoom
+        // Transition speed
+        transitionSpeed: 'default', // default/fast/slow
+        // Transition style for full page slide backgrounds
+        backgroundTransition: 'none', // none/fade/slide/convex/concave/zoom
+        // The maximum number of pages a single slide can expand onto when printing
+        // to PDF, unlimited by default
+        pdfMaxPagesPerSlide: Number.POSITIVE_INFINITY,
+        // Prints each fragment on a separate slide
+        pdfSeparateFragments: true,
+        // Offset used to reduce the height of content within exported PDF pages.
+        // This exists to account for environment differences based on how you
+        // print to PDF. CLI printing options, like phantomjs and wkpdf, can end
+        // on precisely the total height of the document whereas in-browser
+        // printing has to end one pixel before.
+        pdfPageHeightOffset: -1,
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+        // The display mode that will be used to show slides
+        display: 'block',
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000
+      });
+      // Override SPACE to play / pause the video
+      Reveal.addKeyBinding(
+        {
+          keyCode: 32,
+          key: 'SPACE',
+          description: 'Play / pause video'
+        },
+        () => {
+          var currentVideos = Reveal.getCurrentSlide().slideBackgroundContentElement.getElementsByTagName("video");
+          if (currentVideos.length > 0) {
+            if (currentVideos[0].paused == true) currentVideos[0].play();
+            else currentVideos[0].pause();
+          } else {
+            Reveal.next();
+          }
+        }
+      );
+    </script>
+
+    <div id="deck-counter"></div>
+    <script>
+      (function () {
+        function refresh() {
+          var total = Reveal.getTotalSlides();
+          var idx = Reveal.getSlides().indexOf(Reveal.getCurrentSlide()) + 1;
+          var el = document.getElementById("deck-counter");
+          if (el) el.textContent = idx + " / " + total;
+        }
+        Reveal.on("ready", refresh);
+        Reveal.on("slidechanged", refresh);
+      })();
+    </script>
+  </body>
+</html>
