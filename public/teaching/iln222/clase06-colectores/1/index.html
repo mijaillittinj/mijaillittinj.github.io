@@ -1,0 +1,553 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Colectores solares térmicos 1, ILN222</title>
+
+    <link rel="stylesheet" href="../lib/reveal.js/5.2.0/reveal.min.css">
+    <link rel="stylesheet" href="../lib/reveal.js/5.2.0/theme/black.min.css">
+
+    <!-- Theme used for syntax highlighting of code -->
+    <!-- <link rel="stylesheet" href="../lib/css/zenburn.css"> -->
+    <!-- <link rel="stylesheet" href="index.css"> -->
+
+    <style>
+      :root {
+        --bg: #0D1117;
+        --fg: #E8EDF2;
+        --accent: #6FA8DC;
+        --dim: #5B6775;
+      }
+      html, body, .reveal { background: var(--bg); }
+      .reveal .slides section { height: 100%; }
+      /* thin progress bar in the presentation accent colour */
+      .reveal .progress { height: 4px; color: var(--accent); background: rgba(255,255,255,0.06); }
+      /* discreet state counter, hidden in the overview.  It sits in the top
+         right corner, which every slide leaves empty, because the bottom of
+         the frame already carries the section name and the source note. */
+      #deck-counter {
+        position: fixed; top: 12px; right: 18px; z-index: 30;
+        font-family: "Latin Modern Roman", Georgia, "Times New Roman", serif;
+        font-size: 15px; color: var(--dim); letter-spacing: 0.2px;
+        pointer-events: none; opacity: 0.8;
+      }
+      .reveal.overview #deck-counter { display: none; }
+      /* keep the arrows unobtrusive, the talk is driven by the keyboard */
+      .reveal .controls { opacity: 0.25; }
+      .reveal .controls:hover { opacity: 0.8; }
+    </style>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s0_92a45031a94eb05bd77973be3d7aa9ec096f727b1c10bd8112a49a1f5201d258.mp4"
+          data-background-video-muted
+          >
+            <aside class="notes" data-markdown>Buenos días. Empezamos una unidad de cuatro clases dedicada a un equipo concreto, el colector solar térmico, el que ven en los techos calentando agua. Todo lo que vimos de radiación se junta aquí, la absortividad, la emisividad, el efecto invernadero y el factor de forma. Pregunto al curso quién ha visto uno en su casa o en un edificio (pausa). Al terminar la unidad sabrán estimar cuánta energía entrega un colector y de qué depende su eficiencia.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s1_b4a01f912584c2145acbf06cd0b7747c8f3e01c9665cc680051b60a32ed8207d.mp4"
+          >
+            <aside class="notes" data-markdown>Este es el mapa de la unidad, cuatro clases que siguen el orden del material del curso. Hoy estamos en la primera, destacada. Vemos qué es un colector plano y de qué está hecho, cómo cada mejora del diseño ataca una pérdida de calor, por qué la placa lleva una superficie selectiva, con un ejemplo resuelto que compara dos placas al sol, para qué se usa y, al final, el Sol como fuente. El número de la clase aparece siempre abajo a la izquierda.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s2_8145aecbd3d9d93297be426498562705583f265dea8dadcec2684bc26e2b867d.mp4"
+          >
+            <aside class="notes" data-markdown>Partimos por la definición. Un colector solar plano es un intercambiador de calor, un equipo que pasa energía de una fuente caliente a un fluido. Los intercambiadores clásicos, entre dos fluidos, los estudiaremos en la clase siete, después de esta unidad. Aquí la fuente caliente es la radiación del Sol, y el fluido que recibe la energía es casi siempre agua. En medio está la placa absorbedora, que recibe la radiación y se calienta. Una confusión frecuente es pensar que produce electricidad. Este equipo calienta agua, y eso lo distingue del panel fotovoltaico. En Chile la Ley 20.365 dio una franquicia tributaria a estos sistemas en viviendas nuevas, así que es una tecnología masiva. Antes de entrar al detalle, veamos qué vamos a calcular.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s2_eacf328ef70c582504554ad6def7b7c107b38ff7763026b531c0e064e82ba32f.mp4"
+          >
+            <aside class="notes" data-markdown>Arriba queda la cadena de energía, más pequeña. Para diseñar un colector hay que calcular tres cantidades, y cada una corresponde a una clase de la unidad. La primera es cuánta radiación llega al colector, y es la clase dos. La segunda es cuánto calor pierde la placa caliente, y es la clase tres. La tercera es qué fracción de la radiación termina en el fluido, la eficiencia, y es la clase cuatro. Las tres se encadenan. La radiación que llega, menos lo que se pierde, es lo que gana el fluido, y ese balance de energía es el hilo de toda la unidad. Pregunto al curso cuál de las tres cantidades creen que depende más del diseño del equipo y cuál del lugar donde se instala (pausa). Hoy vemos el equipo por dentro. Empezamos desarmándolo en tres dimensiones.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s3_6952ea3061da258f097cf7a5cef8fa678a67d8befe2e633f0adc03c73c006277.mp4"
+          >
+            <aside class="notes" data-markdown>Desarmamos un colector plano comercial, de unos dos metros por uno y diez centímetros de espesor. Las piezas están separadas en altura para verlas todas. Abajo, la caja de aluminio, que da rigidez y protege del clima. Sobre ella la aislación de lana mineral. Luego los tubos de cobre, seis tubos delgados a lo largo, llamados elevadores, separados quince centímetros, y dos tubos colectores más gruesos en los extremos. Después la placa absorbedora, con el mismo color que usamos para la placa en toda la unidad. Arriba, el vidrio templado. Pregunto al curso en qué orden creen que se arma (pausa).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s3_d2557e93bf3c1cee9c8569698459d5ea3271e33a05d27962bd69bface2cfd69e.mp4"
+          >
+            <aside class="notes" data-markdown>Se arma de abajo hacia arriba. Primero la aislación entra en la caja. Después viene la pieza más importante. Los tubos suben hasta la placa y se sueldan a ella, por ultrasonido o por láser. Placa y tubos forman una sola pieza, el absorbedor. El calor tiene que pasar de la placa al tubo por conducción a través de esa unión, marcada con un círculo y dibujada en corte a la derecha. Para verla quitamos la caja y miramos el absorbedor desde abajo. Una mala soldadura es una resistencia térmica extra, y la veremos aparecer en la clase cuatro como el factor F prima. Pregunto al curso qué pasaría con la placa si la unión fuera mala (pausa).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s3_c8660bdcabfd575afa27b47183cd1714825d0f3a52be410fdee929fcf1c95d22.mp4"
+          >
+            <aside class="notes" data-markdown>El absorbedor completo baja y queda apoyado sobre la aislación. Al final el vidrio cierra la caja y deja una capa de aire de unos dos centímetros sobre la placa. Las flechas muestran el recorrido del fluido. Entra frío por un extremo del tubo colector inferior, sube repartido por los seis elevadores mientras se calienta y sale caliente por el extremo opuesto del colector superior. Entrada y salida van en esquinas opuestas para que todos los tubos tengan el mismo recorrido. Ahora cortamos el colector para verlo por dentro.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s3_73a4ca28ba79069c46953fdc5864c34d4d7638055f08445bfd23bc18f87ce866.mp4"
+          >
+            <aside class="notes" data-markdown>Para ver el interior cortamos el colector. Primero aparece el plano de corte, perpendicular a los tubos. Después separamos el trozo que sobra y lo retiramos, y giramos para mirar la cara cortada de frente. Se ven las dos paredes de la caja, la aislación abajo, los seis tubos con el fluido adentro, la placa encima y el vidrio arriba. Fíjense en lo delgado que es el conjunto, diez centímetros para un metro de ancho. Acerquémonos a uno de los tubos para leer las capas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s3_06ddc406054b3afed7ef48fbd3191178ce5520dad49d26e907c5483e9f0910d0.mp4"
+          >
+            <aside class="notes" data-markdown>La vista cercana muestra las capas en orden de arriba hacia abajo. El vidrio, de tres milímetros, la línea delgada de arriba. La capa de aire, de unos dos centímetros, que frena la convección. La placa absorbedora, y bajo ella el tubo de cobre cortado, con el fluido adentro. Abajo la aislación de lana mineral, que ocupa casi todo el espesor, y el fondo de la caja. Cada capa tiene una función térmica, y la vamos a entender siguiendo la energía en un esquema plano.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s3_ca05a0524dbfe4e954575a665af68a1ee4df11d6393cc8200da823387fd43222.mp4"
+          >
+            <aside class="notes" data-markdown>El mismo corte, ahora en un esquema plano sin escala, con las mismas piezas y los mismos seis tubos. Numeramos de arriba hacia abajo. Uno, el vidrio. Dos, la capa de aire. Tres, la aislación lateral. Cuatro, la placa, con el recubrimiento selectivo, una capa delgada sobre ella. Cinco, los tubos con el fluido. Seis, la aislación inferior, y siete, el marco y la caja. Pregunto al curso para qué sirve cada capa (pausa). Lo respondemos siguiendo la energía.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s3_26a453ff4adcfc23e34062a561b42218994e8fe35f4969ff5a5449168205a671.mp4"
+          >
+            <aside class="notes" data-markdown>Seguimos la energía. El Sol emite con su máximo cerca de medio micrón, onda corta. Sus rayos llegan paralelos, porque el Sol está muy lejos, y todos forman el mismo ángulo con el colector. Atraviesan el vidrio, que es transparente en el visible, y pierden cerca de un diez por ciento entre reflexión y absorción. La placa los absorbe y se calienta. El calor pasa por conducción a los tubos y de ahí por convección al fluido. Falta ver qué hace la placa caliente.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s3_05af6bdcb76e9ce179e8aa026319424948bc2dc1c404d1cddbcf2ff2162700db.mp4"
+          >
+            <aside class="notes" data-markdown>La placa caliente también emite, a una temperatura mucho menor que el Sol, así que emite en el infrarrojo lejano, las flechas onduladas. Bajé la intensidad de los rayos solares para verlas. El vidrio no deja pasar esa radiación porque la absorbe. Se calienta, el vidrio se tiñe en el dibujo, y reemite hacia los dos lados. Una parte vuelve hacia la placa y otra se pierde hacia el cielo, la flecha punteada. Es el efecto invernadero de la clase de propiedades. Ojo con la analogía del auto al sol. El auto se calienta sobre todo porque el vidrio frena la convección. En el colector el vidrio hace las dos cosas, frena la convección y retiene la onda larga. El colector deja entrar la onda corta y retiene una parte de la onda larga. Lo que se escapa hacia el cielo es una de las pérdidas del colector. Antes de combatir esas pérdidas, veamos que la idea de captar el Sol es muy antigua.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s4_372fa942f2d98fe4b768b9e42b5e9129ce056913fe478a30bdcc31ed2f6c92a0.mp4"
+          >
+            <aside class="notes" data-markdown>La pintura de Giulio Parigi, del siglo diecisiete, muestra a Arquímedes incendiando barcos romanos con espejos en Siracusa. Probablemente es un mito, y muestra que la idea tiene más de dos mil años. El problema de ingeniería no es captar, porque cualquier superficie negra capta. El problema es retener el calor, porque una placa caliente pierde por los tres mecanismos a la vez. Pregunto al curso cuáles son esos tres mecanismos (pausa). Vamos a atacarlos uno por uno.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s4_1d40f90d5c500927809b6eca6d0dbd695144c2db5d3d6f5b9c478925a40d1e31.mp4"
+          >
+            <aside class="notes" data-markdown>Aquí está la placa sola, con sus tubos, caliente al sol. Pierde calor por los tres mecanismos, todas las flechas de pérdida. Por abajo y por los lados pierde por convección y radiación hacia el entorno, más algo de conducción por los soportes. Hacia arriba por convección, porque el viento arrastra el aire caliente. Y por radiación infrarroja hacia el cielo. Una placa así entrega pocos grados útiles con viento, y solo sirve para agua tibia, como la de una piscina. Cada mejora de la historia del colector ataca una de estas flechas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s4_55797f89f61412ae3be83eb283259915d128fd19a7086faa05ad4019c5ddd3f4.mp4"
+          >
+            <aside class="notes" data-markdown>Primera mejora, la aislación inferior y lateral, dentro de una caja. Las flechas de conducción se achican. No desaparecen, porque ningún aislante es perfecto, y quedan pequeñas frente a las demás. A la derecha anotamos la mejora y la pérdida que ataca. Es la misma resistencia térmica de conducción que usaron para aislar cañerías.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s4_492d1ab6303dfa9c21adb15bba24d32a75b6de0d4216bea50aef6559130f765c.mp4"
+          >
+            <aside class="notes" data-markdown>Segunda mejora, la cubierta de vidrio. El viento ya no toca la placa, así que la convección exterior queda sobre el vidrio, que está más frío, y se achica. El vidrio además es opaco en el infrarrojo. Absorbe la radiación de onda larga de la placa, se calienta y la reemite, una parte de vuelta hacia la placa y otra hacia el cielo, las flechas onduladas. Como vimos en la anatomía, el vidrio frena la convección y retiene la onda larga. Aparece un mecanismo nuevo, la convección del aire encerrado entre placa y vidrio, las celdas curvas. Pregunto al curso cómo podríamos eliminar esa convección interna (pausa). Antes de eso, atacamos la emisión de la placa.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s4_6ba4537dd119dddeb4f2d2e96d028eed52e1e1e6ac743e5fabed82053ec38333.mp4"
+          >
+            <aside class="notes" data-markdown>Tercera mejora, un recubrimiento selectivo sobre la placa, la capa delgada que aparece encima. Es lo que vimos en la clase de propiedades. Absortividad solar alta, cerca de nueve décimas, y emisividad infrarroja baja, cerca de una décima, como el cromo negro. La placa sigue absorbiendo el sol y emite mucho menos, así que las flechas infrarrojas se reducen. Queda la convección interna.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s4_de81f6dfbb936c82f076081184b049405bd8b9f81ad392f7dbe9002107f3ae46.mp4"
+          >
+            <aside class="notes" data-markdown>Cuarta mejora, sacar el aire. Sin aire no hay convección interna, y las celdas desaparecen. Una caja plana al vacío necesita soportes internos para resistir la presión atmosférica. Existen, y la forma usual es el tubo de vidrio al vacío, que resiste esa presión sin soportes. Cada paso de esta lista reduce pérdidas y sube el costo. Elegir el colector es una decisión técnica y económica a la vez.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s4_e1575b90aa6cffeb28ef41d59cb1f9fa43ebc35ec6de54263d8a96c981eca63a.mp4"
+          >
+            <aside class="notes" data-markdown>El compromiso más usado es el colector plano con vidrio y superficie selectiva, sin vacío. Es sencillo, robusto y rinde bien hasta unos ochenta grados. Más arriba las pérdidas crecen con la diferencia entre la placa y el ambiente y conviene pasar a tubos al vacío o a concentrar la radiación, que es otra familia de equipos. De las cuatro mejoras, la superficie selectiva es la más ingeniosa, porque hace que la placa absorba mucho y emita poco al mismo tiempo. Veamos por qué eso es posible.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s5_c916e9d0ee24caa6449a000536989fe272178da622e04f39215379cc746dc6ae.mp4"
+          >
+            <aside class="notes" data-markdown>Vimos que la tercera mejora del colector era la superficie selectiva. Aquí está la razón física. En el color del Sol, el espectro de emisión del Sol, un cuerpo negro a cinco mil setecientos ochenta kelvin. En el color de la placa, el de la placa a ochenta grados. Cada curva está dividida por su máximo. En valor absoluto, en el máximo del espectro el Sol emite un millón de veces más por metro cuadrado, y en total unas setenta mil veces más. El eje de longitud de onda es logarítmico, y por eso graficamos lambda por la emisión espectral, así el área bajo cada curva es proporcional a la energía. Con la ley de Wien el máximo de la emisión espectral del Sol está en medio micrón y el de la placa en ocho coma dos micrones. En este eje los picos aparecen algo corridos, en cero coma sesenta y tres y diez coma cuatro.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s5_ca55f7b769a99fa5ca6bd96c2f9b35033b7057dc89a63c23d4b20b1bc3f4f5ee.mp4"
+          >
+            <aside class="notes" data-markdown>Trazamos una línea en tres micrones, la línea punteada. Integrando la ley de Planck, el noventa y ocho por ciento de la energía solar está a la izquierda de esa línea. La placa a ochenta grados emite a la izquierda solo seis centésimas de por ciento. Es decir, la radiación que la placa recibe y la que emite viven en dos regiones distintas del espectro. Pregunto al curso qué propiedad le pedirían a la placa en cada región (pausa).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s5_5761eb8fb3df65d09e15ee8e2e6cc76f6051d1da537a971c05833cad2f8c87c4.mp4"
+          >
+            <aside class="notes" data-markdown>La respuesta es un absorbedor ideal, el escalón con su propia escala a la derecha, de cero a uno. Absortividad espectral uno bajo tres micrones, donde está el Sol, y cero sobre tres micrones, donde emite la placa. Por la ley de Kirchhoff la emisividad espectral es igual a la absortividad en cada longitud de onda, así que la ley se cumple punto a punto. Lo que cambia es el promedio. Pesado con el espectro solar, alfa solar queda en noventa y ocho centésimas. Pesado con el espectro de la placa, la emisividad queda en seis diez milésimas. Ningún material real es tan perfecto. Veamos valores de tabla.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s5_1a1984fea4fd5c54141f589a61d082bf9092dbafc2b9d9efa381b44ec9134e56.mp4"
+          >
+            <aside class="notes" data-markdown>Dos superficies reales de la tabla doce tres de Çengel. La pintura negra absorbe noventa y siete por ciento del sol y emite con la misma emisividad, noventa y siete centésimas. Es una superficie gris, igual en las dos regiones del espectro. El cromo negro absorbe ochenta y siete por ciento del sol y tiene emisividad nueve centésimas. Su cociente alfa sobre épsilon es cercano a diez. Es el recubrimiento típico de los colectores. Ahora veamos qué significa esto en watts.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s5_634aad14cb00b4d23f0dce41dd92bf4b1f45630edda224dda1da9a44984ec825.mp4"
+          >
+            <aside class="notes" data-markdown>Pasemos a watts por metro cuadrado. Llamamos I T a la irradiancia sobre el plano del colector, la potencia solar que llega por metro cuadrado de placa, y la usamos en toda la unidad. Una superficie negra ideal a ochenta grados emite sigma T a la cuarta, ochocientos ochenta watts por metro cuadrado. Si a la placa llegan ochocientos watts por metro cuadrado de sol, la pintura negra absorbe setecientos setenta y seis y emite ochocientos cincuenta y cuatro, las barras de emisión. Emitiría más de lo que absorbe. El cromo negro absorbe seiscientos noventa y seis y emite solo setenta y nueve, la novena parte de lo que absorbe. Estas son emisiones propias, el vidrio absorbe y reemite una parte y la pérdida neta la calculamos en la clase tres. Con esto queda claro por qué todo colector moderno lleva una superficie selectiva. Estas barras comparan emisiones a una misma temperatura. Falta saber a qué temperatura llega cada placa, y eso lo resolvemos con un ejemplo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s5_50367dddffac25f09aec0a6811db7f2e30295a52a43457f5a3c8e1d733a8b54d.mp4"
+          >
+            <aside class="notes" data-markdown>Pregunta de control, y den un minuto antes de seguir. Tomamos las dos placas de la tabla y las dejamos al sol sin vidrio, con ochocientos watts por metro cuadrado. El aire está a veinte grados y el cielo a diez, porque el cielo despejado irradia como un cuerpo más frío que el aire. Sopla un viento suave, con un coeficiente de convección de diez watts por metro cuadrado y kelvin. El reverso está aislado, así que la placa pierde solo por arriba. La pintura negra absorbe más, setecientos setenta y seis contra seiscientos noventa y seis. ¿Cuál llega más caliente, y por qué? Anoten su apuesta y una razón (pausa).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s5_f94bed7373ace7cc53bf3066d0ff3e29ad83450b9d86d6277d600525c3f9f9db.mp4"
+          >
+            <aside class="notes" data-markdown>Para responder escribimos el balance de energía de la placa en régimen permanente. A la izquierda lo que entra, la absortividad solar por I T, la potencia absorbida por metro cuadrado. A la derecha lo que sale. Primero la radiación neta hacia el cielo, épsilon sigma por la diferencia de temperaturas a la cuarta, que es el intercambio de una superficie pequeña con un entorno grande que vimos en la clase de radiación. Después la convección al aire, h w por la diferencia entre la placa y el aire. La única incógnita es la temperatura de la placa. La ecuación es no lineal por la cuarta potencia, así que se resuelve por tanteo, con la calculadora o con un solver, siempre en kelvin.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s5_49d540e40f2d2a9de97b13085faec6ccd65c4eb935a461b8960330c125004658.mp4"
+          >
+            <aside class="notes" data-markdown>Primero la pintura negra. Reemplazamos alfa y épsilon iguales a cero coma noventa y siete, el cielo a doscientos ochenta y tres kelvin y el aire a doscientos noventa y tres. Probando valores, la ecuación se cumple con la placa a 62 coma 9 grados. La tabla muestra adónde se van los setecientos setenta y seis watts. Unos trescientos cuarenta y siete se van por radiación al cielo y unos cuatrocientos veintinueve por convección al aire. Con superficie gris la radiación se lleva casi la mitad de lo absorbido. Comprueben en la calculadora que la suma da lo absorbido.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s5_d568e1d0a9cb276e05de9ccaf9c0b360856507b14cbb1da57907a58b78b71c3f.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora el cromo negro, con alfa cero coma ochenta y siete y épsilon cero coma cero nueve. La placa llega a 84 coma 5 grados, unos veintidós más que la pintura negra, con ochenta watts menos de absorción. La razón está en la segunda fila. Por radiación pierde solo unos cincuenta y un watts, contra trescientos cuarenta y siete. Al no perder por radiación, la placa sube hasta que la convección sola se lleva lo absorbido, seiscientos cuarenta y cinco watts. Esta es la respuesta a la pregunta de control. Gana la placa que emite poco, no la que absorbe más.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s5_ca26c2f87bb92241529bc8209abf972c5861e214e0e71c759e812824ba812f7a.mp4"
+          >
+            <aside class="notes" data-markdown>Una lectura más de la tabla. Sin vidrio, la convección se lleva seiscientos cuarenta y cinco de los seiscientos noventa y seis watts del cromo negro. La superficie selectiva eliminó la pérdida por radiación, y la convección quedó como la pérdida principal. Por eso las dos mejoras van juntas. El vidrio frena la convección y la superficie selectiva frena la radiación. Con vidrio la placa llegaría mucho más alto, y ese cálculo, con la red de resistencias completa, lo hacemos en la clase tres. Este equilibrio sin extraer calor es una temperatura de estancamiento, el caso en que nadie usa el agua. Veamos ahora para qué se usa este equipo y a qué temperaturas trabaja.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s6_c1f4b23c55f13a1b2c3470759d66bb514af3e1d79dfdd036a61a42a3f009df0d.mp4"
+          >
+            <aside class="notes" data-markdown>Para qué se usa un colector plano. La aplicación masiva es el agua caliente sanitaria, en casas, hoteles y hospitales. También calefacción con agua tibia, secado de productos con aire caliente, como la fruta, y precalentar agua en la industria, por ejemplo el agua de reposición de una caldera. Abajo está la escala de temperatura. La franja marcada es donde el colector plano trabaja cómodo, hasta unos ochenta grados. La ducha necesita entre treinta y ocho y cuarenta grados, justo en el centro de esa franja. Por eso el agua caliente sanitaria es la aplicación natural. Un orden de magnitud ayuda. Una ducha de cincuenta litros calentada de quince a cuarenta grados necesita cincuenta kilos por cuatro coma dieciocho kilojoules por kilo y kelvin por veinticinco kelvin, unos cinco mil doscientos kilojoules, cerca de uno coma cinco kilowatt hora. Es una cantidad que un colector de dos metros cuadrados recoge en pocas horas de buen sol, y por eso un equipo de ese tamaño basta para una familia pequeña.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s6_e7331409fdc5aa8faac3e3cae72767be52bbba17dbc4c150b30d737e0578fa94.mp4"
+          >
+            <aside class="notes" data-markdown>Por qué baja temperatura. Este esquema adelanta la clase cuatro. La eficiencia del colector, la recta que baja, cae cuando sube la temperatura a la que trabaja. La razón ya la vimos, las pérdidas por conducción, convección y radiación crecen con la diferencia entre la placa y el aire. Si pedimos agua a ochenta grados, gran parte de la radiación se pierde antes de llegar al fluido. Pregunto al curso qué colector elegirían para temperar una piscina (pausa). La respuesta precisa la veremos con la curva de eficiencia.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s6_9c1da3d6d026812c7ed488ec6af5ff322eb17babc7a0c20dc00d9014ba4bb4a0.mp4"
+          >
+            <aside class="notes" data-markdown>Tres datos de Chile para ubicar la tecnología. La Ley veinte mil trescientos sesenta y cinco dio una franquicia tributaria a los sistemas solares térmicos en viviendas nuevas, y eso los masificó. En el norte hay plantas solares térmicas grandes que entregan calor a procesos mineros, como la electroobtención de cobre. Y el desierto de Atacama tiene uno de los mejores recursos solares del planeta. Lo cuantificamos en la clase dos. Antes miremos la fuente de todo esto, el Sol.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s7_cac56b2983fccc704b6926f4e13740e6be8ee501311b4e4474d6496aa2c87949.mp4"
+          >
+            <aside class="notes" data-markdown>Cerramos la clase con la fuente de energía. Desde órbita se mide la constante solar, mil trescientos setenta y tres watts por metro cuadrado, el valor que usamos en el curso. Las mediciones satelitales recientes dan cerca de mil trescientos sesenta y uno, menos de un uno por ciento de diferencia. Las tres condiciones importan. Es fuera de la atmósfera, sobre una superficie perpendicular a los rayos y a la distancia media entre el Sol y la Tierra, que llamamos d T S, la distancia Tierra Sol. El dibujo no está a escala, el Sol se vería como un punto. Con este único número podemos estimar la temperatura del Sol.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s7_4dc66a911663903d4f36f9545fb1512c86aa96dbbcb043db1d6347fdaa76d1fc.mp4"
+          >
+            <aside class="notes" data-markdown>La idea es un balance de energía. En el vacío la radiación no se atenúa. Toda la potencia que sale de la superficie del Sol, cuatro pi r cuadrado por sigma T a la cuarta, cruza cualquier esfera centrada en el Sol. La esfera que crece en el dibujo llega hasta la Tierra, con radio d T S. Sobre ella el flujo es la constante solar, así que la misma potencia es cuatro pi d T S al cuadrado por G s. La potencia es la misma y se reparte en un área mayor, por eso el flujo cae con uno sobre d T S al cuadrado. Es la misma idea del factor de forma de la clase pasada.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s7_ad1c264bac935bc6d86eae58eb2c0496aa9e5b0c0a2f80a4019aba8847ee7866.mp4"
+          >
+            <aside class="notes" data-markdown>Despejamos la temperatura. Se cancela cuatro pi y queda T a la cuarta igual a d T S sobre r al cuadrado por G s sobre sigma. La distancia media Tierra Sol es uno coma cuatro nueve seis por diez a la once metros y el radio del Sol seis coma nueve cinco cinco por diez a la ocho, así que d T S sobre r es doscientos quince. Reemplazando, la temperatura de la superficie del Sol es cercana a cinco mil setecientos ochenta kelvin. Estimamos la temperatura del Sol con un solo dato medido en órbita y dos distancias. Por eso tratamos al Sol como un cuerpo negro a esa temperatura.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s7_0d83d62f247846aaa577e6649b15563cd1f21b14a5f9a83bc0b70230e4e01388.mp4"
+          >
+            <aside class="notes" data-markdown>Al atravesar la atmósfera, la franja dibujada, parte de la radiación se absorbe y parte se dispersa. En la superficie, con un día claro, llegan del orden de novecientos cincuenta watts por metro cuadrado. Para el curso usamos un orden de magnitud de un kilowatt por metro cuadrado con sol pleno. Un colector de dos metros cuadrados recibe entonces unos dos kilowatts. Para comparar, un calefón pequeño a gas entrega unos diez kilowatts y uno típico unos diecinueve. El colector entrega una fracción de eso, y lo hace sin combustible durante todas las horas de sol. Cuánto de eso llega de verdad a un colector inclinado, hora a hora y mes a mes, es el tema de la próxima clase.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s8_0acb63765ba8495b57845a86f02978be849c7e11ca8007850b830b0550e73ac1.mp4"
+          >
+            <aside class="notes" data-markdown>Para cerrar, a la izquierda las hipótesis que usamos hoy. Tratamos al Sol como cuerpo negro a cinco mil setecientos ochenta kelvin, usamos valores medios de absortividad y emisividad de tabla y pensamos en un colector plano con una cubierta. Si se llevan una sola idea de hoy, que sea la del ejemplo. Sin vidrio, la placa de cromo negro llegó a unos ochenta y cinco grados y la de pintura negra a unos sesenta y tres, porque lo que decide es cuánto pierde la placa, no solo cuánto absorbe. A la derecha, la próxima clase. Ya sabemos que llega del orden de un kilowatt por metro cuadrado con sol pleno. La próxima clase vemos cuánto de eso llega realmente a un colector inclinado, hora a hora y mes a mes.</aside>
+        </section>
+      </div>
+    </div>
+
+    <script src="../lib/reveal.js/5.2.0/reveal.min.js"></script>
+    <script src="../lib/reveal.js/5.2.0/plugin/notes/notes.min.js"></script>
+
+    <!-- To include plugins, see: https://revealjs.com/plugins/ -->
+    <script src="../lib/reveal.js/5.2.0/plugin/markdown/markdown.min.js"></script>
+
+    <!-- <script src="index.js"></script> -->
+    <script>
+      Reveal.initialize({
+        /// The list of RevealJS plugins.
+        plugins: [ RevealMarkdown, RevealNotes ],
+        // The "normal" size of the presentation, aspect ratio will
+        // be preserved when the presentation is scaled to fit different
+        // resolutions. Can be specified using percentage units.
+        width: '100%',
+        height: '100%',
+        // Factor of the display size that should remain empty around
+        // the content
+        margin: 0.04,
+        // Bounds for smallest/largest possible scale to apply to content
+        minScale: 0.2,
+        maxScale: 2.0,
+        // Display presentation control arrows
+        controls: true,
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: true,
+        // Determines where controls appear, "edges" or "bottom-right"
+        // Fixed here because Manim Slides injects the value of
+        // `-ccontrols_layout` without the surrounding quotes.
+        controlsLayout: "edges",
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: "faded",
+        // Display a presentation progress bar
+        progress: true,
+        // Display the page number of the current slide
+        // - true:    Show slide number
+        // - false:   Hide slide number
+        //
+        // Can optionally be set as a string that specifies the number formatting:
+        // - "h.v":   Horizontal . vertical slide number (default)
+        // - "h/v":   Horizontal / vertical slide number
+        // - "c":   Flattened slide number
+        // - "c/t":   Flattened slide number / total slides
+        //
+        // Alternatively, you can provide a function that returns the slide
+        // number for the current slide. The function should take in a slide
+        // object and return an array with one string [slideNumber] or
+        // three strings [n1,delimiter,n2]. See #formatSlideNumber().
+        slideNumber: false,
+        // Can be used to limit the contexts in which the slide number appears
+        // - "all":      Always show the slide number
+        // - "print":    Only when printing to PDF
+        // - "speaker":  Only in the speaker view
+        showSlideNumber: 'all',
+        // Use 1 based indexing for # links to match slide number (default is zero
+        // based)
+        hashOneBasedIndex: false,
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: false,
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: false,
+        // Enable support for jump-to-slide navigation shortcuts
+        jumpToSlide: true,
+        // Push each slide change to the browser history.  Implies `hash: true`
+        history: true,
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+        // Optional function that blocks keyboard events when retuning false
+        //
+        // If you set this to 'focused', we will only capture keyboard events
+        // for embedded decks when they are in focus
+        keyboardCondition: null,
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+        // Enable the slide overview mode
+        overview: true,
+        // Vertical centering of slides
+        center: true,
+        // Enables touch navigation on devices with touch input
+        touch: true,
+        // Loop the presentation
+        loop: false,
+        // Change the presentation direction to be RTL
+        rtl: false,
+        // Changes the behavior of our navigation directions.
+        //
+        // "default"
+        // Left/right arrow keys step between horizontal slides, up/down
+        // arrow keys step between vertical slides. Space key steps through
+        // all slides (both horizontal and vertical).
+        //
+        // "linear"
+        // Removes the up/down arrows. Left/right arrows step through all
+        // slides (both horizontal and vertical).
+        //
+        // "grid"
+        // When this is enabled, stepping left/right from a vertical stack
+        // to an adjacent vertical stack will land you at the same vertical
+        // index.
+        //
+        // Consider a deck with six slides ordered in two vertical stacks:
+        // 1.1    2.1
+        // 1.2    2.2
+        // 1.3    2.3
+        //
+        // If you're on slide 1.3 and navigate right, you will normally move
+        // from 1.3 -> 2.1. If "grid" is used, the same navigation takes you
+        // from 1.3 -> 2.3.
+        navigationMode: 'default',
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+        // Turns fragments on and off globally
+        fragments: true,
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: true,
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+        // Flags if we should show a help overlay when the question-mark
+        // key is pressed
+        help: true,
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+        // Global override for autolaying embedded media (video/audio/iframe)
+        // - null:   Media will only autoplay if data-autoplay is present
+        // - true:   All media will autoplay, regardless of individual setting
+        // - false:  No media will autoplay, regardless of individual setting
+        autoPlayMedia: null,
+        // Global override for preloading lazy-loaded iframes
+        // - null:   Iframes with data-src AND data-preload will be loaded when within
+        //           the viewDistance, iframes with only data-src will be loaded when visible
+        // - true:   All iframes with data-src will be loaded when within the viewDistance
+        // - false:  All iframes with data-src will be loaded only when visible
+        preloadIframes: null,
+        // Can be used to globally disable auto-animation
+        autoAnimate: true,
+        // Optionally provide a custom element matcher that will be
+        // used to dictate which elements we can animate between.
+        autoAnimateMatcher: null,
+        // Default settings for our auto-animate transitions, can be
+        // overridden per-slide or per-element via data arguments
+        autoAnimateEasing: 'ease',
+        autoAnimateDuration: 1.0,
+        autoAnimateUnmatched: true,
+        // CSS properties that can be auto-animated. Position & scale
+        // is matched separately so there's no need to include styles
+        // like top/right/bottom/left, width/height or margin.
+        autoAnimateStyles: ['opacity', 'color', 'background-color', 'padding', 'font-size', 'line-height', 'letter-spacing', 'border-width', 'border-color', 'border-radius', 'outline', 'outline-offset'],
+        // Controls automatic progression to the next slide
+        // - 0:      Auto-sliding only happens if the data-autoslide HTML attribute
+        //           is present on the current slide or fragment
+        // - 1+:     All slides will progress automatically at the given interval
+        // - false:  No auto-sliding, even if data-autoslide is present
+        autoSlide: 0,
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+        // Use this method for navigation when auto-sliding (defaults to navigateNext)
+        autoSlideMethod: null,
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+        // Opens links in an iframe preview overlay
+        // Add `data-preview-link` and `data-preview-link="false"` to customize each link
+        // individually
+        previewLinks: false,
+        // Exposes the reveal.js API through window.postMessage
+        postMessage: true,
+        // Dispatches all reveal.js events to the parent window through postMessage
+        postMessageEvents: false,
+        // Focuses body when page changes visibility to ensure keyboard shortcuts work
+        focusBodyOnPageVisibilityChange: true,
+        // Transition style
+        transition: 'none', // none/fade/slide/convex/concave/zoom
+        // Transition speed
+        transitionSpeed: 'default', // default/fast/slow
+        // Transition style for full page slide backgrounds
+        backgroundTransition: 'none', // none/fade/slide/convex/concave/zoom
+        // The maximum number of pages a single slide can expand onto when printing
+        // to PDF, unlimited by default
+        pdfMaxPagesPerSlide: Number.POSITIVE_INFINITY,
+        // Prints each fragment on a separate slide
+        pdfSeparateFragments: true,
+        // Offset used to reduce the height of content within exported PDF pages.
+        // This exists to account for environment differences based on how you
+        // print to PDF. CLI printing options, like phantomjs and wkpdf, can end
+        // on precisely the total height of the document whereas in-browser
+        // printing has to end one pixel before.
+        pdfPageHeightOffset: -1,
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+        // The display mode that will be used to show slides
+        display: 'block',
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000
+      });
+      // Override SPACE to play / pause the video
+      Reveal.addKeyBinding(
+        {
+          keyCode: 32,
+          key: 'SPACE',
+          description: 'Play / pause video'
+        },
+        () => {
+          var currentVideos = Reveal.getCurrentSlide().slideBackgroundContentElement.getElementsByTagName("video");
+          if (currentVideos.length > 0) {
+            if (currentVideos[0].paused == true) currentVideos[0].play();
+            else currentVideos[0].pause();
+          } else {
+            Reveal.next();
+          }
+        }
+      );
+    </script>
+
+    <div id="deck-counter"></div>
+    <script>
+      (function () {
+        function refresh() {
+          var total = Reveal.getTotalSlides();
+          var idx = Reveal.getSlides().indexOf(Reveal.getCurrentSlide()) + 1;
+          var el = document.getElementById("deck-counter");
+          if (el) el.textContent = idx + " / " + total;
+        }
+        Reveal.on("ready", refresh);
+        Reveal.on("slidechanged", refresh);
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,546 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Colectores solares térmicos 2, ILN222</title>
+
+    <link rel="stylesheet" href="../../lib/reveal.js/5.2.0/reveal.min.css">
+    <link rel="stylesheet" href="../../lib/reveal.js/5.2.0/theme/white.min.css">
+
+    <!-- Theme used for syntax highlighting of code -->
+    <!-- <link rel="stylesheet" href="../../lib/css/zenburn.css"> -->
+    <!-- <link rel="stylesheet" href="index.css"> -->
+
+    <style>
+      :root {
+        --bg: #FFFFFF;
+        --fg: #111418;
+        --accent: #1F5FA8;
+        --dim: #5E6A78;
+      }
+      html, body, .reveal { background: var(--bg); }
+      .reveal .slides section { height: 100%; }
+      /* thin progress bar in the presentation accent colour */
+      .reveal .progress { height: 4px; color: var(--accent); background: rgba(0,0,0,0.08); }
+      /* discreet state counter, hidden in the overview.  It sits in the top
+         right corner, which every slide leaves empty, because the bottom of
+         the frame already carries the section name and the source note. */
+      #deck-counter {
+        position: fixed; top: 12px; right: 18px; z-index: 30;
+        font-family: "Latin Modern Roman", Georgia, "Times New Roman", serif;
+        font-size: 15px; color: var(--dim); letter-spacing: 0.2px;
+        pointer-events: none; opacity: 0.8;
+      }
+      .reveal.overview #deck-counter { display: none; }
+      /* keep the arrows unobtrusive, the talk is driven by the keyboard */
+      .reveal .controls { opacity: 0.25; }
+      .reveal .controls:hover { opacity: 0.8; }
+    </style>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s0_181436b89d84717f6258bad7639f9d8768b7cf57ea968e9d4ffa3dce57300f68.mp4"
+          data-background-video-muted
+          >
+            <aside class="notes" data-markdown>Buenos días. Esta es la segunda clase de la unidad de colectores. La clase pasada vimos de qué está hecho un colector plano y cómo se combate cada pérdida. Hoy respondemos una pregunta previa, cuánta radiación llega al colector. Para eso seguimos al Sol en el cielo de Valparaíso y vemos cómo cambia la radiación con la inclinación del colector.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s1_4d0097b19a0e57591b45d99458380c66db6796bd2a8455aa076510bbda406d9b.mp4"
+          >
+            <aside class="notes" data-markdown>Volvemos al mapa. Hoy es la clase dos, la radiación solar. Primero separamos la radiación en directa, difusa y reflejada. Luego seguimos al Sol en el cielo de Valparaíso en tres dimensiones y calculamos con qué ángulo llega a un colector inclinado. Después vemos cómo se mide el recurso y de dónde salen los datos de un sitio, el Explorador Solar. Terminamos con el factor que lleva la radiación del plano horizontal al plano del colector y lo aplicamos a un colector en Valparaíso, en invierno y en verano.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s2_a16d7e0bc78aea2bc0e81b17b5924037e91bce2021c30d6196f96025f2604a94.mp4"
+          >
+            <aside class="notes" data-markdown>Empezamos la clase de radiación solar por los caminos que sigue la radiación hasta el colector. Son tres. La flecha del Sol es la directa, viene del Sol sin desviarse y es la que proyecta sombras nítidas. Las flechas azules son la difusa, la parte que la atmósfera dispersó y que llega desde todo el cielo, por eso vienen de direcciones distintas. La flecha del suelo es la reflejada, la que el suelo devuelve y que solo ve una superficie inclinada. La suma es la radiación global. Un día completamente nublado toda la radiación es difusa, y un colector plano sigue funcionando, con menos potencia. Primero miremos la directa, que depende del ángulo con que llega.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s2_5975e6a9c278d693684baec7a4614bed436745c15a808aa738ea3af6d7c7f282.mp4"
+          >
+            <aside class="notes" data-markdown>Ya lo vimos con la radiación, y ahora importa para el colector. La banda amarilla es un haz de rayos directos con una sección fija. Al inclinar el haz, la mancha azul sobre la superficie se alarga, y la misma potencia se reparte sobre más área. A sesenta grados el coseno vale un medio y el flujo por metro cuadrado cae a la mitad. Por eso la directa sobre una superficie horizontal es G D por el coseno del ángulo cenital, theta z, y la suma con la difusa es la global horizontal, G. La difusa se suma sin coseno porque llega de todo el cielo. Este coseno explica las estaciones y la inclinación de los colectores. Para saber cuánto vale theta en cada momento necesitamos saber dónde está el Sol, y eso es lo que miramos ahora en tres dimensiones.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s3_245f6b3b32952edca6b193c1dd19a55a85ca412edef878cce8fb0856e3bb1a1f.mp4"
+          >
+            <aside class="notes" data-markdown>Para saber de dónde llega la radiación directa necesitamos saber dónde está el Sol. Esta es la bóveda celeste tal como la ve una persona parada en Valparaíso, en el punto blanco del centro. El disco gris es el horizonte y la línea vertical apunta al cenit. Las letras marcan los puntos cardinales, con O de oeste. La malla tenue marca alturas y direcciones cada treinta grados. Giramos un poco la vista para ver la profundidad. Ahora dibujamos el recorrido del Sol en tres días del año.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s3_dfe941b323a6eb726e8a30c8c94a0558b57c219c8c10a7d865193cde035b2392.mp4"
+          >
+            <aside class="notes" data-markdown>Primero el equinoccio de marzo, en gris. El Sol sale por el este exacto, sube inclinado hacia el norte y se pone por el oeste. Después el veintiuno de diciembre, en rojo, el día más largo. El Sol sale al sur del este, pasa a unos diez grados del cenit al mediodía y se pone al sur del oeste. Por último el veintiuno de junio, en celeste, un arco bajo y corto que queda entero hacia el norte. En el hemisferio sur el Sol del mediodía siempre está hacia el norte. Pregunto al curso hacia dónde conviene orientar entonces un colector en Chile (pausa). Hacia el norte, y esa es la regla que veremos al final de la clase.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s3_89f68ece4f8384e3c5126029bf391ea66ddf6699f7690b2e795c8ef5bf35d02a.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora seguimos al Sol durante el veintiuno de diciembre. A la derecha están la hora, la altura sobre el horizonte, gamma s, y el azimut, A. Escribimos gamma s y no alfa porque alfa ya es la absortividad de la placa. El azimut se mide desde el norte en sentido horario, con el este en noventa y el oeste en doscientos setenta. Duffie y Beckman lo miden desde el sur, conviene recordarlo al leer el libro. Sale cerca de las seis y media de la mañana con azimut de unos ciento veinte grados, es decir al sur del este. La animación se detiene al mediodía solar, cerca de la una cuarenta y cinco de la tarde en hora de verano. El azimut es cero, el Sol está exactamente al norte, y la altura llega a unos ochenta grados. En la tarde baja por el oeste. Ahora calculamos esa altura del mediodía con una fórmula.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s3_76282462092aa0d4d593aaf6b1096afca9c64ae970833dbabc62a70fa1434ba1.mp4"
+          >
+            <aside class="notes" data-markdown>Giramos la vista hasta mirar desde el este, con el norte a la derecha, para ver de lado el plano que pasa por el norte y el cenit. Así los ángulos se ven en su tamaño real. Las líneas van del observador al Sol del mediodía en diciembre y en junio, y los arcos marcan la altura gamma s sobre el horizonte norte. La altura al mediodía es noventa grados menos el valor absoluto de la latitud menos la declinación. La latitud de Valparaíso es menos treinta y tres coma cero cinco, negativa porque estamos al sur. En diciembre la declinación es menos veintitrés coma cuarenta y cinco y la altura da ochenta coma cuatro grados. En junio la declinación es positiva y la altura cae a treinta y tres coma cinco. En los equinoccios la declinación es casi cero y la altura es noventa menos la latitud. La declinación es entonces la pieza que falta.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s3_e334af36a21d295fd038d983c7f7ddfce720c46b90363a914611e078edc1896c.mp4"
+          >
+            <aside class="notes" data-markdown>Volvemos a mirar la bóveda desde arriba, con las salidas y puestas de diciembre y de junio marcadas con su hora oficial. La declinación es el ángulo entre los rayos del Sol y el plano del ecuador, medido al mediodía solar. Cambia durante el año porque el eje de la Tierra está inclinado veintitrés coma cuarenta y cinco grados. La fórmula de Cooper la aproxima con un seno del día del año, n. Con la latitud y la declinación también sale la duración del día. Omega s es el ángulo horario de la puesta, y como el Sol avanza quince grados por hora, el día dura dos omega s sobre quince. En Valparaíso son unas catorce horas en diciembre y menos de diez en junio. Las tablas de salida y puesta, como las horas de la figura, dan unos nueve minutos más. La refracción levanta el Sol aparente y la salida se cuenta con el borde superior del disco. Con el Sol ubicado, ya podemos calcular el ángulo con que llega a un colector inclinado.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s4_f9969da3e31fe0893a187375cfce6d431ecd29d643403b618d3d6e731ec3ab23.mp4"
+          >
+            <aside class="notes" data-markdown>Ya sabemos dónde está el Sol. Ahora ponemos un colector en el centro, la placa azul, inclinada treinta y tres grados hacia el norte. La flecha que sale perpendicular a la placa es la normal, n gorro. La otra flecha apunta al Sol, s gorro, a las diez y media de la mañana del veintiuno de diciembre. El ángulo entre ambas es el ángulo de incidencia, theta, el mismo theta del coseno de la directa. Giramos la vista hasta el noreste, de modo que la placa mira hacia nosotros y hacia el cielo del norte. Ahora escribimos los dos vectores con componentes.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s4_a012414653d9163f2a6a34634e86565687d21c67a9b782705ea82535f4a591b5.mp4"
+          >
+            <aside class="notes" data-markdown>Usamos los ejes grises de la esquina. x apunta al este, y al norte y z al cenit. El vector al Sol se arma con la altura gamma s y el azimut A de la escena anterior. Su componente vertical es seno de gamma s, y la horizontal, coseno de gamma s, se reparte entre este y norte con el azimut. La normal de una placa horizontal apunta al cenit. Al inclinarla beta hacia el norte, la normal se inclina beta en el plano norte vertical, y queda cero, seno de beta, coseno de beta. Con dos vectores unitarios el ángulo sale de un producto punto.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s4_985f7af809560bfcbec82ac416de1bcebcaefd43190620cebc00778a8ca8094e.mp4"
+          >
+            <aside class="notes" data-markdown>El coseno del ángulo de incidencia es el producto punto de los dos vectores. Multiplicamos componente a componente. La componente este de la normal es cero, así que solo quedan dos términos, seno de gamma s por coseno de beta, más coseno de gamma s por coseno de A por seno de beta. Revisamos con un caso conocido. Con la placa horizontal, beta cero, queda seno de gamma s, que es el coseno del ángulo cenital. Con los números de las diez y media el ángulo de incidencia da el valor de abajo. Ahora miramos el caso más simple, el mediodía.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s4_d327aaabc5e4581fe401eb66915eb7f9708df700199764109beaa40e9aaa06c1.mp4"
+          >
+            <aside class="notes" data-markdown>Cambiamos la figura al mediodía solar y la miramos desde el este, con el norte a la derecha. La flecha roja apunta al Sol del mediodía de diciembre y la celeste al de junio. Al mediodía solar el Sol está al norte, el azimut es cero y coseno de A vale uno. La expresión se convierte en seno de gamma s más beta, que es el coseno de theta z menos beta, con theta z el ángulo cenital del Sol. Entonces el ángulo de incidencia del mediodía es simplemente la diferencia entre el ángulo cenital del Sol y la inclinación de la placa. Y el ángulo cenital del mediodía es el valor absoluto de latitud menos declinación, el complemento de la altura que calculamos antes. En Valparaíso theta z vale nueve coma seis grados en diciembre y cincuenta y seis coma cinco en junio. La fórmula vale cuando el Sol del mediodía queda al norte del cenit, lo que en Chile central ocurre todo el año. Veamos qué pasa al cambiar beta.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s4_385a64faf5f7684c429f2b2ac8fb4ff115ff41d7115191bd97ed060cef7a07be.mp4"
+          >
+            <aside class="notes" data-markdown>Seguimos mirando desde el este. El arco azul bajo la placa marca beta desde la horizontal. Al mover beta, la placa se inclina y el gráfico de la derecha sigue el ángulo de incidencia de cada mes. Cada curva es una V. En diciembre el mínimo está en beta nueve coma seis, casi horizontal. En junio está en cincuenta y seis coma cinco, una placa muy inclinada. Ninguna inclinación fija sirve igual para los dos meses. Con treinta y tres grados, el valor absoluto de la latitud, los dos ángulos quedan iguales, cerca de veintitrés grados. Pregunto al curso qué inclinación elegirían para un sistema que se usa sobre todo en invierno (pausa).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s4_038b5341b8fb48ff8bd092177d72e32bb849de5e9760ffd97ccc6c5e28cb3b3b.mp4"
+          >
+            <aside class="notes" data-markdown>Para invierno conviene una placa más inclinada, porque el Sol va bajo. Para verano, una más tendida. Las líneas punteadas del gráfico marcan el valor absoluto de la latitud menos doce y más doce, veintiuno y cuarenta y cinco grados en Valparaíso. La placa pasa por esas dos inclinaciones y vuelve a treinta y tres. Con cuarenta y cinco, el ángulo de junio baja a unos once grados y el de diciembre sube a treinta y cinco. La regla de más o menos doce grados es un compromiso que considera todo el día y todo el mes, no solo el mediodía. Ese promedio es justamente el factor R barra que veremos después de medir la radiación.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s5_66dd74c30903b77f442aeb6c3d33276cf55e278a0fe38657f6ce7753b15f8b75.mp4"
+          >
+            <aside class="notes" data-markdown>Ya sabemos de dónde viene el Sol. Ahora, cuánta energía llega, y eso se mide. A la izquierda, el piranómetro. Es un sensor negro bajo dos cúpulas de vidrio, mira todo el cielo y mide la radiación global sobre un plano horizontal, directa más difusa. A la derecha, el pirheliómetro. Es un tubo montado en un seguidor que apunta siempre al Sol y deja entrar el disco solar y una pequeña aureola alrededor, así que mide la directa normal a los rayos. Las estaciones del laboratorio de energía solar usan estos dos instrumentos. Pregunto al curso cómo obtendrían la difusa con ellos (pausa). Restando, la global menos la directa proyectada sobre el horizontal.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s5_c05a513374791d464ecb4f6a356dd9e9933b1c421b27fa4ae51263ac0b8d45d9.mp4"
+          >
+            <aside class="notes" data-markdown>Para dimensionar un sistema no basta la potencia de un instante. La curva amarilla es la radiación global sobre un plano horizontal en Valparaíso el diecisiete de enero, con un modelo de cielo despejado. Sube desde la salida del Sol, llega a más de mil watts por metro cuadrado y baja en la tarde. El área bajo la curva es la energía del día, H, en kilowatt hora por metro cuadrado. Es la misma diferencia entre Q punto y Q de la primera clase del curso. Ese día despejado da cerca de ocho coma siete. Ahora comparamos con lo que llegaría sin atmósfera.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s5_e75d649e2afbb980fd2c6d5bfba79c76f6fab631904d1ce8563fb90457360daf.mp4"
+          >
+            <aside class="notes" data-markdown>Sin atmósfera, la energía diaria sobre un plano horizontal se calcula con astronomía. G o n es la constante solar del curso, mil trescientos setenta y tres watts por metro cuadrado, corregida por la distancia Tierra Sol de ese día. Las mediciones satelitales recientes dan cerca de mil trescientos sesenta y uno, un uno por ciento menos. Multiplicada por el coseno del ángulo cenital e integrada desde la salida hasta la puesta da la expresión de arriba, con la latitud, la declinación y el ángulo de puesta omega s que ya conocemos. Esa es H cero. El cociente entre lo que se mide y lo que llegaría sin atmósfera es el índice de claridad K T. Vale uno menos lo que la atmósfera absorbe y lo que refleja de vuelta al espacio. Lo que dispersa hacia abajo sigue contando, como difusa. La curva amarilla sigue siendo el modelo de cielo despejado, no una medición.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s5_e77ea7c041d40e163379c671a125d0398acf730998dafcbb72d28606494ac3ab.mp4"
+          >
+            <aside class="notes" data-markdown>Mes a mes en Valparaíso. Los contornos grises son H cero, la energía sin atmósfera, más de doce en diciembre y menos de cinco en junio, por la altura del Sol y la duración del día. Las barras amarillas son la energía de un día despejado según el modelo. El cociente da un K T de cielo despejado entre cero coma sesenta y siete y cero coma setenta y tres, un techo que los días con nubes no alcanzan. Las notas del curso dan cerca de cinco kilowatt hora en Santiago como promedio anual y más de siete en Atacama, con K T cerca de cero coma siete en el norte. Para un proyecto real se necesitan promedios de días reales, con sus nubes, y esos vienen de una estación o de un modelo satelital como el que vemos ahora.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s5_1401b9d353f8e1913afe9e1e426449a43fb8db88a193677adb298f7d1e9083b0.mp4"
+          >
+            <aside class="notes" data-markdown>Para un sitio real los datos salen del Explorador Solar, del Ministerio de Energía y la Universidad de Chile. Entrega radiación y temperatura hora a hora, modeladas desde satélite para todo Chile, y también los promedios mensuales de la energía diaria sobre un plano horizontal, el H barra que necesitamos. Es el insumo del taller de RETScreen y de la tarea, así que conviene anotar de aquí el H barra mensual de su sitio. Para un proyecto grande esos datos se validan con al menos un año de mediciones en terreno. Al final de la clase lo usamos en un ejemplo completo. Todo lo que entrega es sobre un plano horizontal, y el colector está inclinado. Ese es el paso que falta.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s6_a5ff9e0175b4b9ba2bee268b391c8679c558551a219eacac94465b4a1bed8763.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora inclinamos el colector un ángulo beta desde la horizontal, con la placa mirando al norte, a la derecha, como en la vista desde el este de la escena del ángulo de incidencia. La radiación difusa llega del cielo, y la reflejada llega del suelo. La fracción de su entorno que el colector ve como cielo es exactamente un factor de forma, el de la clase de factor de forma. Para un plano inclinado frente a un cielo y un suelo muy grandes, el factor hacia el cielo es uno más coseno de beta, sobre dos, y hacia el suelo, uno menos coseno de beta, sobre dos. La línea punteada es el plano de la placa extendido, arriba de ella está lo que ve. Miren el contador mientras la placa se inclina. Horizontal ve solo cielo. Vertical ve mitad cielo y mitad suelo. Y siempre suman uno, que es la regla de la suma.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s6_92c5b0dfa139102c4711af27a4bb70b8acd10a96f580254a669ba7b87fdf3bbf.mp4"
+          >
+            <aside class="notes" data-markdown>Algunos valores concretos. A treinta y tres grados, la latitud de Santiago y Valparaíso, el colector ve cero coma nueve uno nueve de cielo. A cuarenta y cinco, cero coma ocho cinco cuatro. Vertical, como una fachada, justo la mitad. Pregunto al curso qué le pasa a la radiación difusa que capta una fachada vertical (pausa). Recibe solo la mitad del cielo, y a cambio ve más suelo. Con esto armamos el factor que lleva la radiación de horizontal a inclinado.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s6_8c0f5e65bf22c0e1ed9f1c469c609e41cf4e883f3b4be0d4bdee16902662bc03.mp4"
+          >
+            <aside class="notes" data-markdown>Juntamos las tres componentes en un instante. La directa llega con el coseno del ángulo de incidencia que calculamos con el producto punto. La difusa se pesa con el factor de forma al cielo y la reflejada con el albedo por el factor de forma al suelo, aplicado a la global horizontal G. Ese factor de forma vale solo con dos hipótesis. Cielo isotrópico, es decir la difusa llega por igual de todo el cielo, y un suelo difusor que refleja la global. El cielo real es más brillante cerca del Sol, así que el modelo isotrópico subestima un poco la difusa sobre un plano inclinado. El resultado es I T, la irradiancia global sobre el colector. La placa absorbe S igual a tau alfa por I T, la entrada del balance de la próxima clase. Las estaciones entregan promedios mensuales, así que ahora pasamos a la versión diaria.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s6_b07661dc739972bb26ccefa73503168dacacfe925c6d2b852a59f273b28c7b29.mp4"
+          >
+            <aside class="notes" data-markdown>Las estaciones miden la energía diaria sobre un plano horizontal. El colector está inclinado, así que multiplicamos por un factor R barra. La expresión de arriba junta tres aportes. La directa, que es la fracción uno menos f d, se corrige con R b. R b es el cociente entre el coseno del ángulo de incidencia sobre el plano inclinado y sobre el horizontal, sumados durante el día. Es el mismo coseno que calculamos hace un rato con el producto punto. La difusa, la fracción f d, se multiplica por el factor de forma al cielo que acabamos de ver. Y la reflejada por el albedo del suelo, rho g, con la g de ground, suelo en inglés, y el factor de forma al suelo. El pasto refleja cerca de un veinte por ciento y la nieve cerca de un setenta, por eso en la nieve un colector vertical rinde bien. Veamos cómo queda R barra durante el año.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s6_ca7686fa23e4cc1fb0a98ac1bd14cd963709924ed467f764d660c3e0787294ae.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora vemos R barra durante el año. Las curvas están calculadas con el método de Klein, que usa la geometría solar del día medio de cada mes, la fracción difusa según el índice de claridad y el cielo isotrópico, la hipótesis de que la difusa llega por igual de todo el cielo. Elegimos latitud cuarenta y ocho sur y un índice de claridad de cero coma sesenta y cinco fijo todo el año, el valor que reproduce la carta del material del curso. No es el clima real de Aysén, que es bastante más nublado. En el eje horizontal van los meses y cada color es una inclinación. En invierno el Sol va bajo, una superficie inclinada lo mira más de frente y R barra pasa de dos. En verano el Sol va alto, R barra queda cerca de uno y la inclinación grande pierde. Pregunto al curso qué pasará en Valparaíso, más al norte (pausa).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s6_b6dad8c35cc85495976ce89d912cb473d79695114bb13b480c0419ceaa52e7c6.mp4"
+          >
+            <aside class="notes" data-markdown>Cambiamos solo la latitud, a treinta y tres sur, con el mismo índice de claridad de cero coma sesenta y cinco. Ese valor supone un invierno casi despejado, y el invierno de Chile central trae frentes, con un índice más cercano a cero coma cinco. Las curvas bajan. En invierno el Sol de Santiago y Valparaíso va más alto que el de Aysén, así que inclinar ayuda menos. Con sesenta y tres grados el máximo de junio queda cerca de uno coma nueve, y con cero coma cinco cerca de uno coma siete. En verano esa inclinación recibe menos que la horizontal. Estas curvas explican las reglas de inclinación que vienen ahora.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s6_c75276bf7590706a6d316eb5e877758272b2d56c2588a98d28d1dda027b3a1c2.mp4"
+          >
+            <aside class="notes" data-markdown>Juntamos lo que vimos con el ángulo de incidencia y con R barra en las reglas prácticas del curso. Para captar lo máximo en el año, se inclina igual al valor absoluto de la latitud, phi. Si la demanda pesa más en invierno, se suma doce grados, y el colector mira más al Sol bajo. Si pesa en verano, como una piscina, se resta doce. La orientación va al norte astronómico, porque estamos en el hemisferio sur, y un desvío de diez grados casi no se nota. La decisión depende de la demanda, no solo del recurso. Probemos con un caso.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s6_e8e8ae37823724e04ba4896a1a8d69e387933b7b89df9b1fbb9738c795c99ebd.mp4"
+          >
+            <aside class="notes" data-markdown>Pregunta de control. Un hotel en Valparaíso, a treinta y tres grados sur, necesita agua caliente más o menos pareja todo el año. Pregunto al curso qué inclinación le darían (esperar respuestas antes de avanzar). Piensen en qué época del año el recurso es escaso y la demanda sigue igual.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s6_51ac75841e54399fb08135d1277cecbb5b2343d3e94fdc55a691afe5e06b28eb.mp4"
+          >
+            <aside class="notes" data-markdown>La respuesta es cerca de cuarenta y cinco grados, la latitud más doce. La demanda del hotel es pareja, y lo que falta es radiación en invierno. Entonces conviene sesgar el colector al invierno. Lo que se pierde en verano importa poco, porque en verano sobra sol. El verano además trae el riesgo de estancamiento, que veremos la próxima clase. Ahora comprobamos la respuesta con números, con un colector a cuarenta y cinco grados en Valparaíso.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s6_da9d6f12f7d55cfbed54ff534ce71ec7f1db77f16c5d7a66eef673fe332849ab.mp4"
+          >
+            <aside class="notes" data-markdown>Hacemos la cuenta completa para el hotel, con el colector a cuarenta y cinco grados mirando al norte. Comparamos un mes de invierno, junio, en celeste, con uno de verano, enero, en rojo. La primera fila es H barra, la energía diaria sobre un plano horizontal. Ojo con su origen. Viene de un modelo de cielo despejado para el día medio del mes, por eso lleva la etiqueta de aproximación. Es un techo, porque un mes real trae días nublados. En junio son tres coma dieciséis kilowatt hora por metro cuadrado y en enero ocho coma setenta y uno, casi tres veces más. La segunda fila es H cero, lo que llegaría sin atmósfera, y la tercera el índice de claridad, el cociente de las dos. Sale cerca de cero coma setenta en ambos meses. Con ese índice ya podemos separar la directa de la difusa.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s6_2a375954f3acf3b409c3f154333b07369636e3ce824b3038314d7374db1cb0b4.mp4"
+          >
+            <aside class="notes" data-markdown>Dos filas más. La fracción difusa f d sale de la correlación de Erbs a partir del índice de claridad. Con cielos despejados es baja, cerca de un cuarto en los dos meses. Luego R b, la parte geométrica de la directa. En junio vale dos coma cero ocho, es decir, el plano inclinado recibe el doble de directa que el horizontal, porque el Sol bajo de invierno le llega casi de frente. En enero vale cero coma setenta y dos, el Sol alto del verano favorece al horizontal. A la derecha, los factores de forma con cuarenta y cinco grados, cero coma ocho cinco cuatro al cielo y cero coma uno cuatro seis al suelo. No cambian con el mes. Ya tenemos todas las piezas de R barra.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s6_9edf0d01176c62288ae415e98402ea2964ebe77adb3d2cf9ec7d095640725b33.mp4"
+          >
+            <aside class="notes" data-markdown>Armamos R barra de junio término a término con la fórmula de arriba. La directa es uno menos f d, cero coma setenta y cinco, por R b, dos coma cero ocho, y da uno coma cincuenta y ocho. La difusa es f d por el factor de forma al cielo, cero coma veintiuno. La reflejada es el albedo por el factor de forma al suelo, apenas cero coma cero tres. La suma da uno coma ochenta y uno. En junio el colector inclinado recibe casi el doble que el plano horizontal. Casi todo ese aumento viene de la directa. Pregunto al curso qué término cambiaría más si junio fuera muy nublado (pausa). La directa, porque con más nubes f d sube y pesa menos el R b grande.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s6_6ecc21285627f0e2d352becab4b92c68134410ed30e1a2ded3f8e53cc8a64368.mp4"
+          >
+            <aside class="notes" data-markdown>Lo mismo para enero, en rojo. Ahora R b es cero coma setenta y dos, así que la directa aporta solo cero coma cincuenta y cinco. La difusa aporta cero coma veinte y la reflejada otra vez cero coma cero tres. R barra queda en cero coma setenta y ocho, menor que uno. En verano el colector a cuarenta y cinco grados recibe menos que si estuviera horizontal, porque el Sol del mediodía pasa a unos doce grados del cenit y la placa le queda de lado. Es lo que anticipaba la carta de R barra. Falta multiplicar por H barra.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s6_3527f3d2124524a0dcda76aebc14e97b86dbc46b513ae25317410ca57e12e694.mp4"
+          >
+            <aside class="notes" data-markdown>Multiplicamos. En junio, uno coma ochenta y uno por tres coma dieciséis da cerca de cinco coma siete kilowatt hora por metro cuadrado y día. En enero, cero coma setenta y ocho por ocho coma setenta y uno da cerca de seis coma ocho. En el gráfico las barras claras son el plano horizontal y las llenas el colector a cuarenta y cinco grados. Sobre el horizontal, enero recibe casi tres veces lo de junio. Con la inclinación la diferencia baja a uno coma dos. Eso es lo que buscaba el hotel, un recurso parejo en el año. Un cálculo hora a hora con el mismo modelo da valores un dos por ciento más altos, así que el método mensual basta para dimensionar. Pregunto al curso qué cambia si en vez del modelo usamos datos reales de junio (pausa).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s6_ff4dc6f6439aa565ce58b1e73bdde07df254bd434b7f40e0ad79acfd9642fef2.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora la misma cuenta con datos reales. Si hay internet en la sala, abro el Explorador Solar que vimos en la escena de medición, marco la universidad en el mapa y leo la global horizontal media de junio y de enero. Esos dos números los anotamos en la tabla de la derecha, que está vacía a propósito. Con ellos calculamos el índice de claridad del mes, dividiendo por el H cero de la tabla anterior. R b y los factores de forma no cambian, porque son geometría. Solo cambia f d. Junio real tiene nubes, el índice baja hacia cero coma cinco y R barra baja de uno coma ochenta y uno a cerca de uno coma sesenta y tres. El H barra medido también es menor que el del modelo. Hagan la cuenta en sus cuadernos y comparen (pausa). Este mismo procedimiento es el primer paso de la tarea y del taller RETScreen. Con eso cerramos la clase.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_2_sala_assets/s7_293625d20378635d9f5b119a8b4ec8e44cb59bdea6803acea8c83e8528fd2596.mp4"
+          >
+            <aside class="notes" data-markdown>Para cerrar, las hipótesis de hoy. La difusa viene por igual de todo el cielo, trabajamos con promedios mensuales y el colector mira al norte. Con esto sabemos cuánta radiación llega al plano del colector, unos cinco a siete kilowatt hora por metro cuadrado y día en Valparaíso con cielo despejado. La próxima clase vemos qué hace el colector con esa radiación, cómo se conecta a un sistema y por dónde pierde calor.</aside>
+        </section>
+      </div>
+    </div>
+
+    <script src="../../lib/reveal.js/5.2.0/reveal.min.js"></script>
+    <script src="../../lib/reveal.js/5.2.0/plugin/notes/notes.min.js"></script>
+
+    <!-- To include plugins, see: https://revealjs.com/plugins/ -->
+    <script src="../../lib/reveal.js/5.2.0/plugin/markdown/markdown.min.js"></script>
+
+    <!-- <script src="index.js"></script> -->
+    <script>
+      Reveal.initialize({
+        /// The list of RevealJS plugins.
+        plugins: [ RevealMarkdown, RevealNotes ],
+        // The "normal" size of the presentation, aspect ratio will
+        // be preserved when the presentation is scaled to fit different
+        // resolutions. Can be specified using percentage units.
+        width: '100%',
+        height: '100%',
+        // Factor of the display size that should remain empty around
+        // the content
+        margin: 0.04,
+        // Bounds for smallest/largest possible scale to apply to content
+        minScale: 0.2,
+        maxScale: 2.0,
+        // Display presentation control arrows
+        controls: true,
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: true,
+        // Determines where controls appear, "edges" or "bottom-right"
+        // Fixed here because Manim Slides injects the value of
+        // `-ccontrols_layout` without the surrounding quotes.
+        controlsLayout: "edges",
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: "faded",
+        // Display a presentation progress bar
+        progress: true,
+        // Display the page number of the current slide
+        // - true:    Show slide number
+        // - false:   Hide slide number
+        //
+        // Can optionally be set as a string that specifies the number formatting:
+        // - "h.v":   Horizontal . vertical slide number (default)
+        // - "h/v":   Horizontal / vertical slide number
+        // - "c":   Flattened slide number
+        // - "c/t":   Flattened slide number / total slides
+        //
+        // Alternatively, you can provide a function that returns the slide
+        // number for the current slide. The function should take in a slide
+        // object and return an array with one string [slideNumber] or
+        // three strings [n1,delimiter,n2]. See #formatSlideNumber().
+        slideNumber: false,
+        // Can be used to limit the contexts in which the slide number appears
+        // - "all":      Always show the slide number
+        // - "print":    Only when printing to PDF
+        // - "speaker":  Only in the speaker view
+        showSlideNumber: 'all',
+        // Use 1 based indexing for # links to match slide number (default is zero
+        // based)
+        hashOneBasedIndex: false,
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: false,
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: false,
+        // Enable support for jump-to-slide navigation shortcuts
+        jumpToSlide: true,
+        // Push each slide change to the browser history.  Implies `hash: true`
+        history: true,
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+        // Optional function that blocks keyboard events when retuning false
+        //
+        // If you set this to 'focused', we will only capture keyboard events
+        // for embedded decks when they are in focus
+        keyboardCondition: null,
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+        // Enable the slide overview mode
+        overview: true,
+        // Vertical centering of slides
+        center: true,
+        // Enables touch navigation on devices with touch input
+        touch: true,
+        // Loop the presentation
+        loop: false,
+        // Change the presentation direction to be RTL
+        rtl: false,
+        // Changes the behavior of our navigation directions.
+        //
+        // "default"
+        // Left/right arrow keys step between horizontal slides, up/down
+        // arrow keys step between vertical slides. Space key steps through
+        // all slides (both horizontal and vertical).
+        //
+        // "linear"
+        // Removes the up/down arrows. Left/right arrows step through all
+        // slides (both horizontal and vertical).
+        //
+        // "grid"
+        // When this is enabled, stepping left/right from a vertical stack
+        // to an adjacent vertical stack will land you at the same vertical
+        // index.
+        //
+        // Consider a deck with six slides ordered in two vertical stacks:
+        // 1.1    2.1
+        // 1.2    2.2
+        // 1.3    2.3
+        //
+        // If you're on slide 1.3 and navigate right, you will normally move
+        // from 1.3 -> 2.1. If "grid" is used, the same navigation takes you
+        // from 1.3 -> 2.3.
+        navigationMode: 'default',
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+        // Turns fragments on and off globally
+        fragments: true,
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: true,
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+        // Flags if we should show a help overlay when the question-mark
+        // key is pressed
+        help: true,
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+        // Global override for autolaying embedded media (video/audio/iframe)
+        // - null:   Media will only autoplay if data-autoplay is present
+        // - true:   All media will autoplay, regardless of individual setting
+        // - false:  No media will autoplay, regardless of individual setting
+        autoPlayMedia: null,
+        // Global override for preloading lazy-loaded iframes
+        // - null:   Iframes with data-src AND data-preload will be loaded when within
+        //           the viewDistance, iframes with only data-src will be loaded when visible
+        // - true:   All iframes with data-src will be loaded when within the viewDistance
+        // - false:  All iframes with data-src will be loaded only when visible
+        preloadIframes: null,
+        // Can be used to globally disable auto-animation
+        autoAnimate: true,
+        // Optionally provide a custom element matcher that will be
+        // used to dictate which elements we can animate between.
+        autoAnimateMatcher: null,
+        // Default settings for our auto-animate transitions, can be
+        // overridden per-slide or per-element via data arguments
+        autoAnimateEasing: 'ease',
+        autoAnimateDuration: 1.0,
+        autoAnimateUnmatched: true,
+        // CSS properties that can be auto-animated. Position & scale
+        // is matched separately so there's no need to include styles
+        // like top/right/bottom/left, width/height or margin.
+        autoAnimateStyles: ['opacity', 'color', 'background-color', 'padding', 'font-size', 'line-height', 'letter-spacing', 'border-width', 'border-color', 'border-radius', 'outline', 'outline-offset'],
+        // Controls automatic progression to the next slide
+        // - 0:      Auto-sliding only happens if the data-autoslide HTML attribute
+        //           is present on the current slide or fragment
+        // - 1+:     All slides will progress automatically at the given interval
+        // - false:  No auto-sliding, even if data-autoslide is present
+        autoSlide: 0,
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+        // Use this method for navigation when auto-sliding (defaults to navigateNext)
+        autoSlideMethod: null,
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+        // Opens links in an iframe preview overlay
+        // Add `data-preview-link` and `data-preview-link="false"` to customize each link
+        // individually
+        previewLinks: false,
+        // Exposes the reveal.js API through window.postMessage
+        postMessage: true,
+        // Dispatches all reveal.js events to the parent window through postMessage
+        postMessageEvents: false,
+        // Focuses body when page changes visibility to ensure keyboard shortcuts work
+        focusBodyOnPageVisibilityChange: true,
+        // Transition style
+        transition: 'none', // none/fade/slide/convex/concave/zoom
+        // Transition speed
+        transitionSpeed: 'default', // default/fast/slow
+        // Transition style for full page slide backgrounds
+        backgroundTransition: 'none', // none/fade/slide/convex/concave/zoom
+        // The maximum number of pages a single slide can expand onto when printing
+        // to PDF, unlimited by default
+        pdfMaxPagesPerSlide: Number.POSITIVE_INFINITY,
+        // Prints each fragment on a separate slide
+        pdfSeparateFragments: true,
+        // Offset used to reduce the height of content within exported PDF pages.
+        // This exists to account for environment differences based on how you
+        // print to PDF. CLI printing options, like phantomjs and wkpdf, can end
+        // on precisely the total height of the document whereas in-browser
+        // printing has to end one pixel before.
+        pdfPageHeightOffset: -1,
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+        // The display mode that will be used to show slides
+        display: 'block',
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000
+      });
+      // Override SPACE to play / pause the video
+      Reveal.addKeyBinding(
+        {
+          keyCode: 32,
+          key: 'SPACE',
+          description: 'Play / pause video'
+        },
+        () => {
+          var currentVideos = Reveal.getCurrentSlide().slideBackgroundContentElement.getElementsByTagName("video");
+          if (currentVideos.length > 0) {
+            if (currentVideos[0].paused == true) currentVideos[0].play();
+            else currentVideos[0].pause();
+          } else {
+            Reveal.next();
+          }
+        }
+      );
+    </script>
+
+    <div id="deck-counter"></div>
+    <script>
+      (function () {
+        function refresh() {
+          var total = Reveal.getTotalSlides();
+          var idx = Reveal.getSlides().indexOf(Reveal.getCurrentSlide()) + 1;
+          var el = document.getElementById("deck-counter");
+          if (el) el.textContent = idx + " / " + total;
+        }
+        Reveal.on("ready", refresh);
+        Reveal.on("slidechanged", refresh);
+      })();
+    </script>
+  </body>
+</html>
