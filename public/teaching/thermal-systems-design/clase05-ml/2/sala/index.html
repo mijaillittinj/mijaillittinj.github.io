@@ -1,0 +1,609 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Machine Learning clásico, parte 2, ILN223</title>
+
+    <link rel="stylesheet" href="../../lib/reveal.js/5.2.0/reveal.min.css">
+    <link rel="stylesheet" href="../../lib/reveal.js/5.2.0/theme/white.min.css">
+
+    <!-- Theme used for syntax highlighting of code -->
+    <!-- <link rel="stylesheet" href="../../lib/css/zenburn.css"> -->
+    <!-- <link rel="stylesheet" href="index.css"> -->
+
+    <style>
+      :root {
+        --bg: #FFFFFF;
+        --fg: #111418;
+        --accent: #1F5FA8;
+        --dim: #5E6A78;
+      }
+      html, body, .reveal { background: var(--bg); }
+      .reveal .slides section { height: 100%; }
+      /* thin progress bar in the presentation accent colour */
+      .reveal .progress { height: 4px; color: var(--accent); background: rgba(0,0,0,0.08); }
+      /* discreet state counter, hidden in the overview.  It sits in the top
+         right corner, which every slide leaves empty, because the bottom of
+         the frame already carries the section name and the source note. */
+      #deck-counter {
+        position: fixed; top: 12px; right: 18px; z-index: 30;
+        font-family: "Latin Modern Roman", Georgia, "Times New Roman", serif;
+        font-size: 15px; color: var(--dim); letter-spacing: 0.2px;
+        pointer-events: none; opacity: 0.8;
+      }
+      .reveal.overview #deck-counter { display: none; }
+      /* keep the arrows unobtrusive, the talk is driven by the keyboard */
+      .reveal .controls { opacity: 0.25; }
+      .reveal .controls:hover { opacity: 0.8; }
+    </style>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s0_0adb0d99bc741023069ba91afd66d1da92d4f3bb2e2db21f7dc04ea6a75e8065.mp4"
+          data-background-video-muted
+          >
+            <aside class="notes" data-markdown>Buenos días. Segunda parte de Machine Learning. Ayer aprendimos a ajustar un modelo y a controlar su tamaño con Ridge y LASSO. Hoy estimamos el error del modelo con datos que no se usaron para ajustarlo. Después usamos la misma caja de herramientas para clasificar fallas y para comprimir muchos sensores en pocas variables.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s1_29bdc559679e26fd76a6957cd4838e545ca8c3490dd226563bf2abb2d59576bd.mp4"
+          >
+            <aside class="notes" data-markdown>Segunda parte. Primero sobreajuste y subajuste con los mismos datos del intercambiador de ayer. Luego la validación cruzada, la herramienta para elegir el grado de un modelo o el lambda de Ridge. Conectamos con la frontera de Pareto de la clase cuatro. Terminamos con dos extensiones, clasificación con regresión logística y reducción de dimensionalidad con PCA.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s2_daa18320a09024f9c17bdcbbda5920cc69ebf5f146af8a94a86593ae21d80758.mp4"
+          >
+            <aside class="notes" data-markdown>Partimos donde quedamos ayer. Estos son los mismos veinte datos sintéticos del intercambiador, la temperatura de salida contra el caudal, y la curva es el modelo cuadrático en la variable escalada z. A la derecha está el error cuadrático medio, el promedio de los residuos al cuadrado. Ayer la suma de los residuos al cuadrado era cuarenta y uno coma tres, y dividida por los veinte datos da dos coma cero seis. Este error se calcula con los mismos datos del ajuste, los datos de entrenamiento, en verde. Por eso mide el ajuste a los datos usados para calcularlo. Ahora medimos con datos nuevos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s2_a3d92c8994c8dcdb20201a5b9dbdaa7d1fac0de1d834dae45b7eff1df789ccdc.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora aparecen doscientas mediciones nuevas del mismo equipo, los puntos chicos grises. Las podemos generar porque los datos son sintéticos, y las usamos solo como referencia para la clase. En una planta no tenemos esta nube. Con el mismo modelo cuadrático el error sobre los datos nuevos es tres coma ocho seis, casi el doble del de entrenamiento. Lo que importa en la planta es este segundo número, porque el modelo se usa con caudales que no estaban en la tabla. Veamos qué pasa con los dos errores si cambiamos el grado del polinomio.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s2_a9072ac165db035b3c1a599c870358a968418ea02be006b80c951100ed5d9138.mp4"
+          >
+            <aside class="notes" data-markdown>A la derecha armamos el gráfico del error contra el grado g del polinomio, en escala logarítmica, con el entrenamiento en verde y los datos nuevos en gris punteado. Partimos con una recta, grado uno. Los dos errores parten cerca de veinte, porque una recta no puede seguir la curvatura del intercambiador. Al subir el grado la curva del modelo se dobla y los dos errores bajan juntos. Pregunta para el curso. Si solo miramos el error de entrenamiento, ¿qué grado elegirían? (pausa, esperar respuestas)</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s2_8b6ac41ad206632869ef2ab83b011a06a8621410745ac689f02cde2d001778a8.mp4"
+          >
+            <aside class="notes" data-markdown>Seguimos hasta grado doce. El error de entrenamiento sigue bajando, hasta cero coma cero nueve, porque un polinomio con más coeficientes siempre puede acercarse más a los veinte puntos. Mirando solo el entrenamiento elegiríamos grado doce. El error con datos nuevos se aplana desde grado cuatro, sube desde grado nueve y llega a cincuenta y nueve en grado doce. A la izquierda, entre cero coma cero ocho y cero coma quince kilos por segundo no hay datos, y el polinomio oscila en ese tramo. Esa oscilación viene del ajuste. La ley del intercambiador es suave en ese tramo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s2_2283889805496d00b2240dd8209dfdb37d966183e17c0764f054726058a089ae.mp4"
+          >
+            <aside class="notes" data-markdown>Las dos zonas sombreadas son el subajuste y el sobreajuste. A la izquierda el modelo es demasiado simple y los dos errores son altos y van juntos. A la derecha el error de entrenamiento es muy bajo y el de datos nuevos se separa hacia arriba. El sobreajuste se reconoce por esa separación entre las dos curvas. La línea punteada es la varianza del ruido del sensor, cero coma seis cuatro, el piso del error esperado con datos nuevos. El error de entrenamiento queda en promedio bajo ese piso incluso para un modelo con la forma de la ley, porque el ajuste usa esos mismos datos, y por eso no sirve para elegir el modelo. Los rótulos sesgo y varianza los explicamos en las dos láminas siguientes.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s2_d3569a513f964bc0593678f3c73d075bda172b16ed7d71b073ed27365aacb1f9.mp4"
+          >
+            <aside class="notes" data-markdown>Repetimos el experimento seis veces, cada vez con veinte mediciones nuevas. La línea punteada es la ley exacta del intercambiador, que conocemos porque los datos son sintéticos. Las seis rectas son los ajustes de grado uno, una por conjunto. Se parecen mucho entre sí, y todas se equivocan de la misma forma, quedan sobre la curva en los extremos y bajo ella al centro. Ese error sistemático es el sesgo. Más datos no lo corrigen, hay que cambiar el modelo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s2_eea3cf48637dc1d252ea92424ed25d9cbe9fbc542a35d988cdf21e9c34c8792b.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora los mismos seis conjuntos con polinomios de grado diez, dentro de la zona de sobreajuste. Cerca de los datos las curvas siguen bien la ley, y en los extremos y en el tramo sin datos cada una se va para un lado distinto. El modelo cambia mucho cuando cambian los datos, y eso es la varianza. Subajuste es sesgo alto y sobreajuste es varianza alta, y elegir el grado es buscar el compromiso entre los dos. Aquí lo elegimos con la curva de datos nuevos, que en la práctica no tenemos. Necesitamos estimar el error con datos nuevos usando solo los veinte puntos, y eso hace la validación cruzada.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s3_1ae147903377935310c5db463fa448ef38a5312ad27c19febfef471fe21eba39.mp4"
+          >
+            <aside class="notes" data-markdown>En la práctica solo tenemos los veinte datos de entrenamiento, y con ellos hay que estimar el error con datos nuevos. La idea es repartirlos al azar en cinco grupos de cuatro, llamados pliegues, o folds en inglés. Cada punto pasa a su casilla en la franja de arriba. El azar viene de una permutación con semilla fija, así que el reparto es siempre el mismo y el resultado se puede repetir. Cada punto va a servir una vez como dato nuevo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s3_698f64f01b155a0c45071d0150b98778ec7f839bad5b1e94967f26d448ffc2dc.mp4"
+          >
+            <aside class="notes" data-markdown>Primera vuelta. El pliegue uno pasa a validación, en amarillo, y los otros dieciséis puntos quedan en verde para entrenar. Con esos dieciséis ajustamos un polinomio de grado tres. Después medimos el error solo en los cuatro puntos de validación. Los segmentos rojos son sus residuos, dibujados tres veces más largos para que se vean. Esos cuatro puntos no entraron al ajuste, así que su error se parece al error con datos nuevos. El error de este pliegue es uno coma tres seis y queda como la primera barra.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s3_728340d5099ba35e95e8ab1351bf54fd7c6a262cdd47bebe0d4c9fe86649dbfb.mp4"
+          >
+            <aside class="notes" data-markdown>Repetimos cuatro veces más. Cada vez otro pliegue pasa a validación, la curva se reajusta con los dieciséis restantes y medimos el error en los cuatro que quedaron fuera. La curva casi no cambia de una vuelta a otra, y las cinco barras van de cero coma cero cinco a uno coma tres seis. Con cuatro puntos por pliegue cada error es ruidoso, y por eso las promediamos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s3_9b9de14fd4078a9b86b749133f3e8005ec0c5543c2f487e7fbcb96fe9a95d4d9.mp4"
+          >
+            <aside class="notes" data-markdown>El último paso es promediar. La línea punteada es la media de las cinco barras, y esa media es el error de validación cruzada, CV de g. Para grado tres da cero coma siete tres. Cada uno de los veinte puntos se usó una vez para validar y cuatro veces para entrenar. Ahora repetimos todo esto para cada grado, de uno a doce.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s3_4a5ddbfaea270196703ccc154681ce05f54821b9f632e0651f7aacf5cd6a126b.mp4"
+          >
+            <aside class="notes" data-markdown>A la derecha está el error de validación cruzada para cada grado, en escala logarítmica. Primero aparece el punto de grado tres que acabamos de calcular. La curva baja, tiene su mínimo en grado cuatro, con cero coma cuatro siete, y sube mucho en grado once y doce, donde con dieciséis puntos el polinomio oscila. Ese mínimo queda bajo la varianza del ruido, cero coma seis cuatro. Con solo veinte datos la validación cruzada es ruidosa, y lo que importa es la posición del mínimo. El grado que elige la validación cruzada es cuatro.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s3_4c8ff14e6258d3dc683dcfd28a17b74c60ee9ca24a4954c98333d9016fe3bb02.mp4"
+          >
+            <aside class="notes" data-markdown>La línea gris punteada es el error con datos nuevos de la escena anterior, solo como referencia. Las dos curvas bajan, tienen un tramo plano y suben al final. La de validación cruzada sube antes, desde grado ocho, porque cada ajuste usa dieciséis puntos y no veinte. En el tramo plano elegir cuatro no pierde nada y da un modelo más simple. Con el grado elegido reajustamos con los veinte puntos, y su error con datos nuevos es cero coma ocho siete, cerca de la varianza del ruido.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s3_2978071bb643f375ceb4a43876a46972d6540a44a8b40b4510b847dae3695b36.mp4"
+          >
+            <aside class="notes" data-markdown>Pregunta de control para el curso. En un caso real guardamos parte de las mediciones como conjunto de prueba. ¿Por qué no elegir el grado con ese conjunto? (pausa, esperar respuestas)</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s3_e43e27842e7ddcdcdc3f12181f59ddecb001869bfb7a2520c37ae696a3e7f0dd.mp4"
+          >
+            <aside class="notes" data-markdown>Si usamos la prueba para elegir, la prueba pasa a ser parte del entrenamiento. Su error queda optimista y ya no mide lo que pasará con datos nuevos. Por eso la prueba se mira una sola vez, al final, y para elegir el grado, o el lambda de Ridge, usamos validación cruzada sobre los datos de entrenamiento. En la planta equivale a guardar una campaña de mediciones sin usarla hasta el final. Ahora veamos este procedimiento escrito en Python.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s4_a2ef2636747b99226943ee2f7c25b829883fda00d175103fcbe08149df780079.mp4"
+          >
+            <aside class="notes" data-markdown>Este es el procedimiento escrito en Python, con z la variable escalada y T las temperaturas medidas. Las líneas resaltadas crean un generador aleatorio con semilla cero, permutan los índices de cero a diecinueve y los cortan en cinco grupos de cuatro. A la derecha están los índices que salen, una fila por pliegue. Con la semilla fija cualquiera que corra este código obtiene estos mismos pliegues, y todos los grados se comparan con el mismo reparto.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s4_b6f90904fcf16514e4de4235b54787b70fb81b14a082adec5d6cad55b26d6cc5.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora el ciclo. En cada vuelta i el pliegue i es el de validación, y np.hstack junta los otros cuatro en el conjunto de entrenamiento. Con esos dieciséis índices polyfit ajusta el polinomio, polyval predice en los cuatro de validación y el error cuadrático medio se agrega a la lista errores. A la derecha aparecen los cinco valores para grado tres, los mismos de las barras de la escena anterior. La función polyfit nunca recibe los índices de validación.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s4_f489fe59c7779deb19674f313b889c3dba494b6e6052299ea16427e79f0bc9ba.mp4"
+          >
+            <aside class="notes" data-markdown>La función devuelve el promedio de los cinco errores, cero coma siete tres para grado tres. Abajo está el programa principal, tres líneas. Recorre los grados de uno a doce, calcula el error de validación cruzada de cada uno y g opt es el grado con el menor error.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s4_353c95587cf56b2f1dd86f3c66d1aa9fff4d693b896ddd3b096d232360c764c1.mp4"
+          >
+            <aside class="notes" data-markdown>El resultado es esta curva, la misma de la escena anterior, porque sale del mismo código con la misma semilla. El mínimo está en grado cuatro. Probamos cincuenta semillas distintas y el mínimo cayó veintiséis veces en cuatro y cuarenta y nueve veces entre cuatro y siete, dentro del tramo plano de la curva de datos nuevos. La misma función sirve para cualquier hiperparámetro, por ejemplo el lambda de Ridge.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s4_863999b5bbed0b5f3a27a18e58e9885bf7075ee122f45c7c47043328dee384aa.mp4"
+          >
+            <aside class="notes" data-markdown>Para Ridge cambian solo las tres líneas resaltadas. Armamos la matriz A con potencias de z hasta grado diez y resolvemos A transpuesta A más lambda D, una variante de la ecuación de ayer. D es la identidad con un cero en la esquina, así el término constante, que solo fija el nivel de temperatura, no se penaliza. La curva es el error de validación cruzada contra lambda dos. Con lambda chico el polinomio de grado diez se sobreajusta, con lambda grande se aplana demasiado, y el mínimo está en lambda igual a cero coma uno, con un error de cero coma cuatro ocho. Elegir un modelo es equilibrar error y complejidad, y eso lleva a la frontera de Pareto.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s5_3c4ab53fda42ce627bb09a275aaee14a647fe4e1a847d76c6741caa5be745c99.mp4"
+          >
+            <aside class="notes" data-markdown>Elegir un modelo tiene dos objetivos, error bajo y pocos términos, y compiten entre sí. Para verlo armamos todos los modelos posibles con los términos z, z al cuadrado, hasta z a la ocho, siempre con la constante. Son doscientos cincuenta y seis subconjuntos. Cada punto gris es uno de ellos, con su número de términos en el eje horizontal y su error de validación cruzada en el vertical, en escala logarítmica. La complejidad cuenta términos, así que z a la ocho cuesta lo mismo que z al cubo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s5_f0e834ab0fdfabe24fe432a8081f0de6cedf2d69b8804c8978a383ac392244af.mp4"
+          >
+            <aside class="notes" data-markdown>Comparemos modelos. El círculo marca el polinomio completo de grado ocho, con nueve términos y un error de validación de uno coma cero siete. Un modelo está dominado si otro tiene igual o menos términos y menos error, o menos términos e igual error. Todo lo que está en la zona sombreada a la izquierda y abajo domina al polinomio completo, así que no hay razón para elegirlo. Si eliminamos todos los modelos dominados, queda la frontera.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s5_6f574a898478d5bf90f2e8fc7073ab0a7e39bc3a23e3d7f8fa25360eed24753f.mp4"
+          >
+            <aside class="notes" data-markdown>La línea une los modelos que nadie domina, la frontera de Pareto. Es la misma idea de la clase cuatro, donde el intercambiador equilibraba transferencia de calor y caída de presión, ahora con error contra complejidad. La frontera tiene cinco modelos, de uno a cinco términos. El error cae fuerte hasta cuatro términos y casi no cambia de cuatro a cinco, ahí está el codo. Ningún modelo de seis o más términos está en la frontera. Falta decidir cuál de los cinco usar.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s5_0cee4ba22a39b82ec41876e5f355f5a40e00fed98075437cd67688eaec7eaf56.mp4"
+          >
+            <aside class="notes" data-markdown>El principio de parsimonia, o navaja de Occam, dice que entre modelos con error similar se prefiere el más simple. Para decir qué es similar usamos la regla de un error estándar. La franja va desde el mejor error, cero coma cuatro cero, hasta ese valor más el error estándar de sus veinte errores de validación, uno por punto. Ocho modelos caen en la franja, y el más simple tiene cuatro términos, con potencias uno, cuatro y cinco, justo en el codo de la frontera. El polinomio de grado cuatro de la validación cruzada también está en la franja, con cinco términos, y la regla cambia un término menos por un error de validación un poco mayor, sin garantizar un menor error con datos nuevos. Además el mínimo es el menor de doscientos cincuenta y seis valores ruidosos calculados con los mismos pliegues, y eso es optimista. Ahora pasamos a predecir una clase, falla o no falla.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s6_9417702926d271923d7e90dffa03550d4293e3713ef50ff47fb5a3cbe30d3ece.mp4"
+          >
+            <aside class="notes" data-markdown>Cada punto es una revisión de un rodamiento de bomba, con su temperatura en el eje horizontal y su vibración en el vertical. Los azules no fallaron, etiqueta y igual a cero, y los naranjos fallaron, y igual a uno. Los datos son sintéticos, dos nubes gaussianas con la misma forma que se traslapan un poco, así que ninguna recta las separa sin errores. Igual que con el intercambiador escalamos las variables, x uno y x dos, para que queden cerca de cero.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s6_a968d3a69ce606f6bfa4605ddf4be595362d567f09f32d77bdbb2136113b10e2.mp4"
+          >
+            <aside class="notes" data-markdown>El modelo arma primero una combinación lineal, s igual a w uno x uno más w dos x dos más w cero, igual que en regresión. Después la pasa por la sigmoide, uno sobre uno más e a la menos s. Para s muy negativo da casi cero, para s muy positivo casi uno, y en s igual a cero vale cero coma cinco. Como queda entre cero y uno, la usamos como probabilidad de falla, p. Desde aquí seguimos la notación del código de la clase, x son las variables, w y w cero los parámetros, el papel que ayer tenía x, y las etiquetas se llaman y. El término w cero es el término constante, y no lo llamamos b porque b ya son los datos de A x igual a b.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s6_5e3d9e234290c2297ace2553ca3b5d640249c5f847c7d6f1c4b486e3fc93d4ef.mp4"
+          >
+            <aside class="notes" data-markdown>Esta es la misma idea en tres dimensiones. El piso es el plano de temperatura y vibración, y la altura de la superficie es la probabilidad de falla del modelo tras quinientas iteraciones de entrenamiento. Las revisiones con falla están a altura uno y las sin falla a altura cero. Al girar se ve el perfil en forma de S de la sigmoide. Los trazos verticales unen con la superficie las revisiones que quedan del lado equivocado, fallas con p baja o revisiones sanas con p alta. Pregunto al curso dónde creen que está la frontera entre las dos clases (pausa).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s6_b3665006a7528def8c66d0e26676deda9303f061a70bc984d692c586c7a2a9f0.mp4"
+          >
+            <aside class="notes" data-markdown>La frontera es donde p vale cero coma cinco. Como la sigmoide vale cero coma cinco solo en s igual a cero, la frontera es w uno x uno más w dos x dos más w cero igual a cero, una recta. La línea marca ese nivel sobre la superficie y su sombra en el piso. Mientras la cámara sube, las revisiones mal clasificadas suben hasta la superficie para que se vean desde arriba, y queda una recta que separa la zona azul de la naranja. Con los coeficientes tras quinientas iteraciones la recta es dos coma cero seis x uno más dos coma cinco ocho x dos menos cero coma tres cinco igual a cero. Falta decir cómo se eligen los coeficientes.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s6_3acd4205ae8f5188ef29e56a26bc197d58358825e1bb4180eb2f68c576d5eed8.mp4"
+          >
+            <aside class="notes" data-markdown>Los coeficientes se eligen minimizando una pérdida, la entropía cruzada, la L. Para una falla, y igual a uno, el castigo es menos el logaritmo de p, que es cero si el modelo dio p igual a uno y crece sin límite si dio p cerca de cero. Para una revisión sin falla es la curva espejo. Una falla con p cercano a cero recibe una pérdida grande. El error cuadrático combinado con la sigmoide deja una pérdida no convexa, con zonas casi planas. La entropía cruzada es convexa, y por la clase cuatro sabemos que entonces todo mínimo local es global.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s6_90324631b57c989c0e7d72b868e3d22821130ef4ea9c8b29053058d5d432200e.mp4"
+          >
+            <aside class="notes" data-markdown>El mismo modelo dibujado como diagrama. Entran x uno, x dos y un uno para el término constante, cada flecha multiplica por su peso, el círculo suma y aplica la sigmoide, y sale p. Esto es una neurona artificial, la unidad de las redes neuronales de la clase seis, donde vamos a conectar muchas en capas. La regresión logística es una red de una sola neurona. Ahora escribimos el entrenamiento en Python.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s7_fb9b5328ad240d743f617108b812d56fc8b2d70e412c997acd1007405501bb44.mp4"
+          >
+            <aside class="notes" data-markdown>Este es el entrenamiento completo, once líneas. Primero la sigmoide. Después partimos con todos los pesos en cero, las líneas resaltadas. Con w igual a cero, s vale cero para todas las revisiones y el modelo entrega p igual a cero coma cinco para todas. La pérdida inicial es logaritmo de dos, cero coma seis nueve tres. En el código el término constante se llama w0, las etiquetas y, y lr es el paso alfa del descenso de gradiente de la clase cuatro. El ciclo necesita el gradiente de la pérdida, y lo deducimos en tres pasos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s7_3ce448733e9ae64b88f9e5f0d0a4ecf986fac02f304e36297e8171a37cfa8cbc.mp4"
+          >
+            <aside class="notes" data-markdown>Primer paso, la derivada de la sigmoide. Derivando uno sobre uno más e a la menos s se obtiene e a la menos s sobre el cuadrado del denominador, y eso se puede escribir como sigma por uno menos sigma. La derivada se calcula con el mismo valor p que ya tenemos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s7_cbe0afad28e14a8968398eed8ecfb58cab53accb736d555d68c4716db1a68cd2.mp4"
+          >
+            <aside class="notes" data-markdown>Segundo paso. La pérdida de una revisión, ele i, depende de s i a través de p i. Por la regla de la cadena derivamos el logaritmo y multiplicamos por la derivada de la sigmoide. Los factores p y uno menos p se cancelan con los denominadores, y queda p i menos y i. Es la probabilidad predicha menos la etiqueta, un residuo, igual que en regresión.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s7_ce52b9736bc5a715f5d51fc720e9dc240e1e5bc7b269d24d58885143b0e264d1.mp4"
+          >
+            <aside class="notes" data-markdown>Tercer paso. Como s i es w por x i más w cero, la derivada respecto de w es el residuo por x i, promediado sobre las m revisiones. En forma matricial es X transpuesta por p menos y, dividido por m, la línea grad w del código. Respecto de w cero el factor es uno, y queda el promedio de p menos y, la línea grad w0. El gradiente de mínimos cuadrados de ayer tiene la misma forma, dos A transpuesta por el residuo A x menos b. La diferencia es que aquí la predicción pasa por la sigmoide. Ahora corremos el ciclo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s7_0a194beaaf098f3ce09d4c33f590ba416e9ca13534a56e9ceaee2feeb3f4bea8.mp4"
+          >
+            <aside class="notes" data-markdown>Corremos las quinientas iteraciones. A la derecha está la frontera de decisión de cada iteración, con la zona donde el modelo predice falla sombreada. Las líneas punteadas marcan p igual a cero coma uno y p igual a cero coma nueve. La frontera llega cerca de su posición final en las primeras iteraciones, y después los pesos crecen y las dos líneas punteadas se acercan a la frontera, la transición de la sigmoide se hace más angosta. Abajo la pérdida baja desde cero coma seis nueve tres, y a la izquierda están la iteración, la pérdida y la exactitud.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s7_705db8e4c9faf8dd6223dc39dc3f3d0ddf6b20b78e1510b381d94662fd179409.mp4"
+          >
+            <aside class="notes" data-markdown>Tras quinientas iteraciones los pesos son dos coma cero seis para la temperatura, dos coma cinco ocho para la vibración y menos cero coma tres cinco para el término constante. Los dos pesos son positivos, más temperatura y más vibración suben la probabilidad de falla, y por unidad escalada la vibración pesa algo más. La pérdida bajó a cero coma uno ocho siete, y con muchas más iteraciones llega a cero coma uno ocho uno, el mínimo que entrega scikit-learn sin regularización. La exactitud de noventa y tres coma tres por ciento es sobre los mismos ciento veinte datos del entrenamiento, y para reportarla habría que usar validación cruzada. Es el mismo descenso de gradiente de la clase cuatro, con otra pérdida. Para terminar pasamos de clasificar a comprimir la información de varios sensores.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s8_566268ce4e2dcb991555ad7ee19c71673cb6caacbed9815808a52c4124852672.mp4"
+          >
+            <aside class="notes" data-markdown>Última herramienta de hoy. Tenemos tres termocuplas pegadas en una placa calefaccionada y ciento cincuenta lecturas simultáneas. Cada lectura es un punto en un espacio de tres dimensiones, una coordenada por termocupla, y las marcas sobre los ejes están en cuarenta grados. Los datos son sintéticos, las tres temperaturas siguen una misma carga de calefacción, más un pequeño gradiente a lo largo de la placa y ruido del sensor. Al girar se ve que la nube es larga en una dirección, angosta en otra y casi sin espesor en la tercera. La esfera marca el promedio, x barra, entre treinta y nueve y cuarenta y seis grados según la termocupla. PCA mide cuánta información distinta entregan las tres termocuplas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s8_ee2b5c832fb7110b26e9d4499b300aa11160847073db76e982ca8ca69cd3ae33.mp4"
+          >
+            <aside class="notes" data-markdown>El primer paso es centrar. A cada columna le restamos su promedio, en fórmula X c igual a X menos un vector de unos por x barra transpuesta. La nube entera se traslada hasta que su promedio queda en el origen, sin cambiar de forma ni de tamaño. Después acercamos la cámara para verla mejor. Sin este paso la primera dirección apuntaría hacia el punto promedio y no hacia donde los datos varían.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s8_89f8658030c773fc30209d15f2bda4012686367417470e23458734415aa75264.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora la descomposición en valores singulares de la matriz centrada, la misma SVD de las clases anteriores, X c igual a U sigma mayúscula V transpuesta. Las filas de V transpuesta son las direcciones principales, que aparecen una tras otra. Los valores singulares se escriben sigma i, que aquí no es la sigmoide. La primera dirección, PC uno, sigue el largo de la nube, la segunda es perpendicular y mucho más corta, y la tercera casi no se ve. Los valores singulares son cien, veinte y seis. Pregunta para el curso. Con estos valores singulares, ¿cuántas direcciones hacen falta para describir las lecturas? (pausa, esperar respuestas)</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s8_295abffb12d338a10615c6d2052be932aafac21c42465134e84609d7d76463d6.mp4"
+          >
+            <aside class="notes" data-markdown>La varianza que explica cada dirección es su valor singular al cuadrado dividido por la suma de los cuadrados. La primera dirección explica el noventa y cinco coma ocho por ciento, la segunda el tres coma nueve y la tercera cero coma tres. Casi toda la variación de las tres termocuplas es un solo movimiento conjunto, y con dos direcciones ya tenemos el noventa y nueve coma siete por ciento. En una planta con decenas de sensores de temperatura este cálculo indica cuántas combinaciones de sensores explican casi toda la varianza.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s8_82edd93e7e9a2a1ea609295a566b6afce6156e7144b9b80ec2a85460f53ebc49.mp4"
+          >
+            <aside class="notes" data-markdown>Para reducir la dimensión proyectamos cada lectura sobre el plano de PC uno y PC dos. Primero miramos el plano de canto, y los segmentos rojos son la distancia de cada lectura al plano, dibujada cinco veces más larga para que se vea. Las lecturas caen al plano y los segmentos desaparecen. Después giramos hasta mirar el plano de frente, y queda una nube en dos dimensiones, X c por la matriz de las dos primeras direcciones, de ciento cincuenta por dos. Pasamos de tres números a dos por lectura y perdimos el cero coma tres por ciento de la varianza, la fracción de la tercera dirección.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s8_a807e0dc34e1ab408e4179b9e0081049ef8a50796885d69c10ab195aab0844b9.mp4"
+          >
+            <aside class="notes" data-markdown>Las direcciones tienen significado físico, y el signo de cada una es arbitrario. La primera tiene las tres componentes positivas y parecidas, cero coma seis siete, cero coma cinco siete y cero coma cuatro siete, así que mide cuánto sube toda la placa junta, la carga de calefacción. La segunda resta la termocupla uno y suma la tres, y mide el gradiente a lo largo de la placa. Esas dos variables salen solo de la SVD, aplicada a encontrar estructura en los datos en vez de resolver un sistema. Con esto terminamos, vamos a las hipótesis de hoy y a lo que viene en la clase seis.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase05_ml_2_sala_assets/s9_4745bb69bcc8c330adc1cb315ab7fd44b678d48c209588c55457a5c125633556.mp4"
+          >
+            <aside class="notes" data-markdown>Cerramos Machine Learning clásico. Las hipótesis de hoy son que los datos de entrenamiento, validación y prueba son independientes y vienen del mismo proceso, que la frontera de decisión entre las clases es lineal y que la estructura de los datos se describe con direcciones lineales, como en PCA. Quedó fuera el clustering, agrupar datos por similitud sin etiquetas, como k-means, que vieron en el ejemplo de regímenes de ayer. La regresión, Ridge y LASSO usan modelos lineales en los parámetros, y la regresión logística aplica una sigmoide a una combinación lineal. La clase seis compone varias capas de este tipo con funciones no lineales entre ellas, y eso es una red neuronal. No hay matemática nueva de optimización. El entrenamiento sigue siendo minimizar una pérdida con los optimizadores de la clase cuatro. Lectura, Brunton y Kutz, capítulo cuatro para regresión y selección de modelos, capítulo uno para la descomposición en valores singulares y PCA, y capítulo cinco para clasificación.</aside>
+        </section>
+      </div>
+    </div>
+
+    <script src="../../lib/reveal.js/5.2.0/reveal.min.js"></script>
+    <script src="../../lib/reveal.js/5.2.0/plugin/notes/notes.min.js"></script>
+
+    <!-- To include plugins, see: https://revealjs.com/plugins/ -->
+    <script src="../../lib/reveal.js/5.2.0/plugin/markdown/markdown.min.js"></script>
+
+    <!-- <script src="index.js"></script> -->
+    <script>
+      Reveal.initialize({
+        /// The list of RevealJS plugins.
+        plugins: [ RevealMarkdown, RevealNotes ],
+        // The "normal" size of the presentation, aspect ratio will
+        // be preserved when the presentation is scaled to fit different
+        // resolutions. Can be specified using percentage units.
+        width: '100%',
+        height: '100%',
+        // Factor of the display size that should remain empty around
+        // the content
+        margin: 0.04,
+        // Bounds for smallest/largest possible scale to apply to content
+        minScale: 0.2,
+        maxScale: 2.0,
+        // Display presentation control arrows
+        controls: true,
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: true,
+        // Determines where controls appear, "edges" or "bottom-right"
+        // Fixed here because Manim Slides injects the value of
+        // `-ccontrols_layout` without the surrounding quotes.
+        controlsLayout: "edges",
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: "faded",
+        // Display a presentation progress bar
+        progress: true,
+        // Display the page number of the current slide
+        // - true:    Show slide number
+        // - false:   Hide slide number
+        //
+        // Can optionally be set as a string that specifies the number formatting:
+        // - "h.v":   Horizontal . vertical slide number (default)
+        // - "h/v":   Horizontal / vertical slide number
+        // - "c":   Flattened slide number
+        // - "c/t":   Flattened slide number / total slides
+        //
+        // Alternatively, you can provide a function that returns the slide
+        // number for the current slide. The function should take in a slide
+        // object and return an array with one string [slideNumber] or
+        // three strings [n1,delimiter,n2]. See #formatSlideNumber().
+        slideNumber: false,
+        // Can be used to limit the contexts in which the slide number appears
+        // - "all":      Always show the slide number
+        // - "print":    Only when printing to PDF
+        // - "speaker":  Only in the speaker view
+        showSlideNumber: 'all',
+        // Use 1 based indexing for # links to match slide number (default is zero
+        // based)
+        hashOneBasedIndex: false,
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: false,
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: false,
+        // Enable support for jump-to-slide navigation shortcuts
+        jumpToSlide: true,
+        // Push each slide change to the browser history.  Implies `hash: true`
+        history: true,
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+        // Optional function that blocks keyboard events when retuning false
+        //
+        // If you set this to 'focused', we will only capture keyboard events
+        // for embedded decks when they are in focus
+        keyboardCondition: null,
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+        // Enable the slide overview mode
+        overview: true,
+        // Vertical centering of slides
+        center: true,
+        // Enables touch navigation on devices with touch input
+        touch: true,
+        // Loop the presentation
+        loop: false,
+        // Change the presentation direction to be RTL
+        rtl: false,
+        // Changes the behavior of our navigation directions.
+        //
+        // "default"
+        // Left/right arrow keys step between horizontal slides, up/down
+        // arrow keys step between vertical slides. Space key steps through
+        // all slides (both horizontal and vertical).
+        //
+        // "linear"
+        // Removes the up/down arrows. Left/right arrows step through all
+        // slides (both horizontal and vertical).
+        //
+        // "grid"
+        // When this is enabled, stepping left/right from a vertical stack
+        // to an adjacent vertical stack will land you at the same vertical
+        // index.
+        //
+        // Consider a deck with six slides ordered in two vertical stacks:
+        // 1.1    2.1
+        // 1.2    2.2
+        // 1.3    2.3
+        //
+        // If you're on slide 1.3 and navigate right, you will normally move
+        // from 1.3 -> 2.1. If "grid" is used, the same navigation takes you
+        // from 1.3 -> 2.3.
+        navigationMode: 'default',
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+        // Turns fragments on and off globally
+        fragments: true,
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: true,
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+        // Flags if we should show a help overlay when the question-mark
+        // key is pressed
+        help: true,
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+        // Global override for autolaying embedded media (video/audio/iframe)
+        // - null:   Media will only autoplay if data-autoplay is present
+        // - true:   All media will autoplay, regardless of individual setting
+        // - false:  No media will autoplay, regardless of individual setting
+        autoPlayMedia: null,
+        // Global override for preloading lazy-loaded iframes
+        // - null:   Iframes with data-src AND data-preload will be loaded when within
+        //           the viewDistance, iframes with only data-src will be loaded when visible
+        // - true:   All iframes with data-src will be loaded when within the viewDistance
+        // - false:  All iframes with data-src will be loaded only when visible
+        preloadIframes: null,
+        // Can be used to globally disable auto-animation
+        autoAnimate: true,
+        // Optionally provide a custom element matcher that will be
+        // used to dictate which elements we can animate between.
+        autoAnimateMatcher: null,
+        // Default settings for our auto-animate transitions, can be
+        // overridden per-slide or per-element via data arguments
+        autoAnimateEasing: 'ease',
+        autoAnimateDuration: 1.0,
+        autoAnimateUnmatched: true,
+        // CSS properties that can be auto-animated. Position & scale
+        // is matched separately so there's no need to include styles
+        // like top/right/bottom/left, width/height or margin.
+        autoAnimateStyles: ['opacity', 'color', 'background-color', 'padding', 'font-size', 'line-height', 'letter-spacing', 'border-width', 'border-color', 'border-radius', 'outline', 'outline-offset'],
+        // Controls automatic progression to the next slide
+        // - 0:      Auto-sliding only happens if the data-autoslide HTML attribute
+        //           is present on the current slide or fragment
+        // - 1+:     All slides will progress automatically at the given interval
+        // - false:  No auto-sliding, even if data-autoslide is present
+        autoSlide: 0,
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+        // Use this method for navigation when auto-sliding (defaults to navigateNext)
+        autoSlideMethod: null,
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+        // Opens links in an iframe preview overlay
+        // Add `data-preview-link` and `data-preview-link="false"` to customize each link
+        // individually
+        previewLinks: false,
+        // Exposes the reveal.js API through window.postMessage
+        postMessage: true,
+        // Dispatches all reveal.js events to the parent window through postMessage
+        postMessageEvents: false,
+        // Focuses body when page changes visibility to ensure keyboard shortcuts work
+        focusBodyOnPageVisibilityChange: true,
+        // Transition style
+        transition: 'none', // none/fade/slide/convex/concave/zoom
+        // Transition speed
+        transitionSpeed: 'default', // default/fast/slow
+        // Transition style for full page slide backgrounds
+        backgroundTransition: 'none', // none/fade/slide/convex/concave/zoom
+        // The maximum number of pages a single slide can expand onto when printing
+        // to PDF, unlimited by default
+        pdfMaxPagesPerSlide: Number.POSITIVE_INFINITY,
+        // Prints each fragment on a separate slide
+        pdfSeparateFragments: true,
+        // Offset used to reduce the height of content within exported PDF pages.
+        // This exists to account for environment differences based on how you
+        // print to PDF. CLI printing options, like phantomjs and wkpdf, can end
+        // on precisely the total height of the document whereas in-browser
+        // printing has to end one pixel before.
+        pdfPageHeightOffset: -1,
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+        // The display mode that will be used to show slides
+        display: 'block',
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000
+      });
+      // Override SPACE to play / pause the video
+      Reveal.addKeyBinding(
+        {
+          keyCode: 32,
+          key: 'SPACE',
+          description: 'Play / pause video'
+        },
+        () => {
+          var currentVideos = Reveal.getCurrentSlide().slideBackgroundContentElement.getElementsByTagName("video");
+          if (currentVideos.length > 0) {
+            if (currentVideos[0].paused == true) currentVideos[0].play();
+            else currentVideos[0].pause();
+          } else {
+            Reveal.next();
+          }
+        }
+      );
+    </script>
+
+    <div id="deck-counter"></div>
+    <script>
+      (function () {
+        function refresh() {
+          var total = Reveal.getTotalSlides();
+          var idx = Reveal.getSlides().indexOf(Reveal.getCurrentSlide()) + 1;
+          var el = document.getElementById("deck-counter");
+          if (el) el.textContent = idx + " / " + total;
+        }
+        Reveal.on("ready", refresh);
+        Reveal.on("slidechanged", refresh);
+      })();
+    </script>
+  </body>
+</html>
