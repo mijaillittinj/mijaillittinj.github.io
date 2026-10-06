@@ -12,6 +12,7 @@ interface Props { lang: Lang }
 const { lang } = Astro.props;
 const es = lang === 'es';
 
+const base5 = '/teaching/thermal-systems-design/clase05-ml/';
 const T = es
   ? {
       title: 'Diseño y Optimización de Sistemas Térmicos', eyebrow: 'Docencia · ILN223 · UTFSM · 2026-2',
@@ -35,11 +36,17 @@ const T = es
         ['3', 'Optimización de sistemas térmicos', 'Anatomía de un problema de optimización, convexidad, restricciones y multiplicadores de Lagrange, descenso de gradiente, momentum, métodos estocásticos, Newton y BFGS.', [['Módulo sobre descenso de gradiente', '/learn/optimization/gradient-descent/']]],
         ['4', 'Aprendizaje automático para modelado basado en datos', 'Regresión, redes neuronales y redes informadas por la física, que combinan datos con las ecuaciones del sistema.', [['Módulo sobre aprendizaje informado por la física', '/learn/machine-learning/physics-informed-learning/']]],
       ],
+      lectures: 'Clases animadas',
+      l5: 'Machine Learning clásico',
+      l5Text: 'Dos clases de 40 minutos de la unidad 4. Regresión lineal y ecuaciones normales vistas como optimización y como proyección, regularización Ridge, LASSO y Elastic Net con la geometría que explica los ceros exactos, sobreajuste, validación cruzada, frontera de Pareto entre error y complejidad, regresión logística y PCA. Los ejemplos usan datos sintéticos de un intercambiador, un rodamiento y termocuplas.',
+      parts5: ['Regresión y regularización', 'Generalización, clasificación y PCA'],
+      salaShort: 'fondo claro',
+      how: 'Presentación animada en español. Las flechas o la barra espaciadora avanzan, F activa la pantalla completa, S abre la vista de orador con las notas y O muestra todos los estados.',
       labs: 'Laboratorios computacionales',
       lab1: 'Laboratorio 1. Por qué se sobrecalienta un transformador',
       lab1Text: 'Modelos térmicos de un transformador de distribución, primero concentrado (0D) y luego unidimensional, para explicar cómo puede sobrecalentarse hasta fallar. Los estudiantes comparan una estimación empírica del punto caliente con un modelo espacial resuelto explícitamente, aplicando los modelos concentrados y los submodelos acoplados de la unidad 1.',
       tools: 'Herramientas', toolsText: 'Python (NumPy, SciPy, Matplotlib) en notebooks. La bibliografía principal es Design and Optimization of Thermal Systems, de Y. Jaluria, y Data-Driven Science and Engineering, de S. Brunton y J. N. Kutz.',
-      material: 'Material', materialText: 'Las diapositivas, apuntes y notebooks se entregan a los estudiantes inscritos por los canales del curso. Las demostraciones abiertas están en la página de ejemplos interactivos y en la sección Aprender. Las evaluaciones y sus pautas no se publican.',
+      material: 'Material', materialText: 'Las clases animadas publicadas están en esta página. Las demás diapositivas, los apuntes y los notebooks se entregan a los estudiantes inscritos por los canales del curso. Las demostraciones abiertas están en la página de ejemplos interactivos y en la sección Aprender. Las evaluaciones y sus pautas no se publican.',
       back: 'Docencia',
     }
   : {
@@ -64,11 +71,17 @@ const T = es
         ['3', 'Optimisation of thermal systems', 'Anatomy of an optimisation problem, convexity, constraints and Lagrange multipliers, gradient descent, momentum, stochastic methods, Newton and BFGS.', [['Module on gradient descent', '/learn/optimization/gradient-descent/']]],
         ['4', 'Machine learning for data-driven modelling', 'Regression, neural networks and physics-informed networks, which combine data with the equations of the system.', [['Module on physics-informed learning', '/learn/machine-learning/physics-informed-learning/']]],
       ],
+      lectures: 'Animated lectures',
+      l5: 'Classical machine learning (in Spanish)',
+      l5Text: 'Two 40-minute lectures from unit 4. Linear regression and the normal equations seen as optimisation and as a projection, Ridge, LASSO and Elastic Net regularisation with the geometry that explains exact zeros, overfitting, cross-validation, the Pareto front between error and complexity, logistic regression and PCA. The examples use synthetic data from a heat exchanger, a bearing and thermocouples.',
+      parts5: ['Regression and regularisation', 'Generalisation, classification and PCA'],
+      salaShort: 'light background',
+      how: 'Animated presentation in Spanish. The arrow keys or the space bar move forward, F turns on full screen, S opens the speaker view with the notes and O shows every state.',
       labs: 'Computational laboratories',
       lab1: 'Lab 1. Why does a transformer overheat?',
       lab1Text: 'Thermal models of a distribution transformer, first lumped (0D) and then one-dimensional, to explain how it can overheat until it fails. Students compare an empirical hot-spot estimate with an explicitly resolved spatial model, applying the lumped models and coupled sub-models of unit 1.',
       tools: 'Tools', toolsText: 'Python (NumPy, SciPy, Matplotlib) in notebooks. The main references are Design and Optimization of Thermal Systems by Y. Jaluria, and Data-Driven Science and Engineering by S. Brunton and J. N. Kutz.',
-      material: 'Material', materialText: 'Slides, notes and notebooks are distributed to enrolled students through the course channels. Open demonstrations are on the interactive examples page and in the Learn section. Assessments and their solutions are not published.',
+      material: 'Material', materialText: 'The published animated lectures are on this page. The other slides, notes and notebooks are distributed to enrolled students through the course channels. Open demonstrations are on the interactive examples page and in the Learn section. Assessments and their solutions are not published.',
       back: 'Teaching',
     };
 const jsonld = [{
@@ -117,6 +130,26 @@ const jsonld = [{
 
   <section class="section frame">
     <div class="row">
+      <h2 class="label row__label">{T.lectures}</h2>
+      <div>
+        <p class="meta">Clase 05 · {es ? 'dos sesiones' : 'two sessions'}</p>
+        <h3 class="lec-h">{T.l5}</h3>
+        <p class="desc">{T.l5Text}</p>
+        <ol class="parts">
+          {T.parts5.map((name, i) => (
+            <li>
+              <a href={url(`${base5}${i + 1}/`)}>{name}</a>
+              <span class="meta"> · <a href={url(`${base5}${i + 1}/sala/`)}>{T.salaShort}</a> · <a href={url(`${base5}${i + 1}/clase05_ml_${i + 1}.pdf`)}>PDF</a></span>
+            </li>
+          ))}
+        </ol>
+        <p class="meta how">{T.how}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
       <h2 class="label row__label">{T.labs}</h2>
       <div class="prose">
         <h3 class="lab-h">{T.lab1}</h3>
@@ -147,4 +180,9 @@ const jsonld = [{
   .units p { margin-top: var(--s-1); color: var(--ink-2); max-width: 44rem; }
   .units .links { margin-top: var(--s-2); }
   .lab-h { margin-top: 0 !important; }
+  .lec-h { font-size: var(--step-2); margin-top: var(--s-1); }
+  .desc { margin-top: var(--s-2); color: var(--ink-2); max-width: 44rem; }
+  .parts { margin: var(--s-3) 0 0; padding-left: 1.2em; }
+  .parts li { margin-top: var(--s-1); }
+  .how { margin-top: var(--s-4); max-width: 44rem; }
 </style>
