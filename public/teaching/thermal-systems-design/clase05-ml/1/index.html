@@ -29,7 +29,7 @@
          the frame already carries the section name and the source note. */
       #deck-counter {
         position: fixed; top: 12px; right: 18px; z-index: 30;
-        font-family: "Latin Modern Roman", Georgia, "Times New Roman", serif;
+        font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
         font-size: 15px; color: var(--dim); letter-spacing: 0.2px;
         pointer-events: none; opacity: 0.8;
       }
@@ -46,493 +46,787 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s00_a7cb6d12ffc82acde96e664a2f3dcbc1b98c68e7b7b9a6edc5b1c5d4d714623d.mp4"
+          data-background-video="clase05_ml_1_assets/s00_921d6c11787c3c911d275ff5a82cdd7bb21376313604cde7e244329baf367a13.mp4"
           data-background-video-muted
           >
-            <aside class="notes" data-markdown>Buenos días. Hoy empezamos Machine Learning, en dos clases, hoy y mañana. La clase pasada terminamos con una frase, minimizar una función de pérdida. Entrenar un modelo es un problema de optimización como los de la clase cuatro. Pregunto al curso quién ha usado alguna vez una línea de tendencia en Excel (pausa). Esa línea es una regresión lineal, el primer tema de hoy.</aside>
+            <aside class="notes" data-markdown>- Hoy empezamos Machine Learning, en dos clases, hoy y mañana
+- La clase pasada cerramos con minimizar una función de pérdida
+- Entrenar un modelo es un problema de optimización como en la clase cuatro
+- Pregunta al curso, ¿quién ha usado una línea de tendencia en Excel?
+- Esa línea es una regresión lineal, el primer tema de hoy</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s01_af15385bd36c0296d121e37601a9d3d2e67e17709bedc81ee20bf81500275708.mp4"
+          data-background-video="clase05_ml_1_assets/s01_852d6c08b9abe1d2101fc876b1732b1a3c3fb4baec40d853a0ee5df319173d49.mp4"
           >
-            <aside class="notes" data-markdown>Este es el plan. La clase cinco tiene dos partes, hoy la primera. Partimos conectando con la optimización de la clase cuatro. Luego planteamos la regresión lineal, deducimos las ecuaciones normales y las vemos como una proyección en tres dimensiones. Después agregamos regularización, Ridge y LASSO, y vemos con geometría por qué LASSO deja coeficientes exactamente en cero. Cerramos con la forma de la matriz, más filas o más columnas.</aside>
+            <aside class="notes" data-markdown>- La clase cinco tiene dos partes, hoy la primera
+- Partimos conectando con la optimización de la clase cuatro
+- Regresión lineal, ecuaciones normales y proyección en tres dimensiones
+- Regularización con Ridge y LASSO
+- Geometría de por qué LASSO deja coeficientes exactamente en cero
+- Cerramos con la forma de la matriz, más filas o más columnas</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s02_64f622ecadb6afb891c20ddbc803c8b376e32403fcc330b738c5ffa6a8274fc7.mp4"
+          data-background-video="clase05_ml_1_assets/s02_a2884ad4f2707e8f11e6b04c195da345fb0dd690308ab3c3265c2567bfdfabc6.mp4"
           >
-            <aside class="notes" data-markdown>Partimos con el primer punto del plan, Machine Learning como optimización. El esquema resume el curso. Arriba, en verde, el sistema térmico real. En la clase dos lo escribimos como un modelo matemático, ecuaciones diferenciales con condiciones de borde. En la clase tres discretizamos esas ecuaciones y simulamos el sistema para un diseño dado. En la clase cuatro buscamos el mejor diseño minimizando una función objetivo f de x.</aside>
+            <aside class="notes" data-markdown>- Primer punto del plan, Machine Learning como optimización
+- El esquema resume el curso, arriba en verde el sistema térmico real
+- Clase dos, modelo matemático con ecuaciones diferenciales y condiciones de borde
+- Clase tres, discretizamos y simulamos el sistema para un diseño dado
+- Clase cuatro, mejor diseño minimizando una función objetivo f de x</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s02_ff8ad2f88f8035c2811ec50f384c8647d1c2cad8bd59124c3b781828bf7ea64a.mp4"
+          data-background-video="clase05_ml_1_assets/s02_1d204793218da5a6ca9fcfc8ab0410359aba9e1bf1bf16306e908a40a0dfd9d3.mp4"
           >
-            <aside class="notes" data-markdown>La última etapa, en azul, es Machine Learning, el tema de hoy y mañana. En vez de escribir las ecuaciones del sistema, ajustamos su comportamiento a partir de datos medidos o simulados. Entrenar un modelo es resolver mínimo en w de L de w, con los parámetros w en naranjo y la pérdida L en rojo. La función objetivo es el error del modelo sobre los datos. Veamos los dos tipos principales de aprendizaje.</aside>
+            <aside class="notes" data-markdown>- Última etapa en azul, Machine Learning, tema de hoy y mañana
+- Ajustamos el comportamiento del sistema a partir de datos medidos o simulados
+- Entrenar es resolver mínimo en w de L de w
+- Parámetros w en naranjo y pérdida L en rojo
+- La función objetivo es el error del modelo sobre los datos
+- Ahora los dos tipos principales de aprendizaje</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s02_62e8396d356a7ffb9ba4702ed37e8868ab7803c59dac50561b61569fec5b4bee.mp4"
+          data-background-video="clase05_ml_1_assets/s02_53b6a5e57007ad51570d8bdace6264d4a501fa3ff87e31a34a7630819780487a.mp4"
           >
-            <aside class="notes" data-markdown>Primer tipo, el aprendizaje supervisado, con pares de entrada y salida. La entrada es el caudal de agua caliente de un intercambiador, en morado, y la salida medida es la temperatura de salida, en azul. Son datos sintéticos, generados con una ley conocida más ruido de sensor. Con esos pares ajustamos una curva. La curva ajustada predice la temperatura para un caudal que no medimos, por ejemplo cero coma treinta kilos por segundo da unos sesenta y ocho grados. Se llama supervisado porque cada entrada viene con su respuesta medida.</aside>
+            <aside class="notes" data-markdown>- Primer tipo, aprendizaje supervisado con pares de entrada y salida
+- Entrada en morado, caudal de agua caliente de un intercambiador
+- Salida en azul, temperatura de salida medida
+- Datos sintéticos, ley conocida más ruido de sensor
+- La curva ajustada predice, 0,30 kg/s da unos 68 °C
+- Supervisado porque cada entrada trae su respuesta medida</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s02_b7dd4482bcb97f53cb5a97d226eb61c7296126f36873ea976542cd614a2b5869.mp4"
+          data-background-video="clase05_ml_1_assets/s02_63933d3071f4a64f6af8acf2bf0b3b26a80dd06dcf1740191a2082225678a74a.mp4"
           >
-            <aside class="notes" data-markdown>Segundo tipo, el aprendizaje no supervisado. Ahora los datos no traen respuesta. Cada punto es un instante de operación de una planta, con su caudal y su potencia térmica, también sintéticos. Un algoritmo de agrupamiento, k medias, encuentra dos grupos sin etiquetas previas, carga baja y carga alta. Pregunto al curso qué otro ejemplo supervisado y no supervisado se les ocurre en un sistema térmico (pausa). Hoy trabajamos con el caso supervisado.</aside>
+            <aside class="notes" data-markdown>- Segundo tipo, aprendizaje no supervisado, datos sin respuesta
+- Cada punto es un instante de operación con caudal y potencia térmica
+- k medias encuentra dos grupos sin etiquetas, carga baja y carga alta
+- Pregunta al curso, ¿qué otro ejemplo supervisado y no supervisado ven en un sistema térmico?
+- Hoy trabajamos con el caso supervisado</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s03_b5bef9d9e81eb9bc736108a08b5a456c9582f74a452b1b9e83b6bbda3d4aa6d7.mp4"
+          data-background-video="clase05_ml_1_assets/s03_97ec8df931dbbe18c8cd6f19640c9b771ebc10f4600a8bd1951403123ce2db47.mp4"
           >
-            <aside class="notes" data-markdown>Muchos métodos de Machine Learning clásico se escriben con esta fórmula. Desde aquí, como en el apunte, los parámetros se escriben x en vez de w, como en A x igual a b. El primer término, en rojo, es el error de ajuste. A es la matriz de características, en morado, con una fila por dato y una columna por parámetro, m datos y n parámetros. El vector x, en naranjo, contiene los parámetros que se aprenden, y el vector b, en azul, las observaciones. Buscamos el x que hace a A x lo más parecido posible a b en norma dos al cuadrado.</aside>
+            <aside class="notes" data-markdown>- Muchos métodos de Machine Learning clásico caben en esta fórmula
+- Desde aquí los parámetros se llaman x, como en A x = b
+- Primer término en rojo, el error de ajuste
+- A en morado, matriz de características con m datos y n parámetros
+- x en naranjo son los parámetros, b en azul las observaciones
+- Buscamos A x lo más parecido a b en norma dos al cuadrado</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s03_04b5717eea33ecfd49c08e1b37cfdd8cf4c65836334f7dddd2d397813f97cf5d.mp4"
+          data-background-video="clase05_ml_1_assets/s03_5f7ecbc43afcaa15fb0eca0f1c6c64f884083292732aad30a855779f7f9e5e56.mp4"
           >
-            <aside class="notes" data-markdown>Segundo término, en rosado. Lambda uno por la norma uno de x, la suma de los valores absolutos de los coeficientes. Cada coeficiente cuesta en proporción a su tamaño, y ese costo no disminuye cerca de cero. Por eso esta penalización tiende a dejar algunos coeficientes exactamente en cero. Con este término el método se llama LASSO.</aside>
+            <aside class="notes" data-markdown>- Segundo término en rosado, lambda uno por la norma uno de x
+- Es la suma de los valores absolutos de los coeficientes
+- El costo es proporcional al tamaño y no disminuye cerca de cero
+- Tiende a dejar algunos coeficientes exactamente en cero
+- Con este término el método se llama LASSO</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s03_c9cc31fe5448e61174a9b83e704b428b02bfc9ac60938e17d58bd45f5cff9af2.mp4"
+          data-background-video="clase05_ml_1_assets/s03_63e56244e18a89723af80524ce0767c22968db3c033f7624f93e69c437ff5098.mp4"
           >
-            <aside class="notes" data-markdown>Tercer término, en azul. Lambda dos por la norma dos al cuadrado de x, la suma de los cuadrados de los coeficientes. Penaliza los coeficientes grandes, y como su derivada dos lambda x se anula cerca de cero, no los lleva a cero. Con este término el método se llama Ridge, y con los dos juntos Elastic Net. Los valores de lambda los elige quien ajusta el modelo.</aside>
+            <aside class="notes" data-markdown>- Tercer término en azul, lambda dos por la norma dos al cuadrado de x
+- Penaliza los coeficientes grandes
+- Su derivada 2 λ x se anula cerca de cero, no los lleva a cero
+- Este término da Ridge, y los dos juntos dan Elastic Net
+- Los valores de lambda los elige quien ajusta el modelo</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s03_71468d69cdb5fa008bd282f056eaa54ff7b22c1821b1916d68939242381e39c7.mp4"
+          data-background-video="clase05_ml_1_assets/s03_f4769e942978085810a3d8a08ca6a9a0b8271d8c86709e30ed1e46c3b0bde7b3.mp4"
           >
-            <aside class="notes" data-markdown>La tabla ordena las dos clases según esta fórmula. Con los dos lambda en cero queda solo el error, los mínimos cuadrados de la regresión lineal, que vemos ahora. Con al menos un lambda positivo aparecen Ridge, LASSO y Elastic Net, en la segunda parte de hoy. La elección de lambda con datos que el modelo no usó es el tema de mañana. Empezamos con la primera fila y los datos del intercambiador.</aside>
+            <aside class="notes" data-markdown>- La tabla ordena los métodos según esta fórmula
+- Con los dos lambda en cero quedan los mínimos cuadrados, que vemos ahora
+- Con algún lambda positivo aparecen Ridge, LASSO y Elastic Net, más tarde hoy
+- Elegir lambda con datos que el modelo no usó es tema de mañana
+- Empezamos con la primera fila y los datos del intercambiador</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s04_466073bb45278bd51e9712a8d73d195868e1d0b872bde0fd4bd9dfefa81ffc96.mp4"
+          data-background-video="clase05_ml_1_assets/s04_580e0cd0fa24a72d72d6548659b29210e25dfd1cd2ba468a38c19a95cf0991f7.mp4"
           >
-            <aside class="notes" data-markdown>Empezamos con la primera fila de la tabla, los mínimos cuadrados, con los datos del intercambiador. Agua a ochenta grados entra a un tubo sumergido en un baño a veinte grados, y para cada caudal medimos la temperatura de salida. Son datos sintéticos, generados con la ley T s igual a veinte más sesenta por la exponencial de menos U A sobre m punto c p, más ruido de sensor de cero coma ocho grados. A mayor caudal el agua permanece menos tiempo en el tubo y sale más caliente.</aside>
+            <aside class="notes" data-markdown>- Primera fila de la tabla, mínimos cuadrados con datos del intercambiador
+- Agua a 80 °C entra a un tubo sumergido en un baño a 20 °C
+- Para cada caudal medimos la temperatura de salida
+- Ley sintética T s = 20 + 60 exp(−UA/ṁcp), ruido de sensor de 0,8 °C
+- A mayor caudal el agua pasa menos tiempo en el tubo y sale más caliente</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s04_6027ca5e3de57c3defd066d0c1afa0318e9579f4aa75fced0ca8dc303fc6b4c6.mp4"
+          data-background-video="clase05_ml_1_assets/s04_9fdb8ce11a5a6522b788213245c4ef53e0cec6382ff633cf8e6f6d653d4d54d4.mp4"
           >
-            <aside class="notes" data-markdown>Proponemos un modelo cuadrático, x cero más x uno por z más x dos por z al cuadrado, con los tres coeficientes en naranjo. La variable z es el caudal escalado, centrado en el medio del rango y dividido por la mitad del ancho, de modo que va de menos uno a uno. Escalamos para que las columnas de la matriz tengan tamaños parecidos, y en el código se ve por qué. El modelo es curvo en z y lineal en los parámetros, que es lo que necesita la regresión lineal.</aside>
+            <aside class="notes" data-markdown>- Modelo cuadrático x0 + x1 z + x2 z², coeficientes en naranjo
+- z es el caudal escalado, centrado y dividido por la mitad del ancho
+- z va de menos uno a uno
+- Escalamos para que las columnas de A tengan tamaños parecidos
+- El modelo es curvo en z y lineal en los parámetros</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s04_477abb51c7050983fa7448114b203058f2cdc5de67474a509a9c1a44d4e54079.mp4"
+          data-background-video="clase05_ml_1_assets/s04_c7281af7477ab5ac028ef659c15cbf7f10a216d892d1c8ecc56712568db07e0c.mp4"
           >
-            <aside class="notes" data-markdown>Escribimos el modelo para cada dato, y cada punto aporta una fila. El primer punto tiene z igual a menos cero coma noventa y uno, y su fila de A, en morado, es uno, z y z al cuadrado. Su temperatura medida va a b, en azul. Siguen el segundo y el tercer punto, y luego el punto veinte, el de mayor caudal. Cada columna de A es una potencia de z, una matriz de Vandermonde.</aside>
+            <aside class="notes" data-markdown>- Escribimos el modelo para cada dato, cada punto aporta una fila
+- Primer punto z = −0,91, su fila de A en morado es 1, z, z²
+- Su temperatura medida va a b, en azul
+- Siguen el segundo, el tercero y el punto veinte, el de mayor caudal
+- Cada columna es una potencia de z, matriz de Vandermonde</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s04_dcadda9a03ae579dc0b0f6cbbfe12b7e93781c27e9e3882ee6ecc8395c55652f.mp4"
+          data-background-video="clase05_ml_1_assets/s04_876a604f8c6f813aca80da12d58c12dd0210f33a045d490ed7e9147085d8c46d.mp4"
           >
-            <aside class="notes" data-markdown>A tiene veinte filas y tres columnas, m igual a veinte datos y n igual a tres parámetros. Esta m sin punto es el número de datos y no el caudal. Hay más ecuaciones que incógnitas, y por el ruido ninguna parábola pasa por los veinte puntos. Buscamos entonces el x que minimiza el error, y hay que definir cómo se mide.</aside>
+            <aside class="notes" data-markdown>- A de veinte filas y tres columnas, m = 20 datos, n = 3 parámetros
+- Bajo A, m por n, m sin punto cuenta los datos, no el caudal
+- Hay más ecuaciones que incógnitas
+- Por el ruido ninguna parábola pasa por los veinte puntos
+- Buscamos el x que minimiza el error y falta definir cómo se mide</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s04_229d64f32bf75fff1b45e0f50ccec81e4e469022a01c0570c8526cff56ee9934.mp4"
+          data-background-video="clase05_ml_1_assets/s04_66d0ff39389526c2f83f7880b0ddd9bb0d81b00913688fc3bf6cc78405044c6d.mp4"
           >
-            <aside class="notes" data-markdown>Probemos primero una recta, con x dos igual a cero. Es la recta de menor error, que calculamos en la escena siguiente. Los segmentos rojos son los residuos r i, la diferencia vertical entre cada medición y el modelo. Los cuadrados rojos tienen al residuo como lado, y la suma de sus áreas es la norma de A x menos b al cuadrado, la función de pérdida. Para esta recta vale unos trescientos setenta y nueve grados al cuadrado.</aside>
+            <aside class="notes" data-markdown>- Probamos primero una recta, con x2 = 0
+- Es la recta de menor error, calculada en la escena siguiente
+- Segmentos rojos, residuos r i entre medición y modelo
+- Cuadrados rojos con lado igual al residuo
+- La suma de áreas es ‖A x − b‖², la función de pérdida
+- Para esta recta vale unos 379 °C²</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s04_2c5f187f5f8020e4d86731d4836d37a78a98da7bc74efe341906a18df645ab05.mp4"
+          data-background-video="clase05_ml_1_assets/s04_e5a84ac80cac4395a5a3ffcfdbec264cce4dbfbdba3c070da7d70c7e1e5c3f7b.mp4"
           >
-            <aside class="notes" data-markdown>Derivamos un paso a la vez. La pérdida L de x es la norma al cuadrado de A x menos b. Una norma al cuadrado es el producto punto del vector consigo mismo, así que la escribimos como A x menos b transpuesto por A x menos b, un escalar que depende de los tres parámetros.</aside>
+            <aside class="notes" data-markdown>- Derivamos un paso a la vez
+- La pérdida L de x es la norma al cuadrado de A x − b
+- Una norma al cuadrado es el producto punto del vector consigo mismo
+- Queda (A x − b) transpuesto por (A x − b)
+- Es un escalar que depende de los tres parámetros</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s04_c2381e0aa1c596ee17887cc48c262204a4c11cfdbbace2b6b0c29e1964cc1f83.mp4"
+          data-background-video="clase05_ml_1_assets/s04_586a8e2486ccb702279392ce689f25dbd8057190d18e2c7c782d66d562f161d2.mp4"
           >
-            <aside class="notes" data-markdown>Al multiplicar aparecen tres términos. Primero x transpuesto A transpuesta A x, una forma cuadrática en x. Luego dos términos cruzados, que son el mismo número porque cada uno es el transpuesto del otro, y por eso queda menos dos b transpuesto A x. Al final b transpuesto b, que no depende de x.</aside>
+            <aside class="notes" data-markdown>- Al multiplicar aparecen tres términos
+- Primero x transpuesto A transpuesta A x, una forma cuadrática
+- Dos términos cruzados iguales, cada uno transpuesto del otro
+- Juntos dan menos dos b transpuesto A x
+- Al final b transpuesto b, que no depende de x</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s04_5c2d39b700527f3caeeb395034dfea1217d3716aa4df082b78cadb2b4ee2288e.mp4"
+          data-background-video="clase05_ml_1_assets/s04_b8b1eb0447335233d88bdb9921829833425bd1e2915e476b389cc588bafaefb4.mp4"
           >
-            <aside class="notes" data-markdown>Usamos dos reglas de derivación con vectores, escritas abajo. El gradiente de x transpuesto M x es dos M x cuando M es simétrica, y A transpuesta A lo es. El gradiente de c transpuesto x es c. El último término no depende de x. Queda dos A transpuesta A x menos dos A transpuesta b. Este es el gradiente que usaría el descenso de gradiente de la clase cuatro.</aside>
+            <aside class="notes" data-markdown>- Dos reglas de derivación con vectores, escritas abajo
+- Gradiente de x transpuesto M x es 2 M x con M simétrica
+- A transpuesta A es simétrica
+- Gradiente de c transpuesto x es c, el último término no aporta
+- Queda 2 A transpuesta A x menos 2 A transpuesta b
+- Es el gradiente del descenso de gradiente de la clase cuatro</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s04_da1c6b00cb64c6910b5c7a4cf4ff7b968cfd8b169a2b2b2acd5766ee989caf29.mp4"
+          data-background-video="clase05_ml_1_assets/s04_293d4d67a7f4831247def4371b74215a9dcafed19890858fc74ad745e99cf70a.mp4"
           >
-            <aside class="notes" data-markdown>Factorizamos dos A transpuesta y aparece el residuo entre paréntesis. En el mínimo el gradiente vale cero, la condición de primer orden de la clase cuatro. Pasamos el término con b al otro lado y obtenemos las ecuaciones normales, A transpuesta A x gorro igual a A transpuesta b, tres ecuaciones con tres incógnitas. Pregunto al curso de qué tamaño es A transpuesta A si medimos mil caudales (pausa). Sigue siendo de tres por tres.</aside>
+            <aside class="notes" data-markdown>- Factorizamos 2 A transpuesta y aparece el residuo entre paréntesis
+- En el mínimo el gradiente vale cero, condición de primer orden
+- Ecuaciones normales, A transpuesta A x gorro = A transpuesta b
+- Son tres ecuaciones con tres incógnitas
+- Pregunta al curso, ¿de qué tamaño es A transpuesta A con mil caudales?
+- Sigue siendo de tres por tres</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s04_f4e3df7ad8876700073039c2cb11fbb51d16e64aeeaa95f662cd841614b73d75.mp4"
+          data-background-video="clase05_ml_1_assets/s04_5b49146a21a14cba1e44bfa7f5465a0b15cb592c02a1045797b383990411b0b2.mp4"
           >
-            <aside class="notes" data-markdown>Resolvemos el sistema de tres por tres y obtenemos los coeficientes de la parábola, cerca de sesenta y seis, quince y menos doce. La suma de residuos al cuadrado baja de trescientos setenta y nueve a cuarenta y uno. Fíjense en el extremo derecho. Sobre cero coma cuarenta y dos kilos por segundo la parábola baja algo más de un grado y medio, y la ley física no permite eso. Es un primer aviso sobre los límites del modelo, que retomamos mañana.</aside>
+            <aside class="notes" data-markdown>- Resolvemos el sistema de tres por tres
+- Coeficientes de la parábola cerca de 66, 15 y −12
+- La suma de residuos al cuadrado baja de 379 a 41
+- Sobre 0,42 kg/s la parábola baja algo más de 1,5 °C
+- La ley física no permite esa bajada
+- Primer aviso sobre los límites del modelo, lo retomamos mañana</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s04_2ef7813db6e66167617a47032ce19f84a6ec73744285565a6b807c29b0827c6c.mp4"
+          data-background-video="clase05_ml_1_assets/s04_54672acd9c2a0b6eb74b33ea93a3b37a2b095c2cda471d15deffcc9afde7bbc3.mp4"
           >
-            <aside class="notes" data-markdown>En la clase tres teníamos A theta igual a b, con una matriz tridiagonal cuadrada que venía de discretizar la ecuación de calor en una barra, y tenía solución exacta. Hoy A y b vienen de datos, A tiene más filas que columnas y minimizamos el error en vez de resolver exactamente. El álgebra lineal es la misma. Ahora veamos la forma de esta pérdida cuando hay solo dos parámetros.</aside>
+            <aside class="notes" data-markdown>- Clase tres, A theta = b con matriz tridiagonal cuadrada
+- Venía de discretizar la ecuación de calor en una barra, con solución exacta
+- Hoy A y b vienen de datos y A tiene más filas que columnas
+- Minimizamos el error en vez de resolver exactamente
+- El álgebra lineal es la misma
+- Ahora la forma de la pérdida con solo dos parámetros</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s05_ff5ae4fdf807031c334746098863bb26add60cde1252b594121dec8985d043fd.mp4"
+          data-background-video="clase05_ml_1_assets/s05_2323d41efefb8622f4f51714030b0408057c9ff4722fc2d9e0aba901a66aa7fe.mp4"
           >
-            <aside class="notes" data-markdown>Para dibujar la pérdida usamos solo dos parámetros, la recta x cero más x uno por z, la misma recta de prueba de la escena anterior. Cada punto del piso es un par de parámetros, es decir una recta, y la altura es su suma de residuos al cuadrado sobre los veinte datos. La superficie es un paraboloide, porque la pérdida es cuadrática en los parámetros. Mientras gira, fíjense en que tiene un solo mínimo.</aside>
+            <aside class="notes" data-markdown>- Dos parámetros, la recta x0 + x1 z de la escena anterior
+- Cada punto del piso es un par de parámetros, es decir una recta
+- La altura es la suma de residuos al cuadrado sobre los veinte datos
+- La superficie es un paraboloide, pérdida cuadrática en los parámetros
+- Mientras gira, fíjense en que tiene un solo mínimo</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s05_32097d2d4f3989828164a32b80a4c5e8b53fc5326e081fde4c8ba739461a7a2f.mp4"
+          data-background-video="clase05_ml_1_assets/s05_3785147ba4502cd18d53189ad018251816da3633d01b29e578486e55faaa3832.mp4"
           >
-            <aside class="notes" data-markdown>En el piso aparecen las curvas de nivel, elipses alargadas en x uno, porque la pérdida crece más rápido en x cero. Aplicamos el descenso de gradiente de la clase cuatro desde x cero igual a cuarenta y x uno igual a menos diez, con paso alfa igual a cero coma cero cuatro. En x cero el paso pasa de un lado al otro del mínimo, porque en esa dirección la curvatura es mayor y el paso queda cerca del límite de estabilidad. Pregunto al curso qué pasaría si duplicamos alfa (pausa). El método diverge, como vimos en la clase cuatro.</aside>
+            <aside class="notes" data-markdown>- En el piso, curvas de nivel elípticas alargadas en x1
+- La pérdida crece más rápido en x0
+- Descenso de gradiente desde x0 = 40 y x1 = −10, con α = 0,04
+- En x0 el paso cruza el mínimo, mayor curvatura y paso cerca del límite
+- Pregunta al curso, ¿qué pasa si duplicamos alfa?
+- El método diverge, como en la clase cuatro</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s05_00bc6ffefaa1ac1f3c84906fe9aaf5cfd7f10ae1502c9eda73539cdeab1bd20e.mp4"
+          data-background-video="clase05_ml_1_assets/s05_4cef1edeb175979f8ebbd3da466d9929d39110e34f57f4147a31372cf9b789bb.mp4"
           >
-            <aside class="notes" data-markdown>Miramos desde arriba. Después de veinte iteraciones el descenso llega a sesenta y uno coma setenta, y catorce coma noventa y uno. Las ecuaciones normales dan el mismo punto, marcado con el anillo, en un solo paso y sin iterar. La pérdida es convexa, su hessiano dos A transpuesta A es definido positivo, y por lo visto en la clase cuatro tiene un único mínimo. Ahora obtenemos el mismo resultado con geometría.</aside>
+            <aside class="notes" data-markdown>- Vista desde arriba
+- Tras veinte iteraciones el descenso llega a 61,70 y 14,91
+- Las ecuaciones normales dan el mismo punto, el anillo, en un solo paso
+- Pérdida convexa, hessiano 2 A transpuesta A definido positivo
+- Por la clase cuatro tiene un único mínimo
+- Ahora el mismo resultado con geometría</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s06_1c3afe006da8f064992de5cc1b076ab98a8a86cbf0d76ece2eb79d8a7e694cd9.mp4"
+          data-background-video="clase05_ml_1_assets/s06_08c8ac861108c939532127f318d2d11ce7b3420ed10181de2d3929396213ff03.mp4"
           >
-            <aside class="notes" data-markdown>Ahora obtenemos la misma solución con geometría. Usamos un ejemplo ilustrativo pequeño, tres mediciones en z igual a menos uno, cero y uno, y una recta con dos parámetros. A tiene tres filas y dos columnas. Miramos cada columna como un vector de tres componentes, una por medición, por eso cada eje del dibujo corresponde a un dato. En morado, a uno es la columna de unos y a dos la columna de los z.</aside>
+            <aside class="notes" data-markdown>- La misma solución, ahora con geometría
+- Ejemplo pequeño, tres mediciones en z = −1, 0 y 1, recta con dos parámetros
+- A tiene tres filas y dos columnas
+- Cada columna es un vector de tres componentes, cada eje es un dato
+- En morado, a1 es la columna de unos y a2 la de los z</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s06_331f8b0dd5b4335693749618570c5abddc47d6b7305ebc35ddf522ab9a72df42.mp4"
+          data-background-video="clase05_ml_1_assets/s06_01b939badb2d92581a3abf6fc61fc638a7498211c993d3cc2755a573647e6747.mp4"
           >
-            <aside class="notes" data-markdown>A por x es x cero veces a uno más x uno veces a dos, una combinación de las columnas. Al recorrer todos los valores de los parámetros, A x recorre un plano que pasa por el origen, el plano sombreado. Ese plano contiene todas las predicciones posibles de una recta para estos tres datos, y se llama espacio columna de A.</aside>
+            <aside class="notes" data-markdown>- A x es x0 veces a1 más x1 veces a2
+- Es una combinación de las columnas
+- Al variar los parámetros, A x recorre un plano por el origen, el sombreado
+- Contiene todas las predicciones posibles de una recta para estos datos
+- Se llama espacio columna de A</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s06_597a94ef31a68506dca6277fae500df98da7d1b19664c2cd0d06d01c5a3864ec.mp4"
+          data-background-video="clase05_ml_1_assets/s06_d8d91291729b8c0915ff714782c0ee9c16400e14ab16e59507fbc3922d036d34.mp4"
           >
-            <aside class="notes" data-markdown>Las mediciones b, la flecha azul, son uno, tres y dos. El vector b queda fuera del plano, porque ninguna recta pasa exactamente por los tres puntos. El punto del plano más cercano a b se obtiene bajando desde b en dirección perpendicular al plano. Ese punto es A x gorro, la proyección ortogonal de b, y el segmento rojo es el residuo r. Su largo al cuadrado es la pérdida, así que minimizar la pérdida es buscar el punto del plano más cercano a b.</aside>
+            <aside class="notes" data-markdown>- Mediciones b en la flecha azul, 1, 3 y 2
+- b queda fuera del plano, ninguna recta pasa por los tres puntos
+- Bajamos desde b perpendicular al plano hasta el punto más cercano
+- Ese punto es A x gorro, la proyección ortogonal de b
+- El segmento rojo es el residuo r, su largo al cuadrado es la pérdida
+- Minimizar la pérdida es buscar el punto del plano más cercano a b</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s06_db350d85091749a7d8a7ecdc9687edb940169cecc0db59f119f3bfafa0911dd0.mp4"
+          data-background-video="clase05_ml_1_assets/s06_42a33de479eca80cae50904aafdb1b76becabf740c3b6ab5244728286ae199a1.mp4"
           >
-            <aside class="notes" data-markdown>Giramos la cámara hasta ver el plano de canto, y el plano se ve como la línea gruesa. El residuo rojo forma un ángulo recto con el plano, marcado en el pie. Si el pie estuviera en otro punto del plano, el segmento sería oblicuo y más largo, por Pitágoras. La perpendicularidad es la condición de optimalidad.</aside>
+            <aside class="notes" data-markdown>- Giramos la cámara hasta ver el plano de canto, la línea gruesa
+- El residuo rojo forma ángulo recto con el plano, marcado en el pie
+- Con otro pie el segmento sería oblicuo y más largo, por Pitágoras
+- La perpendicularidad es la condición de optimalidad</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s06_e943617163319e050fd2142da209f42579e4060b4656e8ba34a87379f4e06eb4.mp4"
+          data-background-video="clase05_ml_1_assets/s06_fcba1a51178d9af780d34a59bcb5a69672dc30b0374a736ba56df661c0e49a53.mp4"
           >
-            <aside class="notes" data-markdown>Perpendicular al plano significa perpendicular a cada columna, así que a uno transpuesto r y a dos transpuesto r valen cero. Juntas se escriben A transpuesta r igual a cero. Reemplazamos r por b menos A x gorro y obtenemos A transpuesta A x gorro igual a A transpuesta b, las mismas ecuaciones normales que obtuvimos derivando.</aside>
+            <aside class="notes" data-markdown>- Perpendicular al plano es perpendicular a cada columna
+- a1 transpuesto r y a2 transpuesto r valen cero
+- Juntas se escriben A transpuesta r = 0
+- Reemplazamos r por b − A x gorro
+- Sale A transpuesta A x gorro = A transpuesta b
+- Son las mismas ecuaciones normales obtenidas derivando</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s06_225b90997a51ab08e83476c9ebb8cb3207544a447ce431094c0fbac65e11ed98.mp4"
+          data-background-video="clase05_ml_1_assets/s06_09c46ec63243cf30ea43aa5160e3430bf74b7e62a2e48890e7db37276ceb754f.mp4"
           >
-            <aside class="notes" data-markdown>Con números. A transpuesta A es diagonal, tres y dos, porque con z simétrico la columna de unos y la columna de los z son perpendiculares. A transpuesta b es seis y uno, así que x gorro es dos y cero coma cinco, y el residuo es menos cero coma cinco, uno y menos cero coma cinco. Pregunto al curso cuánto vale a dos transpuesto por r con estos números (pausa). Vale cero. Centrar z dejó A transpuesta A diagonal, un caso bien condicionado, kappa uno coma cinco.</aside>
+            <aside class="notes" data-markdown>- A transpuesta A es diagonal, 3 y 2, columnas perpendiculares con z simétrico
+- A transpuesta b es 6 y 1
+- x gorro es 2 y 0,5, residuo −0,5, 1 y −0,5
+- Pregunta al curso, ¿cuánto vale a2 transpuesto por r con estos números?
+- Vale cero
+- Centrar z dejó A transpuesta A diagonal, bien condicionada, κ = 1,5</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s07_08eba05a72c897d13b176e396792ac6195bfa89339aa6aaa6b7805812fabac42.mp4"
+          data-background-video="clase05_ml_1_assets/s07_dca77cde643151ca19892f7a5dc355f64d2ecf88febc21a7c1351ff3f456f650.mp4"
           >
-            <aside class="notes" data-markdown>Pasamos al código. La primera función, resaltada, arma las ecuaciones normales tal como las dedujimos. Con los veinte datos, A es de veinte por tres. El código forma A transpuesta A, de tres por tres, y A transpuesta b, y solve resuelve ese sistema sin calcular la inversa. Salen los mismos coeficientes de la parábola.</aside>
+            <aside class="notes" data-markdown>- Pasamos al código
+- La primera función, resaltada, arma las ecuaciones normales
+- Con veinte datos A es de veinte por tres
+- Forma A transpuesta A de tres por tres y A transpuesta b
+- solve resuelve el sistema sin calcular la inversa
+- Salen los mismos coeficientes de la parábola</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s07_c73763179dffa4355bf027d0e84c9d47ea44c70965c0c4d52a80137457467dc4.mp4"
+          data-background-video="clase05_ml_1_assets/s07_20a9a71fae507e27298b70445ae6de62c93ee499a977caa6756b31310aefa934.mp4"
           >
-            <aside class="notes" data-markdown>La segunda función usa la pseudo inversa, A más, de tres por veinte, que se multiplica por b. No forma A transpuesta A, trabaja con la descomposición en valores singulares de A. Da los mismos tres números, la diferencia es del orden de diez a la menos catorce, redondeo.</aside>
+            <aside class="notes" data-markdown>- La segunda función usa la pseudo inversa A más, de tres por veinte
+- Se multiplica por b
+- No forma A transpuesta A, usa la descomposición en valores singulares
+- Da los mismos tres números
+- La diferencia es del orden de 10⁻¹⁴, redondeo</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s07_a60b46b0f1db0a4d05e63e6ce758eb84e9a613b9e15aae94c9400db11657c2b5.mp4"
+          data-background-video="clase05_ml_1_assets/s07_7fa915a255b82da0bf2c367175e7991b6d3be36257dcf513d6d653b5591c630b.mp4"
           >
-            <aside class="notes" data-markdown>La diferencia está en el número de condición, kappa, que mide cuánto se amplifican los errores al resolver. Formar A transpuesta A eleva al cuadrado el número de condición. Con grado dos, kappa de A transpuesta A es casi cinco mil con caudal crudo y once con z escalado. Con grado cinco y caudal crudo llega a uno coma seis por diez a la diez, y se pierden unas diez de las dieciséis cifras de la doble precisión. Con z de grado cinco también llega a cuatro mil, así que escalar ayuda y no basta. El escalamiento y pinv, que trabaja con A y no con su cuadrado, reducen ese error de redondeo.</aside>
+            <aside class="notes" data-markdown>- El número de condición κ mide cuánto se amplifican los errores
+- Formar A transpuesta A eleva al cuadrado el número de condición
+- Grado dos, κ casi 5000 con caudal crudo y 11 con z escalado
+- Grado cinco con caudal crudo, κ llega a 1,6 × 10¹⁰
+- Se pierden unas diez de las dieciséis cifras de doble precisión
+- Con z de grado cinco κ llega a 4000, escalar ayuda y no basta
+- Escalamiento y pinv, que trabaja con A, reducen el redondeo</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s07_78211ea49ee270d46a52cf06da4fb812c6147e3ffab3f1049f63b84a257507a3.mp4"
+          data-background-video="clase05_ml_1_assets/s07_52bc3bd37eff268558ed77137e70050a09908b441c32250e0fdfe0947a49f5b3.mp4"
           >
-            <aside class="notes" data-markdown>Hay un segundo problema que pinv no resuelve. El ruido de los datos pasa a x gorro amplificado en proporción a uno sobre sigma mínimo, el menor valor singular de A. Si las columnas de A son casi paralelas, sigma mínimo es casi cero y los coeficientes crecen y cambian mucho con el ruido. Con grado nueve en z lo vemos en un momento. La solución es agregar a la pérdida un término que penalice los coeficientes grandes, el término en azul de la fórmula general, la regularización.</aside>
+            <aside class="notes" data-markdown>- Un segundo problema que pinv no resuelve
+- El ruido pasa a x gorro amplificado según uno sobre sigma mínimo
+- Sigma mínimo es el menor valor singular de A
+- Columnas casi paralelas, sigma mínimo casi cero, coeficientes grandes e inestables
+- Lo veremos con grado nueve en z
+- Solución, penalizar coeficientes grandes, el término azul, la regularización</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s08_6552ddf99f9b006aa2370aa9a05f2cd76d9de21b5bb74083a56690f92896f6d3.mp4"
+          data-background-video="clase05_ml_1_assets/s08_38d1e3a1ba7e292bd69e92162d00e58ae551c18f755cb59938aafa514e6b6797.mp4"
           >
-            <aside class="notes" data-markdown>Con columnas casi paralelas los coeficientes de mínimos cuadrados crecen y cambian mucho con el ruido. La fórmula general agrega dos términos para controlarlo. Arriba está completa, con el término de error y las dos penalizaciones, L uno y L dos. Con lambda uno y lambda dos en cero quedan apagadas y recuperamos mínimos cuadrados ordinarios, con su solución cerrada.</aside>
+            <aside class="notes" data-markdown>- Columnas casi paralelas dan coeficientes grandes y sensibles al ruido
+- La fórmula general agrega dos términos para controlarlo
+- Arriba completa, error más penalizaciones L1 y L2
+- Con lambda uno y lambda dos en cero quedan apagadas
+- Recuperamos mínimos cuadrados ordinarios con solución cerrada</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s08_ee2dde02a27ced33e636a7fd0a30e5d1482cb9b4490ff9a9a6f74a454c95b18e.mp4"
+          data-background-video="clase05_ml_1_assets/s08_33712200e0ea21925dc2c71810766bcc87288b41413992d8bd37e3fba4d448c6.mp4"
           >
-            <aside class="notes" data-markdown>Encendemos solo lambda dos. Esto es Ridge, que castiga la suma de los cuadrados de los coeficientes, así que un coeficiente grande cuesta mucho. El resultado son coeficientes más chicos y más estables frente al ruido. Ridge tiene solución cerrada, que deducimos en un momento.</aside>
+            <aside class="notes" data-markdown>- Encendemos solo lambda dos, esto es Ridge
+- Castiga la suma de los cuadrados de los coeficientes
+- Un coeficiente grande cuesta mucho
+- Coeficientes más chicos y más estables frente al ruido
+- Ridge tiene solución cerrada, la deducimos en un momento</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s08_74a0dec7d70515e8d997439fc7ded3f719d7280d4a2a0b4044973ab7335ecafb.mp4"
+          data-background-video="clase05_ml_1_assets/s08_3631c0b70dd208e398e10cc6b8438f7b995963e388b4b03848024b9cdd243e84.mp4"
           >
-            <aside class="notes" data-markdown>Ahora lambda uno encendido y lambda dos apagado. Esto es LASSO, que castiga la suma de los valores absolutos y deja coeficientes exactamente en cero. En una planta con veinte sensores, LASSO indica cuáles se pueden ignorar. No hay fórmula cerrada para el vector completo, porque las coordenadas se acoplan a través de A transpuesta A. Para una coordenada a la vez sí la hay, y la usamos en el código.</aside>
+            <aside class="notes" data-markdown>- Lambda uno encendido y lambda dos apagado, esto es LASSO
+- Castiga la suma de valores absolutos y deja coeficientes en cero
+- Con veinte sensores LASSO indica cuáles se pueden ignorar
+- Sin fórmula cerrada para el vector completo, A transpuesta A acopla coordenadas
+- Para una coordenada a la vez sí la hay, la usamos en el código</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s08_1d92b42a021cda7ae85e5d0d0f40256dca69ac7719eec7b6bb24b6dd73dbda2c.mp4"
+          data-background-video="clase05_ml_1_assets/s08_b810499e1ae3209e0ea48137c80d0c1ecbfafb442935e35e0ecf9dcc7490cdcc.mp4"
           >
-            <aside class="notes" data-markdown>Con los dos lambda encendidos tenemos Elastic Net, útil con variables muy correlacionadas, como dos termocuplas vecinas. Ahora deducimos la solución de Ridge en dos pasos.</aside>
+            <aside class="notes" data-markdown>- Los dos lambda encendidos dan Elastic Net
+- Útil con variables muy correlacionadas
+- Ejemplo, dos termocuplas vecinas
+- Ahora deducimos la solución de Ridge en dos pasos</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s08_044e1d3c8131f072d141b64373a26c3c989aaa459d73fb48df2190ce8aa3b47d.mp4"
+          data-background-video="clase05_ml_1_assets/s08_8cd4103f4577525a646fbdb140f856b3952a73959833ed69e00efb34d1a0da64.mp4"
           >
-            <aside class="notes" data-markdown>La función objetivo de Ridge es el error al cuadrado más lambda dos por x transpuesta x. El gradiente del primer término ya lo conocemos de las ecuaciones normales, y el del término nuevo es dos lambda dos x. Igualamos a cero.</aside>
+            <aside class="notes" data-markdown>- Objetivo de Ridge, error al cuadrado más lambda dos por x transpuesta x
+- El gradiente del primer término viene de las ecuaciones normales
+- El gradiente del término nuevo es 2 lambda dos x
+- Igualamos a cero</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s08_aae4177ba34154998a39a434cfdba08c14829c1a1fc8180c71945d7a11a29cdc.mp4"
+          data-background-video="clase05_ml_1_assets/s08_e37c981f623c060d14cc0e2449187273d8cc12bce59a1844a941831df3d882ec.mp4"
           >
-            <aside class="notes" data-markdown>Dividimos por dos y juntamos los términos en x. Queda A transpuesta A más lambda dos por la identidad, por x gorro, igual a A transpuesta b, un sistema lineal como los de la clase tres. Con lambda dos igual a cero vuelven las ecuaciones normales. A continuación, el efecto de ese término en la diagonal.</aside>
+            <aside class="notes" data-markdown>- Dividimos por dos y juntamos los términos en x
+- (A transpuesta A + lambda dos I) x gorro = A transpuesta b
+- Un sistema lineal como los de la clase tres
+- Con lambda dos = 0 vuelven las ecuaciones normales
+- A continuación, el efecto de ese término en la diagonal</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s08_2646322987ae570ff1c8e96d703ba3d6add9ee22c447d8ca782d28e63f50dd59.mp4"
+          data-background-video="clase05_ml_1_assets/s08_ce8d89af0fafcca7bdfbabc0084f98046cd65bec0830bfe2fe309c6dcbccd5e8.mp4"
           >
-            <aside class="notes" data-markdown>Usamos un caso exigente, el intercambiador con un polinomio de grado nueve en z. Las barras son los diez valores propios de A transpuesta A en escala logarítmica, que son los cuadrados de los valores singulares de A, sigma i. La condición kappa es la razón entre el mayor y el menor, unos seis coma seis millones. Al resolver con A transpuesta A los errores de redondeo pueden crecer en ese factor, y un error en los datos crece según la condición de A, unas dos mil quinientas veces. Sumar lambda dos por I suma lambda dos a cada valor propio.</aside>
+            <aside class="notes" data-markdown>- Caso exigente, intercambiador con polinomio de grado nueve en z
+- Barras, los diez valores propios de A transpuesta A en escala log
+- Son los cuadrados de los valores singulares sigma i de A
+- κ, razón entre mayor y menor, unos 6,6 millones
+- Redondeo crece en ese factor, error en datos según κ de A, unas 2500 veces
+- Sumar lambda dos I suma lambda dos a cada valor propio</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s08_646e7e6f54b3f81657b60bf1473dfc68ba383aecbe8889c319396b24caf146e5.mp4"
+          data-background-video="clase05_ml_1_assets/s08_68129ea622df968b387fa7a938c84b539fdf55190768470ef2854bae7f88b04d.mp4"
           >
-            <aside class="notes" data-markdown>Subimos lambda dos desde cero hasta cero coma uno, la línea segmentada. Los valores propios grandes casi no cambian y los chicos quedan a la altura de lambda. La condición baja de seis coma seis millones a doscientos ochenta y cuatro. Con lambda mayor que cero la matriz de Ridge es siempre invertible.</aside>
+            <aside class="notes" data-markdown>- Subimos lambda dos de 0 a 0,1, la línea segmentada
+- Los valores propios grandes casi no cambian
+- Los chicos quedan a la altura de lambda
+- La condición baja de 6,6 millones a 284
+- Con lambda mayor que cero la matriz de Ridge es siempre invertible</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s08_d46d538f3f4fcd9313be368ac949b9e162186a9f8de51d89a8efd4e381d655f0.mp4"
+          data-background-video="clase05_ml_1_assets/s08_d3b774a9274ff6d793a9010d17924695ce384391293d13a5a1423cead384122d.mp4"
           >
-            <aside class="notes" data-markdown>Las barras con borde naranjo son los diez coeficientes de mínimos cuadrados con grado nueve. Uno supera cien, y hay coeficientes grandes de signos opuestos que se compensan. Con Ridge y lambda dos igual a cero coma uno, en azul, el mayor coeficiente sin contar x cero baja de ciento once a menos de nueve. A continuación, la implementación de Ridge y LASSO.</aside>
+            <aside class="notes" data-markdown>- Barras con borde naranjo, diez coeficientes de mínimos cuadrados, grado nueve
+- Uno supera 100 y hay grandes de signos opuestos que se compensan
+- Ridge con lambda dos = 0,1 en azul
+- Mayor coeficiente sin contar x0 baja de 111 a menos de 9
+- A continuación, la implementación de Ridge y LASSO</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s09_c36e625b32b1ab116ca9828db5e747867503ad1cb39387f9ff7592aa7fe6a6a2.mp4"
+          data-background-video="clase05_ml_1_assets/s09_425a2d69ec72c6c8836b66a4d74040312fea0165d31c6e0d6f2dd9fca01952fa.mp4"
           >
-            <aside class="notes" data-markdown>Este es el código, como en el apunte. La primera función, Ridge, resuelve el sistema A transpuesta A más lambda I con solve, la fórmula que acabamos de deducir. La segunda, LASSO, es más larga porque resuelve el problema por partes.</aside>
+            <aside class="notes" data-markdown>- El código, como en el apunte
+- Ridge resuelve (A transpuesta A + lambda I) con solve
+- Es la fórmula recién deducida
+- LASSO es más largo porque resuelve el problema por partes</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s09_e217506a58b1e0bc66dc64c973c8d557d44333cf907ee2551af2f2a97f3d7480.mp4"
+          data-background-video="clase05_ml_1_assets/s09_f0dde7ff65331ac0746fd43f87ff99d4ac6389b9ccf20b3a14365fefe0187a2e.mp4"
           >
-            <aside class="notes" data-markdown>LASSO se resuelve por descenso por coordenadas. Se fija todo menos x j y se elige el mejor valor para esa componente. Los recuadros muestran x para los seis sensores del ejemplo final, con lambda uno igual a veinte. En la primera pasada x cuatro y x seis quedan en cero, y en la segunda también x dos. El ciclo exterior repite las pasadas hasta que x deja de cambiar.</aside>
+            <aside class="notes" data-markdown>- LASSO por descenso por coordenadas
+- Se fija todo menos x j y se elige su mejor valor
+- Recuadros con x para los seis sensores del ejemplo final, lambda uno = 20
+- Primera pasada, x4 y x6 en cero, en la segunda también x2
+- El ciclo exterior repite hasta que x deja de cambiar</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s09_0a9e491f268315b1a616d063feb705c7da38c3e2e3654c22958a068d1f81fcf6.mp4"
+          data-background-video="clase05_ml_1_assets/s09_b95f6f2455f97722a17e74fb6f8f829b0970b3272407ba11f2f502dc5e324949.mp4"
           >
-            <aside class="notes" data-markdown>Las tres líneas marcadas preparan el problema de una variable. El vector r es el residuo sin el aporte de x j. El número rho mide cuánto se parece la columna a j a ese residuo. El número z es la norma al cuadrado de la columna, un nombre local del código distinto del caudal escalado.</aside>
+            <aside class="notes" data-markdown>- Las tres líneas marcadas preparan el problema de una variable
+- r es el residuo sin el aporte de x j
+- rho mide cuánto se parece la columna a j a ese residuo
+- z es la norma al cuadrado de la columna
+- Es un nombre local del código, distinto del caudal escalado</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s09_1000cfe94b0009db1a2785e2e4007fc7de13a7a5b4bef61ad47b4d9329ba9ff0.mp4"
+          data-background-video="clase05_ml_1_assets/s09_4ad48070a095797c7b42d884aeb8b82be4e2e98ac4db213dfa99514932b2c8dc.mp4"
           >
-            <aside class="notes" data-markdown>Con todo fijo menos x j, la función objetivo es el error del residuo más lambda por el valor absoluto de x j. Al expandir el cuadrado aparecen z y rho. Es una parábola más el valor absoluto, y buscamos su mínimo.</aside>
+            <aside class="notes" data-markdown>- Todo fijo menos x j
+- Objetivo, error del residuo más lambda por |x j|
+- Al expandir el cuadrado aparecen z y rho
+- Una parábola más el valor absoluto, buscamos su mínimo</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s09_1704137698da233470c81201b185283016372ffcc63da839e0d038f17f320003.mp4"
+          data-background-video="clase05_ml_1_assets/s09_373bf71a02f2afcabe96874971670e8821898f298599d4b6e593b39bc2e648ef.mp4"
           >
-            <aside class="notes" data-markdown>Si x j es positivo derivamos y despejamos, x j igual a rho menos lambda medios, dividido por z. El factor lambda medios aparece porque nuestra función objetivo no tiene factores delante. La librería scikit-learn pone un medio de m delante del error, así que su alpha equivale a lambda partido por dos m. Si rho está entre menos lambda medios y lambda medios, el mínimo queda en x j igual a cero exacto. Es el umbral suave.</aside>
+            <aside class="notes" data-markdown>- Con x j positivo, x j = (rho − lambda/2) / z
+- Lambda medios aparece porque el objetivo no tiene factores delante
+- scikit-learn pone un medio de m delante del error
+- Su alpha equivale a lambda partido por 2 m
+- Con rho entre −lambda/2 y lambda/2 el mínimo es x j = 0 exacto
+- Es el umbral suave</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s09_ba4647f063d595c6d58cf13eaa18a4a409ddd186b3ae3a47eaef32d5502f507d.mp4"
+          data-background-video="clase05_ml_1_assets/s09_b421cb916453f29e89cfc29544e036efa37d758acdfcc206c43523dd3f19438b.mp4"
           >
-            <aside class="notes" data-markdown>Rho en el eje horizontal y el nuevo x j en el vertical, con z igual a uno y lambda igual a dos. LASSO es la diagonal desplazada en lambda medios, con cero en la zona muerta. Ridge es la recta rho partido por z más lambda. Con rho igual a tres, LASSO da dos y Ridge da uno.</aside>
+            <aside class="notes" data-markdown>- Rho en el eje horizontal, nuevo x j en el vertical
+- z = 1 y lambda = 2
+- LASSO, diagonal desplazada en lambda medios con zona muerta en cero
+- Ridge, la recta rho partido por (z + lambda)
+- Con rho = 3, LASSO da 2 y Ridge da 1</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s09_a7a1afbdf9965d484505ed767ab1edc41ddaa086bbb325a76128c3deb7926dbc.mp4"
+          data-background-video="clase05_ml_1_assets/s09_73339ac58bd954d9700f225e1510234cc9e6dbae6b0bab324f2c0f3d8725dc18.mp4"
           >
-            <aside class="notes" data-markdown>Con lambda igual a cuatro la zona muerta va de menos dos a dos y la recta de Ridge queda más cerca del eje. Pregunto al curso qué valor dan LASSO y Ridge con rho igual a tres (pausa).</aside>
+            <aside class="notes" data-markdown>- Ahora lambda = 4
+- La zona muerta va de −2 a 2
+- La recta de Ridge queda más cerca del eje
+- Pregunta al curso, ¿qué dan LASSO y Ridge con rho = 3?</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s09_1e3d3d24fc3f15eb7d09f4705c5b7a130c28f630c49a21830ae290969aa1222e.mp4"
+          data-background-video="clase05_ml_1_assets/s09_390807a4a17af8d112a986782444329758850b3a70b0bb1d15f32722ce58bc4f.mp4"
           >
-            <aside class="notes" data-markdown>LASSO da tres menos lambda medios, es decir uno. Ridge da tres partido por cinco, cero coma seis. Ahora lo mismo con datos.</aside>
+            <aside class="notes" data-markdown>- Respuesta con lambda = 4 y rho = 3
+- LASSO da 3 menos lambda medios, es decir 1
+- Ridge da 3 partido por 5, es decir 0,6
+- Ahora lo mismo con datos</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s09_114e76ae25a214c4d2acdbdd89781afab3db99a5f76bbad31063666b7e5a5056.mp4"
+          data-background-video="clase05_ml_1_assets/s09_8e1eb3d2e920168ad5612fdd1874b1c83c25a90775186fea8c13b1d24719c200.mp4"
           >
-            <aside class="notes" data-markdown>Seis sensores candidatos con cuarenta mediciones sintéticas. Solo tres entran en la ley, los naranjos. El panel muestra los coeficientes de LASSO mientras lambda crece en escala logarítmica. Primero caen a cero los tres sensores que no están en la ley y luego los verdaderos, empezando por el más débil. Con lambda cerca de veinte quedan exactamente los tres de la ley.</aside>
+            <aside class="notes" data-markdown>- Seis sensores candidatos con cuarenta mediciones sintéticas
+- Solo tres entran en la ley, los naranjos
+- Coeficientes de LASSO con lambda creciente en escala logarítmica
+- Primero caen a cero los tres que no están en la ley
+- Luego los verdaderos, empezando por el más débil
+- Con lambda cerca de 20 quedan exactamente los tres de la ley
+- Con lambda mayor caen a cero también los tres de la ley</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s09_8044a72065be05ebdcccfd7524c735a07eff8b6daf3a3956de6633531d616277.mp4"
+          data-background-video="clase05_ml_1_assets/s09_c461890ccfcfafbb1b21ee1f67538a45042ff0dd2fa36f1ac422e338cc4d3571.mp4"
           >
-            <aside class="notes" data-markdown>A la derecha, Ridge con los mismos datos. Las curvas se acercan a cero de forma continua. Dos cruzan el eje y siguen, porque Ridge no tiene zona muerta, y ninguna se queda en cero. La razón por la que el valor absoluto produce ceros exactos se ve con geometría.</aside>
+            <aside class="notes" data-markdown>- A la derecha, Ridge con los mismos datos
+- Las curvas se acercan a cero de forma continua
+- Dos cruzan el eje y siguen, Ridge no tiene zona muerta
+- Ninguna se queda en cero
+- Los ceros exactos del valor absoluto se explican con geometría</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s10_d028048f0244a8d895f4671dc3428b149a715a28171e6b08a92398082acc1101.mp4"
+          data-background-video="clase05_ml_1_assets/s10_10c4918051b83b92cccccc4703591a63c4af9b5bca51b2259c362861ede0690d.mp4"
           >
-            <aside class="notes" data-markdown>Penalizar con lambda por la norma de x, al cuadrado en el caso de Ridge, es el mismo problema que minimizar el error con la restricción norma de x menor o igual a c. Un lambda más grande corresponde a un c más chico, y lambda cumple el papel del multiplicador de Lagrange de la clase cuatro. En el ejemplo, c igual a uno equivale a lambda dos cero coma setenta y nueve y a lambda uno uno coma cuarenta y ocho. La forma restringida se puede dibujar.</aside>
+            <aside class="notes" data-markdown>- Penalizar con lambda por la norma equivale a restringir ‖x‖ ≤ c
+- En Ridge la norma va al cuadrado
+- Lambda más grande corresponde a c más chico
+- Lambda es el multiplicador de Lagrange de la clase cuatro
+- c = 1 equivale a lambda dos 0,79 y lambda uno 1,48
+- La forma restringida se puede dibujar</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s10_a4b3a190596e4682f1970f8ccae9b4e72d5ca52a946f9fc6c4713900587c29ad.mp4"
+          data-background-video="clase05_ml_1_assets/s10_61d50a01201a54be41304afda2bab882801d61a1073d4afeac3b36c5f76f57c9.mp4"
           >
-            <aside class="notes" data-markdown>Dos parámetros. A la izquierda la región de Ridge, un círculo. A la derecha la de LASSO, un diamante con esquinas sobre los ejes. La estrella es la solución de mínimos cuadrados sin restricción, fuera de las dos regiones. El error cuadrático es un ejemplo ilustrativo.</aside>
+            <aside class="notes" data-markdown>- Dos parámetros
+- Izquierda, región de Ridge, un círculo
+- Derecha, región de LASSO, un diamante con esquinas sobre los ejes
+- La estrella es mínimos cuadrados sin restricción, fuera de ambas regiones
+- El error cuadrático es un ejemplo ilustrativo</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s10_34f8fe65087881da096a4878d6846cd5d26283b706c3fd936df545f684f008a9.mp4"
+          data-background-video="clase05_ml_1_assets/s10_eb7ec0b9cc61c0215ad19ef8f13ad4ecb9805c698970c95caa7743e3e8fa595f.mp4"
           >
-            <aside class="notes" data-markdown>Las elipses son curvas de nivel del error con centro en la estrella. La curva roja crece hasta el primer punto de la región que toca, el punto permitido de menor error. En Ridge toca el círculo en un punto suave. En LASSO toca el diamante en la esquina derecha.</aside>
+            <aside class="notes" data-markdown>- Elipses, curvas de nivel del error centradas en la estrella
+- La curva roja crece hasta el primer punto de la región
+- Ese es el punto permitido de menor error
+- En Ridge toca el círculo en un punto suave
+- En LASSO toca el diamante en la esquina derecha</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s10_2496bb9a151635d1cf0ad95f07afaca4672f8044d55da00cb6faf69d7f1afe28.mp4"
+          data-background-video="clase05_ml_1_assets/s10_8621c3d081fff641a6805d3dd0ef6cb5010e2a568fa00db7d9369a443ff87235.mp4"
           >
-            <aside class="notes" data-markdown>En Ridge x gorro es cero coma noventa y cero coma cuarenta y tres, los dos distintos de cero. En LASSO x gorro es uno y cero, y el segundo coeficiente es exactamente cero. Pregunto al curso si esto depende de dónde está la estrella (pausa).</aside>
+            <aside class="notes" data-markdown>- Ridge, x gorro = 0,90 y 0,43
+- Los dos coeficientes distintos de cero
+- LASSO, x gorro = 1 y 0
+- El segundo coeficiente es exactamente cero
+- Pregunta al curso, ¿esto depende de dónde está la estrella?</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s10_e1861673db4091cb221ab062df4273521b04cd83cddd9811e1374a55f4e196e9.mp4"
+          data-background-video="clase05_ml_1_assets/s10_f3f83f1d693a16955e88bb490aba1823adf1dc7de4043531c796241a3c5dfb18.mp4"
           >
-            <aside class="notes" data-markdown>Movemos la estrella. En Ridge el contacto se desliza por el círculo y x dos gorro cambia todo el tiempo. En LASSO el contacto se mantiene en la esquina y x dos gorro vale cero durante todo el recorrido.</aside>
+            <aside class="notes" data-markdown>- Movemos la estrella
+- En Ridge el contacto se desliza por el círculo
+- x2 gorro de Ridge cambia todo el tiempo
+- En LASSO el contacto se mantiene en la esquina
+- x2 gorro de LASSO vale cero en todo el recorrido</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s10_35035c41c4566f2eefb40f8034ea00f36f215cbb4e1db8903d09e71b9328c636.mp4"
+          data-background-video="clase05_ml_1_assets/s10_b6d0df36af78948b7d9f7fc2eac207cfd73704987f989a8559ff4fbcc55bf53a.mp4"
           >
-            <aside class="notes" data-markdown>Para cada esquina calculamos las posiciones de la estrella cuya solución cae en esa esquina. Son las zonas rosadas, regiones con área. En Ridge las estrellas que dan un coeficiente cero están solo sobre las semirrectas azules, sin área. Por eso con datos reales Ridge casi nunca da un cero y LASSO lo da con frecuencia. La misma geometría en tres dimensiones.</aside>
+            <aside class="notes" data-markdown>- Para cada esquina, las estrellas cuya solución cae en ella
+- Son las zonas rosadas, regiones con área
+- En Ridge un coeficiente cero solo ocurre sobre las semirrectas azules, sin área
+- Con datos reales Ridge casi nunca da cero y LASSO lo da con frecuencia
+- Sigue la misma geometría en tres dimensiones</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s11_1fa7b40a6324f8b22e725abb8374b68a2becf52eb9da5e39eaa04f5f537f03dd.mp4"
+          data-background-video="clase05_ml_1_assets/s11_53fde0745f1ba9f2ecbb3505af3776ae755701f038b1e851f1b246cdd33fe92e.mp4"
           >
-            <aside class="notes" data-markdown>Repetimos el dibujo con tres parámetros. La región de Ridge es ahora una esfera y las curvas de nivel del error son elipsoides con centro en x estrella. Hacemos crecer el elipsoide hasta el primer contacto, que ocurre en un punto suave de la esfera. La solución es cero coma noventa, cero coma treinta y dos y cero coma treinta, sin coeficientes nulos.</aside>
+            <aside class="notes" data-markdown>- El mismo dibujo con tres parámetros
+- Región de Ridge, una esfera
+- Curvas de nivel del error, elipsoides centrados en x estrella
+- El elipsoide crece hasta tocar la esfera en un punto suave
+- Solución 0,90, 0,32 y 0,30, sin coeficientes nulos</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s11_6bc7fe9215b7b74e9434e660843c0c5f25d2cccae1a2872670c2aab56e3fbd5e.mp4"
+          data-background-video="clase05_ml_1_assets/s11_8c167e16a8bff325239d29025860b8e756166602e72a86d1da76c771a9827e52.mp4"
           >
-            <aside class="notes" data-markdown>Giramos la cámara para ver el contacto desde otros ángulos. El elipsoide solo toca la esfera, lejos de los tres ejes. Ridge reduce la norma del vector x, y x tres queda casi igual. Ahora la misma estrella con la región de LASSO.</aside>
+            <aside class="notes" data-markdown>- Giramos la cámara para ver el contacto
+- El elipsoide solo toca la esfera, lejos de los tres ejes
+- Ridge reduce la norma de x
+- x3 queda casi igual
+- Ahora la misma estrella con la región de LASSO</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s11_06c0e83af0c8b087bb534bc1919956679ce09e1345bc1ded4a3068e6559f02a8.mp4"
+          data-background-video="clase05_ml_1_assets/s11_6eb373be3e82e38a2ed6b0c6f535a5f79a93ac420a7dc41ad64281b6e7091b64.mp4"
           >
-            <aside class="notes" data-markdown>La región de LASSO, la suma de los tres valores absolutos menor o igual a uno, es un octaedro con seis vértices sobre los ejes. El mismo elipsoide crece hasta tocarlo, y el contacto cae en el vértice del eje x uno. La solución es uno, cero, cero, con dos coeficientes exactamente nulos.</aside>
+            <aside class="notes" data-markdown>- Región de LASSO, suma de valores absolutos ≤ 1
+- Es un octaedro con seis vértices sobre los ejes
+- El mismo elipsoide crece hasta tocarlo
+- El contacto cae en el vértice del eje x1
+- Solución 1, 0, 0, con dos coeficientes exactamente nulos</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s11_c24ffd0dd5a67a406ad4d609f156b1e1792b59d575210ad65fd34aa1f09c2285.mp4"
+          data-background-video="clase05_ml_1_assets/s11_25e3b4b80a454a52a41022a9cfc0a2d5b18d6c094886eda4d24f09ad600b24fb.mp4"
           >
-            <aside class="notes" data-markdown>Al girar se ve que el elipsoide apoya solo en el vértice, sin cortar ninguna cara. Un contacto en un vértice anula dos coeficientes y uno en una arista anula uno. Con n parámetros la región de LASSO tiene dos n vértices y muchas aristas. Un contacto en cualquiera de ellos deja coeficientes nulos, y con n grande casi siempre ocurre así. Para cerrar miremos la forma de la matriz A.</aside>
+            <aside class="notes" data-markdown>- Al girar, el elipsoide apoya solo en el vértice sin cortar caras
+- Contacto en vértice anula dos coeficientes, en arista anula uno
+- Con n parámetros hay 2 n vértices y muchas aristas
+- Esos contactos dejan coeficientes nulos, casi siempre con n grande
+- Para cerrar, la forma de la matriz A</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s12_64eb9dd0fc6992fd70fa7a94114e240936cbae0adb40963acae0fd6033a29b17.mp4"
+          data-background-video="clase05_ml_1_assets/s12_a63158b91702e510eb610d117f71eaf72272cd816fe577e7e5d997f15b56d582.mp4"
           >
-            <aside class="notes" data-markdown>La forma de la matriz A, con m filas, una por dato, y n columnas, una por parámetro, decide el tipo de solución. En la clase tres A era cuadrada, como en la barra discretizada. Con m igual a n y A invertible hay una solución única.</aside>
+            <aside class="notes" data-markdown>- A con m filas, una por dato, y n columnas, una por parámetro
+- La forma de A decide el tipo de solución
+- En la clase tres A era cuadrada, como en la barra discretizada
+- Con m = n y A invertible hay solución única</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s12_96878a919bd6b8cab1b5fb438882fb822b74dfe6b12f946903dc67e384157943.mp4"
+          data-background-video="clase05_ml_1_assets/s12_3c62368574b5ecb0bf1aaa5934957cc3e3cec2fde482f4bc8ccb7913a27ff071.mp4"
           >
-            <aside class="notes" data-markdown>Con más filas que columnas hay más datos que parámetros, como hoy, veinte mediciones para tres coeficientes. Con ruido ninguna x satisface todas las ecuaciones, y buscamos la de menor error cuadrático, mínimos cuadrados.</aside>
+            <aside class="notes" data-markdown>- Más filas que columnas, más datos que parámetros
+- Como hoy, veinte mediciones para tres coeficientes
+- Con ruido ninguna x satisface todas las ecuaciones
+- Buscamos la de menor error cuadrático, mínimos cuadrados</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s12_44ff5e68612f26c7a577f18ee511f21d8a18ae8787d78918f57fe3d8b6f18866.mp4"
+          data-background-video="clase05_ml_1_assets/s12_a4e08c645aadfd96e0fd71e8bad84042e1c37be5fa5fa7e3e8f6f33144d30848.mp4"
           >
-            <aside class="notes" data-markdown>Con más columnas que filas hay más parámetros que datos y existen infinitas soluciones exactas. Por ejemplo, por un solo punto pasan infinitas rectas. La elección habitual es la solución de norma mínima.</aside>
+            <aside class="notes" data-markdown>- Más columnas que filas, más parámetros que datos
+- Existen infinitas soluciones exactas
+- Por un solo punto pasan infinitas rectas
+- La elección habitual es la solución de norma mínima</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s12_76fed77b5929e70d41b13d08f2d8ba23bebd3de4e5353f3791f6a7a1026c91ac.mp4"
+          data-background-video="clase05_ml_1_assets/s12_68336d06bf9518a884a5aedf302dd57f1a0b5b2c25a2b895f5a11d7a2fecae45.mp4"
           >
-            <aside class="notes" data-markdown>El caso más chico, una ecuación con dos incógnitas, x uno más dos x dos igual a cuatro. Las soluciones forman la recta. Un círculo centrado en el origen crece hasta tocarla en la solución de norma mínima, cero coma ocho y uno coma seis. La fórmula es A transpuesta por la inversa de A A transpuesta, por b, lo que entrega pinv.</aside>
+            <aside class="notes" data-markdown>- Caso más chico, x1 + 2 x2 = 4, una ecuación y dos incógnitas
+- Las soluciones forman la recta
+- Un círculo centrado en el origen crece hasta tocarla
+- Solución de norma mínima, 0,8 y 1,6
+- Fórmula A transpuesta (A A transpuesta)⁻¹ b, lo que entrega pinv</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s12_3f81c0b381f76344acc06f60a34598c18301036256e80c1f162424ad5bdc944f.mp4"
+          data-background-video="clase05_ml_1_assets/s12_17331cd5ad179d6ad41cd190d1461eb607f63bf746e6c035150387218e641fee.mp4"
           >
-            <aside class="notes" data-markdown>Ridge da solución única porque A transpuesta A más lambda dos por I es invertible. Con lambda dos grande queda cerca del origen, y al bajar lambda dos avanza por el segmento hasta la solución de norma mínima. En la tabla, cada vez que lambda dos baja diez veces la distancia baja diez veces. Con lambda dos tendiendo a cero por la derecha, Ridge entrega la solución de norma mínima.</aside>
+            <aside class="notes" data-markdown>- Ridge da solución única, A transpuesta A + lambda dos I es invertible
+- Con lambda dos grande queda cerca del origen
+- Al bajar lambda dos avanza por el segmento a la norma mínima
+- En la tabla, lambda dos diez veces menor da distancia diez veces menor
+- Con lambda dos tendiendo a cero por la derecha, Ridge da la norma mínima</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s12_065397cc0c1e1078a11cf9e6acb8389cc18317d51c09f96cdeab53d60e2f2990.mp4"
+          data-background-video="clase05_ml_1_assets/s12_10231510a866ea7325e3e097751e5aec35b27f5587e857ea79ec6ad9b26f6993.mp4"
           >
-            <aside class="notes" data-markdown>En Machine Learning clásico casi siempre A es alta, con muchos más datos que parámetros. Las redes profundas de la clase seis pueden tener más parámetros que datos, y ahí vuelve el caso ancho. Repasemos ahora las hipótesis de hoy y lo que viene mañana.</aside>
+            <aside class="notes" data-markdown>- En Machine Learning clásico A casi siempre es alta
+- Muchos más datos que parámetros
+- Las redes profundas de la clase seis pueden tener más parámetros que datos
+- Ahí vuelve el caso ancho
+- Ahora repasamos las hipótesis de hoy y lo que viene mañana</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_1_assets/s13_bbb8c1751db5ac52e04e449bc96cb3c905ca7f655d8a6266dc8942d52d07813e.mp4"
+          data-background-video="clase05_ml_1_assets/s13_e33feb807f3d462099e4199fabe33bd978d823500da8bc6020aa10c24a7c3f56.mp4"
           >
-            <aside class="notes" data-markdown>Para cerrar, las hipótesis de hoy. El modelo es lineal en los parámetros, el error es cuadrático y el ruido de medición tiene media cero. Trabajamos con datos sintéticos de un intercambiador cuya ley conocemos, así podemos comparar con la verdad. Hoy medimos el error sobre los mismos datos con que ajustamos. Ese error subestima el error con datos nuevos. Mañana lo medimos con validación cruzada, y después clasificamos fallas y comprimimos las lecturas de varios sensores.</aside>
+            <aside class="notes" data-markdown>- Hipótesis de hoy, modelo lineal en los parámetros y error cuadrático
+- Ruido de medición con media cero
+- Datos sintéticos de un intercambiador con ley conocida, comparables con la verdad
+- Hoy medimos el error sobre los mismos datos del ajuste
+- Ese error subestima el error con datos nuevos
+- Mañana validación cruzada, clasificación de fallas y compresión de sensores</aside>
         </section>
       </div>
     </div>
