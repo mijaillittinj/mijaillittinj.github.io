@@ -29,7 +29,7 @@
          the frame already carries the section name and the source note. */
       #deck-counter {
         position: fixed; top: 12px; right: 18px; z-index: 30;
-        font-family: "Latin Modern Roman", Georgia, "Times New Roman", serif;
+        font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
         font-size: 15px; color: var(--dim); letter-spacing: 0.2px;
         pointer-events: none; opacity: 0.8;
       }
@@ -46,318 +46,531 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s0_99aa60470db5e2078e10216a7c27c0cf78d96c775c9fc90d0cae8e263f0ff00b.mp4"
+          data-background-video="clase05_ml_2_assets/s0_a43baa027ea56bdcbdd65143be9619de17b28a2dbe9ce192ba26b4ba2f2864b6.mp4"
           data-background-video-muted
           >
-            <aside class="notes" data-markdown>Buenos días. Segunda parte de Machine Learning. Ayer aprendimos a ajustar un modelo y a controlar su tamaño con Ridge y LASSO. Hoy estimamos el error del modelo con datos que no se usaron para ajustarlo. Después usamos la misma caja de herramientas para clasificar fallas y para comprimir muchos sensores en pocas variables.</aside>
+            <aside class="notes" data-markdown>- Segunda parte de Machine Learning
+- Ayer ajustamos modelos y controlamos su tamaño con Ridge y LASSO
+- Hoy estimamos el error con datos que no se usaron en el ajuste
+- Después clasificamos fallas con las mismas herramientas
+- Al final comprimimos muchos sensores en pocas variables</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s1_7c5558825ae6bdbd05f6ee9ddfe2ecd6014ee7b046dd4c057b07dd2391fdc9d3.mp4"
+          data-background-video="clase05_ml_2_assets/s1_a9f29bd72712c31cef23f3d88353bc0af112692d8deeb3eb62fc5b321717a3f1.mp4"
           >
-            <aside class="notes" data-markdown>Segunda parte. Primero sobreajuste y subajuste con los mismos datos del intercambiador de ayer. Luego la validación cruzada, la herramienta para elegir el grado de un modelo o el lambda de Ridge. Conectamos con la frontera de Pareto de la clase cuatro. Terminamos con dos extensiones, clasificación con regresión logística y reducción de dimensionalidad con PCA.</aside>
+            <aside class="notes" data-markdown>- Primero sobreajuste y subajuste con los datos del intercambiador de ayer
+- Luego validación cruzada para elegir el grado o el lambda de Ridge
+- Conectamos con la frontera de Pareto de la clase cuatro
+- Dos extensiones, regresión logística para clasificar
+- Y PCA para reducir la dimensión</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s2_10914d005cf69a94433837340dec21acd0c7559be2b6a30ab1af20b4e1da27b0.mp4"
+          data-background-video="clase05_ml_2_assets/s2_7dd43a2502677e7d1bd684f2f3c36d8205ba85f3e813f7dcfaedf0c0b480cc6a.mp4"
           >
-            <aside class="notes" data-markdown>Partimos donde quedamos ayer. Estos son los mismos veinte datos sintéticos del intercambiador, la temperatura de salida contra el caudal, y la curva es el modelo cuadrático en la variable escalada z. A la derecha está el error cuadrático medio, el promedio de los residuos al cuadrado. Ayer la suma de los residuos al cuadrado era cuarenta y uno coma tres, y dividida por los veinte datos da dos coma cero seis. Este error se calcula con los mismos datos del ajuste, los datos de entrenamiento, en verde. Por eso mide el ajuste a los datos usados para calcularlo. Ahora medimos con datos nuevos.</aside>
+            <aside class="notes" data-markdown>- Mismos veinte datos sintéticos de ayer, temperatura de salida contra caudal
+- Curva del modelo cuadrático en la variable escalada z
+- Error cuadrático medio, promedio de los residuos al cuadrado
+- Suma de residuos 41,3, dividida por 20 datos da 2,06
+- Se calcula con los datos del ajuste, entrenamiento en verde
+- Ahora medimos con datos nuevos</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s2_21ef9a49ed2e0bdb65f5d04944f0d11535cc8198aacad375dc76f667d6ef49d6.mp4"
+          data-background-video="clase05_ml_2_assets/s2_cbf421eadc34cbd662b1e43f72c1d4a9a27e2ed12d4231e73f3c2932ef850213.mp4"
           >
-            <aside class="notes" data-markdown>Ahora aparecen doscientas mediciones nuevas del mismo equipo, los puntos chicos grises. Las podemos generar porque los datos son sintéticos, y las usamos solo como referencia para la clase. En una planta no tenemos esta nube. Con el mismo modelo cuadrático el error sobre los datos nuevos es tres coma ocho seis, casi el doble del de entrenamiento. Lo que importa en la planta es este segundo número, porque el modelo se usa con caudales que no estaban en la tabla. Veamos qué pasa con los dos errores si cambiamos el grado del polinomio.</aside>
+            <aside class="notes" data-markdown>- Aparecen 200 mediciones nuevas del mismo equipo, puntos chicos grises
+- Existen porque los datos son sintéticos, en una planta no las tenemos
+- Mismo modelo cuadrático, error con datos nuevos 3,86
+- Casi el doble del error de entrenamiento
+- En la planta importa este número, el modelo se usa con caudales nuevos
+- Siguiente, cambiar el grado del polinomio</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s2_24917e00834c8ce2f7dc1c9683ed96079df8f34c2178ea162e352737caf01b56.mp4"
+          data-background-video="clase05_ml_2_assets/s2_c90b377fa02d239bf3e97083bc44c865981241ddd98a466fb0e561f1bc87d707.mp4"
           >
-            <aside class="notes" data-markdown>A la derecha armamos el gráfico del error contra el grado g del polinomio, en escala logarítmica, con el entrenamiento en verde y los datos nuevos en gris punteado. Partimos con una recta, grado uno. Los dos errores parten cerca de veinte, porque una recta no puede seguir la curvatura del intercambiador. Al subir el grado la curva del modelo se dobla y los dos errores bajan juntos. Pregunta para el curso. Si solo miramos el error de entrenamiento, ¿qué grado elegirían? (pausa, esperar respuestas)</aside>
+            <aside class="notes" data-markdown>- A la derecha, error contra grado g en escala logarítmica
+- Entrenamiento en verde, datos nuevos en gris punteado
+- Grado uno, ambos errores cerca de 20, la recta no sigue la curvatura
+- Al subir el grado la curva se dobla y los dos errores bajan juntos
+- Pregunta al curso, si solo miramos el error de entrenamiento, ¿qué grado elegirían?</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s2_318ffb7066a10ba92ca9e4c59253fc7a307c50f7681eeaaa52ec153502298de8.mp4"
+          data-background-video="clase05_ml_2_assets/s2_4d10b008b659ef0d957356543f8d21d9d2447d6950317f31cccd49d45d5b31cd.mp4"
           >
-            <aside class="notes" data-markdown>Seguimos hasta grado doce. El error de entrenamiento sigue bajando, hasta cero coma cero nueve, porque un polinomio con más coeficientes siempre puede acercarse más a los veinte puntos. Mirando solo el entrenamiento elegiríamos grado doce. El error con datos nuevos se aplana desde grado cuatro, sube desde grado nueve y llega a cincuenta y nueve en grado doce. A la izquierda, entre cero coma cero ocho y cero coma quince kilos por segundo no hay datos, y el polinomio oscila en ese tramo. Esa oscilación viene del ajuste. La ley del intercambiador es suave en ese tramo.</aside>
+            <aside class="notes" data-markdown>- Seguimos hasta grado doce
+- Entrenamiento sigue bajando hasta 0,09, más coeficientes se acercan más a los puntos
+- Mirando solo entrenamiento elegiríamos grado doce
+- Datos nuevos, plano desde grado cuatro, sube desde nueve, llega a 59
+- Sin datos entre 0,08 y 0,15 kg/s, el polinomio oscila ahí
+- La oscilación viene del ajuste, la ley del intercambiador es suave</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s2_b4e84ad22655eaff52adbcaa239de5619a8b0451623174e6e2060304277afe3f.mp4"
+          data-background-video="clase05_ml_2_assets/s2_634ab4dff2c0a6bb90cd44bf15c42aec4dec79e7ae040d523d44b4b949621d7c.mp4"
           >
-            <aside class="notes" data-markdown>Las dos zonas sombreadas son el subajuste y el sobreajuste. A la izquierda el modelo es demasiado simple y los dos errores son altos y van juntos. A la derecha el error de entrenamiento es muy bajo y el de datos nuevos se separa hacia arriba. El sobreajuste se reconoce por esa separación entre las dos curvas. La línea punteada es la varianza del ruido del sensor, cero coma seis cuatro, el piso del error esperado con datos nuevos. El error de entrenamiento queda en promedio bajo ese piso incluso para un modelo con la forma de la ley, porque el ajuste usa esos mismos datos, y por eso no sirve para elegir el modelo. Los rótulos sesgo y varianza los explicamos en las dos láminas siguientes.</aside>
+            <aside class="notes" data-markdown>- Zonas sombreadas, subajuste a la izquierda y sobreajuste a la derecha
+- Subajuste, modelo simple, los dos errores altos y juntos
+- Sobreajuste, entrenamiento muy bajo y datos nuevos se separan hacia arriba
+- Línea punteada, varianza del ruido 0,64, piso del error con datos nuevos
+- Entrenamiento queda bajo ese piso, por eso no sirve para elegir
+- Sesgo y varianza en las dos láminas siguientes</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s2_7e9f27817d02c14bb9eafc45080568daf2c1d971eb93a90cc8625e34b3d88e53.mp4"
+          data-background-video="clase05_ml_2_assets/s2_cae85303d06a771ef94d6def38a5b0113b049037f4bc79703e42ad2142dfc5c2.mp4"
           >
-            <aside class="notes" data-markdown>Repetimos el experimento seis veces, cada vez con veinte mediciones nuevas. La línea punteada es la ley exacta del intercambiador, que conocemos porque los datos son sintéticos. Las seis rectas son los ajustes de grado uno, una por conjunto. Se parecen mucho entre sí, y todas se equivocan de la misma forma, quedan sobre la curva en los extremos y bajo ella al centro. Ese error sistemático es el sesgo. Más datos no lo corrigen, hay que cambiar el modelo.</aside>
+            <aside class="notes" data-markdown>- Repetimos el experimento seis veces con veinte mediciones nuevas
+- Línea punteada, ley exacta, conocida porque los datos son sintéticos
+- Seis rectas de grado uno, una por conjunto, muy parecidas
+- Todas fallan igual, sobre la curva en los extremos y bajo ella al centro
+- Ese error sistemático es el sesgo
+- Más datos no lo corrigen, hay que cambiar el modelo</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s2_63c78b0967f25098034d79c94172957a0d7167f43cbf6395163f1ac2720e758d.mp4"
+          data-background-video="clase05_ml_2_assets/s2_9325a11e64ed7c42884d3b29adb15278c34734f0cd25853e59c50d02991e3751.mp4"
           >
-            <aside class="notes" data-markdown>Ahora los mismos seis conjuntos con polinomios de grado diez, dentro de la zona de sobreajuste. Cerca de los datos las curvas siguen bien la ley, y en los extremos y en el tramo sin datos cada una se va para un lado distinto. El modelo cambia mucho cuando cambian los datos, y eso es la varianza. Subajuste es sesgo alto y sobreajuste es varianza alta, y elegir el grado es buscar el compromiso entre los dos. Aquí lo elegimos con la curva de datos nuevos, que en la práctica no tenemos. Necesitamos estimar el error con datos nuevos usando solo los veinte puntos, y eso hace la validación cruzada.</aside>
+            <aside class="notes" data-markdown>- Mismos seis conjuntos con grado diez, zona de sobreajuste
+- Cerca de los datos siguen la ley, en extremos y tramo vacío divergen
+- El modelo cambia mucho con los datos, eso es la varianza
+- Subajuste es sesgo alto, sobreajuste es varianza alta
+- Elegimos con la curva de datos nuevos, que en la práctica no tenemos
+- Estimar ese error con solo veinte puntos, validación cruzada</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s3_e2a007e56a410b971ada0be44f893fd15da3314c6046b88c8c472ae60cde180b.mp4"
+          data-background-video="clase05_ml_2_assets/s3_5f17da3ba88cb1d800d1966bbb5294933053c5727121830da525811632464c35.mp4"
           >
-            <aside class="notes" data-markdown>En la práctica solo tenemos los veinte datos de entrenamiento, y con ellos hay que estimar el error con datos nuevos. La idea es repartirlos al azar en cinco grupos de cuatro, llamados pliegues, o folds en inglés. Cada punto pasa a su casilla en la franja de arriba. El azar viene de una permutación con semilla fija, así que el reparto es siempre el mismo y el resultado se puede repetir. Cada punto va a servir una vez como dato nuevo.</aside>
+            <aside class="notes" data-markdown>- En la práctica solo tenemos los veinte datos de entrenamiento
+- Con ellos hay que estimar el error con datos nuevos
+- Repartimos al azar en cinco pliegues de cuatro, folds
+- Cada punto pasa a su casilla en la franja de arriba
+- Permutación con semilla fija, el reparto se puede repetir
+- Cada punto sirve una vez como dato nuevo</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s3_d24eef93f8c3a46affaf2807c29d87003573a5a1990802a7f87a071d21133e24.mp4"
+          data-background-video="clase05_ml_2_assets/s3_562921148496765cf88c1426e06702e28c61992cc66578506f3c29497b9e73a4.mp4"
           >
-            <aside class="notes" data-markdown>Primera vuelta. El pliegue uno pasa a validación, en amarillo, y los otros dieciséis puntos quedan en verde para entrenar. Con esos dieciséis ajustamos un polinomio de grado tres. Después medimos el error solo en los cuatro puntos de validación. Los segmentos rojos son sus residuos, dibujados tres veces más largos para que se vean. Esos cuatro puntos no entraron al ajuste, así que su error se parece al error con datos nuevos. El error de este pliegue es uno coma tres seis y queda como la primera barra.</aside>
+            <aside class="notes" data-markdown>- Primera vuelta, pliegue uno en validación, amarillo
+- Los otros dieciséis puntos en verde para entrenar
+- Ajustamos un polinomio de grado tres con esos dieciséis
+- Error medido solo en los cuatro de validación
+- Segmentos rojos, residuos dibujados tres veces más largos
+- Error del pliegue 1,36, primera barra</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s3_0aa76fa572822eaf276ec14a120088fc32c18014f29b9de33e37ebc053a69cda.mp4"
+          data-background-video="clase05_ml_2_assets/s3_ee0e3ac7b177fac92c16b137e1699bdc7c20835c02a900a946bd0c43eaa90ec0.mp4"
           >
-            <aside class="notes" data-markdown>Repetimos cuatro veces más. Cada vez otro pliegue pasa a validación, la curva se reajusta con los dieciséis restantes y medimos el error en los cuatro que quedaron fuera. La curva casi no cambia de una vuelta a otra, y las cinco barras van de cero coma cero cinco a uno coma tres seis. Con cuatro puntos por pliegue cada error es ruidoso, y por eso las promediamos.</aside>
+            <aside class="notes" data-markdown>- Repetimos cuatro veces, rotando el pliegue de validación
+- La curva se reajusta con los dieciséis restantes cada vez
+- La curva casi no cambia entre vueltas
+- Barras entre 0,05 y 1,36
+- Cuatro puntos por pliegue dan errores ruidosos, por eso promediamos</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s3_0824da24172c74e15829130acc629f8689743ea52e00f3bc41cff5cc3f78ca8d.mp4"
+          data-background-video="clase05_ml_2_assets/s3_c61071dcb0d6d1ec07c20d7413869ac30ff739b05a42dd0f620cdb90b6373f81.mp4"
           >
-            <aside class="notes" data-markdown>El último paso es promediar. La línea punteada es la media de las cinco barras, y esa media es el error de validación cruzada, CV de g. Para grado tres da cero coma siete tres. Cada uno de los veinte puntos se usó una vez para validar y cuatro veces para entrenar. Ahora repetimos todo esto para cada grado, de uno a doce.</aside>
+            <aside class="notes" data-markdown>- Último paso, promediar
+- Línea punteada, media de las cinco barras, error CV de g
+- Para grado tres CV vale 0,73
+- Cada punto validó una vez y entrenó cuatro veces
+- Ahora repetimos para cada grado de uno a doce</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s3_c74b6639e3ccb3d903a00c1c60c4a39b4371bebcb96fe781cbe0bb887d289161.mp4"
+          data-background-video="clase05_ml_2_assets/s3_8a85bf0b25b2abcdcb9021e69c0864ac4349821b98938dc8ec6dfde9af963278.mp4"
           >
-            <aside class="notes" data-markdown>A la derecha está el error de validación cruzada para cada grado, en escala logarítmica. Primero aparece el punto de grado tres que acabamos de calcular. La curva baja, tiene su mínimo en grado cuatro, con cero coma cuatro siete, y sube mucho en grado once y doce, donde con dieciséis puntos el polinomio oscila. Ese mínimo queda bajo la varianza del ruido, cero coma seis cuatro. Con solo veinte datos la validación cruzada es ruidosa, y lo que importa es la posición del mínimo. El grado que elige la validación cruzada es cuatro.</aside>
+            <aside class="notes" data-markdown>- A la derecha, error de validación cruzada por grado, escala log
+- Primero el punto de grado tres recién calculado
+- Mínimo en grado cuatro con 0,47
+- Sube mucho en grados once y doce, el polinomio oscila con dieciséis puntos
+- Mínimo bajo la varianza del ruido 0,64, la CV es ruidosa con veinte datos
+- Importa la posición del mínimo, la CV elige grado cuatro</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s3_3fc6851ceace6fab20874a774ff863ee2941385ea1ee15ea660bfdd77e379466.mp4"
+          data-background-video="clase05_ml_2_assets/s3_0612218351aac87f95268c1d67636a1d05fea3116310f34d5ff41058114517cf.mp4"
           >
-            <aside class="notes" data-markdown>La línea gris punteada es el error con datos nuevos de la escena anterior, solo como referencia. Las dos curvas bajan, tienen un tramo plano y suben al final. La de validación cruzada sube antes, desde grado ocho, porque cada ajuste usa dieciséis puntos y no veinte. En el tramo plano elegir cuatro no pierde nada y da un modelo más simple. Con el grado elegido reajustamos con los veinte puntos, y su error con datos nuevos es cero coma ocho siete, cerca de la varianza del ruido.</aside>
+            <aside class="notes" data-markdown>- Línea gris punteada, error con datos nuevos de la escena anterior
+- Las dos curvas bajan, tienen tramo plano y suben al final
+- La CV sube antes, desde grado ocho, cada ajuste usa dieciséis puntos
+- En el tramo plano elegir cuatro no pierde nada y es más simple
+- Reajuste con los veinte puntos, error con datos nuevos 0,87</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s3_19505089c234af7e7cd82b22186f55da2279baf00abf0a01cef16f17c34160d3.mp4"
+          data-background-video="clase05_ml_2_assets/s3_f4490703f558b79b6af5f405e25fe6b6282a41bec2e31491f43e3f03de6ae4e9.mp4"
           >
-            <aside class="notes" data-markdown>Pregunta de control para el curso. En un caso real guardamos parte de las mediciones como conjunto de prueba. ¿Por qué no elegir el grado con ese conjunto? (pausa, esperar respuestas)</aside>
+            <aside class="notes" data-markdown>- Pregunta de control para el curso
+- En un caso real guardamos parte de las mediciones como prueba
+- Pregunta al curso, ¿por qué no elegir el grado con ese conjunto de prueba?
+- Esperar respuestas</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s3_c42ea464866587c7da742c9cfa4e62e3c9cb317b169409c839f0200cfdc607f2.mp4"
+          data-background-video="clase05_ml_2_assets/s3_0254237ba6d1eb744b447b250bddff82f35f882d6c7e4e6a53c87377e41f7d2d.mp4"
           >
-            <aside class="notes" data-markdown>Si usamos la prueba para elegir, la prueba pasa a ser parte del entrenamiento. Su error queda optimista y ya no mide lo que pasará con datos nuevos. Por eso la prueba se mira una sola vez, al final, y para elegir el grado, o el lambda de Ridge, usamos validación cruzada sobre los datos de entrenamiento. En la planta equivale a guardar una campaña de mediciones sin usarla hasta el final. Ahora veamos este procedimiento escrito en Python.</aside>
+            <aside class="notes" data-markdown>- Si la prueba elige, pasa a ser parte del entrenamiento
+- Su error queda optimista y no mide datos nuevos
+- La prueba se mira una sola vez, al final
+- Grado o lambda de Ridge se eligen con CV sobre entrenamiento
+- En planta, guardar una campaña de mediciones hasta el final
+- Siguiente, este procedimiento en Python</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s4_5fc46217dabf930bc3cd5870b41e97961d49aa19b35aeae9760da25064debd1a.mp4"
+          data-background-video="clase05_ml_2_assets/s4_ab6fb2afeb08a8fc3fc8d7811eee5868fe7d5a71abd528408dfb1458a5b45407.mp4"
           >
-            <aside class="notes" data-markdown>Este es el procedimiento escrito en Python, con z la variable escalada y T las temperaturas medidas. Las líneas resaltadas crean un generador aleatorio con semilla cero, permutan los índices de cero a diecinueve y los cortan en cinco grupos de cuatro. A la derecha están los índices que salen, una fila por pliegue. Con la semilla fija cualquiera que corra este código obtiene estos mismos pliegues, y todos los grados se comparan con el mismo reparto.</aside>
+            <aside class="notes" data-markdown>- Procedimiento en Python, z escalada y T temperaturas medidas
+- Líneas resaltadas, generador aleatorio con semilla cero
+- Permutan los índices 0 a 19 y los cortan en cinco grupos de cuatro
+- A la derecha los índices, una fila por pliegue
+- Semilla fija, mismos pliegues para todos y para todos los grados</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s4_4cceeb4c73a820ffdc0821e864cd64faa3fbc1a1cd14552ed637773dac2d432d.mp4"
+          data-background-video="clase05_ml_2_assets/s4_863a90e695db870fbabcfdf7600b32ad07e1e1b7d8d4030f60beeee97b817fae.mp4"
           >
-            <aside class="notes" data-markdown>Ahora el ciclo. En cada vuelta i el pliegue i es el de validación, y np.hstack junta los otros cuatro en el conjunto de entrenamiento. Con esos dieciséis índices polyfit ajusta el polinomio, polyval predice en los cuatro de validación y el error cuadrático medio se agrega a la lista errores. A la derecha aparecen los cinco valores para grado tres, los mismos de las barras de la escena anterior. La función polyfit nunca recibe los índices de validación.</aside>
+            <aside class="notes" data-markdown>- El ciclo, en la vuelta i el pliegue i valida
+- np.hstack junta los otros cuatro como entrenamiento
+- polyfit ajusta con dieciséis índices, polyval predice en cuatro
+- El error cuadrático medio se agrega a la lista errores
+- Cinco valores para grado tres, los de las barras anteriores
+- polyfit nunca recibe los índices de validación</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s4_e4e1241ad07aaed7744172251c6bc45ce418f7dad061df2f1a48ea53dc434428.mp4"
+          data-background-video="clase05_ml_2_assets/s4_7f9fe7214b297a2de224f9c9a88f4c5bb9bc0d24871db2cc9b72d612a016c157.mp4"
           >
-            <aside class="notes" data-markdown>La función devuelve el promedio de los cinco errores, cero coma siete tres para grado tres. Abajo está el programa principal, tres líneas. Recorre los grados de uno a doce, calcula el error de validación cruzada de cada uno y g opt es el grado con el menor error.</aside>
+            <aside class="notes" data-markdown>- La función devuelve el promedio de los cinco errores
+- Para grado tres, 0,73
+- Abajo el programa principal, tres líneas
+- Recorre grados de uno a doce y calcula el error CV
+- g opt es el grado con menor error</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s4_d40985ddfcb5ec65401d56ddd12f4c38c5b1c9a4838a9cce73ce48d3e5c2b4f9.mp4"
+          data-background-video="clase05_ml_2_assets/s4_871cdbafa484c0e0f3d4de298be28f6744ab70908ae5aae1fbfa37e724140bfb.mp4"
           >
-            <aside class="notes" data-markdown>El resultado es esta curva, la misma de la escena anterior, porque sale del mismo código con la misma semilla. El mínimo está en grado cuatro. Probamos cincuenta semillas distintas y el mínimo cayó veintiséis veces en cuatro y cuarenta y nueve veces entre cuatro y siete, dentro del tramo plano de la curva de datos nuevos. La misma función sirve para cualquier hiperparámetro, por ejemplo el lambda de Ridge.</aside>
+            <aside class="notes" data-markdown>- Curva resultante, la misma de la escena anterior
+- Mismo código y misma semilla
+- Mínimo en grado cuatro
+- Con 50 semillas, 26 veces en cuatro y 49 entre cuatro y siete
+- Dentro del tramo plano de la curva de datos nuevos
+- La misma función sirve para el lambda de Ridge</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s4_bc36ceab16526f0c37916da75f9eaf297c5f36694105c3ca379288c9b2f58bdc.mp4"
+          data-background-video="clase05_ml_2_assets/s4_505cf6f382122a020ddf9d9c7e56fca18289f6502bfdbb49a08bb64c00f39040.mp4"
           >
-            <aside class="notes" data-markdown>Para Ridge cambian solo las tres líneas resaltadas. Armamos la matriz A con potencias de z hasta grado diez y resolvemos A transpuesta A más lambda D, una variante de la ecuación de ayer. D es la identidad con un cero en la esquina, así el término constante, que solo fija el nivel de temperatura, no se penaliza. La curva es el error de validación cruzada contra lambda dos. Con lambda chico el polinomio de grado diez se sobreajusta, con lambda grande se aplana demasiado, y el mínimo está en lambda igual a cero coma uno, con un error de cero coma cuatro ocho. Elegir un modelo es equilibrar error y complejidad, y eso lleva a la frontera de Pareto.</aside>
+            <aside class="notes" data-markdown>- Para Ridge cambian la firma, lam en vez de grado, y las tres líneas resaltadas
+- Matriz A con potencias de z hasta grado diez
+- Se resuelve A transpuesta A más lambda D
+- D es la identidad con un cero en la esquina, la constante no se penaliza
+- Lambda chico sobreajusta, lambda grande aplana demasiado
+- Mínimo en lambda 0,1 con error 0,48
+- Equilibrar error y complejidad lleva a la frontera de Pareto</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s5_7f6e80a1e9d70cd42b3970bde10d4df24445b83b97bf1d19224fdd3944d69148.mp4"
+          data-background-video="clase05_ml_2_assets/s5_3e5ccc31cb2ab7e2759c80411554f82e0595f047fc029c7bf27e69e81e9aa5cc.mp4"
           >
-            <aside class="notes" data-markdown>Elegir un modelo tiene dos objetivos, error bajo y pocos términos, y compiten entre sí. Para verlo armamos todos los modelos posibles con los términos z, z al cuadrado, hasta z a la ocho, siempre con la constante. Son doscientos cincuenta y seis subconjuntos. Cada punto gris es uno de ellos, con su número de términos en el eje horizontal y su error de validación cruzada en el vertical, en escala logarítmica. La complejidad cuenta términos, así que z a la ocho cuesta lo mismo que z al cubo.</aside>
+            <aside class="notes" data-markdown>- Dos objetivos que compiten, error bajo y pocos términos
+- Modelos con términos z hasta z a la ocho, siempre con constante
+- 256 subconjuntos, cada punto gris es uno
+- Horizontal número de términos, vertical error CV en escala log
+- La complejidad cuenta términos, z a la ocho cuesta igual que z al cubo</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s5_931d1a082f2429a2b5a9a0fe33aa636da8890c1be3ad53edc18070dab34cc024.mp4"
+          data-background-video="clase05_ml_2_assets/s5_cdf84dfd12c3f8de508270d2b6c17449ee06162b6e8f24ef7cb9430da776dbee.mp4"
           >
-            <aside class="notes" data-markdown>Comparemos modelos. El círculo marca el polinomio completo de grado ocho, con nueve términos y un error de validación de uno coma cero siete. Un modelo está dominado si otro tiene igual o menos términos y menos error, o menos términos e igual error. Todo lo que está en la zona sombreada a la izquierda y abajo domina al polinomio completo, así que no hay razón para elegirlo. Si eliminamos todos los modelos dominados, queda la frontera.</aside>
+            <aside class="notes" data-markdown>- Círculo, polinomio completo de grado ocho
+- Nueve términos y error de validación 1,07
+- Dominado si otro tiene igual o menos términos y menos error
+- O menos términos e igual error
+- Zona sombreada abajo a la izquierda domina al polinomio completo
+- Quitando los dominados queda la frontera</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s5_ed0c6b90bcd3f4ff4a9b31c20647196dd3c27d6d13dd268db913eb28b5323f5d.mp4"
+          data-background-video="clase05_ml_2_assets/s5_8a3dee458f5931d2bafcdfa7a5df45d843028d06c9917b20eaa48753191ebf2f.mp4"
           >
-            <aside class="notes" data-markdown>La línea une los modelos que nadie domina, la frontera de Pareto. Es la misma idea de la clase cuatro, donde el intercambiador equilibraba transferencia de calor y caída de presión, ahora con error contra complejidad. La frontera tiene cinco modelos, de uno a cinco términos. El error cae fuerte hasta cuatro términos y casi no cambia de cuatro a cinco, ahí está el codo. Ningún modelo de seis o más términos está en la frontera. Falta decidir cuál de los cinco usar.</aside>
+            <aside class="notes" data-markdown>- La línea une los modelos no dominados, frontera de Pareto
+- Misma idea de la clase cuatro, intercambiador con calor contra caída de presión
+- Aquí error contra complejidad
+- Cinco modelos, de uno a cinco términos
+- Error cae fuerte hasta cuatro términos, casi igual en cinco, el codo
+- Ninguno de seis o más términos está en la frontera</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s5_9178e78d0e9802cdd62d3d70ed410d90d60a6df1e406b8072c6a82136c6136db.mp4"
+          data-background-video="clase05_ml_2_assets/s5_87b182c497f50970a47d694dbf9c23de9fcef899c71574d043f3404f3d9ac145.mp4"
           >
-            <aside class="notes" data-markdown>El principio de parsimonia, o navaja de Occam, dice que entre modelos con error similar se prefiere el más simple. Para decir qué es similar usamos la regla de un error estándar. La franja va desde el mejor error, cero coma cuatro cero, hasta ese valor más el error estándar de sus veinte errores de validación, uno por punto. Ocho modelos caen en la franja, y el más simple tiene cuatro términos, con potencias uno, cuatro y cinco, justo en el codo de la frontera. El polinomio de grado cuatro de la validación cruzada también está en la franja, con cinco términos, y la regla cambia un término menos por un error de validación un poco mayor, sin garantizar un menor error con datos nuevos. Además el mínimo es el menor de doscientos cincuenta y seis valores ruidosos calculados con los mismos pliegues, y eso es optimista. Ahora pasamos a predecir una clase, falla o no falla.</aside>
+            <aside class="notes" data-markdown>- Parsimonia o navaja de Occam, con error similar se prefiere el más simple
+- Regla de un error estándar define lo similar
+- Franja desde el mejor error 0,40 más el error estándar de veinte errores
+- Ocho modelos en la franja, el más simple con cuatro términos
+- Potencias uno, cuatro y cinco, en el codo de la frontera
+- Grado cuatro de la CV también cae en la franja, con cinco términos
+- Mínimo de 256 valores ruidosos es optimista, siguiente, predecir una clase</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s6_53879e47f400de5048b271d4a8daeb2b602425ea3ba0a2b50bcb7a281aa9b692.mp4"
+          data-background-video="clase05_ml_2_assets/s6_cebb284167dee19e74a9e434820e597c8e1d10b8ec2900a79a3e673ef6a4ae5f.mp4"
           >
-            <aside class="notes" data-markdown>Cada punto es una revisión de un rodamiento de bomba, con su temperatura en el eje horizontal y su vibración en el vertical. Los azules no fallaron, etiqueta y igual a cero, y los naranjos fallaron, y igual a uno. Los datos son sintéticos, dos nubes gaussianas con la misma forma que se traslapan un poco, así que ninguna recta las separa sin errores. Igual que con el intercambiador escalamos las variables, x uno y x dos, para que queden cerca de cero.</aside>
+            <aside class="notes" data-markdown>- Cada punto es una revisión de un rodamiento de bomba
+- Horizontal temperatura, vertical vibración
+- Azules sin falla, y igual a 0, naranjos con falla, y igual a 1
+- Datos sintéticos, dos nubes gaussianas que se traslapan
+- Ninguna recta las separa sin errores
+- Escalamos las variables, x1 y x2, cerca de cero</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s6_ccc9a02f7b00204d8e034f751fec666c3eab2f1ab413dad507c6984ee9175616.mp4"
+          data-background-video="clase05_ml_2_assets/s6_72af385ea31cbf08bb5b20750a9d66228bdac9912507944491a14c5ad92ae66f.mp4"
           >
-            <aside class="notes" data-markdown>El modelo arma primero una combinación lineal, s igual a w uno x uno más w dos x dos más w cero, igual que en regresión. Después la pasa por la sigmoide, uno sobre uno más e a la menos s. Para s muy negativo da casi cero, para s muy positivo casi uno, y en s igual a cero vale cero coma cinco. Como queda entre cero y uno, la usamos como probabilidad de falla, p. Desde aquí seguimos la notación del código de la clase, x son las variables, w y w cero los parámetros, el papel que ayer tenía x, y las etiquetas se llaman y. El término w cero es el término constante, y no lo llamamos b porque b ya son los datos de A x igual a b.</aside>
+            <aside class="notes" data-markdown>- Combinación lineal s igual a w1 x1 más w2 x2 más w0
+- Se pasa por la sigmoide, uno sobre uno más e a la menos s
+- s muy negativo da casi 0, muy positivo casi 1, en s igual 0 da 0,5
+- Entre cero y uno, se usa como probabilidad de falla p
+- Notación del código, x variables, w y w0 parámetros, y etiquetas
+- w0 es la constante, no b, que ya son los datos de Ax igual b</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s6_b47b74f31cb5e8d636144e50280b0703be395b544fd15a4b60c34509cc33630f.mp4"
+          data-background-video="clase05_ml_2_assets/s6_078328fdcca50e2de977792bcabe17faa60776a17d7fafd4da884179eaf98f94.mp4"
           >
-            <aside class="notes" data-markdown>Esta es la misma idea en tres dimensiones. El piso es el plano de temperatura y vibración, y la altura de la superficie es la probabilidad de falla del modelo tras quinientas iteraciones de entrenamiento. Las revisiones con falla están a altura uno y las sin falla a altura cero. Al girar se ve el perfil en forma de S de la sigmoide. Los trazos verticales unen con la superficie las revisiones que quedan del lado equivocado, fallas con p baja o revisiones sanas con p alta. Pregunto al curso dónde creen que está la frontera entre las dos clases (pausa).</aside>
+            <aside class="notes" data-markdown>- La misma idea en tres dimensiones
+- Piso, plano de temperatura y vibración
+- Altura, probabilidad de falla tras 500 iteraciones
+- Fallas a altura uno, sin falla a altura cero, perfil en S al girar
+- Trazos verticales unen con la superficie las revisiones mal clasificadas
+- Pregunta al curso, ¿dónde creen que está la frontera entre las dos clases?</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s6_24bf302850c82b75f724567a250eb6b399b4aa725229819de8514793a5fbfbb0.mp4"
+          data-background-video="clase05_ml_2_assets/s6_f1d694178aedb00f3ed7f84f5bd2fd552b279e04716aaa1e90f721c82482f7b2.mp4"
           >
-            <aside class="notes" data-markdown>La frontera es donde p vale cero coma cinco. Como la sigmoide vale cero coma cinco solo en s igual a cero, la frontera es w uno x uno más w dos x dos más w cero igual a cero, una recta. La línea marca ese nivel sobre la superficie y su sombra en el piso. Mientras la cámara sube, las revisiones mal clasificadas suben hasta la superficie para que se vean desde arriba, y queda una recta que separa la zona azul de la naranja. Con los coeficientes tras quinientas iteraciones la recta es dos coma cero seis x uno más dos coma cinco ocho x dos menos cero coma tres cinco igual a cero. Falta decir cómo se eligen los coeficientes.</aside>
+            <aside class="notes" data-markdown>- Frontera donde p vale 0,5, solo en s igual a cero
+- w1 x1 más w2 x2 más w0 igual a cero, una recta
+- Línea sobre la superficie y su sombra en el piso
+- Al subir la cámara, las mal clasificadas suben a la superficie
+- Recta 2,06 x1 más 2,58 x2 menos 0,35 igual a cero
+- Falta decir cómo se eligen los coeficientes</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s6_893ffc194e750ccb580d3d982bf2b6341610678475a15c6adb111e6dcaf9fd2d.mp4"
+          data-background-video="clase05_ml_2_assets/s6_d9e1e30ba5a3852cc8401ea93f74213df7f4aa6c9a74e94e5923c8cd25cfe32a.mp4"
           >
-            <aside class="notes" data-markdown>Los coeficientes se eligen minimizando una pérdida, la entropía cruzada, la L. Para una falla, y igual a uno, el castigo es menos el logaritmo de p, que es cero si el modelo dio p igual a uno y crece sin límite si dio p cerca de cero. Para una revisión sin falla es la curva espejo. Una falla con p cercano a cero recibe una pérdida grande. El error cuadrático combinado con la sigmoide deja una pérdida no convexa, con zonas casi planas. La entropía cruzada es convexa, y por la clase cuatro sabemos que entonces todo mínimo local es global.</aside>
+            <aside class="notes" data-markdown>- Se minimiza una pérdida, la entropía cruzada L
+- Falla, y igual a 1, castigo menos logaritmo de p
+- Cero si p igual a uno, crece sin límite si p tiende a cero
+- Sin falla, la curva espejo
+- Error cuadrático con sigmoide no es convexo, zonas casi planas
+- Entropía cruzada convexa, todo mínimo local es global, clase cuatro</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s6_1cd3562a333dede98d7b6dfb11717d31218ac4821c03ce106ffdac181b1c725f.mp4"
+          data-background-video="clase05_ml_2_assets/s6_d3f5b7672a9769ff5736ce4153fbdc20cb2d05748657ad4955e5af6a99ff9219.mp4"
           >
-            <aside class="notes" data-markdown>El mismo modelo dibujado como diagrama. Entran x uno, x dos y un uno para el término constante, cada flecha multiplica por su peso, el círculo suma y aplica la sigmoide, y sale p. Esto es una neurona artificial, la unidad de las redes neuronales de la clase seis, donde vamos a conectar muchas en capas. La regresión logística es una red de una sola neurona. Ahora escribimos el entrenamiento en Python.</aside>
+            <aside class="notes" data-markdown>- El mismo modelo como diagrama
+- Entran x1, x2 y un uno para la constante
+- Cada flecha multiplica por su peso, el círculo suma y aplica la sigmoide
+- Sale p, una neurona artificial
+- Regresión logística, red de una sola neurona, clase seis conecta muchas
+- Siguiente, el entrenamiento en Python</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s7_8e0bf85dca00d3d912eaa9dd2f860cb4e0730ee882de9fadb25953d12db23885.mp4"
+          data-background-video="clase05_ml_2_assets/s7_0a7a3fcc20fead457f1128483c40a90b2cbb4165e2370a750c53c7bae878ce23.mp4"
           >
-            <aside class="notes" data-markdown>Este es el entrenamiento completo, once líneas. Primero la sigmoide. Después partimos con todos los pesos en cero, las líneas resaltadas. Con w igual a cero, s vale cero para todas las revisiones y el modelo entrega p igual a cero coma cinco para todas. La pérdida inicial es logaritmo de dos, cero coma seis nueve tres. En el código el término constante se llama w0, las etiquetas y, y lr es el paso alfa del descenso de gradiente de la clase cuatro. El ciclo necesita el gradiente de la pérdida, y lo deducimos en tres pasos.</aside>
+            <aside class="notes" data-markdown>- Entrenamiento completo en once líneas, primero la sigmoide
+- Líneas resaltadas, todos los pesos parten en cero
+- Con w cero, s vale cero y p es 0,5 para todas las revisiones
+- Pérdida inicial logaritmo de dos, 0,693
+- En el código, w0 es el término constante, y son las etiquetas y lr es el paso alfa de la clase cuatro
+- El ciclo necesita el gradiente, lo deducimos en tres pasos</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s7_fb43e70b9adc8165e567d5bfd60d744aaffccecce4f0a57619a66a033df97a6a.mp4"
+          data-background-video="clase05_ml_2_assets/s7_43d05a01629dc217ad38769db779046010024f92ca90f989c5f2c5fa90461b14.mp4"
           >
-            <aside class="notes" data-markdown>Primer paso, la derivada de la sigmoide. Derivando uno sobre uno más e a la menos s se obtiene e a la menos s sobre el cuadrado del denominador, y eso se puede escribir como sigma por uno menos sigma. La derivada se calcula con el mismo valor p que ya tenemos.</aside>
+            <aside class="notes" data-markdown>- Primer paso, derivada de la sigmoide
+- Derivando queda e a la menos s sobre el denominador al cuadrado
+- Se reescribe como sigma por uno menos sigma
+- Se calcula con el mismo p que ya tenemos</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s7_85baa75f3a3c2968e142459a17166cc50640534f0a61158cc7654896875b0da6.mp4"
+          data-background-video="clase05_ml_2_assets/s7_dd7d3747bbf671cb3b4e9c385328e8e2f2ead4009fccb716f670e7888dc019b7.mp4"
           >
-            <aside class="notes" data-markdown>Segundo paso. La pérdida de una revisión, ele i, depende de s i a través de p i. Por la regla de la cadena derivamos el logaritmo y multiplicamos por la derivada de la sigmoide. Los factores p y uno menos p se cancelan con los denominadores, y queda p i menos y i. Es la probabilidad predicha menos la etiqueta, un residuo, igual que en regresión.</aside>
+            <aside class="notes" data-markdown>- Segundo paso, pérdida de una revisión, ele i
+- Depende de s i a través de p i
+- Regla de la cadena, derivada del logaritmo por derivada de la sigmoide
+- Los factores se cancelan y queda p i menos y i
+- Probabilidad menos etiqueta, un residuo como en regresión</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s7_8fbf5f0823a6192f12135549bd8ff1953f4d08de76ad3e70f2b4adcea7e37962.mp4"
+          data-background-video="clase05_ml_2_assets/s7_d6b1897d771d65a632c4299759d316ae628f22ed910b0557dabcfc80c12fbedd.mp4"
           >
-            <aside class="notes" data-markdown>Tercer paso. Como s i es w por x i más w cero, la derivada respecto de w es el residuo por x i, promediado sobre las m revisiones. En forma matricial es X transpuesta por p menos y, dividido por m, la línea grad w del código. Respecto de w cero el factor es uno, y queda el promedio de p menos y, la línea grad w0. El gradiente de mínimos cuadrados de ayer tiene la misma forma, dos A transpuesta por el residuo A x menos b. La diferencia es que aquí la predicción pasa por la sigmoide. Ahora corremos el ciclo.</aside>
+            <aside class="notes" data-markdown>- Tercer paso, s i es w por x i más w0
+- Derivada respecto de w, residuo por x i promediado
+- Matricial, X transpuesta por p menos y sobre m, línea grad w
+- Respecto de w0, promedio de p menos y, línea grad w0
+- Mínimos cuadrados de ayer, misma forma, 2 A transpuesta por el residuo
+- Aquí la predicción pasa por la sigmoide, ahora corremos el ciclo</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s7_746fb3acff884cd5454704bdb7d6e2708993a7ac0d65fbb2a890d8f809a65ded.mp4"
+          data-background-video="clase05_ml_2_assets/s7_8c48610dbda2aa46a39cf5bef8a50657fb9716d1d5bc7c386902157cc3a0f66a.mp4"
           >
-            <aside class="notes" data-markdown>Corremos las quinientas iteraciones. A la derecha está la frontera de decisión de cada iteración, con la zona donde el modelo predice falla sombreada. Las líneas punteadas marcan p igual a cero coma uno y p igual a cero coma nueve. La frontera llega cerca de su posición final en las primeras iteraciones, y después los pesos crecen y las dos líneas punteadas se acercan a la frontera, la transición de la sigmoide se hace más angosta. Abajo la pérdida baja desde cero coma seis nueve tres, y a la izquierda están la iteración, la pérdida y la exactitud.</aside>
+            <aside class="notes" data-markdown>- Corremos las 500 iteraciones
+- A la derecha frontera de cada iteración, zona de falla sombreada
+- Punteadas, p igual 0,1 y p igual 0,9
+- La frontera se ubica en las primeras iteraciones
+- Luego los pesos crecen y la transición se angosta
+- Abajo la pérdida baja desde 0,693, a la izquierda iteración, pérdida y exactitud</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s7_1f5d7d0c3397780ba005b40efb04df882572287658f8d4e60cb48626d2857df5.mp4"
+          data-background-video="clase05_ml_2_assets/s7_c00788772f52010493c855c776f333b0a3fc6dd662393e76ebd08e868afc4895.mp4"
           >
-            <aside class="notes" data-markdown>Tras quinientas iteraciones los pesos son dos coma cero seis para la temperatura, dos coma cinco ocho para la vibración y menos cero coma tres cinco para el término constante. Los dos pesos son positivos, más temperatura y más vibración suben la probabilidad de falla, y por unidad escalada la vibración pesa algo más. La pérdida bajó a cero coma uno ocho siete, y con muchas más iteraciones llega a cero coma uno ocho uno, el mínimo que entrega scikit-learn sin regularización. La exactitud de noventa y tres coma tres por ciento es sobre los mismos ciento veinte datos del entrenamiento, y para reportarla habría que usar validación cruzada. Es el mismo descenso de gradiente de la clase cuatro, con otra pérdida. Para terminar pasamos de clasificar a comprimir la información de varios sensores.</aside>
+            <aside class="notes" data-markdown>- Pesos finales 2,06 temperatura, 2,58 vibración, menos 0,35 constante
+- Ambos positivos, más temperatura y vibración suben la probabilidad de falla
+- Por unidad escalada la vibración pesa algo más
+- Pérdida 0,187, con más iteraciones 0,181, el mínimo de scikit-learn sin regularización
+- Exactitud 93,3 por ciento sobre los mismos 120 datos, reportar con CV
+- Mismo descenso de gradiente de la clase cuatro, siguiente, comprimir sensores</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s8_8c3180bb28cf33397116e8ddca24ea9f4fb2fce93f6f450f5722115b709705ad.mp4"
+          data-background-video="clase05_ml_2_assets/s8_7d93f68a5936d4d2e8a7e81e956e1636f6e9c11529a8c2913676e7dda98546b4.mp4"
           >
-            <aside class="notes" data-markdown>Última herramienta de hoy. Tenemos tres termocuplas pegadas en una placa calefaccionada y ciento cincuenta lecturas simultáneas. Cada lectura es un punto en un espacio de tres dimensiones, una coordenada por termocupla, y las marcas sobre los ejes están en cuarenta grados. Los datos son sintéticos, las tres temperaturas siguen una misma carga de calefacción, más un pequeño gradiente a lo largo de la placa y ruido del sensor. Al girar se ve que la nube es larga en una dirección, angosta en otra y casi sin espesor en la tercera. La esfera marca el promedio, x barra, entre treinta y nueve y cuarenta y seis grados según la termocupla. PCA mide cuánta información distinta entregan las tres termocuplas.</aside>
+            <aside class="notes" data-markdown>- Última herramienta, tres termocuplas en una placa calefaccionada
+- 150 lecturas simultáneas, cada una un punto en tres dimensiones
+- Marcas de los ejes en 40 grados
+- Datos sintéticos, una carga común, un gradiente pequeño y ruido
+- La nube es larga en una dirección, angosta en otra y casi plana en la tercera
+- Esfera, el promedio x barra, entre 39 y 46 grados
+- PCA mide cuánta información distinta entregan las tres</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s8_4669b90db9a3d2dc81dd7d5b3096715c771cb684f201ea9cd70d0f1b2ecb6f06.mp4"
+          data-background-video="clase05_ml_2_assets/s8_0d526e74c0906a58b2616575e42405263f54ac5ed70ef76dbe835e268b963993.mp4"
           >
-            <aside class="notes" data-markdown>El primer paso es centrar. A cada columna le restamos su promedio, en fórmula X c igual a X menos un vector de unos por x barra transpuesta. La nube entera se traslada hasta que su promedio queda en el origen, sin cambiar de forma ni de tamaño. Después acercamos la cámara para verla mejor. Sin este paso la primera dirección apuntaría hacia el punto promedio y no hacia donde los datos varían.</aside>
+            <aside class="notes" data-markdown>- Primer paso, centrar
+- A cada columna le restamos su promedio
+- X c igual a X menos vector de unos por x barra transpuesta
+- La nube se traslada al origen sin cambiar forma ni tamaño
+- Sin centrar, la primera dirección apuntaría al promedio</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s8_07797ebc6004e8fba2996e61fd31a479cf9739b19c28428df14d302f9596d8a4.mp4"
+          data-background-video="clase05_ml_2_assets/s8_198dfa1da662515c5ce4d02a4ef22f8ab30503512c42764500dca088081647a8.mp4"
           >
-            <aside class="notes" data-markdown>Ahora la descomposición en valores singulares de la matriz centrada, la misma SVD de las clases anteriores, X c igual a U sigma mayúscula V transpuesta. Las filas de V transpuesta son las direcciones principales, que aparecen una tras otra. Los valores singulares se escriben sigma i, que aquí no es la sigmoide. La primera dirección, PC uno, sigue el largo de la nube, la segunda es perpendicular y mucho más corta, y la tercera casi no se ve. Los valores singulares son cien, veinte y seis. Pregunta para el curso. Con estos valores singulares, ¿cuántas direcciones hacen falta para describir las lecturas? (pausa, esperar respuestas)</aside>
+            <aside class="notes" data-markdown>- SVD de la matriz centrada, X c igual U sigma V transpuesta
+- Filas de V transpuesta, direcciones principales, una tras otra
+- Sigma i son valores singulares, no la sigmoide
+- PC1 sigue el largo de la nube, PC2 más corta, PC3 casi no se ve
+- Valores singulares 100, 20 y 6
+- Pregunta al curso, ¿cuántas direcciones hacen falta para describir las lecturas?</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s8_fc8af761f17a7d516e65e37fd40d6553ab0c62399feaaea956521299d509ade2.mp4"
+          data-background-video="clase05_ml_2_assets/s8_d4b59086b74db11714a28330e4960fe45313b18147b12f1372f639ced1923926.mp4"
           >
-            <aside class="notes" data-markdown>La varianza que explica cada dirección es su valor singular al cuadrado dividido por la suma de los cuadrados. La primera dirección explica el noventa y cinco coma ocho por ciento, la segunda el tres coma nueve y la tercera cero coma tres. Casi toda la variación de las tres termocuplas es un solo movimiento conjunto, y con dos direcciones ya tenemos el noventa y nueve coma siete por ciento. En una planta con decenas de sensores de temperatura este cálculo indica cuántas combinaciones de sensores explican casi toda la varianza.</aside>
+            <aside class="notes" data-markdown>- Varianza explicada, sigma i al cuadrado sobre la suma de cuadrados
+- PC1 95,8 por ciento, PC2 3,9, PC3 0,3
+- Casi toda la variación es un movimiento conjunto
+- Con dos direcciones, 99,7 por ciento
+- En una planta con decenas de sensores indica cuántas combinaciones bastan</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s8_d77291bbe4b3b2cc017ebe2126c8fa76c5ed2787fc7c49e7a2812792c6764a83.mp4"
+          data-background-video="clase05_ml_2_assets/s8_258c783f3d4aa5febd9b21ea703c0a757a40ee82dbcec2d2b483fea38954997e.mp4"
           >
-            <aside class="notes" data-markdown>Para reducir la dimensión proyectamos cada lectura sobre el plano de PC uno y PC dos. Primero miramos el plano de canto, y los segmentos rojos son la distancia de cada lectura al plano, dibujada cinco veces más larga para que se vea. Las lecturas caen al plano y los segmentos desaparecen. Después giramos hasta mirar el plano de frente, y queda una nube en dos dimensiones, X c por la matriz de las dos primeras direcciones, de ciento cincuenta por dos. Pasamos de tres números a dos por lectura y perdimos el cero coma tres por ciento de la varianza, la fracción de la tercera dirección.</aside>
+            <aside class="notes" data-markdown>- Proyectamos cada lectura sobre el plano de PC1 y PC2
+- Plano de canto, segmentos rojos son distancias al plano, cinco veces más largos
+- Las lecturas caen al plano y los segmentos desaparecen
+- De frente queda una nube en 2D, X c por las dos primeras direcciones
+- Matriz de 150 por 2, dos números en vez de tres
+- Se pierde el 0,3 por ciento de la varianza, la tercera dirección</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s8_4528f06149b4fdcedd9354112c47f389364aca5d01bdeae7db1dfd7b7b5857c5.mp4"
+          data-background-video="clase05_ml_2_assets/s8_eb30fd19043d18f9ef93e152ea150c31d86807fb6c1dc942f0b9139057a9d860.mp4"
           >
-            <aside class="notes" data-markdown>Las direcciones tienen significado físico, y el signo de cada una es arbitrario. La primera tiene las tres componentes positivas y parecidas, cero coma seis siete, cero coma cinco siete y cero coma cuatro siete, así que mide cuánto sube toda la placa junta, la carga de calefacción. La segunda resta la termocupla uno y suma la tres, y mide el gradiente a lo largo de la placa. Esas dos variables salen solo de la SVD, aplicada a encontrar estructura en los datos en vez de resolver un sistema. Con esto terminamos, vamos a las hipótesis de hoy y a lo que viene en la clase seis.</aside>
+            <aside class="notes" data-markdown>- Las direcciones tienen significado físico, el signo es arbitrario
+- PC1 con componentes 0,67, 0,57 y 0,47, toda la placa sube junta
+- PC1 mide la carga de calefacción
+- PC2 resta la termocupla uno y suma la tres, gradiente a lo largo de la placa
+- Salen solo de la SVD, usada para encontrar estructura en los datos
+- Siguiente, hipótesis de hoy y clase seis</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s9_8f015ec77f7b55236e26d05b15dfa4c130c298066b93aa7fc441980037e44359.mp4"
+          data-background-video="clase05_ml_2_assets/s9_b0858653efd471a4bf1d8b70f23851c4876a12a5ae77c9fcb7e06c328cd3e78c.mp4"
           >
-            <aside class="notes" data-markdown>Cerramos Machine Learning clásico. Las hipótesis de hoy son que los datos de entrenamiento, validación y prueba son independientes y vienen del mismo proceso, que la frontera de decisión entre las clases es lineal y que la estructura de los datos se describe con direcciones lineales, como en PCA. Quedó fuera el clustering, agrupar datos por similitud sin etiquetas, como k-means, que vieron en el ejemplo de regímenes de ayer. La regresión, Ridge y LASSO usan modelos lineales en los parámetros, y la regresión logística aplica una sigmoide a una combinación lineal. La clase seis compone varias capas de este tipo con funciones no lineales entre ellas, y eso es una red neuronal. No hay matemática nueva de optimización. El entrenamiento sigue siendo minimizar una pérdida con los optimizadores de la clase cuatro. Lectura, Brunton y Kutz, capítulo cuatro para regresión y selección de modelos, capítulo uno para la descomposición en valores singulares y PCA, y capítulo cinco para clasificación.</aside>
+            <aside class="notes" data-markdown>- Hipótesis, entrenamiento, validación y prueba independientes y del mismo proceso
+- Frontera de decisión lineal, estructura descrita por direcciones lineales en PCA
+- Quedó fuera el clustering, como k-means del ejemplo de ayer
+- Regresión, Ridge, LASSO y logística usan combinaciones lineales
+- Clase seis, capas con funciones no lineales, una red neuronal, y PINN
+- Entrenar sigue siendo minimizar una pérdida con optimizadores de la clase cuatro
+- Lectura, Brunton y Kutz, capítulos cuatro, uno y cinco</aside>
         </section>
       </div>
     </div>
