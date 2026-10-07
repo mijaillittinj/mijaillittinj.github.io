@@ -37,6 +37,13 @@
       /* keep the arrows unobtrusive, the talk is driven by the keyboard */
       .reveal .controls { opacity: 0.25; }
       .reveal .controls:hover { opacity: 0.8; }
+          /* animation-progress dot (idea from a colleague's deck): fills while the state's
+         video plays and turns green when it has finished; key I hides it */
+      #anim-done { position: fixed; right: 86px; top: 14px; width: 16px; height: 16px; z-index: 50;
+        border-radius: 50%; pointer-events: none; transition: background 0.25s, box-shadow 0.25s;
+        --p: 0; background: conic-gradient(rgba(150,150,150,0.8) calc(var(--p) * 1turn), rgba(110,110,110,0.3) 0); }
+      #anim-done.done { background: #3fbf6f; box-shadow: 0 0 6px rgba(63,191,111,0.8); }
+      #anim-done.hidden { display: none; }
     </style>
   </head>
 
@@ -46,7 +53,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s0_c2546f7be70dafc368e9acb4eb1b4be9a27eaee0de4a3016270515b23ee3bc59.mp4"
+          data-background-video="clase06_2_assets/s00_c2546f7be70dafc368e9acb4eb1b4be9a27eaee0de4a3016270515b23ee3bc59.mp4"
           data-background-video-muted
           >
             <aside class="notes" data-markdown>- Segunda clase de la unidad de colectores
@@ -59,19 +66,19 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s1_fb38b861ac950706cfa486058817774915e69cbb5568d2f1e6f87a241786c640.mp4"
+          data-background-video="clase06_2_assets/s01_eb924ab4f75aaeb64b99341b0c57d8682fdf62dba4354347f24c101b3ea5aff4.mp4"
           >
-            <aside class="notes" data-markdown>- Volvemos al mapa, hoy es la clase dos, la radiación solar
-- Primero separamos la radiación en directa, difusa y reflejada
-- Seguimos al Sol en Valparaíso en 3D y el ángulo sobre un colector inclinado
-- Cómo se mide el recurso y los datos del Explorador Solar
-- Factor del plano horizontal al plano del colector
-- Lo aplicamos a un colector en Valparaíso, en invierno y en verano</aside>
+            <aside class="notes" data-markdown>- Clase dos, radiación solar, en cuatro secciones
+- Componentes, directa, difusa y reflejada
+- Trayectoria solar en Valparaíso en 3D y ángulo de incidencia
+- Medición, instrumentos, índice de claridad y Explorador Solar
+- Colector inclinado, factor del plano horizontal al del colector
+- Aplicado a Valparaíso en invierno y en verano</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s2_03d7e42aaf7155fe0b3bac59dc2bf9bf6c5a44b537234bab1c418a9d07cb87fd.mp4"
+          data-background-video="clase06_2_assets/s02_cf2b5ba220fa05e15c9ad54c3bcdf80acb3f5674683da041977cd652b92b2124.mp4"
           >
             <aside class="notes" data-markdown>- Tres caminos de la radiación hasta el colector
 - Flecha del Sol es la directa, sin desviarse, da sombras nítidas
@@ -84,7 +91,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s2_3b80ae5b306e76dc9d38c83b530b41a5c3e15d09e80e5c33483eda43e61003da.mp4"
+          data-background-video="clase06_2_assets/s02_4132a2dccc90cef6fca86fc870477775acb4b6b07cc158e280eda96f1cd69c7c.mp4"
           >
             <aside class="notes" data-markdown>- Ya visto con la radiación, ahora importa para el colector
 - Banda amarilla es un haz de rayos directos de sección fija
@@ -97,7 +104,17 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s3_cbf54cd28d4207b7cd9153a3e7e8cf7aff449027fefdf97a59b699a56dd189b4.mp4"
+          data-background-video="clase06_2_assets/s03_635bb60a6db39276f2bca53f7b6c17ce6c759f64276d111109713f8363d7bac2.mp4"
+          >
+            <aside class="notes" data-markdown>- Cerramos las componentes, directa, difusa y reflejada
+- Pasamos a la sección 2, trayectoria solar
+- El camino del Sol en Valparaíso y el ángulo de incidencia sobre el colector
+- Pregunta al curso, ¿por dónde pasa el Sol al mediodía en Valparaíso?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_2_assets/s04_12a0ce8fe466539baecbec295a695050f2af78728ebdf6f8dae57a454e0b730d.mp4"
           >
             <aside class="notes" data-markdown>- Para la directa necesitamos saber dónde está el Sol
 - Bóveda celeste vista por una persona en Valparaíso, punto blanco central
@@ -110,7 +127,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s3_db246d0dd3ac1f24b0ac07dac3603e61d89715ee07ba8a142218db0de541120e.mp4"
+          data-background-video="clase06_2_assets/s04_25bd8d9c13795a5a7828b506d387eb5a16b3523a927520f60b90d51324a0fefe.mp4"
           >
             <aside class="notes" data-markdown>- Equinoccio de marzo en gris, sale por el este exacto y se pone por el oeste
 - 21 de diciembre en rojo, el día más largo
@@ -123,20 +140,20 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s3_7b23c75506656ee9cec03056dc38bf1e898e7028a45813f16561c6c1f5e4b877.mp4"
+          data-background-video="clase06_2_assets/s04_be7255d7d6663d614d36dc929d1469a073ffbb5a3bf4ddb9cb4c570cac9aba19.mp4"
           >
             <aside class="notes" data-markdown>- Seguimos al Sol durante el 21 de diciembre
 - A la derecha la hora, la altura γs y el azimut A
 - Usamos γs porque α es la absortividad, A desde el norte horario, este 90°, oeste 270°
 - Duffie y Beckman lo miden desde el sur, recordarlo al leer el libro
-- Sale cerca de 6,30 con azimut de unos 120°, al sur del este
-- Mediodía solar cerca de 13,45 hora de verano, A igual 0, altura unos 80°
+- Sale cerca de las 6 y media con azimut de unos 120°, al sur del este
+- Mediodía solar cerca de las 13 h 45 en hora de verano, A igual 0, altura unos 80°
 - En la tarde baja por el oeste, ahora la altura del mediodía con fórmula</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s3_8d95a8e05fd5fc7f6a8143051b56b3f0917216a66535dbfbd57c24b46233e4fc.mp4"
+          data-background-video="clase06_2_assets/s04_75c32b2f05db5fe7cfbdd89ce061a64f377a238e432f9e323404447a09390d52.mp4"
           >
             <aside class="notes" data-markdown>- Vista desde el este, norte a la derecha, ángulos en tamaño real
 - Líneas al Sol del mediodía en diciembre y junio, arcos marcan γs
@@ -149,7 +166,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s3_e0b5255567e409e01f6454cb60a4662ffaa634ba09bb4ac462203f06cb2398ed.mp4"
+          data-background-video="clase06_2_assets/s04_1cfd7489a0538cef6630324bbfca6eaaa1ba33a53de07ff314a4114b401f428e.mp4"
           >
             <aside class="notes" data-markdown>- Bóveda desde arriba, salidas y puestas de diciembre y junio en hora oficial
 - Declinación, ángulo entre rayos y plano del ecuador al mediodía solar, eje inclinado 23,45°
@@ -162,12 +179,12 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s4_e787e79d6224a0a97bf7cd68f4132322577e3be1e1ece55827459e4753a924c8.mp4"
+          data-background-video="clase06_2_assets/s05_bd872a9d0b30bb7a6bad2f1cbaecebe67595129c049c261863db8b02daeb4949.mp4"
           >
             <aside class="notes" data-markdown>- Desde la bóveda vista arriba quitamos recorridos y ponemos un colector
 - Placa azul inclinada 33° hacia el norte
 - Flecha perpendicular es la normal n̂, la otra apunta al Sol ŝ
-- Sol a las 10,30 del 21 de diciembre
+- Sol a las 10 y media del 21 de diciembre
 - Ángulo entre ambas es θ, el mismo del coseno de la directa
 - Giramos la vista al noreste, la placa mira hacia nosotros
 - Ahora los dos vectores con componentes</aside>
@@ -175,19 +192,21 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s4_d21062d5068d6f573cb1d4d5055be2b6a329cd6f2414a2ae4ec8fc9b1f880db0.mp4"
+          data-background-video="clase06_2_assets/s05_a4bdbae18c0e58533f2b85e1f4e21c715bce3ddd9c469c96f41556c9d3751781.mp4"
           >
             <aside class="notes" data-markdown>- Ejes grises de la esquina, x al este, y al norte, z al cenit
 - Vector al Sol se arma con γs y A de la escena anterior
 - Componente vertical sen γs, horizontal cos γs repartida con el azimut
 - Normal de placa horizontal apunta al cenit
 - Inclinada β al norte, normal queda (0, sen β, cos β)
-- Con dos vectores unitarios el ángulo sale de un producto punto</aside>
+- Con dos vectores unitarios el ángulo sale de un producto punto
+- Duffie y Beckman miden el azimut desde el sur y llaman αs a la altura
+- Aquí α queda para la absortividad</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s4_b2913e001ff9776453e5a7648096f30a0e72c05526dce1cfbe968a35426935a9.mp4"
+          data-background-video="clase06_2_assets/s05_9d05310bafc37e736e24d2636948b83b4536f069c7b355e38eedad72ebfa82d5.mp4"
           >
             <aside class="notes" data-markdown>- cos θ es el producto punto de los dos vectores
 - Multiplicamos componente a componente
@@ -200,7 +219,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s4_ddb8ad8e7b0c7f68fd0b820cd4f9b5227b474170473296e10fe2a469f99749d3.mp4"
+          data-background-video="clase06_2_assets/s05_a633d506f30a7ff3924c0f0ad4e9209cbcdda51ed37fd6527a64f6c85014271b.mp4"
           >
             <aside class="notes" data-markdown>- Figura al mediodía solar, vista desde el este, norte a la derecha
 - Flecha roja al Sol de diciembre, celeste al de junio
@@ -213,7 +232,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s4_6e32d4084f400fa85e80abeaa5092aee81b0a81d9657d1eb6496cb8610ea1931.mp4"
+          data-background-video="clase06_2_assets/s05_661300e0ba76d71a7b3b0e4d84c292d9717fc81d8defd0f5a6527a268b2ce1c6.mp4"
           >
             <aside class="notes" data-markdown>- Seguimos desde el este, arco azul marca β desde la horizontal
 - Al mover β el gráfico sigue θ de cada mes
@@ -226,7 +245,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s4_4af43c875be70a4391c22f8bf0146004254e1091523c487417e49f9088da3208.mp4"
+          data-background-video="clase06_2_assets/s05_7cd271f88ef2fc44a42d078c0194b3d195a9e99b6a1ea6e25193479c1308417a.mp4"
           >
             <aside class="notes" data-markdown>- Invierno placa más inclinada por Sol bajo, verano más tendida
 - Punteadas marcan |φ| menos 12 y más 12, 21° y 45° en Valparaíso
@@ -238,20 +257,29 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s5_e393585581ace2849eafc5a49076580c228800cc63941289a18b67530921760c.mp4"
+          data-background-video="clase06_2_assets/s06_6b12d86c5b98efe392d3ccc588968405ff69a7ab746e58e72d64e5f7df4c634e.mp4"
           >
-            <aside class="notes" data-markdown>- Ahora cuánta energía llega. Izquierda el piranómetro, sensor negro bajo dos cúpulas de vidrio
+            <aside class="notes" data-markdown>- Cerramos la trayectoria solar y el ángulo de incidencia
+- Pasamos a la sección 3, medición
+- Instrumentos, energía diaria, índice de claridad y Explorador Solar</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_2_assets/s07_076f87a2cf2912c92f0f94a85e3769917faa6e0b2def855fdbd44b98b7af79e1.mp4"
+          >
+            <aside class="notes" data-markdown>- Ahora cuánta energía llega
+- Izquierda el piranómetro, sensor negro bajo dos cúpulas de vidrio
 - Mide la global sobre plano horizontal, directa más difusa
-- Derecha el pirheliómetro, tubo en seguidor que apunta al Sol
-- Deja entrar el disco y una aureola, mide la directa normal
-- Estaciones del laboratorio de energía solar usan ambos
+- Derecha el pirheliómetro en seguidor, ve el disco y una aureola
+- Mide la directa normal, las estaciones del laboratorio usan ambos
 - Pregunta al curso, ¿cómo obtendrían la difusa con ellos?
 - Global menos la directa proyectada sobre el horizontal</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s5_3be63ed68dea90e536faea5704e11929b1f507134237c508a971db943cd16762.mp4"
+          data-background-video="clase06_2_assets/s07_03c009a60c8cb412733ee4fd7e1f6245b55584c91f1fde88ec98ebc3572b41b4.mp4"
           >
             <aside class="notes" data-markdown>- Para dimensionar no basta la potencia de un instante
 - Curva amarilla es la global horizontal en Valparaíso el 17 de enero
@@ -264,20 +292,20 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s5_9428f311b7007eaa2f47417f20850b0b779f7ad0b9cb8b65d950ab10f9bba28c.mp4"
+          data-background-video="clase06_2_assets/s07_495b5e83fe426c35810d5976b2ff1247a37b13dd1d3af1772c401e4062689978.mp4"
           >
             <aside class="notes" data-markdown>- Sin atmósfera la energía diaria horizontal sale de astronomía
-- Gon es la constante solar 1373 W/m² corregida por distancia Tierra Sol
-- Satélites recientes dan cerca de 1361, un 1 % menos
+- Gon es 1373 W/m² corregida por distancia, satélites dan 1361, 1 % menos
 - Por cos θz integrado de salida a puesta da H0, con φ, δ y ωs
 - Medido sobre H0 es KT, uno menos lo absorbido y lo reflejado al espacio
 - Lo dispersado hacia abajo cuenta como difusa
-- La curva amarilla sigue siendo modelo de cielo despejado</aside>
+- La curva amarilla sigue siendo modelo de cielo despejado
+- Con ωs en radianes sale en J/m², se divide por 3,6·10⁶ para kWh/m²</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s5_f8456f86150b6fd7221c6fdba196b707d11dce8494b6a37298ac7e3e3cfdbb6f.mp4"
+          data-background-video="clase06_2_assets/s07_9f26b06effaeb7a2cbdcf43cf57753c93a3ec75d4adfe3a0bc6572b94c82957e.mp4"
           >
             <aside class="notes" data-markdown>- Mes a mes, el área del 17 de enero es la barra de enero
 - Contornos grises son H0, más de 12 en diciembre, menos de 5 en junio
@@ -290,7 +318,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s5_5473f6cc5661cade5c3d94ea0dbfa73084ebd099c64e5fd017d89c9c344ca842.mp4"
+          data-background-video="clase06_2_assets/s07_56108604a8466833b27f27db411d0ebbc9ffc04238aa0d18666d391819e609c7.mp4"
           >
             <aside class="notes" data-markdown>- Datos del Explorador Solar, Ministerio de Energía y Universidad de Chile
 - Radiación y temperatura hora a hora desde satélite para todo Chile
@@ -303,7 +331,17 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s6_5333773a840eff7ed81569e57e1c055c07ebc12ed7be24c78fb9e75e65118f77.mp4"
+          data-background-video="clase06_2_assets/s08_52e2806a326668593c5deffda090fa42c70c5a298c80b4c165ca337fae9b0e0a.mp4"
+          >
+            <aside class="notes" data-markdown>- Cerramos la medición del recurso
+- Pasamos a la sección 4, colector inclinado
+- Factores de forma, factor R barra, reglas de inclinación y ejemplo en Valparaíso
+- Pregunta al curso, ¿conviene inclinar más o menos que la latitud en invierno?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_2_assets/s09_65bd8ba567a13fdf56b6bb4aa60e5a20faef0b1e037e40e33eaeea02eec138c5.mp4"
           >
             <aside class="notes" data-markdown>- Inclinamos el colector β, placa mirando al norte a la derecha
 - Difusa llega del cielo, reflejada del suelo
@@ -316,7 +354,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s6_14aeb07b6e9a80fd40d9a7a021164fffc014c9fdd0c3134e9d36527517ef0fbe.mp4"
+          data-background-video="clase06_2_assets/s09_909c9c46e4e2628f7d62e33b8adeead21e3d04936adfeb3b14602b445731ae65.mp4"
           >
             <aside class="notes" data-markdown>- A 33°, latitud de Santiago y Valparaíso, ve 0,919 de cielo
 - A 45°, 0,854
@@ -328,7 +366,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s6_fbfa2449a2a0887509cbe615338fd1aba31d7125166b6e6dceb737ae146906a6.mp4"
+          data-background-video="clase06_2_assets/s09_f33a2c6fa55c6be0b37bf7b518ec8b50bee0e33d3592af2d3adbd40ee6e45e99.mp4"
           >
             <aside class="notes" data-markdown>- Las tres componentes en un instante
 - Directa con cos θ del producto punto
@@ -341,7 +379,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s6_2cf7c96cd68605a9d1788eaacceb1699b98ec442872e33ba435822626cf06b9c.mp4"
+          data-background-video="clase06_2_assets/s09_5aaa3da1611e8527e1bc4fe8bf7ebf5c3196312f1dd702a8ed278b7a4a833694.mp4"
           >
             <aside class="notes" data-markdown>- Estaciones miden energía diaria horizontal, multiplicamos por R̄
 - Directa, fracción 1 menos fd, se corrige con Rb
@@ -354,7 +392,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s6_4229ece8bddef7df444ac7f2d6ad4f4754dea75fcfd9d05151fe6321447513d1.mp4"
+          data-background-video="clase06_2_assets/s09_43dbd4f60cef3e887edbb710da661ca3855552b3e24302485b32e529a2ad8f2d.mp4"
           >
             <aside class="notes" data-markdown>- R̄ durante el año con el método de Klein
 - Geometría del día medio, fd según KT, cielo isotrópico
@@ -367,7 +405,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s6_247f9bd92d685cacf4b77fc3e6565fc6ab4153dc90bbfb6a2a902478848243e3.mp4"
+          data-background-video="clase06_2_assets/s09_2263beae001178ac5e9cd88f7a5d852d721d5eae51f10ce2bad1247131182ce4.mp4"
           >
             <aside class="notes" data-markdown>- Cambiamos solo la latitud a 33 sur, mismo KT 0,65
 - Supone invierno casi despejado, Chile central más cerca de 0,5
@@ -379,7 +417,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s6_00f409f47ef14d6b6445816fb60078c11330129e94aca52f7f081f2b719de848.mp4"
+          data-background-video="clase06_2_assets/s09_4333a50689fb3215c51fe71bee8cea34cf5090273cb8b447861414238797020c.mp4"
           >
             <aside class="notes" data-markdown>- Reglas prácticas desde el ángulo de incidencia y R̄
 - Máximo anual, inclinar igual a |φ|
@@ -391,10 +429,9 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s6_1ab4f3a8e4a5e115aa30cb5a83124e66cb89d3f59fecc32aac4762a11f1b2e18.mp4"
+          data-background-video="clase06_2_assets/s09_6523ca01e4d77e9e0f6b1fa4df83c7ac49e6c6f3069b76e94f222ed54999efdc.mp4"
           >
-            <aside class="notes" data-markdown>- Pregunta de control
-- Hotel en Valparaíso a 33° sur, agua caliente pareja todo el año
+            <aside class="notes" data-markdown>- Pregunta de control, hotel en Valparaíso a 33° sur, agua caliente pareja todo el año
 - Pregunta al curso, ¿qué inclinación le darían?
 - Esperar respuestas antes de avanzar
 - Pensar en qué época el recurso es escaso y la demanda sigue igual</aside>
@@ -402,7 +439,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s6_d6252f182c9ae07711c67ebbf683f2a3a970e387f7aacbf0e93292b5a48fd157.mp4"
+          data-background-video="clase06_2_assets/s09_534af9576fc3e059eb941473037cc3a018a0cca2f440ea0a850a979e1d023a43.mp4"
           >
             <aside class="notes" data-markdown>- Respuesta cerca de 45°, latitud más 12
 - Demanda pareja, falta radiación en invierno
@@ -414,7 +451,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s6_86f02840a6b9feabd22908d2c0cccfceb966fd5fbd25607f5d95f58c2bd9d429.mp4"
+          data-background-video="clase06_2_assets/s09_42a8c3d3e0f02330d40ca6589e93033dc6ce7e1af9c4831ad55290dd8eb45169.mp4"
           >
             <aside class="notes" data-markdown>- Cuenta completa para el hotel, 45° mirando al norte
 - Junio en celeste, enero en rojo
@@ -427,12 +464,12 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s6_044bcaf2ab7b26f592e721bace3d87394df496f5d0bf2a6ff2837b868534f27f.mp4"
+          data-background-video="clase06_2_assets/s09_96790c7fd8f43559e747809fb4713bc43691ec00c08a90e89b60540e413c2d08.mp4"
           >
             <aside class="notes" data-markdown>- fd sale de la correlación de Erbs con KT
 - Cielos despejados, fd cerca de un cuarto en ambos meses
 - Rb junio 2,08, inclinado recibe el doble de directa
-- Sol bajo de invierno llega casi de frente
+- Sol bajo de invierno incide casi de frente
 - Rb enero 0,72, Sol alto favorece al horizontal
 - Factores a 45°, 0,854 al cielo y 0,146 al suelo, no cambian
 - Ya tenemos todas las piezas de R̄</aside>
@@ -440,10 +477,10 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s6_4a96a5b2a828a74b94e63bfbdd1f84d0bca44ceea71a39ff6f76b399e2cbedfc.mp4"
+          data-background-video="clase06_2_assets/s09_44680726ba39a6707f93ac4bef90f78f772b38231503b5446772bca5c902bc64.mp4"
           >
             <aside class="notes" data-markdown>- R̄ de junio término a término
-- Directa 0,75 por 2,08 da 1,58
+- Directa 0,756 por 2,085 da 1,58
 - Difusa fd por factor al cielo, 0,21
 - Reflejada albedo por factor al suelo, apenas 0,03
 - Suma 1,81, casi el doble del horizontal, aumento viene de la directa
@@ -453,7 +490,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s6_cf1f79495972e75e179520a07146980aca5d4dc105236a80ab79928005017989.mp4"
+          data-background-video="clase06_2_assets/s09_2620f409fd4b415b76f0d725e7b73c501992e93d802dc5106fdb7fe7d0f73469.mp4"
           >
             <aside class="notes" data-markdown>- Enero en rojo, Rb 0,72, directa aporta 0,55
 - Difusa 0,20, reflejada otra vez 0,03
@@ -465,7 +502,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s6_21d41abb216eaec1cd62fd7386792695981d4e16ec171ba19d4b66a79d59fc7b.mp4"
+          data-background-video="clase06_2_assets/s09_784bf21a9b993a0e54e2709ae875b0250978b9003d384721cfa6c3483a389a3b.mp4"
           >
             <aside class="notes" data-markdown>- Junio 1,81 por 3,16 da cerca de 5,7 kWh/m² día
 - Enero 0,78 por 8,71 da cerca de 6,8
@@ -478,20 +515,20 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s6_7068fc5e22a262db777d5297126a314d2ff266444dd89c7d4e9c764c791e6dcd.mp4"
+          data-background-video="clase06_2_assets/s09_0f673014945e006d316ba44f69f418172599d85d2d890defd1486e75f25b4e63.mp4"
           >
-            <aside class="notes" data-markdown>- Misma cuenta con datos reales. Con internet abrir Explorador Solar, marcar la universidad
+            <aside class="notes" data-markdown>- Misma cuenta con datos reales
+- Con internet abrir solar.minenergia.cl/exploracion y marcar la universidad
 - Leer global horizontal media de junio y enero, anotar en tabla vacía
-- KT dividiendo por H0 de la tabla anterior
-- Rb y factores de forma no cambian, solo cambia fd
-- Junio real KT hacia 0,5, R̄ de 1,81 a cerca de 1,63, H̄ menor
+- KT con H0 de la tabla anterior, Rb y factores de forma no cambian
+- Solo cambia fd, junio real KT hacia 0,5, R̄ de 1,81 a cerca de 1,63
 - Pregunta al curso, hagan la cuenta en sus cuadernos y comparen
 - Primer paso de la tarea y del taller RETScreen, cerramos</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_2_assets/s7_37b40623afd9e6bd0c2950e38cf9874924ba869f8ba476df4ea434997aacb7c0.mp4"
+          data-background-video="clase06_2_assets/s10_b4d175d924b58480d717eed274caf157523ad8155db059adc2f3a10f50c6a329.mp4"
           >
             <aside class="notes" data-markdown>- Hipótesis de hoy
 - Difusa igual de todo el cielo, promedios mensuales, colector al norte
@@ -744,6 +781,29 @@
         }
         Reveal.on("ready", refresh);
         Reveal.on("slidechanged", refresh);
+      })();
+    </script>
+      <div id="anim-done"></div>
+    <script>
+      (function () {
+        var dot = document.getElementById('anim-done');
+        function currentVideo() {
+          var s = Reveal.getCurrentSlide();
+          var bg = s && (s.slideBackgroundContentElement || Reveal.getSlideBackground(s));
+          return bg ? bg.querySelector('video') : null;
+        }
+        setInterval(function () {
+          var v = currentVideo();
+          if (!v || !isFinite(v.duration) || v.duration === 0) {
+            dot.classList.remove('done'); dot.style.setProperty('--p', 0); return;
+          }
+          var p = Math.min(1, v.currentTime / v.duration);
+          var done = v.ended || p > 0.995;
+          dot.classList.toggle('done', done);
+          dot.style.setProperty('--p', done ? 1 : p);
+        }, 100);
+        Reveal.addKeyBinding({ keyCode: 73, key: 'I', description: 'Mostrar u ocultar el indicador de animación' },
+                             function () { dot.classList.toggle('hidden'); });
       })();
     </script>
   </body>

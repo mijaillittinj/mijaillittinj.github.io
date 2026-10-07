@@ -37,6 +37,13 @@
       /* keep the arrows unobtrusive, the talk is driven by the keyboard */
       .reveal .controls { opacity: 0.25; }
       .reveal .controls:hover { opacity: 0.8; }
+          /* animation-progress dot (idea from a colleague's deck): fills while the state's
+         video plays and turns green when it has finished; key I hides it */
+      #anim-done { position: fixed; right: 86px; top: 14px; width: 16px; height: 16px; z-index: 50;
+        border-radius: 50%; pointer-events: none; transition: background 0.25s, box-shadow 0.25s;
+        --p: 0; background: conic-gradient(rgba(150,150,150,0.8) calc(var(--p) * 1turn), rgba(110,110,110,0.3) 0); }
+      #anim-done.done { background: #3fbf6f; box-shadow: 0 0 6px rgba(63,191,111,0.8); }
+      #anim-done.hidden { display: none; }
     </style>
   </head>
 
@@ -46,7 +53,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s0_1ccc0697541c94ddc6d47777ddd74fc13cf0d1e85730be379f6ff2e530fd8c1c.mp4"
+          data-background-video="clase06_1_assets/s00_1ccc0697541c94ddc6d47777ddd74fc13cf0d1e85730be379f6ff2e530fd8c1c.mp4"
           data-background-video-muted
           >
             <aside class="notes" data-markdown>- Empezamos una unidad de cuatro clases sobre el colector solar térmico
@@ -58,20 +65,19 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s1_0c29d8685e29641d90ee3bed5abaf61f4388900e451af23f396b20b72b75d9d4.mp4"
+          data-background-video="clase06_1_assets/s01_7a0894dd6507a40e26c1efede2212ca0f12e49a0c12521e58acdf3f33931f94c.mp4"
           >
             <aside class="notes" data-markdown>- Mapa de la unidad, cuatro clases en el orden del material
 - Hoy es la primera clase, destacada en pantalla
-- Qué es un colector plano y de qué está hecho
-- Cada mejora del diseño ataca una pérdida de calor
-- Superficie selectiva con ejemplo resuelto de dos placas al sol
-- Aplicaciones y al final el Sol como fuente
-- El número de la clase aparece abajo a la izquierda</aside>
+- El colector, partes y cómo cada mejora ataca una pérdida
+- Superficie selectiva, ejemplo resuelto de dos placas al sol
+- Aplicaciones de baja temperatura y el Sol como fuente
+- La barra de secciones abajo marca en negrita dónde estamos</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s2_917a4304415f7e96375a82043c1361804aa36f14c8d0a32fb90c33d20c2ebd41.mp4"
+          data-background-video="clase06_1_assets/s02_231ec66e18f25ff75dd4c5351c1e3c6b6fa31a5f0e39b358c4650e76ea3de507.mp4"
           >
             <aside class="notes" data-markdown>- Definición, el colector plano es un intercambiador de calor
 - Pasa energía de una fuente caliente a un fluido
@@ -84,7 +90,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s2_8e37d595c5fef80f7944ced4c14ce269c366b14689bd0f833c46fa68d4bdbf4f.mp4"
+          data-background-video="clase06_1_assets/s02_63031e4ab25749f13d083fd5fcce9f34ced56ad54047a538836adf0a6b72fd8c.mp4"
           >
             <aside class="notes" data-markdown>- La cadena de energía queda arriba, más pequeña
 - Radiación que llega al colector, clase dos
@@ -97,7 +103,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s3_aa0a16c49be62e7b7487c3e9b174393641194047ac3a699e84b95a0b3e9d556c.mp4"
+          data-background-video="clase06_1_assets/s03_760aec9b5fa9f9214fc37394f980091d3832340e3713b1314356aa5aba21f520.mp4"
           >
             <aside class="notes" data-markdown>- Colector comercial de unos 2 m por 1 m y 10 cm de espesor
 - Piezas separadas en altura para verlas todas
@@ -110,7 +116,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s3_84baece408b9ce7535ef1064e1ba78a63ce19493c9c5e271eb5696a6e1313769.mp4"
+          data-background-video="clase06_1_assets/s03_ad19c1cadf0bff32cff52224b44d5be86ee7483ea4869ffae68ed1d13ef6836d.mp4"
           >
             <aside class="notes" data-markdown>- Se arma de abajo hacia arriba, primero la aislación en la caja
 - Tubos soldados a la placa por ultrasonido o láser
@@ -123,7 +129,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s3_ed47fb69ae5c83d32502454318212ec00af5202e8829b24e6b941ae0763897b6.mp4"
+          data-background-video="clase06_1_assets/s03_0b5871490b77e1742fb57d3bf657398124b162af29211fd621cd247e367e4545.mp4"
           >
             <aside class="notes" data-markdown>- El absorbedor baja y queda apoyado sobre la aislación
 - El vidrio cierra la caja con unos 2 cm de aire sobre la placa
@@ -135,7 +141,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s3_fb53730811db72b89965081f5b6f0d1aee5645ea44b736404ebef63540fc80f0.mp4"
+          data-background-video="clase06_1_assets/s03_34616f02a9311141b3223211e3a15f2d9b2cf6d46cdeeba0ccddbf1c2d259069.mp4"
           >
             <aside class="notes" data-markdown>- Aparece el plano de corte, perpendicular a los tubos
 - Se retira el trozo que sobra y se mira la cara cortada
@@ -146,7 +152,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s3_7c6f14443b9414b53dc445f1dbe0f68d9763a405ff3daea63c3f8831c07018cb.mp4"
+          data-background-video="clase06_1_assets/s03_44038170f45ccbde66132adebc0898a62926d8b581c43111940047b9fbe72390.mp4"
           >
             <aside class="notes" data-markdown>- Capas en orden de arriba hacia abajo
 - Vidrio de 3 mm, la línea delgada de arriba
@@ -158,7 +164,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s3_1ff38771d5ee41bc0c09f59241395ae135c986c66ad70506977fd93c70a2b9f0.mp4"
+          data-background-video="clase06_1_assets/s03_3aa7fcf82549ef525b110c57abe2efb8065ec14106bc9a963d0ce0b629cba057.mp4"
           >
             <aside class="notes" data-markdown>- Mismo corte en esquema plano sin escala, mismos seis tubos
 - Uno vidrio, dos capa de aire, tres aislación lateral
@@ -170,7 +176,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s3_84723541de766c775367763d38343a753e490b68645ff3d9c1fbacf244ffc165.mp4"
+          data-background-video="clase06_1_assets/s03_0566138a636e2764c27a04e5ea2bb4fa4fa6393ace4f504088bb71efefaa288a.mp4"
           >
             <aside class="notes" data-markdown>- Seguimos la energía desde el Sol
 - El Sol emite con máximo cerca de medio micrón, onda corta
@@ -183,7 +189,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s3_3a9991a4fe6c7a58fbc6b46bd21cbfbdd1212f02d171aea34e700becd59ab7b1.mp4"
+          data-background-video="clase06_1_assets/s03_cc051877f354d143f73a9ea6805b0946a1ff74342ff2ae0ea64587ba5a924fd4.mp4"
           >
             <aside class="notes" data-markdown>- La placa caliente emite en el infrarrojo lejano, flechas onduladas
 - Rayos solares atenuados en pantalla para verlas
@@ -196,12 +202,12 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s4_f62cf3782d77417c5abadf2a6fe1a1711c2fc5b5156853e1df24183e666080e4.mp4"
+          data-background-video="clase06_1_assets/s04_9555c8c51d453daa60f7051f11004ee546cf3a752e230ea454eb38a3bc25bddc.mp4"
           >
-            <aside class="notes" data-markdown>- Pintura de Giulio Parigi, siglo diecisiete, Arquímedes en Siracusa
-- Probablemente es un mito y la idea tiene más de dos mil años
+            <aside class="notes" data-markdown>- Pintura de Giulio Parigi, siglo diecisiete, Arquímedes en Siracusa, probablemente un mito
 - Captar es fácil, cualquier superficie negra capta
 - El problema es retener el calor, se pierde por tres mecanismos a la vez
+- Dos problemas, maximizar la absorción y minimizar las pérdidas, el segundo es el difícil
 - El esquema del colector queda abajo, atenuado, en espera
 - Pregunta al curso, ¿cuáles son esos tres mecanismos?
 - Los atacamos uno por uno</aside>
@@ -209,7 +215,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s4_57f6d3d98ae76d32bae3d09fd2a24c7a0fff9e85396f0988a323521f5fb59db0.mp4"
+          data-background-video="clase06_1_assets/s04_44d37945cbf384af2e8cd26fb4d00afadded81482fe27fe0958ac64a54f00799.mp4"
           >
             <aside class="notes" data-markdown>- El esquema vuelve y pierde vidrio, caja, aislación y recubrimiento
 - Queda la placa sola con sus tubos, caliente al sol
@@ -222,7 +228,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s4_621c5f2c3b13b7a17a11b913549f1d30f62e044766297c1fdeebf5809c0a5bd8.mp4"
+          data-background-video="clase06_1_assets/s04_622311000ce52c623e26db49e6d34a8814ad909964e216d3cd6d583c0a526f14.mp4"
           >
             <aside class="notes" data-markdown>- Primera mejora, aislación inferior y lateral dentro de una caja
 - Las flechas de conducción se achican
@@ -233,7 +239,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s4_80cff15b6d94bd9a3ec67eab3e84dcd8f29ce51d3a1046d3c7a522d8d6571808.mp4"
+          data-background-video="clase06_1_assets/s04_11e3a460ac92b16e6587399dd3d4294220f0ca74e428e2e3e0233d391ea20dd8.mp4"
           >
             <aside class="notes" data-markdown>- Segunda mejora, cubierta de vidrio
 - La convección exterior pasa al vidrio, más frío, y se achica
@@ -246,7 +252,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s4_ab0062bc63cd3ce22e1ba9a0b9311392bfc136172b8e00ed3bba54bab5b42436.mp4"
+          data-background-video="clase06_1_assets/s04_543eb536444fb3007dacea08784d8b138776990b47568696b061d43ed4d018b4.mp4"
           >
             <aside class="notes" data-markdown>- Tercera mejora, recubrimiento selectivo sobre la placa
 - Es lo visto en la clase de propiedades
@@ -258,7 +264,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s4_15299df89d1c54f3569017cce91df32d1dff5ab655301bc6e6a8051df9fefb63.mp4"
+          data-background-video="clase06_1_assets/s04_b0370461b4f25d762f04805ca8640781a69587d4f572968b610740253c8de1f9.mp4"
           >
             <aside class="notes" data-markdown>- Cuarta mejora, sacar el aire
 - Sin aire no hay convección interna y las celdas desaparecen
@@ -270,7 +276,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s4_210f51abfbe2b1fc8d74d309afc55ebd602deace833830497a619cf2128a3842.mp4"
+          data-background-video="clase06_1_assets/s04_8d4d84dd5cf800ca065c310abaa31ab0f05f01040053c78649ad10ead056570f.mp4"
           >
             <aside class="notes" data-markdown>- Lo más usado es colector plano con vidrio y superficie selectiva, sin vacío
 - En el esquema vuelve el aire, con celdas de convección tenues
@@ -283,7 +289,17 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s5_777aa2910e5db6af96c987e5511d5ab310ed9c27a681310f801e3a4c282d157f.mp4"
+          data-background-video="clase06_1_assets/s05_7dc42f9112229c0bdbaf64abcf0d10e171054455be043ddf5e71aa7ddad80c86.mp4"
+          >
+            <aside class="notes" data-markdown>- Cerramos la sección del colector, sus partes y sus pérdidas
+- Pasamos a la sección 2, superficie selectiva
+- Espectros del Sol y de la placa, superficies reales y un ejemplo resuelto
+- Pregunta al curso, ¿cómo puede una placa absorber mucho y emitir poco?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s06_4339e38d1ca3e8ff2cd7fe67ed4048db673b018f62f76fc16e4c1c2c368899fb.mp4"
           >
             <aside class="notes" data-markdown>- La tercera mejora era la superficie selectiva, ahora la razón física
 - Sol como cuerpo negro a 5780 K y placa a 80 °C
@@ -296,7 +312,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s5_676543a3027b5d0f7efd4183a146be7bb96879b7c347efe35cadcad37d22b3a5.mp4"
+          data-background-video="clase06_1_assets/s06_332bec1b86d6a1ad7f019952323d958c4ed17ee4dccf94430935e7305f5778e3.mp4"
           >
             <aside class="notes" data-markdown>- Línea punteada en 3 µm
 - Integrando Planck, el 98 % de la energía solar está bajo 3 µm
@@ -307,7 +323,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s5_58b68a0c393d2a881244456ed4957d54d2d70abcd71429579d905cacb11258a3.mp4"
+          data-background-video="clase06_1_assets/s06_f4373dfd0b46216dd4f436039470aa123af8cacb0580bdd1ba5ade5d62d1922d.mp4"
           >
             <aside class="notes" data-markdown>- Respuesta, absorbedor ideal en escalón con escala de cero a uno
 - Absortividad 1 bajo 3 µm y 0 sobre 3 µm
@@ -319,7 +335,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s5_f475a4fc517cb0c25d58c5c3f464b3cae34387d81fd44780b083306bb14f0b2f.mp4"
+          data-background-video="clase06_1_assets/s06_aebfb7008164579157111924690ce10589091dc4fcc1e84c54bf900d106ad965.mp4"
           >
             <aside class="notes" data-markdown>- Dos superficies reales de la tabla doce tres de Çengel
 - Pintura negra con α 0,97 y ε 0,97
@@ -331,7 +347,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s5_d980b7e87b0b7fa54234a043e1acb56d23207ebc35cc80ae04022df943b28960.mp4"
+          data-background-video="clase06_1_assets/s06_4c03b3991a98b8019fee1e0718722f7179b38bbbc618cbf1b75d460bed1dce21.mp4"
           >
             <aside class="notes" data-markdown>- I\_T es la irradiancia sobre el plano del colector, en toda la unidad
 - Cuerpo negro a 80 °C emite σT⁴, 880 W/m²
@@ -344,7 +360,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s5_82ba9dcf120e1d520f05fcb03d680de016c292f448843a9da6d05924ff10e9e5.mp4"
+          data-background-video="clase06_1_assets/s06_13634ce8f19b97768525bf8755395e6c19dcc70052c235945b6a4d2465ef7afe.mp4"
           >
             <aside class="notes" data-markdown>- Pregunta de control, dar un minuto antes de seguir
 - Dos placas sin vidrio al sol con 800 W/m²
@@ -357,7 +373,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s5_8814ff06ac6d8443629ec2538844ee2a7d3acef712c5f040fa0e2720420bddf2.mp4"
+          data-background-video="clase06_1_assets/s06_65f290b06fe37b94dcadb7a9085b3d824f2926cd01e38c7745f1f0c4a12eebcf.mp4"
           >
             <aside class="notes" data-markdown>- Balance de energía de la placa en régimen permanente
 - Entra α por I\_T, la potencia absorbida por metro cuadrado
@@ -370,7 +386,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s5_187422efe447b34cb7d8543a5f60acfb621a217b10b4b2e7b649f4e1f2cf7a70.mp4"
+          data-background-video="clase06_1_assets/s06_cbc9bdd0145a88e388066a0c4b8b737bbfdcfc5e8b93d85f67334d5fd28bb102.mp4"
           >
             <aside class="notes" data-markdown>- Primero la pintura negra con α y ε iguales a 0,97
 - Cielo a 283 K y aire a 293 K
@@ -382,7 +398,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s5_f8c5018ff8e1ee0b1ae791f336c4ef2daa019229c84a594f3f812a7cdde799da.mp4"
+          data-background-video="clase06_1_assets/s06_7c4c400af21c9fd706bc6368efd6f861dd1b32acaea006eedd62edb33bb8a997.mp4"
           >
             <aside class="notes" data-markdown>- Ahora cromo negro con α 0,87 y ε 0,09
 - La placa llega a 84,5 °C, unos 22 más que la pintura
@@ -394,7 +410,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s5_b621096c4432814a19f314163744c8d6b67d8beff7edc7915d99e1a4a77dd912.mp4"
+          data-background-video="clase06_1_assets/s06_5d966185a8c989d4ee73bd2a02de07fe7a687eedb17d1acf0546180dceba50ed.mp4"
           >
             <aside class="notes" data-markdown>- Sin vidrio la convección se lleva 645 de 696 W del cromo negro
 - La selectiva eliminó la radiación y la convección quedó como pérdida principal
@@ -406,7 +422,16 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s6_99993aacf149fbb565e94e89cd795bb48e51680fc47a862213a1f172f134f7ad.mp4"
+          data-background-video="clase06_1_assets/s07_bbfcf00034265b22e8151c79169c9636822a6c5dda19f9f57742c44eccce8207.mp4"
+          >
+            <aside class="notes" data-markdown>- Cerramos la superficie selectiva y el ejemplo de dos placas
+- Pasamos a la sección 3, aplicaciones
+- Usos de baja temperatura, por qué baja temperatura y el caso de Chile</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s08_ae1c26fdd4090910ec93849c0453ec5a7ece5382e7d82f6dc47a4ec05d8099d6.mp4"
           >
             <aside class="notes" data-markdown>- Uso masivo en agua caliente sanitaria, casas, hoteles y hospitales
 - También calefacción, secado de fruta y precalentar agua de caldera
@@ -419,7 +444,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s6_dbd5fbfbfb9bb4945036ed8c8e98ef0b57037149dbbb01d6fdbd52deb8fecf47.mp4"
+          data-background-video="clase06_1_assets/s08_607622aea8e08fc933662cf435a32d8fd12c49ce2cc288743ccff8aade5d6060.mp4"
           >
             <aside class="notes" data-markdown>- Por qué baja temperatura, esquema que adelanta la clase cuatro
 - La escala pasa a ser el eje horizontal, con la franja cómoda
@@ -432,7 +457,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s6_9b84baae38e3840f0a46769651a9b81bd6a48fd8e60b9abbbbc5d314b1cc16cc.mp4"
+          data-background-video="clase06_1_assets/s08_d4bb10ce37e75d2aaee6c1f3fc74ad943ea7487641efce3436d9aa62c5a071b0.mp4"
           >
             <aside class="notes" data-markdown>- Tres datos de Chile para ubicar la tecnología
 - La Ley 20.365 dio franquicia en viviendas nuevas y los masificó
@@ -444,7 +469,17 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s7_57184945130936bb2ae1eec650e879880ec81737144684c227f0d7ad0317dda0.mp4"
+          data-background-video="clase06_1_assets/s09_233b1e3864938a1dd4d2e35fa3334df35f945fe8734e20f38994ea1db7628d34.mp4"
+          >
+            <aside class="notes" data-markdown>- Cerramos las aplicaciones de baja temperatura
+- Pasamos a la sección 4, el Sol
+- Constante solar y temperatura del Sol como cuerpo negro
+- Cuánto recibe un colector con sol pleno</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_1_assets/s10_f98f517bffc1311342b3b856ae1547e9623f953c4d66b17c40d675f60e4ecc74.mp4"
           >
             <aside class="notes" data-markdown>- Cerramos con la fuente de energía
 - Constante solar de 1373 W/m², valor del curso
@@ -456,7 +491,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s7_93f904e74edbcf7e53aef04aace0262b1f2e36892e7cbcf2b8491ef516188a49.mp4"
+          data-background-video="clase06_1_assets/s10_863e57705bcb0088efd4e4fd7675715cad775876dcb6fd135b04c24fe2425157.mp4"
           >
             <aside class="notes" data-markdown>- Balance de energía, en el vacío la radiación no se atenúa
 - Potencia del Sol 4πr²σT⁴ cruza cualquier esfera centrada en él
@@ -468,7 +503,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s7_77e32b94e1f68a6e0672bbc1cf5a5de831b590df4d638acba7b333c1c4fa93b8.mp4"
+          data-background-video="clase06_1_assets/s10_3f0d2d1015c92c382fd5476d065c6d11b75116aad8b3940c871d399e5c9858cb.mp4"
           >
             <aside class="notes" data-markdown>- Se cancela 4π, T⁴ es (d\_TS/r)² por G\_s sobre σ
 - d\_TS vale 1,496 × 10¹¹ m y r 6,955 × 10⁸ m
@@ -480,7 +515,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s7_b52dfd4cc44685361bb2f8cd37522ccd4dc2d4ab7157a32ad0fe1f66c6e1d27b.mp4"
+          data-background-video="clase06_1_assets/s10_12680144bc8a3e499cd15ecd4763206f12a4b90e382b22f014f463775a4f865b.mp4"
           >
             <aside class="notes" data-markdown>- La atmósfera absorbe y dispersa parte de la radiación
 - En superficie con día claro llegan unos 950 W/m²
@@ -493,7 +528,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_1_assets/s8_6ea0998bb8a1efb9e319a8dee2fa7d5c8e2e180f0a8bc6bf5f8cd4e601728fb7.mp4"
+          data-background-video="clase06_1_assets/s11_f0943fe93172585fb4c1b5437922a2085ecef86ab1b125af32a938ea2f79a390.mp4"
           >
             <aside class="notes" data-markdown>- A la izquierda las hipótesis de hoy
 - Sol como cuerpo negro a 5780 K y propiedades medias de tabla
@@ -747,6 +782,29 @@
         }
         Reveal.on("ready", refresh);
         Reveal.on("slidechanged", refresh);
+      })();
+    </script>
+      <div id="anim-done"></div>
+    <script>
+      (function () {
+        var dot = document.getElementById('anim-done');
+        function currentVideo() {
+          var s = Reveal.getCurrentSlide();
+          var bg = s && (s.slideBackgroundContentElement || Reveal.getSlideBackground(s));
+          return bg ? bg.querySelector('video') : null;
+        }
+        setInterval(function () {
+          var v = currentVideo();
+          if (!v || !isFinite(v.duration) || v.duration === 0) {
+            dot.classList.remove('done'); dot.style.setProperty('--p', 0); return;
+          }
+          var p = Math.min(1, v.currentTime / v.duration);
+          var done = v.ended || p > 0.995;
+          dot.classList.toggle('done', done);
+          dot.style.setProperty('--p', done ? 1 : p);
+        }, 100);
+        Reveal.addKeyBinding({ keyCode: 73, key: 'I', description: 'Mostrar u ocultar el indicador de animación' },
+                             function () { dot.classList.toggle('hidden'); });
       })();
     </script>
   </body>

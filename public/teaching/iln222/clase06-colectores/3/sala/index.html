@@ -37,6 +37,13 @@
       /* keep the arrows unobtrusive, the talk is driven by the keyboard */
       .reveal .controls { opacity: 0.25; }
       .reveal .controls:hover { opacity: 0.8; }
+          /* animation-progress dot (idea from a colleague's deck): fills while the state's
+         video plays and turns green when it has finished; key I hides it */
+      #anim-done { position: fixed; right: 86px; top: 14px; width: 16px; height: 16px; z-index: 50;
+        border-radius: 50%; pointer-events: none; transition: background 0.25s, box-shadow 0.25s;
+        --p: 0; background: conic-gradient(rgba(150,150,150,0.8) calc(var(--p) * 1turn), rgba(110,110,110,0.3) 0); }
+      #anim-done.done { background: #3fbf6f; box-shadow: 0 0 6px rgba(63,191,111,0.8); }
+      #anim-done.hidden { display: none; }
     </style>
   </head>
 
@@ -46,7 +53,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s0_0628e8106b086f1a1e40185d262cd900538d8eda7834c181acb55ffdf5bd801d.mp4"
+          data-background-video="clase06_3_sala_assets/s00_0628e8106b086f1a1e40185d262cd900538d8eda7834c181acb55ffdf5bd801d.mp4"
           data-background-video-muted
           >
             <aside class="notes" data-markdown>- Tercera clase de la unidad
@@ -58,19 +65,19 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s1_bc247f6b6ff3923e255f6fd5cc4ed5a0768687e3a87b41299bbba88a46c6f166.mp4"
+          data-background-video="clase06_3_sala_assets/s01_15ec4b7ec5847f12aaf8dd2468d9eea41eccac7e37f121eaa1815d3d0e01e10e.mp4"
           >
-            <aside class="notes" data-markdown>- Clase tres de cuatro
-- Primero sistemas, termosifón, circulación forzada con respaldo
-- Diferencia entre sistema directo e indirecto
-- Luego cuánta radiación deja pasar el vidrio y balance de la placa
-- Coeficiente de pérdidas con una red de resistencias térmicas
-- Terminamos con estancamiento y operación con extracción de calor</aside>
+            <aside class="notes" data-markdown>- Clase tres de cuatro, cuatro secciones
+- Sistemas, termosifón, circulación forzada con respaldo, directo e indirecto
+- Cubierta y placa, óptica del vidrio, balance y red de pérdidas U\_L
+- Estancamiento, temperatura máxima y constante de tiempo
+- Extracción, potencia útil con F\_R y temperatura de salida
+- Las secciones aparecen abajo en la barra de navegación</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s2_9845393e099f996c29466e7304539552307699b56af598888ef98f57c5b18140.mp4"
+          data-background-video="clase06_3_sala_assets/s02_1364c8f22e487fb85a15697d0989cb05058f8060725e522655e9411a36a2e538.mp4"
           >
             <aside class="notes" data-markdown>- Sistema más común en las casas de Chile, el termosifón
 - Vista 3D sobre el techo, colector mirando al norte
@@ -83,7 +90,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s2_795d3f1f60876bf3641bb775f803f313d946bf9e0c36078fbb13bce958827ab0.mp4"
+          data-background-video="clase06_3_sala_assets/s02_3902f399add6ea035b4202e31d5f3019b5e995524b03f075c3f9e16d50ffd25a.mp4"
           >
             <aside class="notes" data-markdown>- Cámara de lado, acercamiento al colector y al estanque
 - Tubo caliente adelante, retorno frío apoyado en el techo
@@ -95,7 +102,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s2_7689f35ca954ae6416e94c235cda5b1b2c1fa8ead2f9f4342ea3139f94418a15.mp4"
+          data-background-video="clase06_3_sala_assets/s02_a9c6cb410da2216a2a8b1d2c506dfcb50463eb81b7c010adfea4f4b5ad3e81ff.mp4"
           >
             <aside class="notes" data-markdown>- Primero los datos, ρ es la densidad
 - Agua fría a 20 °C, ρ20 igual a 998,2 kg/m³
@@ -107,11 +114,11 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s2_f8fc9bf5b3a595458a81567a8b50ad9bfcf95a4aeff2fd441f8cca817b9c3dab.mp4"
+          data-background-video="clase06_3_sala_assets/s02_009c48d29f5752f2e7044fe78a4323a50569638b84984c55fb0dacaab4629ad8.mp4"
           >
             <aside class="notes" data-markdown>- Balance de fuerzas en la parte baja del circuito
 - Columna fría empuja ρ20 g Δz, caliente ρ50 g Δz
-- Δp igual a diferencia de densidades por g por Δz
+- La diferencia Δp es la diferencia de densidades por g por Δz
 - Usamos Δz porque h queda para coeficientes de convección
 - Con 1 m da cerca de 100 Pa, unos 10 mm de columna de agua
 - Pregunta al curso, ¿qué exige a la instalación una fuerza impulsora tan pequeña?</aside>
@@ -119,7 +126,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s2_450a736d1ab2e9aeb698ae7a332ddcb2d1538d7fe77de6c3377fd062ef7c1274.mp4"
+          data-background-video="clase06_3_sala_assets/s02_3ad8c14f309697125c85d5e547609ad5c929129117ab1ba692304286e4166d42.mp4"
           >
             <aside class="notes" data-markdown>- Con 100 Pa cualquier pérdida de carga importa
 - Tubos cortos, de buen diámetro y sin puntos altos con aire
@@ -130,7 +137,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s2_07343a7f75bfc06280f2cef8337405966d71441e8a0bd582f2ffb0a8222737b0.mp4"
+          data-background-video="clase06_3_sala_assets/s02_375ff6ab5ebbd2ce2302d6a8523cd69661ebe7839a5bc746f3ebea6b86cd6385.mp4"
           >
             <aside class="notes" data-markdown>- Pregunta de control, esperar respuestas antes de avanzar
 - De noche el colector mira un cielo frío
@@ -141,7 +148,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s2_fabad5219613d791de56ed64e7e14182eb1433ea1ed7dc3e215cf4ad59abe200.mp4"
+          data-background-video="clase06_3_sala_assets/s02_4486dade53fb6acd6120e56765feeb00084d8eaedf82272bd04e0fd57bb95bea.mp4"
           >
             <aside class="notes" data-markdown>- Con el estanque abajo la circulación se invierte
 - Agua fría y densa del colector baja al estanque
@@ -154,7 +161,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s3_731ebadc0eb15ca8772a773915a285a4cdb0dd057951a2b38a1c8dcf7645d5ee.mp4"
+          data-background-video="clase06_3_sala_assets/s03_b221ad65aafd852dc497110aa26c907b44f7972fa52bf67ee5eebdc31c39dfd7.mp4"
           >
             <aside class="notes" data-markdown>- El termosifón obliga a poner el estanque arriba
 - Si no es posible, circulación forzada con bomba
@@ -167,7 +174,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s3_0222b7fb68a6dbd7b92817380ea8a02bddd961fe9e077a4670d199913b66b44e.mp4"
+          data-background-video="clase06_3_sala_assets/s03_8d8ade4dcc5ffa97e52fc44eda2423d635e2c690a85643e911bc2d61490317d7.mp4"
           >
             <aside class="notes" data-markdown>- Al sistema forzado se agrega un respaldo junto al estanque
 - Caldera o resistencia eléctrica que termina de calentar el agua
@@ -180,7 +187,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s3_68fc35b36020c3fee00df7c34114b9595e6aa092d1cc6a5c879bada2700c3886.mp4"
+          data-background-video="clase06_3_sala_assets/s03_d0dbfc898dfdb3fc65517de1fa235330d08cb4aa778fce1ee5be32802cefc540.mp4"
           >
             <aside class="notes" data-markdown>- Última clasificación, qué fluido pasa por el colector
 - Directo, el agua de consumo pasa por el colector
@@ -193,7 +200,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s3_3734e5a36c61f91617e939d79d7ba53db7dfdd48f350d849d18b123381d02509.mp4"
+          data-background-video="clase06_3_sala_assets/s03_75f5303fa6270e151aa5e211457b63d0f284c4dbec89abca30111caaad328e05.mp4"
           >
             <aside class="notes" data-markdown>- Puente entre las dos mitades de la clase
 - Todo sistema depende de una sola cantidad
@@ -205,7 +212,17 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s4_1b1d30183dc58f98b3157dd64c812facdccff4b20c244c82ec8ebacd714759a7.mp4"
+          data-background-video="clase06_3_sala_assets/s04_2e5469a80f38bfff1517186688557470d04abd4b10949a0ee424aa60c82434d6.mp4"
+          >
+            <aside class="notes" data-markdown>- Cerramos sistemas, termosifón, forzado, directo e indirecto
+- Sección 2, cubierta y placa
+- Óptica del vidrio, balance de la placa y red de pérdidas U\_L
+- Pregunta al curso, ¿cuánto del sol que llega alcanza la placa?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_3_sala_assets/s05_e0f93a027fafa5e12f1a15176abb693d393d0493727e450e63eabcb215de511f.mp4"
           >
             <aside class="notes" data-markdown>- Empezamos por la cubierta de vidrio, lo primero que atraviesa la radiación
 - Vidrio de canto, rayo con ángulo θ1 desde la normal punteada
@@ -217,7 +234,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s4_cc0d8fcd537a07c866df2afcfe06bee9598cfa0b97a0626f484f7d210beedc14.mp4"
+          data-background-video="clase06_3_sala_assets/s05_20ca87778e89c531248cd8e3196d221b8b5b6910fe446d026dbf044fb23679bb.mp4"
           >
             <aside class="notes" data-markdown>- Rayo en incidencia normal
 - Reflexión en una cara por la ecuación de Fresnel
@@ -229,7 +246,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s4_81458a92c76150f47d3fc00ba52d4ca765d67c74a8f4951368baa0e552084c3e.mp4"
+          data-background-video="clase06_3_sala_assets/s05_c940783302480f509b46bf0c9148a65a47a38c0d345fba34c061b698e8b83ad3.mp4"
           >
             <aside class="notes" data-markdown>- Dos caras y varios rebotes entre ellas
 - Fracción transmitida por reflexión (1 menos r)/(1 más r)
@@ -241,7 +258,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s4_f55728fb8ea800c3ed91d095175ed08760575e080b3afff25ec4eed05d3d6f4d.mp4"
+          data-background-video="clase06_3_sala_assets/s05_8d4949775b14c8572e23c75b5f74b660cea3ba40fa90ef0dd201391478fe6b0a.mp4"
           >
             <aside class="notes" data-markdown>- Barremos el ángulo, curva de transmisividad exacta
 - El punto sigue al rayo, el rayo transmitido se adelgaza
@@ -253,7 +270,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s4_6579c8b3b7ce24cc318a59c6d0f2765b872fee1b19296afbcd531187de2dde06.mp4"
+          data-background-video="clase06_3_sala_assets/s05_11f80c41ba9711b4949f62ac78e27c2ee62a75d1774cbd597fd1d82095212ab9.mp4"
           >
             <aside class="notes" data-markdown>- La difusa llega de todo el cielo, sin un ángulo
 - Promedio hemisférico con peso coseno, clase de factor de forma
@@ -265,7 +282,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s4_876c64f04bbd1476edc7266adebd99c28ca6ad9548c35b17554d5cd38141883f.mp4"
+          data-background-video="clase06_3_sala_assets/s05_7c697f579e04b35b165a71988ec253f065b6c3a9df757adc56dbe65c399f9f6c.mp4"
           >
             <aside class="notes" data-markdown>- Placa bajo el vidrio con absortividad 0,93
 - Refleja el 7 %, el vidrio devuelve ρd, la placa absorbe otra vez
@@ -278,7 +295,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s5_cd25ca4fc971cb4b41e8a480f7c989d2cc49768cc9366218c96989ad6a3107c7.mp4"
+          data-background-video="clase06_3_sala_assets/s06_f3f787c4cb6b249a8e5c7f4245d155981507c33866ebc9de4baa87f067714ada.mp4"
           >
             <aside class="notes" data-markdown>- Con el τα de la cubierta escribimos el balance de la placa
 - El vidrio y la placa de recién se ordenan en un corte simplificado
@@ -290,7 +307,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s5_99e79ab3eee1022a94d227b656277f1195fdbb88ae3402d6a68965ccb1312458.mp4"
+          data-background-video="clase06_3_sala_assets/s06_5a964513fc299557ced5380062a495f428247e35fb3d3560f7f97d5d813feeb9.mp4"
           >
             <aside class="notes" data-markdown>- Primer término, ganancia óptica, flecha desde el sol
 - I\_T llega, el vidrio deja pasar τ, la placa absorbe α
@@ -302,20 +319,20 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s5_7ee76899785482170c1680d41f12454bd56a4cdb48aa7a9be058eb5c362fdcdf.mp4"
+          data-background-video="clase06_3_sala_assets/s06_b7bacc0c9ebf527b783408cdfef5e7f001a1ccd9b88af639901bc66320ffac30.mp4"
           >
             <aside class="notes" data-markdown>- Segundo término, pérdidas, flechas que salen de la placa
 - Hacia arriba por convección y radiación a través de la cubierta
 - Abajo y costados por conducción en la aislación
 - Todo en un coeficiente global U\_L, por ahora dato
 - Pérdida U\_L A\_c (T\_p barra menos T\_a), o ΔT sobre R\_L
-- Valores típicos de U\_L de 4 a 8 W/m²K
+- Valores típicos de U\_L de 4 a 8 W/(m²·K)
 - Después abrimos ese coeficiente</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s5_53d0dffd31c2dd8d9585f3fe09a17669c11352d16f7c5e205cddf840edd80095.mp4"
+          data-background-video="clase06_3_sala_assets/s06_6fc734e185c52bc8f027fdbdde13209796f832581d8bc493f1cf6358616d8960.mp4"
           >
             <aside class="notes" data-markdown>- Balance completo, P neto igual a ganancia óptica menos pérdidas
 - Primera ley con una resistencia global
@@ -327,7 +344,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s5_3ea7ea4870e3b2a4f44fd6341ddea64fb584afead2ff9f4af3d916315ae94337.mp4"
+          data-background-video="clase06_3_sala_assets/s06_241ed73007c8a2e789d014443237cb235a93eadbbacc8926b7de4ff90f8102ea.mp4"
           >
             <aside class="notes" data-markdown>- Colector de toda la clase, τα 0,75, 800 W/m², U\_L 5
 - Área 2 m², aire a 20 °C
@@ -338,18 +355,18 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s5_20ccbabe0224e486615bdc4c1017d2cf617e25ff74fa0052fb7f807177a640ac.mp4"
+          data-background-video="clase06_3_sala_assets/s06_36b9fbde7b211e35a8112146e347196d078585a8cc7b92487dc4b62ca9cb5480.mp4"
           >
             <aside class="notes" data-markdown>- Respuesta con números, placa de 60 a 100 °C
 - La pérdida pasa de 5 por 40 a 5 por 80, 400 W/m², el doble
 - Quedan 200 W/m², 400 W en el colector
-- η\_sp baja a 0,25
+- La eficiencia η\_sp baja a 0,25
 - Todo depende de U\_L, ahora lo abrimos</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s6_0a096ca27138887fbf12e981cadaa500995df31d948ba8092e66388344a3a00f.mp4"
+          data-background-video="clase06_3_sala_assets/s07_fe9ffcd7c8013c1d0ee6acbb9809408a9a561d04e8ca24ca57a593833121c903.mp4"
           >
             <aside class="notes" data-markdown>- Abrimos U\_L, antes tomado como dato
 - Placa a T\_p barra pierde hacia T\_a por tres caminos en paralelo
@@ -361,7 +378,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s6_7ee4104bc737463a13b514185302716af240631293e88ec1d12c507ba355c5d5.mp4"
+          data-background-video="clase06_3_sala_assets/s07_3497cf53d4aad6f79c5e9ca6b85074720164813d45c0cdd550af515f9a36efc9.mp4"
           >
             <aside class="notes" data-markdown>- Caminos en paralelo, las conductancias se suman
 - U\_L igual a superior más fondo más bordes
@@ -372,7 +389,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s6_38997c55f25f7617871ce9e556e0f78136c97887ca6de2a836f10e0b6e3c5e9f.mp4"
+          data-background-video="clase06_3_sala_assets/s07_e19ff3ebf38d4e8be6cb2fe3740e421493786df378b7c2aac95a4ac200c55adc.mp4"
           >
             <aside class="notes" data-markdown>- Radiación linealizada entre placas paralelas grandes, Çengel 13
 - Arriba entre placa y cubierta con las dos emisividades
@@ -384,31 +401,31 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s6_8076b6380ba85b3afccfe21bdd10d2db8e4675adca192a07376acaf384c36437.mp4"
+          data-background-video="clase06_3_sala_assets/s07_41f6f9934d70c43e0608ceb6a3e5a792d6805b7b57dc5a1697664a64ab398867.mp4"
           >
-            <aside class="notes" data-markdown>- Placa negra a 100 °C, ambiente a 10 °C, una cubierta
+            <aside class="notes" data-markdown>- Placa negra ε\_p 0,95 a 100 °C, ambiente 10 °C, vidrio ε\_g 0,88
 - Espacio de aire de 25 mm, colector a 45°, viento con h de 10
 - Convección interna por correlación de placas inclinadas, propiedades de Çengel
 - Converge con la cubierta a 48 °C
-- Radiación placa a cubierta 8 W/m²K, más del doble que la convección
+- Radiación placa a cubierta 8 W/(m²·K), más del doble que la convección
 - U superior 6,6, Klein da casi lo mismo, menos de 1 %
 - Una cifra decimal por incertidumbre de correlaciones del orden de 5 %</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s6_dec9c51db0009f70798ec1cdf8572d732d7a55bfa715a73f0a5c5a923ca6f25d.mp4"
+          data-background-video="clase06_3_sala_assets/s07_efc0707b06cdffbb7daf9d5f2cc3a5f2886c0633730f0905445c8f67ab2cfbc8.mp4"
           >
             <aside class="notes" data-markdown>- Fondo por conducción en la aislación, k/L\_b igual a 0,9
 - Bordes aportan unos 0,4 por su área chica
-- U\_L da casi 8 W/m²K
+- U\_L da casi 8 W/(m²·K)
 - Camino superior más del 80 % de las pérdidas
 - Ahí hay que atacar</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s6_252c3bfa37374483f0394cd37ecec85720db7756db2006c5922a642f58bc2926.mp4"
+          data-background-video="clase06_3_sala_assets/s07_f23358323a44d7a2e1637a374a67c3aedd4dcb698a8bac3bb78acd1028953f4e.mp4"
           >
             <aside class="notes" data-markdown>- Cambiamos solo la emisividad de la placa a 0,10
 - Superficie selectiva como el cromo negro de la clase uno
@@ -421,7 +438,17 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s7_792fdf3f50a98f84f1cc763b7dbde182d904083d119808a1ee8fb365769e916b.mp4"
+          data-background-video="clase06_3_sala_assets/s08_933a44b565f8b05a894b3322e95f2f38d1a8e65e7cd9560c1d1c2131b458b181.mp4"
+          >
+            <aside class="notes" data-markdown>- Cerramos cubierta y placa con U\_L cerca de 5 W/(m²·K)
+- Sección 3, estancamiento
+- Colector sin extracción, temperatura máxima y constante de tiempo
+- Pregunta al curso, ¿qué temperatura alcanza la placa sin consumo?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_3_sala_assets/s09_ffb512ab3e82ab7f6208cd8ed602bdec1ecbbfa245a3031f822b55cbe549a871.mp4"
           >
             <aside class="notes" data-markdown>- Primer caso límite, colector sin extracción
 - La energía neta calienta el propio colector
@@ -433,11 +460,11 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s7_5b601c5e9d5b133f2aa2eaac23429ceb244d31805665d166ab7e0db1de1665c0.mp4"
+          data-background-video="clase06_3_sala_assets/s09_be88eb93bb3bdb975e5a4b6f9f49d0ab5b7a0370a366b3f11f20b08adea221aa.mp4"
           >
             <aside class="notes" data-markdown>- Dividimos por m c\_p y agrupamos
 - Constante de tiempo τc igual a m c\_p / (U\_L A\_c)
-- τc mide qué tan lento responde el colector
+- La constante τc mide qué tan lento responde el colector
 - T máx igual a T\_a más τα I\_T / U\_L, derivada nula
 - El material la llama T\_f máx, sin flujo placa y fluido iguales
 - Unidades de τc, J/K entre W/K dan segundos</aside>
@@ -445,7 +472,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s7_a06ce07c1fa8a26a7b0e1a946eed982dc50f850fe2585985c2c5e50ae6371252.mp4"
+          data-background-video="clase06_3_sala_assets/s09_6d3a76b0d81fb9118e2e69fe2f1aed8162bcab9051ba166425429ab8e351cc5c.mp4"
           >
             <aside class="notes" data-markdown>- Separamos variables, T menos T máx y el tiempo
 - Integramos desde arranque en frío, placa a temperatura ambiente
@@ -457,21 +484,22 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s7_71674b08e1401f16509894c137ef190f506e5f9c4a6b62acf5ba9b712c21cc90.mp4"
+          data-background-video="clase06_3_sala_assets/s09_5471f549d18af7f21a14ea5bf677decc2a85762b04b86d7d99cfc2715aaf136f.mp4"
           >
-            <aside class="notes" data-markdown>- τα 0,75, 800 W/m², U\_L 5, ambiente 20 °C, 2 m²
+            <aside class="notes" data-markdown>- Con τα de 0,75, 800 W/m², U\_L 5, ambiente 20 °C, 2 m²
 - La placa absorbe 600 W/m²
 - T máx igual a 20 más 600/5, 140 °C
-- τc igual a 3000 s, 50 minutos
+- La constante τc vale 3000 s, 50 minutos
 - Pregunta al curso, ¿140 °C es alcanzable con agua a presión atmosférica?
 - No, hierve a 100 °C, circuitos presurizados, parte del problema</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s7_8e08f34754117e9bcc5eceadc4e970d089993d6cfeee102a8d089ded8d4f9a9c.mp4"
+          data-background-video="clase06_3_sala_assets/s09_35153c8c264148207757e0a8196444afcc6b50a0d9839ae9591d37c6b535f4df.mp4"
           >
             <aside class="notes" data-markdown>- Gráfico de la solución en el tiempo
+- Lectura en vivo de t y T\_p barra, a 180 min va en 136,7 °C
 - Asíntota punteada horizontal de 140 °C
 - Tangente inicial gris corta la asíntota en τc, 50 minutos
 - Pendiente inicial es ganancia neta sobre capacidad térmica
@@ -480,7 +508,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s7_5a64b3277e9661e585a81addb117a5a23357c99d11fad1c05042dad87afa13e6.mp4"
+          data-background-video="clase06_3_sala_assets/s09_e2a364a349cf37d79bc977357234dc3ccbc851beef8f4278dbd4668451068d5a.mp4"
           >
             <aside class="notes" data-markdown>- Dos puntos de control sobre la curva
 - En una τc recorre el 63 % y llega a 95,9 °C
@@ -491,7 +519,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s7_e5cd3970c23678434e7869b090f1f2996bc5fe659249e1a091e37fbee72b8a9f.mp4"
+          data-background-video="clase06_3_sala_assets/s09_9a9be8297d27e3053e89a70f3d6f3561eaebb22cc190c9105306da968d384e80.mp4"
           >
             <aside class="notes" data-markdown>- Pregunta de control, esperar respuestas antes de avanzar
 - Mismo sol, segunda cubierta y más aislación
@@ -502,11 +530,11 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s7_712c9154ad44e76363c65ae108ef7a9a8ab03fcca87cf0d522fb2395957e56fd.mp4"
+          data-background-video="clase06_3_sala_assets/s09_7b760b86a73928e10444a6e1166e55c5fa1e8e0319ac526cd1b3db2cb4fb4922.mp4"
           >
             <aside class="notes" data-markdown>- T máx igual a 20 más 600/2,5, 260 °C
 - Aumento sobre el ambiente de 120 a 240, el doble
-- τc se duplica, 6000 s, 100 minutos, misma masa pierde la mitad
+- La constante τc se duplica, 6000 s, misma capacidad térmica y la mitad de pérdidas
 - Tarda más en llegar y llega mucho más arriba
 - Menos pérdidas mejoran la operación normal y agravan el estancamiento
 - Doble cubierta, selectivos o vacío necesitan presurización y protecciones</aside>
@@ -514,7 +542,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s7_c36dae1f0496337de7d313ca6ab596de9e48ec5c798b4554ac286b8515b0ed6c.mp4"
+          data-background-video="clase06_3_sala_assets/s09_7d2c14181d81b32b79bf03c7c0ab0595f5fb446f8398976894b6da3128cc8824.mp4"
           >
             <aside class="notes" data-markdown>- Por qué importa este caso
 - Casa de vacaciones en verano, nadie usa agua caliente
@@ -526,7 +554,17 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s8_095afef2b50ba9d82226f5cb6fb54107b6b59247d2687360f0ef275d47bdf1b3.mp4"
+          data-background-video="clase06_3_sala_assets/s10_9c8e352fd8628b8686c02e41fb2a1ae3152e5aa13a5b9c57df1b53e296dbc91f.mp4"
+          >
+            <aside class="notes" data-markdown>- Cerramos estancamiento, 140 °C con constante de tiempo de 50 minutos
+- Sección 4, extracción
+- Potencia útil con F\_R, temperatura de salida y de placa
+- Al final un estanque que se calienta con 1 kW</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_3_sala_assets/s11_9c339f7126a2f5aa176b6d859c18ef1e0bdcc33bc3e08179d2b850ecab37c267.mp4"
           >
             <aside class="notes" data-markdown>- Conectamos una extracción, agua entra a T\_e y sale a T\_s
 - Régimen permanente, la temperatura de la placa no cambia
@@ -538,20 +576,19 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s8_4d3fe0d16d8a1ee23ee97e4e63fab263257e18e0a00f14a747b7708d1bfc7a42.mp4"
+          data-background-video="clase06_3_sala_assets/s11_b75244872a42b20066694e239c1752ce70b91985a2afd4715d69f1149e504c53.mp4"
           >
             <aside class="notes" data-markdown>- La temperatura de la placa varía y nadie la mide
 - T\_e sí se mide, reescribimos con T\_e y factor F\_R
 - Ecuación de Hottel, Whillier y Bliss, recuadro verde
 - F\_R menor que 1, usar T\_e subestima las pérdidas
-- F\_R no es la fracción placa a fluido, que vale 1
-- El material lo llama η\_pf, aquí F\_R con significado estándar
+- El material escrito llama η\_pf a este mismo F\_R
 - Por ahora dato del fabricante, en la clase cuatro lo deducimos</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s8_ee2cfda4943c9966e15d1aca8bf3ae50a197e42917a252bd8ee039721d63f9f1.mp4"
+          data-background-video="clase06_3_sala_assets/s11_3b0e531e470a53c49402edbe98e4193eeff41258f089216142922daec64f255a.mp4"
           >
             <aside class="notes" data-markdown>- Datos del código, F\_R 0,85, agua entra a 20 °C
 - Caudal 30 g/s, área 2 m²
@@ -562,7 +599,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s8_6872ce7cbf7e157e64feb6758bd7085d15a721213ddae0ea3abfa966c9f9ddc9.mp4"
+          data-background-video="clase06_3_sala_assets/s11_c87cee6c481afe35ab652283895e2f91dea358b43149d5e0010268e9667fb50d.mp4"
           >
             <aside class="notes" data-markdown>- El agua sube de 20 a 28,1 °C
 - Temperatura de salida en celeste
@@ -573,7 +610,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s8_3f32f51eb507b1699e1a6fa13bcbfe0b01b3a43061906605a461687986d6e434.mp4"
+          data-background-video="clase06_3_sala_assets/s11_36171145185f60045358c175e93a23ca3da66afc1e612385347795cd28bd8ff3.mp4"
           >
             <aside class="notes" data-markdown>- Comprobación con la placa a 38 °C
 - Pérdida 5 por 18, 90 W/m²
@@ -585,7 +622,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s8_88cb3283805f1ce778551b14b9dfbac1196cdbcd41a379694727cf7c1eac540a.mp4"
+          data-background-video="clase06_3_sala_assets/s11_0779f7ce277b52e384230be948e948bdfa6aec477c1e83cdff5b0553d9d62fb6.mp4"
           >
             <aside class="notes" data-markdown>- Con agua a 60 °C la pérdida vale 5 por 40, 200 W/m²
 - P\_u baja de 1020 a 680 W
@@ -598,7 +635,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s8_316f40d7800afe805923e1a7547c725039d6f459fafbe447da8f3d78dd418944.mp4"
+          data-background-video="clase06_3_sala_assets/s11_f0c0adf3b247db3f70498c67fa6e3beb311f5ac2225bf804a3ea41ac45de2cd1.mp4"
           >
             <aside class="notes" data-markdown>- Segundo modo, estanque cerrado que se calienta
 - 100 litros y 1 kW útil, sube 8,6 °C por hora
@@ -610,10 +647,9 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_3_sala_assets/s9_a692c8864a630c54419c9ca6ec1cf910a211a4d27c9c606cf8a4665d2e25bdd3.mp4"
+          data-background-video="clase06_3_sala_assets/s12_812566aa73e8ce3d431fbd1e4eb845746c9113ccb3c6e6335786f0678d23ccc0.mp4"
           >
-            <aside class="notes" data-markdown>- Hipótesis de hoy
-- Placa representada por su temperatura media
+            <aside class="notes" data-markdown>- Hipótesis de hoy, placa representada por su temperatura media
 - Coeficiente de pérdidas constante, régimen cuasi estacionario salvo arranque
 - Falta un paso, la temperatura de la placa no se mide
 - Próxima clase, de la placa al fluido y curva de eficiencia</aside>
@@ -862,6 +898,29 @@
         }
         Reveal.on("ready", refresh);
         Reveal.on("slidechanged", refresh);
+      })();
+    </script>
+      <div id="anim-done"></div>
+    <script>
+      (function () {
+        var dot = document.getElementById('anim-done');
+        function currentVideo() {
+          var s = Reveal.getCurrentSlide();
+          var bg = s && (s.slideBackgroundContentElement || Reveal.getSlideBackground(s));
+          return bg ? bg.querySelector('video') : null;
+        }
+        setInterval(function () {
+          var v = currentVideo();
+          if (!v || !isFinite(v.duration) || v.duration === 0) {
+            dot.classList.remove('done'); dot.style.setProperty('--p', 0); return;
+          }
+          var p = Math.min(1, v.currentTime / v.duration);
+          var done = v.ended || p > 0.995;
+          dot.classList.toggle('done', done);
+          dot.style.setProperty('--p', done ? 1 : p);
+        }, 100);
+        Reveal.addKeyBinding({ keyCode: 73, key: 'I', description: 'Mostrar u ocultar el indicador de animación' },
+                             function () { dot.classList.toggle('hidden'); });
       })();
     </script>
   </body>
