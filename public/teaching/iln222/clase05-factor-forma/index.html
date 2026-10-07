@@ -37,6 +37,13 @@
       /* keep the arrows unobtrusive, the talk is driven by the keyboard */
       .reveal .controls { opacity: 0.25; }
       .reveal .controls:hover { opacity: 0.8; }
+          /* animation-progress dot (idea from a colleague's deck): fills while the state's
+         video plays and turns green when it has finished; key I hides it */
+      #anim-done { position: fixed; right: 86px; top: 14px; width: 16px; height: 16px; z-index: 50;
+        border-radius: 50%; pointer-events: none; transition: background 0.25s, box-shadow 0.25s;
+        --p: 0; background: conic-gradient(rgba(150,150,150,0.8) calc(var(--p) * 1turn), rgba(110,110,110,0.3) 0); }
+      #anim-done.done { background: #3fbf6f; box-shadow: 0 0 6px rgba(63,191,111,0.8); }
+      #anim-done.hidden { display: none; }
     </style>
   </head>
 
@@ -58,20 +65,20 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s01_acff7b987f512c01f9daa65c0f5a1fdf0bb00fc26697b53ee4044e87b9dc455d.mp4"
+          data-background-video="clase05_factor_forma_assets/s01_bdd670b25c5f7ce74ca8b8056e27f7b181eb16bd4ca2cafde402059dfd16ba21.mp4"
           >
-            <aside class="notes" data-markdown>- Plan de hoy en cinco capítulos
-- Capítulo 1, definición del factor de forma e intuición
-- Capítulo 2, ángulo sólido e intensidad
-- Capítulo 3, la deducción paso a paso, centro de la clase
-- Capítulo 4, reglas que evitan casi todas las integrales
-- Capítulo 5, del factor de forma al calor con dos ejemplos
-- Desde la próxima lámina el número del capítulo aparece abajo a la izquierda</aside>
+            <aside class="notes" data-markdown>- Plan de hoy en cinco secciones
+- Sección 1, definición, fracción que llega directamente
+- Sección 2, ángulo sólido, coordenadas esféricas e intensidad
+- Sección 3, factor de forma, deducción y reciprocidad, centro de la clase
+- Sección 4, reglas que evitan casi todas las integrales, suma, superposición, simetría y tablas
+- Sección 5, ejemplos con superficies negras, domo, disco y cortafuego
+- La sección actual aparece siempre abajo en negrita</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s02_0e1d09b29b2f756bfa63c83f86167e7dfbf1dce0111f17c38652ed4cb34480dd.mp4"
+          data-background-video="clase05_factor_forma_assets/s02_5d7209b0042bd307b24960d3ed767310b1e736b2a65deceaa27592c176bf2049.mp4"
           >
             <aside class="notes" data-markdown>- Repaso rápido de lo que ya saben
 - Cuerpo negro emite σT⁴ por unidad de área, T en kelvin
@@ -84,7 +91,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s02_dcad762e9d829b6f715ca3c9eef9e2f3cae8f7604b62dd77bbf9268f9cb15d1e.mp4"
+          data-background-video="clase05_factor_forma_assets/s02_dc1681b4752d7eb0fe02f4be4d75427d6e54a05175486d81928ffd1974844afa.mp4"
           >
             <aside class="notes" data-markdown>- Resultado más usado hasta aquí
 - La ley de la superficie real sube y se convierte en esa fórmula
@@ -97,7 +104,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s02_e6ec1f69258b8d7ea938b5de289a7410f97e8ed1c39156704cb889aa1320d35c.mp4"
+          data-background-video="clase05_factor_forma_assets/s02_72f910873316a454e708d45dec95b67f69b8dee23daa42faa8d636868b025688.mp4"
           >
             <aside class="notes" data-markdown>- En el recinto la fracción que llega vale 1 y la geometría no aparece
 - Pregunta al curso, ¿qué pasa entre dos paredes de un horno o entre fogata y casa?
@@ -109,7 +116,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s03_28671ffa92c196d311df32c30666fed15ea35959aeac3ffffe1d990ff3f8cb93.mp4"
+          data-background-video="clase05_factor_forma_assets/s03_2fa7b17dcc1776dc6e91158b2eb812d46c62f1648af55d602d92df54bb7e3b93.mp4"
           >
             <aside class="notes" data-markdown>- Partimos de lo que ya sabemos tratar
 - Temperaturas y propiedades radiativas vienen de clases anteriores
@@ -122,7 +129,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s03_6c66cc9b5019394514b49785fd06ff2525e017a76a05412d3864c3293c9c5dc5.mp4"
+          data-background-video="clase05_factor_forma_assets/s03_da953090d57f9fdce304f85360b6cdcb8a2d0dc64543ac0cce63c6b2fa54982a.mp4"
           >
             <aside class="notes" data-markdown>- Ese número es el factor de forma, recuadro cian
 - Fi→j es la fracción que sale de i y llega directo a j
@@ -134,12 +141,13 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s03_e3d10edca9c00fbe9a7bc9ee8ac69613fdc5a0417ac3d11547a36286bdbfd95b.mp4"
+          data-background-video="clase05_factor_forma_assets/s03_75c86ddbc3ef3315463e6d006d792a2dba86c1bba4fc5e3d105c0f5cb8fb7e3d.mp4"
           >
             <aside class="notes" data-markdown>- Tres palabras llevan toda la información
 - Fracción, cociente de potencias, sin unidades y entre 0 y 1
 - Directamente, en línea recta y sin rebotes
-- Geometría pura, se demuestra en el capítulo 3
+- Las reflexiones se tratan con la radiosidad, Çengel 13-3
+- Geometría pura, se demuestra en la sección 3
 - Placas espalda con espalda no se ven, F = 0
 - Esfera azul dentro de cavidad rosada, F = 1
 - Todo factor de forma queda entre esos extremos</aside>
@@ -147,7 +155,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s03_e9a0099a843b46be572fd928ae58db28669d28bdeae44405a531aabc1f9db985.mp4"
+          data-background-video="clase05_factor_forma_assets/s03_981afcea969292348e7fb3dcfac63f53ed7e69a367eda2dbb20a9652d9c2f67e.mp4"
           >
             <aside class="notes" data-markdown>- Aplicación real antes de las ecuaciones
 - Dos simulaciones de fuego en pendiente de 20°, bloques con cortafuego
@@ -160,32 +168,42 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s04_9856e82cc04ba87ccc32000db7f3085b68aadb479acd7c9916e37ac8f2610bab.mp4"
+          data-background-video="clase05_factor_forma_assets/s04_e47df57d4c54bb95892f76d6e4dd627788b4d25a9de69575d339be281a1b8871.mp4"
+          >
+            <aside class="notes" data-markdown>- Cerramos la definición, F es la fracción que llega directamente
+- Abrimos la sección 2, ángulo sólido
+- Ángulo sólido, coordenadas esféricas, intensidad y radiosidad
+- Son las herramientas para contar la radiación entre dos elementos</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase05_factor_forma_assets/s05_82424c020695d513dc56528b9d9f14c73bc2178f0300f970076e95a6bcd18d8a.mp4"
           >
             <aside class="notes" data-markdown>- Primera herramienta, el ángulo sólido
 - Ángulo plano es arco sobre radio, circunferencia mide 2π rad
 - Versión 3D es área sobre la esfera dividida por r², en sr
 - La esfera completa mide 4π
 - Mide qué porción del campo visual ocupa un objeto
-- Luna y Sol ocupan casi igual ángulo sólido, por eso hay eclipses
+- Luna y Sol ocupan casi igual ángulo sólido, por eso hay eclipses totales
 - El 4π lo comprobamos después en coordenadas esféricas</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s04_b30a42181e4c5fb275b664324f42f19219a3ce1343141805f3d25f389049ee77.mp4"
+          data-background-video="clase05_factor_forma_assets/s05_abcae3317b6a1d28d89e5dc3ae94b9f39762ff8c8fa19848e4cc1b0f70a7bb83.mp4"
           >
             <aside class="notes" data-markdown>- Elemento de área visto desde un punto
 - Línea punteada blanca es la línea de visión, de largo r
 - Elemento rosado de frente, normal hacia el punto de vista
 - Barra naranja es su proyección normal a la línea de visión
 - Con θ = 0 la proyección es el elemento completo
-- Ángulo sólido dS sobre r², como en la esfera</aside>
+- Ángulo sólido dAn sobre r², como en la esfera</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s04_97ca698ab783633c0aae190aa646ddbbfebf2ae529cf9a215140dc52637f92ef.mp4"
+          data-background-video="clase05_factor_forma_assets/s05_9c544fd708e34c7616c087144c673aca42781cd645c59a6ea949b2942e2e419f.mp4"
           >
             <aside class="notes" data-markdown>- Ahora inclinamos el elemento
 - El ángulo θ va entre la normal y la línea de visión
@@ -197,7 +215,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s04_c84576f3d32072ca53672ac110eeca732f92a7d9b80bab717a0911bea1a528fe.mp4"
+          data-background-video="clase05_factor_forma_assets/s05_2cd5c97bf708f59be1540f7eb6ed6cd7c0c1694f3cd169a85bb176f18f3da0e3.mp4"
           >
             <aside class="notes" data-markdown>- Inclinación hasta 88°
 - La proyección casi desaparece y el ángulo sólido tiende a 0
@@ -208,7 +226,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s05_291b1216816945467ce2147ff032d197cdcdfe2e8e819e1527c4fd206253627e.mp4"
+          data-background-video="clase05_factor_forma_assets/s06_2c7bfc4e4f9eb1dfa04629d9d2bd81c0bb4518eed519edacd3fac14c4191ce36.mp4"
           >
             <aside class="notes" data-markdown>- Para contar direcciones en 3D usamos coordenadas esféricas
 - Un punto queda dado por r y dos ángulos
@@ -220,7 +238,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s05_47fb3de4e7df08047f046d6aa3a63d92e1e3799f38b52d239faa26e82dfc5f86.mp4"
+          data-background-video="clase05_factor_forma_assets/s06_c181295257951c131dbd18fe9956ec628f5cf1a465f495b81640626ad99676b1.mp4"
           >
             <aside class="notes" data-markdown>- Aumentamos θ en dθ y φ en dφ
 - Aparece un parche naranja, agrandado para que se vea
@@ -233,7 +251,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s05_56d80755544ffa60bebfd991b6f8c83c3d47fa9cc8cf9fbdac2c075823c56014.mp4"
+          data-background-video="clase05_factor_forma_assets/s06_98ed57fb8a0d42a084a9fa2d1bca8f0827a256e39ebf77c0fd3a4f66edc82bb6.mp4"
           >
             <aside class="notes" data-markdown>- Dividimos por r²
 - Ángulo sólido del parche visto desde el centro, recuadro naranja
@@ -244,7 +262,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s05_f82dff0099ab8b43927a55bd52f319cea3ab94b097747013a7d9bef0d4978b8a.mp4"
+          data-background-video="clase05_factor_forma_assets/s06_dc011859346f066002b40ab357d14ab916dea13d13b0ac43bf0436f22d476085.mp4"
           >
             <aside class="notes" data-markdown>- Fijamos θ y recorremos φ de 0 a 2π
 - El parche barre un anillo completo alrededor del eje z
@@ -255,7 +273,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s05_86e6542b6358b3172c8914c8aa667bd2babbb1b92e66e6078fd1ad3bc0c4ea45.mp4"
+          data-background-video="clase05_factor_forma_assets/s06_e7b53d36c7ba1cffb04945c5aadc19be583f93c30d47225e447f9a54ee595a55.mp4"
           >
             <aside class="notes" data-markdown>- Sumamos anillos desde el polo
 - El contador muestra el casquete, 2π(1 − cos θ)
@@ -266,7 +284,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s05_ef1d30fa187abed76165f940b5ca521629e6fcf3826d7d7dfbfa93653403d80d.mp4"
+          data-background-video="clase05_factor_forma_assets/s06_0ac02b8a68516bd7611ad783ad7762b72e2ed12956eae0620ccb7ad51bda3541.mp4"
           >
             <aside class="notes" data-markdown>- Seguimos hasta θ = π
 - Esfera completa, 4π sr, 12,57
@@ -276,7 +294,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s06_aa76178695d847698604ee328188b1ea615250c4cff3339a4ed57c42d6494e0a.mp4"
+          data-background-video="clase05_factor_forma_assets/s07_90156c6602577d932c42c24d981376360a5aa30cef690b494102274c9ebd86bd.mp4"
           >
             <aside class="notes" data-markdown>- El recuadro de dω de la esfera queda arriba a la izquierda
 - Segunda herramienta, la intensidad
@@ -289,7 +307,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s06_6c1c1423b70e2bc6ad92f41e5006aea8072051193e6780fc0e47e2b05696aca8.mp4"
+          data-background-video="clase05_factor_forma_assets/s07_0775784a83eed93ef7f6714bd7ad0c9646f1bd31987c5da7fb1952a3ce57ccf0.mp4"
           >
             <aside class="notes" data-markdown>- Una flecha por dirección, largo proporcional a I cos θ
 - La flecha verde se acorta a su largo en el lóbulo
@@ -301,7 +319,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s06_ce1326d773fcafa7bf3c68602f86c5d5de97cc295f5fb8cb9384e90f48180f54.mp4"
+          data-background-video="clase05_factor_forma_assets/s07_24aed46529d160d95ab0f67c178e994454aefd82fa2e8932c50e936c2c023ba3.mp4"
           >
             <aside class="notes" data-markdown>- Radiosidad J, toda la potencia que sale por unidad de área
 - Incluye emitida más reflejada hacia todo el hemisferio
@@ -311,7 +329,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s06_9c3cfb954e763b1e3c132c6a5ab33202da255f42a17a98555cad7365e3eb7006.mp4"
+          data-background-video="clase05_factor_forma_assets/s07_962341225bdb65929288a9076ebb9e33dcc7c70b64d884da96ec65e635902a3b.mp4"
           >
             <aside class="notes" data-markdown>- El dω de la esfera baja desde su recuadro a la integral
 - Hemisferio, φ de 0 a 2π y θ de 0 a π/2
@@ -321,7 +339,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s06_57092cb2cfa54b1d01dd36060a9a03b0db33b811e606f7e3c5b075277f864c30.mp4"
+          data-background-video="clase05_factor_forma_assets/s07_28795104285ca8b86d9b335550bddaa6ce945e8ffae093b477463b4cb5d29952.mp4"
           >
             <aside class="notes" data-markdown>- La integral en φ da 2π
 - La de cos θ sen θ da sen²θ/2, vale 1/2 entre 0 y π/2
@@ -332,7 +350,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s06_d0bd38f63be4a98a9172ae71179c37e02de33723e023ba9212ab6373f82d6618.mp4"
+          data-background-video="clase05_factor_forma_assets/s07_11560032c8eb82c3bc75fdfb311fa905ff9e051cbe264063111f7623ac80fcc2.mp4"
           >
             <aside class="notes" data-markdown>- Arriba en rojo tachado un error frecuente
 - Multiplicar I por el ángulo del hemisferio da J = 2πI
@@ -344,7 +362,17 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s07_0c16738b6ae5c2bd1b566cb108d0b8e70f9765b9c4e9c23a35a05214c86bf647.mp4"
+          data-background-video="clase05_factor_forma_assets/s08_ba79875ad651988c792d15f42325c8f949ea0b8627231aecfe2def6a24bb9b62.mp4"
+          >
+            <aside class="notes" data-markdown>- Cerramos ángulo sólido con J = πI para superficies difusas
+- Abrimos la sección 3, factor de forma, centro de la clase
+- Geometría entre elementos, factor diferencial y superficies finitas
+- Termina con la reciprocidad A1 F12 = A2 F21</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase05_factor_forma_assets/s09_bd4bb4bf9d013fce425f87d0b403f6b33ef486651fd65de47b626afdadadced4.mp4"
           >
             <aside class="notes" data-markdown>- Con ángulo sólido e intensidad armamos la geometría
 - Dos superficies de orientación arbitraria, A1 azul y A2 rosado
@@ -355,7 +383,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s07_063bc208c8b2910bdfe5439102f27b49ab2f32aee059409a81b469c3c11198fd.mp4"
+          data-background-video="clase05_factor_forma_assets/s09_01f0453b64244d1e9edff83ee02322a1ab4d5308ce9964fc7ee9ad8088181d39.mp4"
           >
             <aside class="notes" data-markdown>- Elementos diferenciales dA1 y dA2, agrandados en el dibujo
 - Normales unitarias, n1 azul y n2 rosado
@@ -366,7 +394,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s07_b5431b076687bd5dc6496780ad3f072f343d2bd17d1d11bbd4f9b6b3aea0351c.mp4"
+          data-background-video="clase05_factor_forma_assets/s09_26762d6bf1ba817c9f0ad60b1815a95645bac271538c138e0fe352c36cdf62eb.mp4"
           >
             <aside class="notes" data-markdown>- Recta blanca une los centros, largo r
 - Ángulo θ1 entre n1 y la recta, θ2 entre n2 y la recta
@@ -378,10 +406,10 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s07_9c872e83858dc4e84783cfc8be42e3a40d2a70338d563924a18e1401e3eda61d.mp4"
+          data-background-video="clase05_factor_forma_assets/s09_c4c45ce928a15807a7f0c56c780e7fb4d8481a557e71b90a7c60deda599e48e7.mp4"
           >
             <aside class="notes" data-markdown>- Giramos la vista y cambia la proyección en pantalla
-- Valores r = 4,51 y ángulos no cambian, se calculan en 3D
+- El largo r y los ángulos no cambian, se calculan en 3D
 - Con r, θ1 y θ2 queda fija la geometría del par
 - Falta la visibilidad, la recta no puede cruzar otra superficie
 - Con un obstáculo ese par aporta cero
@@ -390,7 +418,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s07_8a414c3a41b96facbcefca05132a80795ece05162babcfb680f0a67de9b51d93.mp4"
+          data-background-video="clase05_factor_forma_assets/s09_8b692b01c5d5c348b7d0a0aaf106561f4f1355da19e0d81c20a03327a8588f2b.mp4"
           >
             <aside class="notes" data-markdown>- Desde dA1, dA2 ocupa un cono pequeño, líneas naranjas
 - Su abertura es el ángulo sólido dω21
@@ -402,7 +430,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s08_8b43bf432cec40a14eaa28d0c4e0942d4df2135dce029264d046144e1ed5e82b.mp4"
+          data-background-video="clase05_factor_forma_assets/s10_e6e9ce572e3dbfa26a053c84b307db8eda874647b419a91050a7ff0502e6b5e0.mp4"
           >
             <aside class="notes" data-markdown>- Comienza la deducción, geometría a la izquierda con los mismos colores
 - Hipótesis, superficie 1 difusa, I uniforme, medio no absorbe y se ven
@@ -414,19 +442,19 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s08_87aa3b6c085d82328bc496cd69e7b794d5ab8f9144367f501e60e3cdb17a1e0a.mp4"
+          data-background-video="clase05_factor_forma_assets/s10_a197b0ea591d4a9cb885d442c272de5b7c693c1004d55127a0e43b44e1934427.mp4"
           >
             <aside class="notes" data-markdown>- Reemplazamos dω21 por dA2 cos θ2 / r²
 - Reemplazo directo, es el mismo ángulo sólido
 - Los índices 1 y 2 entran igual, un coseno y un área cada uno
 - El r² es compartido
-- De esta simetría sale la reciprocidad en el capítulo siguiente
+- De esta simetría sale la reciprocidad al final de esta sección
 - Falta el total que sale de dA1</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s08_6ac5b431a3678237c1430e6ef9442933b4941cafd0c075a6531be821b313b18e.mp4"
+          data-background-video="clase05_factor_forma_assets/s10_f865e4260498a4cd8308e41b8302ccb393cb6dd5193072b988a2124ad40a60bc.mp4"
           >
             <aside class="notes" data-markdown>- Paso 2, todo lo que sale de dA1 al hemisferio
 - Es J1 dA1, y con superficie difusa J = πI
@@ -438,7 +466,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s08_cf38c7829fdb2d355eab8a9f215c9e7b12637b2518719f90beceba295cbb41d4.mp4"
+          data-background-video="clase05_factor_forma_assets/s10_ff9273474dd4929e47e1ae4ba2075a4f3f3bc7bcb0c1796eb887cfd60edc0929.mp4"
           >
             <aside class="notes" data-markdown>- Paso 3, F diferencial es lo que llega sobre lo que sale
 - Cociente completo sin simplificar todavía
@@ -449,7 +477,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s08_6155dd453914f458ea94d15be04d3afbc6bf251a8a092b41b21af33dd3f00e9e.mp4"
+          data-background-video="clase05_factor_forma_assets/s10_1d8eb1a2dcb971e12a5f6d946bb48aa8e990f487ef8ee539502645656b9c2cf1.mp4"
           >
             <aside class="notes" data-markdown>- I1 está arriba y abajo y se cancela
 - El elemento dA1 también se cancela
@@ -461,11 +489,11 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s08_f8fada0aab8670e2a8e2bd2a342f18ae7e8e5dcbf070491ba6ba41121348db67.mp4"
+          data-background-video="clase05_factor_forma_assets/s10_b9f45459b7b08556171bc98cf44dcc2f747e795179fe4c2484c2f81dc92cd614.mp4"
           >
             <aside class="notes" data-markdown>- Revisión del resultado de tres formas
 - Unidades, área sobre distancia al cuadrado no tiene dimensión
-- Cierre, hemisferio de radio r con cos θ2 = 1 y dA2 = r² dω
+- Comprobación, hemisferio de radio r con cos θ2 = 1 y dA2 = r² dω
 - La integral de cos θ1 dω / π da 1, misma de J = πI
 - Origen, cos θ1 de Lambert, cos θ2 y r² del ángulo sólido
 - El π viene de la radiosidad
@@ -474,7 +502,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s09_98b49ddb23b0b2f18ed25a75429ef423d5fe2c17d4482ce480fc061d4f594a7f.mp4"
+          data-background-video="clase05_factor_forma_assets/s11_8f0d16618e6f69352dc84dbbabc2b0765cd81d87c0aebac2794100bc3705cbe3.mp4"
           >
             <aside class="notes" data-markdown>- Ya tenemos F entre elementos, en la práctica las superficies son finitas
 - Primero un elemento dA1 hacia toda A2
@@ -486,7 +514,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s09_39967e7790d4c0b0a117b266603c7ccc3688900adaf8e52fe7e143ddc868bc68.mp4"
+          data-background-video="clase05_factor_forma_assets/s11_efaed07e7a56846e9f67a56274287e9faeeddee714d53c0eef0ac2a197639348.mp4"
           >
             <aside class="notes" data-markdown>- Ahora el emisor es toda A1, lo que sale es J1 A1
 - Lo que llega a A2 es la integral sobre A1 de J1 por dF
@@ -498,7 +526,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s09_973cd5d076bb52bc36eb7c3a62702ad4c865914565561ae2f04b16985345a6dd.mp4"
+          data-background-video="clase05_factor_forma_assets/s11_fc0f885df5507b8f2a89829685c5cf4ea314ddba774fa3dea4d49504f5b7201c.mp4"
           >
             <aside class="notes" data-markdown>- Ejemplo, dos placas cuadradas de 1 m paralelas y alineadas a 1 m
 - Mapa de la placa 1 vista desde arriba, claro es mayor F
@@ -510,21 +538,21 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s09_eebdb52d3f61f274fb2f5d8583c7c2ebb8140f3b1c6ff4fc9fed58f5f7ab4682.mp4"
+          data-background-video="clase05_factor_forma_assets/s11_f8f8fa574c95165654c326c96bc6de105ffe9bc08edd5b80ddac656e9ac8f32f.mp4"
           >
             <aside class="notes" data-markdown>- El promedio del mapa da 0,1998
 - La fórmula de tablas para placas paralelas da el mismo valor
 - F entre superficies es el promedio del F local
 - Casi nunca se hace a mano, está en tablas y gráficos
 - Geometrías complejas se calculan numéricamente
-- Siguiente capítulo, reglas que ahorran integrales, partiendo por reciprocidad</aside>
+- La misma integral doble da la reciprocidad en dos líneas</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s10_eb70a6ffbc9cd581685167e80e8604c4bbe9b39efb7b5ff72093be88b5f357d4.mp4"
+          data-background-video="clase05_factor_forma_assets/s12_3e080047e978b2c7a4d53eb8fc2bd2bca720c5c6426d2d7aef9430730196287a.mp4"
           >
-            <aside class="notes" data-markdown>- Capítulo de las reglas, la primera es la reciprocidad
+            <aside class="notes" data-markdown>- Primera relación entre factores, la reciprocidad
 - Sale en dos líneas
 - Arriba la definición de F12 multiplicada por A1
 - El 1/A1 desaparece y queda la integral doble sola
@@ -534,7 +562,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s10_a45342a3b8ed86a3debc2d2235f2878d4c80fbce82d53c6f9272fce7a8041dd6.mp4"
+          data-background-video="clase05_factor_forma_assets/s12_f6b0b140d11a88d5d23ad5776f48a38064361b933bab11d7dcd4cf40ec741d58.mp4"
           >
             <aside class="notes" data-markdown>- Repetimos la deducción desde la superficie 2
 - Copiamos la primera línea e intercambiamos los índices 1 y 2
@@ -544,7 +572,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s10_91abe8944b53e7e1aa9fb0a7aa4f290404a1bc487e0c764c7816210e2fff5b61.mp4"
+          data-background-video="clase05_factor_forma_assets/s12_7a08a64b46943b3bb3824ff229cac7f9ebd6bfdbfe4142f35ca286d408737866.mp4"
           >
             <aside class="notes" data-markdown>- Se destacan los dos integrandos y son iguales
 - El producto cos θ1 cos θ2 no depende del orden y r es la misma
@@ -557,7 +585,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s10_ddc8913a21c4b468644b7a40c7353427522060d8006bedafc31e2052377ed2ed.mp4"
+          data-background-video="clase05_factor_forma_assets/s12_334847b96f88c613ae5a1d7b3fa1251f68ae1709a58f2eeab754b35136896d5f.mp4"
           >
             <aside class="notes" data-markdown>- Pregunta de control con dos discos coaxiales paralelos a 1 m
 - Disco azul abajo de radio 0,5 m
@@ -568,7 +596,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s10_d9a6fad562d148c743b4ce431a3472da6ed9fa585f5c45127462084e60e6f8f5.mp4"
+          data-background-video="clase05_factor_forma_assets/s12_cebac3e07c36068b92cdd0d77b229750ff61a7eada0852b689b0934e6c3b20d5.mp4"
           >
             <aside class="notes" data-markdown>- No son iguales, fórmula de discos coaxiales de la tabla
 - Del chico al grande F = 0,469, casi la mitad
@@ -581,7 +609,17 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s11_b3e04e5e038cd9870690b7024019b1d3e7cbc394c4869c31d6858af12c163a30.mp4"
+          data-background-video="clase05_factor_forma_assets/s13_9f099ae3c30edb72901cc05d525840c8c8ef6466b0f758c10c92785410d7663b.mp4"
+          >
+            <aside class="notes" data-markdown>- Cerramos la deducción, F es geometría pura
+- Abrimos la sección 4, reglas
+- Regla de la suma, superposición, simetría y tablas
+- Pregunta al curso, ¿cuántos factores tiene un recinto de tres superficies?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase05_factor_forma_assets/s14_d5253d581ce693e110904dd93d365651b1948c33d06aca6f0603ca043cc13f8c.mp4"
           >
             <aside class="notes" data-markdown>- Segunda regla, regla de la suma, por conservación de energía
 - Recinto cerrado de cinco superficies, superficie 1 abajo en azul
@@ -594,7 +632,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s11_76c88b6870c1416b98d2e0169d61f06bd17da1e84868eb1c261c5d69681e2e98.mp4"
+          data-background-video="clase05_factor_forma_assets/s14_89a56c58f3a131212793e198970380c3e9dab9b22b396dc17fba4dbc9de62950.mp4"
           >
             <aside class="notes" data-markdown>- La suma incluye Fii, superficie hacia sí misma
 - Placa plana, ningún rayo vuelve, F11 = 0
@@ -606,12 +644,12 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s11_6306c6fba4b457a537d91cc862964a00f97ce3a6f71e5b64a6c981429f59160c.mp4"
+          data-background-video="clase05_factor_forma_assets/s14_c8fe89f69a8fbfe862c264dfe0b0ab4591b96ff059c52fb20432298f5bad3369.mp4"
           >
             <aside class="notes" data-markdown>- Cubo de 1 m de arista, cara inferior azul emite
 - Es plana y no se ve a sí misma
 - Cara opuesta con 0,1998, fórmula de placas paralelas
-- Cada una de las cuatro laterales con 0,2, placas perpendiculares
+- Cada una de las cuatro laterales con 0,20004, placas perpendiculares, suman 0,8002
 - La suma da 1 con cuatro decimales
 - Fórmulas independientes, el resultado comprueba la regla
 - Con las dos reglas contamos cuántos factores calcular</aside>
@@ -619,7 +657,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s11_3dd3ec67bbbc1632663248053369b105530d75bedffd1e6510ca4381a40ea04c.mp4"
+          data-background-video="clase05_factor_forma_assets/s14_7c7bc04c60fbc6e2f22f8804675f4fa183d824273546c2b535690a1c8e53f2f8.mp4"
           >
             <aside class="notes" data-markdown>- Recinto de N superficies tiene N² factores, con 3 son 9
 - Reciprocidad da N(N − 1)/2 ecuaciones, llena un triángulo
@@ -632,7 +670,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s11_75849cea6630c5d417aa3cd7740287c2e15b0b5a2c255c9af705adf46b95fc1d.mp4"
+          data-background-video="clase05_factor_forma_assets/s14_aca80655c12e9990ab33f019c253ea3201bd6a3f1286294d33df45cc9d84de0b.mp4"
           >
             <aside class="notes" data-markdown>- Pregunta de control
 - Pregunta al curso, ¿un factor de forma puede ser mayor que 1?
@@ -643,7 +681,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s11_023658e9d59c9ed42dc3dd3bc348687bc049c1c781fa510e91094f46066c7c06.mp4"
+          data-background-video="clase05_factor_forma_assets/s14_676ed11fbdaabf94cb17c8d14bf82cd8d9518a5648fb2d1fb718c268d4686bf3.mp4"
           >
             <aside class="notes" data-markdown>- Un factor aislado nunca supera 1, es fracción de lo que sale
 - Factores de un mismo emisor suman a lo más 1
@@ -655,7 +693,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s12_aab2fdb5a529df030a6ff1b1c7514babdd4007be6bbfa68f35569fd562d2a597.mp4"
+          data-background-video="clase05_factor_forma_assets/s15_316e1d736e64bdedb4107b5cad70e81c3f648bb70f91fea17fdd8168e2d40121.mp4"
           >
             <aside class="notes" data-markdown>- Tercera regla, la superposición
 - Piso horizontal azul A1, pared vertical de 2 m en dos mitades
@@ -668,7 +706,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s12_8d57da96ded09be77356a8acad75eb3665693580ed2e16294442fcf831b775e5.mp4"
+          data-background-video="clase05_factor_forma_assets/s15_cb0eaf65f0b82ebedffbd9721441bacb5901e8fa682dc7fad52dfb2b92461468.mp4"
           >
             <aside class="notes" data-markdown>- Tabla de rectángulos perpendiculares con arista común
 - Pared completa de 2 m, F = 0,233
@@ -681,7 +719,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s12_faebc9f950533e371e4171bb8a71a3956dfb8b0a784032366392740a73d23031.mp4"
+          data-background-video="clase05_factor_forma_assets/s15_a5076d4088fbc2eef059cbaff8df6d1fefe3f49e46a1c1c88a85d597e96cd03c.mp4"
           >
             <aside class="notes" data-markdown>- Si emite la pared compuesta, sumar factores es error, tachado
 - La pared compuesta emite desde un área mayor
@@ -694,7 +732,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s12_e0679f2564651b7806e72d7f8c54e07085e65c3c7772f60fbac952d91adb9620.mp4"
+          data-background-video="clase05_factor_forma_assets/s15_691d7a0ff804ae3f7d22de7cff499d90c2fe3ec6c5a88890dd2273ca8702f625.mp4"
           >
             <aside class="notes" data-markdown>- Regla de simetría
 - Superficies ubicadas igual respecto del emisor reciben igual fracción
@@ -706,9 +744,10 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s12_7fa7a2d8ae81e852e34bc0fb5237a26f1fa1325c858961487c467d0815fd8d40.mp4"
+          data-background-video="clase05_factor_forma_assets/s15_40121175d7366bec7cec8b39bd51b859b24dbcc618c50e1ee917dfaaff38013d.mp4"
           >
-            <aside class="notes" data-markdown>- Tabla de placas paralelas da base a techo del cubo, 0,2
+            <aside class="notes" data-markdown>- Pregunta de control
+- Tabla de placas paralelas da base a techo del cubo, 0,2
 - Pregunta al curso, ¿cuánto vale el factor de la base a cada pared lateral?
 - Pista, se combinan dos reglas
 - Esperar una propuesta antes de avanzar</aside>
@@ -716,7 +755,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s12_8f0bce7b08fe163490f114638a0ac5ceefdefd70b83274d440c91ec5a954c6cd.mp4"
+          data-background-video="clase05_factor_forma_assets/s15_dc1fe4cc71e1158e52866d210d3bd0243a3c1142f178c22a531e923ca9aabcd4.mp4"
           >
             <aside class="notes" data-markdown>- Se usan la regla de la suma y la simetría
 - La base reparte entre sí misma, el techo y cuatro paredes
@@ -729,7 +768,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s13_60d537ca7e286ca962cc7cc82cdef6826274deddfaa68c9c910d0972665bef5b.mp4"
+          data-background-video="clase05_factor_forma_assets/s16_c986d224e35729ef882937744c9bdbc334424f6e65c131b2ed24f215fffdbdf2.mp4"
           >
             <aside class="notes" data-markdown>- Para geometrías frecuentes la integral doble ya está resuelta
 - Tabla 13-1 de Çengel, rectángulos paralelos alineados y discos coaxiales
@@ -741,7 +780,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s13_452429481ab4cc6f89c8d398c63da3f34014f4e098fa6a67f1815df03307a8aa.mp4"
+          data-background-video="clase05_factor_forma_assets/s16_8138e5a156f79995c986ec0c5332170d6518fc19f1c78d8d21b7edb263907397.mp4"
           >
             <aside class="notes" data-markdown>- Fórmula de rectángulos como gráfico
 - Eje horizontal X/L en escala logarítmica, cada curva un Y/L
@@ -753,7 +792,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s13_6d740b813d2339437c20d19224e5206f98a3b3e9775f9ab667c83862382f4047.mp4"
+          data-background-video="clase05_factor_forma_assets/s16_9ef73b37ab709c66d62fa92079d4c455894612742cc2dea9669af6039061db2c.mp4"
           >
             <aside class="notes" data-markdown>- Dos cuadrados de 1 m, paralelos y alineados
 - Distancias de 0,5 m, 1 m y 2 m
@@ -765,7 +804,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s13_2a19d0cf1dea34c44cc3048d29a15dbbe6eb98639d27417811a8e67d071bcf09.mp4"
+          data-background-video="clase05_factor_forma_assets/s16_391a39e1865fbc6fe8ce96ca38e410a919c610de89410bfe8714623276bdb5f2.mp4"
           >
             <aside class="notes" data-markdown>- Entrar con el cociente, subir a la curva y leer el eje vertical
 - Seguir las líneas punteadas amarillas
@@ -777,7 +816,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s13_7bcb35cad9538747a3720942aa2ddc61adf839a48e2931addb1838e93f6c2675.mp4"
+          data-background-video="clase05_factor_forma_assets/s16_1b3b25a1b04e789bb407195541dc11c8952ff04bc40fb833a17f269c242425c5.mp4"
           >
             <aside class="notes" data-markdown>- Pregunta de control
 - Entre 1 y 2 m la distancia se duplica
@@ -788,7 +827,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s13_ed442cd383319e68591034e8f50122bf747142a62917666f22b45a06485f8c42.mp4"
+          data-background-video="clase05_factor_forma_assets/s16_96a3d6ec56f79a78402ea8edefdd389362106481f46f4cd0c3b4f841357bbcbe.mp4"
           >
             <aside class="notes" data-markdown>- La respuesta es no
 - El cociente 0,2 / 0,069 da cerca de 2,9, no 4
@@ -801,7 +840,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s13_3eaadac30b4393a07b7c64c173976c03d35d22a3694dc6d80eca76106cf6393a.mp4"
+          data-background-video="clase05_factor_forma_assets/s16_b1076530976dbb93ec73d7515e44fb1e39d3380a9707b7bc1bf28650cfd3cbf3.mp4"
           >
             <aside class="notes" data-markdown>- Gráfico equivalente para discos coaxiales
 - Eje horizontal, radio del emisor sobre distancia, cada curva una razón de radios
@@ -814,9 +853,19 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s14_f84dd819794bebd30402666a707244d49ffe1d3ecaa5b6d920815def35280223.mp4"
+          data-background-video="clase05_factor_forma_assets/s17_f1676a1996856d3683f52ceb5c668212b5a5b49f886a424281b4afec04a9c230.mp4"
           >
-            <aside class="notes" data-markdown>- Último capítulo, del factor de forma a una tasa de calor
+            <aside class="notes" data-markdown>- Cerramos las reglas, casi ningún factor exige integrar
+- Abrimos la sección 5, ejemplos
+- Intercambio entre superficies negras, domo, disco y cortafuego
+- Del factor de forma pasamos a watts</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase05_factor_forma_assets/s18_8659990098613d1b0061d6d3b6050ef98ed7fb384f082481a85bb96fa5c61956.mp4"
+          >
+            <aside class="notes" data-markdown>- Última sección, del factor de forma a una tasa de calor
 - Dos superficies negras, 1 azul a T1 y 2 rosado a T2
 - Hipótesis a la derecha, negra no refleja y sale σT⁴
 - El aire entre ellas no absorbe ni emite
@@ -826,7 +875,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s14_3237373dcd7e915d756bbf8b7648cabd01b33a9ee8b57794dd1f16b6ad7b72d3.mp4"
+          data-background-video="clase05_factor_forma_assets/s18_9457dab7a8d1ca1c7790b146071cc78c1a593a6f2accbafa2049b04a4800f456.mp4"
           >
             <aside class="notes" data-markdown>- Escribimos los dos flujos
 - De 1 sale A1 σT1⁴ y llega F12, la 2 lo absorbe todo
@@ -837,7 +886,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s14_206067ac33e9a9e20ecc0b4bac6671fa26c7449ca311fde2fb358a8743834957.mp4"
+          data-background-video="clase05_factor_forma_assets/s18_9ee32e0ce395a91089395c6781bb6d96194dec1113c2f91fba635599dd7f99ea.mp4"
           >
             <aside class="notes" data-markdown>- Neto como diferencia, así no se puede factorizar
 - Cada término tiene su área y su factor
@@ -848,7 +897,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s14_e3083a3ab6e9bdec3d7417332b1f186df3f8e3b283b8028d50fdc70d7aefb406.mp4"
+          data-background-video="clase05_factor_forma_assets/s18_fb9342c419772f9f0d4e6adb389dc25b8d9a543e6c0222427a3d6e134d118d35.mp4"
           >
             <aside class="notes" data-markdown>- Control, con T1 = T2 el neto se anula, equilibrio térmico
 - Estructura del curso, conductancia por fuerza impulsora
@@ -861,7 +910,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s15_2c756e7ace770c03d89a64a77f633f79e55c7684bb9a320933ab14ff38065145.mp4"
+          data-background-video="clase05_factor_forma_assets/s19_f227df77dfa547c2969b433189749f95d0affe755ca80a1cbfcbb70aceff9c16.mp4"
           >
             <aside class="notes" data-markdown>- Ejemplo completo sin tablas ni integrales
 - Domo hemisférico azul de 2 m de radio sobre piso circular rosado
@@ -873,7 +922,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s15_4d712606fdd239fc2555c61dfeacc76588ac72a3326af67df06c65f9d41cec59.mp4"
+          data-background-video="clase05_factor_forma_assets/s19_f474ee6396d66e0cf0b00ffc2fc591ac9f90d1f876e55029481d34e3459c492d.mp4"
           >
             <aside class="notes" data-markdown>- Paso 1, por inspección
 - El piso es plano y emite solo hacia arriba, donde está el domo
@@ -884,7 +933,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s15_ceae94515a80ba4d6668c386d5f43b8432eaf5b3dd7f184c45807ef48853e633.mp4"
+          data-background-video="clase05_factor_forma_assets/s19_d03f8c01ef7b1861e828596139bc6fd261ed61bf9e314f503b26fee7fdf9796e.mp4"
           >
             <aside class="notes" data-markdown>- Paso 2, reciprocidad A1 F12 = A2 F21
 - Domo 2πR² y piso πR²
@@ -896,7 +945,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s15_b58a92d0b3f39bc7cb5ff1b3f2c7ec1660a2410c7f879ec32f26e2fce6d30f30.mp4"
+          data-background-video="clase05_factor_forma_assets/s19_6cdb9b37afa7af936eaa084dccfe83607742a3931a03b5a91fcbfd61298b6cb2.mp4"
           >
             <aside class="notes" data-markdown>- Paso 3, regla de la suma, F11 + F12 = 1
 - F11 = 0,5, la otra mitad vuelve al domo
@@ -907,7 +956,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s15_d1b323c1bcb652333a50598aeb996305b5b64675ae1dc1189b219905e41be948.mp4"
+          data-background-video="clase05_factor_forma_assets/s19_9b636c36eb1ef01974830bf17c8c16da07aa2d7d296c134c93c32a346105ba4b.mp4"
           >
             <aside class="notes" data-markdown>- Comprobación con 200000 rayos desde puntos uniformes del domo
 - En pantalla 150 de esos rayos vistos de lado, con contador
@@ -920,7 +969,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s15_5c09f4c529404f20e60ee7b929c0d0a4f1f1a080363847e84416ac25fffb0719.mp4"
+          data-background-video="clase05_factor_forma_assets/s19_853b127ffaf05382c133edaa4da1c9903892affc43f25926643940cd29d07780.mp4"
           >
             <aside class="notes" data-markdown>- Paso 4, intercambio neto escrito desde el piso con F21 = 1
 - Q̇21 = A2 F21 σ (T2⁴ − T1⁴)
@@ -932,7 +981,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s15_476ee4add8d19356c8026c7646577b06b3406b220bf6363b00e2bc3efb2b939f.mp4"
+          data-background-video="clase05_factor_forma_assets/s19_818c4c5315ab803dc4ddbb502f89cfe0992925c812076ef29b0358d2a76d9cc2.mp4"
           >
             <aside class="notes" data-markdown>- Pregunta de control
 - Pregunta al curso, ¿pintar el domo negro mate cambia algún factor de forma?
@@ -942,7 +991,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s15_360a3b349526c8c109aecb0d121f8ed062cd6bcc1f7035869665bbc4c5f0bd20.mp4"
+          data-background-video="clase05_factor_forma_assets/s19_57e8165e96a954224a90f1127e3d636788d240741776259b6419dc41291ee410.mp4"
           >
             <aside class="notes" data-markdown>- La respuesta es no
 - Los tres factores dependen solo de la geometría, el radio se canceló
@@ -954,7 +1003,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s16_190bf45513d5f5906bcb2ad80260bb0e78f0d586a12092e5660babf40743c297.mp4"
+          data-background-video="clase05_factor_forma_assets/s20_1f203deb098263ddb97fc89a0e095d19d7cee45963d7324a65510e542c14ea8b.mp4"
           >
             <aside class="notes" data-markdown>- Caso que se integra a mano y lleva al cortafuego
 - Elemento dA1 azul abajo mirando hacia arriba
@@ -966,7 +1015,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s16_45e2d6f3104011bcc1c1e83fc95dc7f7fd6a4c043e4ed0cb88bd28f32d3a42e1.mp4"
+          data-background-video="clase05_factor_forma_assets/s20_a5aa5210907d6e4cf30bc537f34fed7c7580b76643916a5307e91fb35d283ac7.mp4"
           >
             <aside class="notes" data-markdown>- Reemplazamos en la expresión diferencial
 - Sumamos anillos de 0 a R
@@ -977,7 +1026,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s16_0e580877edcf415d2f641acc81ceaaa40ae033af278e6d7fa503e2b133659487.mp4"
+          data-background-video="clase05_factor_forma_assets/s20_e761024f6c7eb4ead6d27f1f1a8ce5fa8446ce900e381710148e5f62a3d0e36a.mp4"
           >
             <aside class="notes" data-markdown>- Con u = L² + ρ² la integral es inmediata
 - Entre 0 y R da L² (1/L² − 1/(L² + R²))
@@ -988,7 +1037,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s16_1ab0f27bb7edbdaab8fe7094e2239f082bf7f408d5a00a1fa53cd66670ecddb0.mp4"
+          data-background-video="clase05_factor_forma_assets/s20_34a9d7dbd6788ae42ff8b719ac3654df9492f35338f2f3960f20698c1fa92fcd.mp4"
           >
             <aside class="notes" data-markdown>- Gráfico de la fórmula exacta en función de L/R
 - Disco cerca, L tiende a 0 y F tiende a 1
@@ -1000,7 +1049,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s16_8af231068625f823233988b3d9c3fc2eda02dac1046cc68c134c24e5acfbb56d.mp4"
+          data-background-video="clase05_factor_forma_assets/s20_95e6bfac180a4bd826d0945f24fc315de73cb9d91823d6aea434f620ce79c846.mp4"
           >
             <aside class="notes" data-markdown>- Forma lejana con el área del disco A = πR²
 - F ≈ A / πL²
@@ -1011,7 +1060,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s17_aeca50e82cb0cf7c3965c038fea1d5fc6fb92774554f981d6255a560b9dc8eb4.mp4"
+          data-background-video="clase05_factor_forma_assets/s21_0adc5b29ee97e2954f799def85417a85a041578efb7a1861f7bd713200dccfd7.mp4"
           >
             <aside class="notes" data-markdown>- Volvemos al incendio del comienzo
 - Llama como disco negro de 10 m² a 1200 K
@@ -1023,7 +1072,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s17_f5755c17aee64f1542bd5569ad2735a302cdf661cd96f3c1c7f278dcaa6c76a6.mp4"
+          data-background-video="clase05_factor_forma_assets/s21_370e2422f0c73a135a7a872e8092d6263310eed95e39baeafcca598965764cbe.mp4"
           >
             <aside class="notes" data-markdown>- Este paso separa factor de forma y flujo de calor
 - Potencia que llega es Af F llama→objetivo Eb
@@ -1035,7 +1084,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s17_050421abb218651a7468b15bc9bd8a0bf6e9c4c27c5691c4f8ef4c61711d1743.mp4"
+          data-background-video="clase05_factor_forma_assets/s21_72eb33b2399e3c749662f8669f17b52aba483fd8c305df16c29621453c5850c5.mp4"
           >
             <aside class="notes" data-markdown>- Tabla compara dos cálculos del flujo incidente
 - Fuente puntual Af / πL² y disco exacto de radio 1,78 m
@@ -1047,7 +1096,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s17_43ef8c546b3452560461d324a11156cb351fbb174bcb7f557584f9b6b7a59582.mp4"
+          data-background-video="clase05_factor_forma_assets/s21_66f4fb0ce76e80291ad3085223dddf4e71e2b9a682da807b4b9d8d20b4f1d781.mp4"
           >
             <aside class="notes" data-markdown>- Entre 10 y 20 m el flujo cae casi a la cuarta parte
 - Ahí el factor ya va como 1/L², el cortafuego actúa sobre eso
@@ -1060,7 +1109,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s18_1de9f2866ba2b8bc25c165460999c752870f0de65c8cd242bc93fd56b8f2b08a.mp4"
+          data-background-video="clase05_factor_forma_assets/s22_7eee6225a6060f9673cb5507653dec6140d3179060d20596b1a51317273a4531.mp4"
           >
             <aside class="notes" data-markdown>- Lámina con toda la notación, pensada para fotografiar
 - Arriba el factor diferencial y el factor entre superficies finitas
@@ -1073,7 +1122,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_factor_forma_assets/s19_b293aa5bee1e0df8176ec19d97a1dbe2a427a19bb2652f00b3b045fce114115e.mp4"
+          data-background-video="clase05_factor_forma_assets/s23_795168bd6b76810b5ce57598feb7cbba5f7c5ae953fdd6b2a4a6e51d7948141b.mp4"
           >
             <aside class="notes" data-markdown>- Izquierda, hipótesis de hoy
 - Superficies negras, medio que no participa y difusas con J = πI
@@ -1327,6 +1376,29 @@
         }
         Reveal.on("ready", refresh);
         Reveal.on("slidechanged", refresh);
+      })();
+    </script>
+      <div id="anim-done"></div>
+    <script>
+      (function () {
+        var dot = document.getElementById('anim-done');
+        function currentVideo() {
+          var s = Reveal.getCurrentSlide();
+          var bg = s && (s.slideBackgroundContentElement || Reveal.getSlideBackground(s));
+          return bg ? bg.querySelector('video') : null;
+        }
+        setInterval(function () {
+          var v = currentVideo();
+          if (!v || !isFinite(v.duration) || v.duration === 0) {
+            dot.classList.remove('done'); dot.style.setProperty('--p', 0); return;
+          }
+          var p = Math.min(1, v.currentTime / v.duration);
+          var done = v.ended || p > 0.995;
+          dot.classList.toggle('done', done);
+          dot.style.setProperty('--p', done ? 1 : p);
+        }, 100);
+        Reveal.addKeyBinding({ keyCode: 73, key: 'I', description: 'Mostrar u ocultar el indicador de animación' },
+                             function () { dot.classList.toggle('hidden'); });
       })();
     </script>
   </body>
