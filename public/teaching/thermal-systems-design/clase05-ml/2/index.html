@@ -37,6 +37,13 @@
       /* keep the arrows unobtrusive, the talk is driven by the keyboard */
       .reveal .controls { opacity: 0.25; }
       .reveal .controls:hover { opacity: 0.8; }
+          /* animation-progress dot (idea from a colleague's deck): fills while the state's
+         video plays and turns green when it has finished; key I hides it */
+      #anim-done { position: fixed; right: 86px; top: 14px; width: 16px; height: 16px; z-index: 50;
+        border-radius: 50%; pointer-events: none; transition: background 0.25s, box-shadow 0.25s;
+        --p: 0; background: conic-gradient(rgba(150,150,150,0.8) calc(var(--p) * 1turn), rgba(110,110,110,0.3) 0); }
+      #anim-done.done { background: #3fbf6f; box-shadow: 0 0 6px rgba(63,191,111,0.8); }
+      #anim-done.hidden { display: none; }
     </style>
   </head>
 
@@ -46,7 +53,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s0_a43baa027ea56bdcbdd65143be9619de17b28a2dbe9ce192ba26b4ba2f2864b6.mp4"
+          data-background-video="clase05_ml_2_assets/s00_a43baa027ea56bdcbdd65143be9619de17b28a2dbe9ce192ba26b4ba2f2864b6.mp4"
           data-background-video-muted
           >
             <aside class="notes" data-markdown>- Segunda parte de Machine Learning
@@ -58,18 +65,19 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s1_a9f29bd72712c31cef23f3d88353bc0af112692d8deeb3eb62fc5b321717a3f1.mp4"
+          data-background-video="clase05_ml_2_assets/s01_642232a9fe248cd8a6915ccf67cf8df70ab79c5b2846b97e9531fa6a4457ae72.mp4"
           >
-            <aside class="notes" data-markdown>- Primero sobreajuste y subajuste con los datos del intercambiador de ayer
-- Luego validación cruzada para elegir el grado o el lambda de Ridge
-- Conectamos con la frontera de Pareto de la clase cuatro
-- Dos extensiones, regresión logística para clasificar
-- Y PCA para reducir la dimensión</aside>
+            <aside class="notes" data-markdown>- Segunda parte, cuatro secciones
+- Generalización, sobreajuste y subajuste con los datos del intercambiador de ayer
+- Validación cruzada para elegir el grado o el lambda de Ridge
+- Pareto, la frontera de la clase cuatro, ahora error contra complejidad
+- Clasificación con regresión logística
+- PCA para reducir la dimensión</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s2_7dd43a2502677e7d1bd684f2f3c36d8205ba85f3e813f7dcfaedf0c0b480cc6a.mp4"
+          data-background-video="clase05_ml_2_assets/s02_9ea478d054b87a0b241370f2172ee1ff13ea465d03e107c36fd21ed2fa5afba6.mp4"
           >
             <aside class="notes" data-markdown>- Mismos veinte datos sintéticos de ayer, temperatura de salida contra caudal
 - Curva del modelo cuadrático en la variable escalada z
@@ -81,7 +89,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s2_cbf421eadc34cbd662b1e43f72c1d4a9a27e2ed12d4231e73f3c2932ef850213.mp4"
+          data-background-video="clase05_ml_2_assets/s02_c7d3b8bc9cd53d169740841841744d400cfc87b69cf073e5516db263965542c1.mp4"
           >
             <aside class="notes" data-markdown>- Aparecen 200 mediciones nuevas del mismo equipo, puntos chicos grises
 - Existen porque los datos son sintéticos, en una planta no las tenemos
@@ -93,7 +101,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s2_c90b377fa02d239bf3e97083bc44c865981241ddd98a466fb0e561f1bc87d707.mp4"
+          data-background-video="clase05_ml_2_assets/s02_d5b5cdddd8c3206f80a970301070fbf523e516300cd006154a9d7bfb054b7a01.mp4"
           >
             <aside class="notes" data-markdown>- A la derecha, error contra grado g en escala logarítmica
 - Entrenamiento en verde, datos nuevos en gris punteado
@@ -104,7 +112,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s2_4d10b008b659ef0d957356543f8d21d9d2447d6950317f31cccd49d45d5b31cd.mp4"
+          data-background-video="clase05_ml_2_assets/s02_339773a844322b9a10fa865db66d9d57d96280476fd976ebf5e8ab446bdd5a05.mp4"
           >
             <aside class="notes" data-markdown>- Seguimos hasta grado doce
 - Entrenamiento sigue bajando hasta 0,09, más coeficientes se acercan más a los puntos
@@ -116,7 +124,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s2_634ab4dff2c0a6bb90cd44bf15c42aec4dec79e7ae040d523d44b4b949621d7c.mp4"
+          data-background-video="clase05_ml_2_assets/s02_ec6aa9ae6fdc70c3efc9b8a4c7036a82a2b33fdb5fa4e5862ceef31d1dcc98b0.mp4"
           >
             <aside class="notes" data-markdown>- Zonas sombreadas, subajuste a la izquierda y sobreajuste a la derecha
 - Subajuste, modelo simple, los dos errores altos y juntos
@@ -128,7 +136,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s2_cae85303d06a771ef94d6def38a5b0113b049037f4bc79703e42ad2142dfc5c2.mp4"
+          data-background-video="clase05_ml_2_assets/s02_0717ba592e1300546ef71599bf299fc78d69f6f2c6f1f171092daaecf16dc723.mp4"
           >
             <aside class="notes" data-markdown>- Repetimos el experimento seis veces con veinte mediciones nuevas
 - Línea punteada, ley exacta, conocida porque los datos son sintéticos
@@ -140,7 +148,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s2_9325a11e64ed7c42884d3b29adb15278c34734f0cd25853e59c50d02991e3751.mp4"
+          data-background-video="clase05_ml_2_assets/s02_d18230807c126f13af5253b54a4ec3047beaa9f7c2e4bb5835c030593859418c.mp4"
           >
             <aside class="notes" data-markdown>- Mismos seis conjuntos con grado diez, zona de sobreajuste
 - Cerca de los datos siguen la ley, en extremos y tramo vacío divergen
@@ -152,7 +160,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s3_5f17da3ba88cb1d800d1966bbb5294933053c5727121830da525811632464c35.mp4"
+          data-background-video="clase05_ml_2_assets/s03_af2a8a6a09b2fc33a5eddfb3060c1eacf5446f6f160a12813f3b5c061b2d15d8.mp4"
           >
             <aside class="notes" data-markdown>- En la práctica solo tenemos los veinte datos de entrenamiento
 - Con ellos hay que estimar el error con datos nuevos
@@ -164,7 +172,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s3_562921148496765cf88c1426e06702e28c61992cc66578506f3c29497b9e73a4.mp4"
+          data-background-video="clase05_ml_2_assets/s03_d63318506d45d024ba2e6dd07818b2050cf0ecd3d488cac779fe1ccc54f36594.mp4"
           >
             <aside class="notes" data-markdown>- Primera vuelta, pliegue uno en validación, amarillo
 - Los otros dieciséis puntos en verde para entrenar
@@ -176,7 +184,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s3_ee0e3ac7b177fac92c16b137e1699bdc7c20835c02a900a946bd0c43eaa90ec0.mp4"
+          data-background-video="clase05_ml_2_assets/s03_782c7db10211b533bd349da62eb8ff07a23d0207f0c1de3b5e5b2944ed1f7bab.mp4"
           >
             <aside class="notes" data-markdown>- Repetimos cuatro veces, rotando el pliegue de validación
 - La curva se reajusta con los dieciséis restantes cada vez
@@ -187,7 +195,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s3_c61071dcb0d6d1ec07c20d7413869ac30ff739b05a42dd0f620cdb90b6373f81.mp4"
+          data-background-video="clase05_ml_2_assets/s03_f9bf66f2c42975b9cbe62fe86d8de02bb59674ce4eb1797e713687e0803a6977.mp4"
           >
             <aside class="notes" data-markdown>- Último paso, promediar
 - Línea punteada, media de las cinco barras, error CV de g
@@ -198,7 +206,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s3_8a85bf0b25b2abcdcb9021e69c0864ac4349821b98938dc8ec6dfde9af963278.mp4"
+          data-background-video="clase05_ml_2_assets/s03_fc803f97678a457d884efbd3c144bb387469ce10ee4b681186f39691099946c7.mp4"
           >
             <aside class="notes" data-markdown>- A la derecha, error de validación cruzada por grado, escala log
 - Primero el punto de grado tres recién calculado
@@ -210,7 +218,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s3_0612218351aac87f95268c1d67636a1d05fea3116310f34d5ff41058114517cf.mp4"
+          data-background-video="clase05_ml_2_assets/s03_1c026ce1dab2d4bf3111d45f16274dc0231d84df5ad9d6fd90b581fd64ed317e.mp4"
           >
             <aside class="notes" data-markdown>- Línea gris punteada, error con datos nuevos de la escena anterior
 - Las dos curvas bajan, tienen tramo plano y suben al final
@@ -221,7 +229,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s3_f4490703f558b79b6af5f405e25fe6b6282a41bec2e31491f43e3f03de6ae4e9.mp4"
+          data-background-video="clase05_ml_2_assets/s03_5f36d9eb6034a99e2705d6d19df87a6393ac40203edb7fb4ac97f3555abede3f.mp4"
           >
             <aside class="notes" data-markdown>- Pregunta de control para el curso
 - En un caso real guardamos parte de las mediciones como prueba
@@ -231,7 +239,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s3_0254237ba6d1eb744b447b250bddff82f35f882d6c7e4e6a53c87377e41f7d2d.mp4"
+          data-background-video="clase05_ml_2_assets/s03_2eb1caf8f0690146dbe810299e77345b76a1fd93038be1b8cafd92be6b8792a0.mp4"
           >
             <aside class="notes" data-markdown>- Si la prueba elige, pasa a ser parte del entrenamiento
 - Su error queda optimista y no mide datos nuevos
@@ -243,7 +251,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s4_ab6fb2afeb08a8fc3fc8d7811eee5868fe7d5a71abd528408dfb1458a5b45407.mp4"
+          data-background-video="clase05_ml_2_assets/s04_50b1dc8d8b408f6b65f218992c311af3d37b88c3224670eb4ce94fcb826938f8.mp4"
           >
             <aside class="notes" data-markdown>- Procedimiento en Python, z escalada y T temperaturas medidas
 - Líneas resaltadas, generador aleatorio con semilla cero
@@ -254,30 +262,30 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s4_863a90e695db870fbabcfdf7600b32ad07e1e1b7d8d4030f60beeee97b817fae.mp4"
+          data-background-video="clase05_ml_2_assets/s04_dfd073800461c8f1a320b29a2322efbd633d498a4bb9acc10a6c2ec1c936d068.mp4"
           >
             <aside class="notes" data-markdown>- El ciclo, en la vuelta i el pliegue i valida
-- np.hstack junta los otros cuatro como entrenamiento
-- polyfit ajusta con dieciséis índices, polyval predice en cuatro
+- La función np.hstack junta los otros cuatro como entrenamiento
+- La función polyfit ajusta con dieciséis índices, polyval predice en cuatro
 - El error cuadrático medio se agrega a la lista errores
 - Cinco valores para grado tres, los de las barras anteriores
-- polyfit nunca recibe los índices de validación</aside>
+- La función polyfit nunca recibe los índices de validación</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s4_7f9fe7214b297a2de224f9c9a88f4c5bb9bc0d24871db2cc9b72d612a016c157.mp4"
+          data-background-video="clase05_ml_2_assets/s04_1780f9bcc48df1330726723a9a1d541e347043e669cce15f53b9f0fed9c6f2fe.mp4"
           >
             <aside class="notes" data-markdown>- La función devuelve el promedio de los cinco errores
 - Para grado tres, 0,73
 - Abajo el programa principal, tres líneas
 - Recorre grados de uno a doce y calcula el error CV
-- g opt es el grado con menor error</aside>
+- El grado g opt es el de menor error</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s4_871cdbafa484c0e0f3d4de298be28f6744ab70908ae5aae1fbfa37e724140bfb.mp4"
+          data-background-video="clase05_ml_2_assets/s04_a22305d91171da139c66642b6aab744f72e34a5c0a07ce4cbcfe7d488998b1f2.mp4"
           >
             <aside class="notes" data-markdown>- Curva resultante, la misma de la escena anterior
 - Mismo código y misma semilla
@@ -289,7 +297,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s4_505cf6f382122a020ddf9d9c7e56fca18289f6502bfdbb49a08bb64c00f39040.mp4"
+          data-background-video="clase05_ml_2_assets/s04_a9b4d92ff6dab24b684971527a4669ee05c2599936ce2bab6aff7b5aa22b8b50.mp4"
           >
             <aside class="notes" data-markdown>- Para Ridge cambian la firma, lam en vez de grado, y las tres líneas resaltadas
 - Matriz A con potencias de z hasta grado diez
@@ -302,18 +310,29 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s5_3e5ccc31cb2ab7e2759c80411554f82e0595f047fc029c7bf27e69e81e9aa5cc.mp4"
+          data-background-video="clase05_ml_2_assets/s05_41863a19b53624ae51807de33762284c9f7718e97b1a35f0d6d15ca7edf7e6e3.mp4"
+          >
+            <aside class="notes" data-markdown>- Cerramos generalización, sobreajuste y validación cruzada
+- Sección dos, frontera de Pareto
+- Error de validación cruzada contra número de términos, 256 modelos
+- Pregunta al curso, ¿prefieren el menor error o el modelo más simple?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase05_ml_2_assets/s06_71482ef2e66fc73b3bbac1fc287c369a414d6a8aed313b3b04dc3f934efd7983.mp4"
           >
             <aside class="notes" data-markdown>- Dos objetivos que compiten, error bajo y pocos términos
 - Modelos con términos z hasta z a la ocho, siempre con constante
 - 256 subconjuntos, cada punto gris es uno
 - Horizontal número de términos, vertical error CV en escala log
+- Cada modelo evaluado con los mismos cinco pliegues
 - La complejidad cuenta términos, z a la ocho cuesta igual que z al cubo</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s5_cdf84dfd12c3f8de508270d2b6c17449ee06162b6e8f24ef7cb9430da776dbee.mp4"
+          data-background-video="clase05_ml_2_assets/s06_6c0bca038b3f26468b04d71cd7fac7958c6d5c62a561e8ac1b9be0f02cc2f07c.mp4"
           >
             <aside class="notes" data-markdown>- Círculo, polinomio completo de grado ocho
 - Nueve términos y error de validación 1,07
@@ -325,7 +344,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s5_8a3dee458f5931d2bafcdfa7a5df45d843028d06c9917b20eaa48753191ebf2f.mp4"
+          data-background-video="clase05_ml_2_assets/s06_a9020f02240fa7d223ca6ada7e582c608dbcb9241c3bb3caaa1686cc105b5690.mp4"
           >
             <aside class="notes" data-markdown>- La línea une los modelos no dominados, frontera de Pareto
 - Misma idea de la clase cuatro, intercambiador con calor contra caída de presión
@@ -337,20 +356,30 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s5_87b182c497f50970a47d694dbf9c23de9fcef899c71574d043f3404f3d9ac145.mp4"
+          data-background-video="clase05_ml_2_assets/s06_65ada3680da6dcfa22f1c66b357806723cc284e35f047c564a2ab3264f61639d.mp4"
           >
-            <aside class="notes" data-markdown>- Parsimonia o navaja de Occam, con error similar se prefiere el más simple
-- Regla de un error estándar define lo similar
+            <aside class="notes" data-markdown>- Navaja de Occam, con error similar el más simple, regla de un error estándar
 - Franja desde el mejor error 0,40 más el error estándar de veinte errores
 - Ocho modelos en la franja, el más simple con cuatro términos
 - Potencias uno, cuatro y cinco, en el codo de la frontera
 - Grado cuatro de la CV también cae en la franja, con cinco términos
-- Mínimo de 256 valores ruidosos es optimista, siguiente, predecir una clase</aside>
+- El mínimo de 256 errores ruidosos es optimista
+- Siguiente, predecir una clase</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s6_cebb284167dee19e74a9e434820e597c8e1d10b8ec2900a79a3e673ef6a4ae5f.mp4"
+          data-background-video="clase05_ml_2_assets/s07_afe8e5a6f6965dc203f51a4647e6b5f240fd18a8d3a4e7d62bad3add1163c247.mp4"
+          >
+            <aside class="notes" data-markdown>- Cerramos Pareto, modelo de cuatro términos con la navaja de Occam
+- Sección tres, clasificación
+- Regresión logística para la falla de un rodamiento, y su código en Python
+- Pregunta al curso, ¿qué cambia si la salida es falla o no falla?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase05_ml_2_assets/s08_6a9f184b7762037c096ae23c12f9e7832bc270928b62112eb8e6f3db98f5214f.mp4"
           >
             <aside class="notes" data-markdown>- Cada punto es una revisión de un rodamiento de bomba
 - Horizontal temperatura, vertical vibración
@@ -362,19 +391,19 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s6_72af385ea31cbf08bb5b20750a9d66228bdac9912507944491a14c5ad92ae66f.mp4"
+          data-background-video="clase05_ml_2_assets/s08_ba502d349b579671dc139df76d3e6ed92acc9f775ceef1dd43a8035b77e50a14.mp4"
           >
             <aside class="notes" data-markdown>- Combinación lineal s igual a w1 x1 más w2 x2 más w0
 - Se pasa por la sigmoide, uno sobre uno más e a la menos s
-- s muy negativo da casi 0, muy positivo casi 1, en s igual 0 da 0,5
+- Con s muy negativo casi 0, muy positivo casi 1, en cero 0,5
 - Entre cero y uno, se usa como probabilidad de falla p
-- Notación del código, x variables, w y w0 parámetros, y etiquetas
-- w0 es la constante, no b, que ya son los datos de Ax igual b</aside>
+- Código, x variables, w y w0 parámetros, y etiquetas, Xw más w0 es Ax
+- La constante se llama w0 y no b, que ayer eran los datos</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s6_078328fdcca50e2de977792bcabe17faa60776a17d7fafd4da884179eaf98f94.mp4"
+          data-background-video="clase05_ml_2_assets/s08_81e850665b94b11c5e4a3167f6aff664444c10d8a72f976eeef911b90b8b21a1.mp4"
           >
             <aside class="notes" data-markdown>- La misma idea en tres dimensiones
 - Piso, plano de temperatura y vibración
@@ -386,19 +415,19 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s6_f1d694178aedb00f3ed7f84f5bd2fd552b279e04716aaa1e90f721c82482f7b2.mp4"
+          data-background-video="clase05_ml_2_assets/s08_8085a0a39c48b835ec31581c7c7b38345e4c3bfc353dc5c34302d38183293d4e.mp4"
           >
             <aside class="notes" data-markdown>- Frontera donde p vale 0,5, solo en s igual a cero
-- w1 x1 más w2 x2 más w0 igual a cero, una recta
+- La frontera es w1 x1 más w2 x2 más w0 igual a cero, una recta
 - Línea sobre la superficie y su sombra en el piso
 - Al subir la cámara, las mal clasificadas suben a la superficie
-- Recta 2,06 x1 más 2,58 x2 menos 0,35 igual a cero
+- Tras 500 iteraciones, recta 2,06 x1 más 2,58 x2 menos 0,35 igual a cero
 - Falta decir cómo se eligen los coeficientes</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s6_d9e1e30ba5a3852cc8401ea93f74213df7f4aa6c9a74e94e5923c8cd25cfe32a.mp4"
+          data-background-video="clase05_ml_2_assets/s08_6583f3ba002ec3cff81123f31eeb1d93f73999fd5975d58286f1d55751d2c035.mp4"
           >
             <aside class="notes" data-markdown>- Se minimiza una pérdida, la entropía cruzada L
 - Falla, y igual a 1, castigo menos logaritmo de p
@@ -410,7 +439,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s6_d3f5b7672a9769ff5736ce4153fbdc20cb2d05748657ad4955e5af6a99ff9219.mp4"
+          data-background-video="clase05_ml_2_assets/s08_622f1894a294b0650951ce985b909a370f1b8f383dcea0acff341425ea4e0c13.mp4"
           >
             <aside class="notes" data-markdown>- El mismo modelo como diagrama
 - Entran x1, x2 y un uno para la constante
@@ -422,19 +451,20 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s7_0a7a3fcc20fead457f1128483c40a90b2cbb4165e2370a750c53c7bae878ce23.mp4"
+          data-background-video="clase05_ml_2_assets/s09_fac9c7a2587870cc60918419ccb19f4909043ac89e2748d3afd57c33349e7611.mp4"
           >
             <aside class="notes" data-markdown>- Entrenamiento completo en once líneas, primero la sigmoide
 - Líneas resaltadas, todos los pesos parten en cero
 - Con w cero, s vale cero y p es 0,5 para todas las revisiones
 - Pérdida inicial logaritmo de dos, 0,693
-- En el código, w0 es el término constante, y son las etiquetas y lr es el paso alfa de la clase cuatro
+- En el código, w0 es el término constante e y son las etiquetas
+- Y lr es el paso alfa de la clase cuatro
 - El ciclo necesita el gradiente, lo deducimos en tres pasos</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s7_43d05a01629dc217ad38769db779046010024f92ca90f989c5f2c5fa90461b14.mp4"
+          data-background-video="clase05_ml_2_assets/s09_dbac33420e73e582cadeb4e39eb36f4d78150d35b63bf44a2c75e6b708d4e61a.mp4"
           >
             <aside class="notes" data-markdown>- Primer paso, derivada de la sigmoide
 - Derivando queda e a la menos s sobre el denominador al cuadrado
@@ -444,7 +474,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s7_dd7d3747bbf671cb3b4e9c385328e8e2f2ead4009fccb716f670e7888dc019b7.mp4"
+          data-background-video="clase05_ml_2_assets/s09_87f0123772de9681676cdbe70ba881d7b5dfa1d4cf95c297130aa0f4c99e23b6.mp4"
           >
             <aside class="notes" data-markdown>- Segundo paso, pérdida de una revisión, ele i
 - Depende de s i a través de p i
@@ -455,7 +485,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s7_d6b1897d771d65a632c4299759d316ae628f22ed910b0557dabcfc80c12fbedd.mp4"
+          data-background-video="clase05_ml_2_assets/s09_dfa6ebcc919aa21e17e8a571f4ff03d892ce736f208a8e42517db1a2385e038c.mp4"
           >
             <aside class="notes" data-markdown>- Tercer paso, s i es w por x i más w0
 - Derivada respecto de w, residuo por x i promediado
@@ -467,7 +497,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s7_8c48610dbda2aa46a39cf5bef8a50657fb9716d1d5bc7c386902157cc3a0f66a.mp4"
+          data-background-video="clase05_ml_2_assets/s09_413f94c7ee74409c7f88c09c767817fed45bed8f7f604c0cef46d9f70dae391a.mp4"
           >
             <aside class="notes" data-markdown>- Corremos las 500 iteraciones
 - A la derecha frontera de cada iteración, zona de falla sombreada
@@ -479,7 +509,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s7_c00788772f52010493c855c776f333b0a3fc6dd662393e76ebd08e868afc4895.mp4"
+          data-background-video="clase05_ml_2_assets/s09_7e714c500884dc04a390129d65e3a7f0ecf77a69a4cf93595a1e3bb1369184d3.mp4"
           >
             <aside class="notes" data-markdown>- Pesos finales 2,06 temperatura, 2,58 vibración, menos 0,35 constante
 - Ambos positivos, más temperatura y vibración suben la probabilidad de falla
@@ -491,20 +521,30 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s8_7d93f68a5936d4d2e8a7e81e956e1636f6e9c11529a8c2913676e7dda98546b4.mp4"
+          data-background-video="clase05_ml_2_assets/s10_999fd65c24d9175d905a60d8f1b5a94ac9c16613335d5ba3984826c1b4ab1dd9.mp4"
+          >
+            <aside class="notes" data-markdown>- Cerramos clasificación, regresión logística con descenso de gradiente
+- Sección cuatro, PCA
+- Tres termocuplas en una placa, direcciones principales con la SVD
+- De tres a dos números por lectura</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase05_ml_2_assets/s11_b505e8e9c598c78d304486efcf3160592a5c417dbc0f1dc2b9aff740ef4a4d06.mp4"
           >
             <aside class="notes" data-markdown>- Última herramienta, tres termocuplas en una placa calefaccionada
 - 150 lecturas simultáneas, cada una un punto en tres dimensiones
 - Marcas de los ejes en 40 grados
 - Datos sintéticos, una carga común, un gradiente pequeño y ruido
-- La nube es larga en una dirección, angosta en otra y casi plana en la tercera
+- Nube larga en una dirección, angosta en otra y casi plana en la tercera
 - Esfera, el promedio x barra, entre 39 y 46 grados
 - PCA mide cuánta información distinta entregan las tres</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s8_0d526e74c0906a58b2616575e42405263f54ac5ed70ef76dbe835e268b963993.mp4"
+          data-background-video="clase05_ml_2_assets/s11_7f543623171934e606e47db60e2d41b1ed0352550ef169a1ea9288c5d5b698ef.mp4"
           >
             <aside class="notes" data-markdown>- Primer paso, centrar
 - A cada columna le restamos su promedio
@@ -515,19 +555,20 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s8_198dfa1da662515c5ce4d02a4ef22f8ab30503512c42764500dca088081647a8.mp4"
+          data-background-video="clase05_ml_2_assets/s11_aca0ceb9e3fbff16e35b13aed30e009b9b60da564e5a46e7c0bbd1f46e24b698.mp4"
           >
             <aside class="notes" data-markdown>- SVD de la matriz centrada, X c igual U sigma V transpuesta
 - Filas de V transpuesta, direcciones principales, una tras otra
 - Sigma i son valores singulares, no la sigmoide
 - PC1 sigue el largo de la nube, PC2 más corta, PC3 casi no se ve
+- Cada eje mide más y menos 2 sigma i sobre raíz de 149, dos desviaciones
 - Valores singulares 100, 20 y 6
 - Pregunta al curso, ¿cuántas direcciones hacen falta para describir las lecturas?</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s8_d4b59086b74db11714a28330e4960fe45313b18147b12f1372f639ced1923926.mp4"
+          data-background-video="clase05_ml_2_assets/s11_c146b489eec2831fe1662fa113aa862d4dcb68703c6627225a4c8f2f35157248.mp4"
           >
             <aside class="notes" data-markdown>- Varianza explicada, sigma i al cuadrado sobre la suma de cuadrados
 - PC1 95,8 por ciento, PC2 3,9, PC3 0,3
@@ -538,7 +579,7 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s8_258c783f3d4aa5febd9b21ea703c0a757a40ee82dbcec2d2b483fea38954997e.mp4"
+          data-background-video="clase05_ml_2_assets/s11_a43f5eef5552893cf60770e0e97be3bb07b0f72bceea30bb0d6e5095d1a635e8.mp4"
           >
             <aside class="notes" data-markdown>- Proyectamos cada lectura sobre el plano de PC1 y PC2
 - Plano de canto, segmentos rojos son distancias al plano, cinco veces más largos
@@ -550,19 +591,20 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s8_eb30fd19043d18f9ef93e152ea150c31d86807fb6c1dc942f0b9139057a9d860.mp4"
+          data-background-video="clase05_ml_2_assets/s11_842a8bbbad43f381d1466dcd07cc859808121db53a97e6aea3d486f846c01bda.mp4"
           >
             <aside class="notes" data-markdown>- Las direcciones tienen significado físico, el signo es arbitrario
 - PC1 con componentes 0,67, 0,57 y 0,47, toda la placa sube junta
 - PC1 mide la carga de calefacción
-- PC2 resta la termocupla uno y suma la tres, gradiente a lo largo de la placa
+- PC2 resta la termocupla uno y suma la tres
+- Mide el gradiente a lo largo de la placa
 - Salen solo de la SVD, usada para encontrar estructura en los datos
 - Siguiente, hipótesis de hoy y clase seis</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase05_ml_2_assets/s9_b0858653efd471a4bf1d8b70f23851c4876a12a5ae77c9fcb7e06c328cd3e78c.mp4"
+          data-background-video="clase05_ml_2_assets/s12_61b480a0ea9365ea4681fc1bbc4de7e8e3ffb21e4659749a2bd2eaa27c9889f5.mp4"
           >
             <aside class="notes" data-markdown>- Hipótesis, entrenamiento, validación y prueba independientes y del mismo proceso
 - Frontera de decisión lineal, estructura descrita por direcciones lineales en PCA
@@ -816,6 +858,29 @@
         }
         Reveal.on("ready", refresh);
         Reveal.on("slidechanged", refresh);
+      })();
+    </script>
+      <div id="anim-done"></div>
+    <script>
+      (function () {
+        var dot = document.getElementById('anim-done');
+        function currentVideo() {
+          var s = Reveal.getCurrentSlide();
+          var bg = s && (s.slideBackgroundContentElement || Reveal.getSlideBackground(s));
+          return bg ? bg.querySelector('video') : null;
+        }
+        setInterval(function () {
+          var v = currentVideo();
+          if (!v || !isFinite(v.duration) || v.duration === 0) {
+            dot.classList.remove('done'); dot.style.setProperty('--p', 0); return;
+          }
+          var p = Math.min(1, v.currentTime / v.duration);
+          var done = v.ended || p > 0.995;
+          dot.classList.toggle('done', done);
+          dot.style.setProperty('--p', done ? 1 : p);
+        }, 100);
+        Reveal.addKeyBinding({ keyCode: 73, key: 'I', description: 'Mostrar u ocultar el indicador de animación' },
+                             function () { dot.classList.toggle('hidden'); });
       })();
     </script>
   </body>
