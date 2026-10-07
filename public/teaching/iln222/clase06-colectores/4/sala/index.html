@@ -37,6 +37,13 @@
       /* keep the arrows unobtrusive, the talk is driven by the keyboard */
       .reveal .controls { opacity: 0.25; }
       .reveal .controls:hover { opacity: 0.8; }
+          /* animation-progress dot (idea from a colleague's deck): fills while the state's
+         video plays and turns green when it has finished; key I hides it */
+      #anim-done { position: fixed; right: 86px; top: 14px; width: 16px; height: 16px; z-index: 50;
+        border-radius: 50%; pointer-events: none; transition: background 0.25s, box-shadow 0.25s;
+        --p: 0; background: conic-gradient(rgba(150,150,150,0.8) calc(var(--p) * 1turn), rgba(110,110,110,0.3) 0); }
+      #anim-done.done { background: #3fbf6f; box-shadow: 0 0 6px rgba(63,191,111,0.8); }
+      #anim-done.hidden { display: none; }
     </style>
   </head>
 
@@ -46,7 +53,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s0_b84a77b0c6164e0b0410016272161cd96831e3cbbc511aa7a85a64405cbe6456.mp4"
+          data-background-video="clase06_4_sala_assets/s00_b84a77b0c6164e0b0410016272161cd96831e3cbbc511aa7a85a64405cbe6456.mp4"
           data-background-video-muted
           >
             <aside class="notes" data-markdown>- Buenos días, última clase de la unidad
@@ -58,19 +65,18 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s1_812dcc8d5ac02557d3cbc066888b43bad776536025cef0d2539f7c8062981fad.mp4"
+          data-background-video="clase06_4_sala_assets/s01_22d6020b8d70f6e64c48832eba1572e738f281ab69f7f5999710b1ab1cf8ad67.mp4"
           >
-            <aside class="notes" data-markdown>- Clase cuatro, la última de la unidad
-- Calor dentro de la placa, del centro entre dos tubos al fluido
-- Con eso deducimos el factor de remoción
-- Con él escribimos la eficiencia instantánea
-- Vemos cómo se ensaya un colector y comparamos tecnologías
-- Cerramos simulando un día completo de operación</aside>
+            <aside class="notes" data-markdown>- Clase cuatro, la última de la unidad, cuatro secciones
+- Aleta, del centro entre tubos al tubo, eficiencia F y factor F prima
+- Factor de remoción, de la placa al fluido
+- Eficiencia, curva instantánea, ensayo y tecnologías
+- Un día de operación con estanque y síntesis de la unidad</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s2_0ccfd7ff20586c895ef2e5a4ba04e138c38674f272872a7415649e602a848dba.mp4"
+          data-background-video="clase06_4_sala_assets/s02_f0fbb1c6da21cbc50bbabf122eb93080ab4f2f1ead8f5cb55c4e3005a4948bd1.mp4"
           >
             <aside class="notes" data-markdown>- Miramos la placa por dentro, desde abajo hasta verla desde arriba
 - Tubos celestes soldados a la placa, el color es la temperatura calculada
@@ -83,7 +89,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s2_1977240fd7553f358749fb2adbb364684393e94e189dd63bb1bc8508c54ca188.mp4"
+          data-background-video="clase06_4_sala_assets/s02_689ec119567bc6469a59dcaa9b904a42f66175a6e98e5c7137cf122393b9d3fa.mp4"
           >
             <aside class="notes" data-markdown>- Corte transversal con dos tubos celestes y la placa naranja
 - Origen en el punto medio, x hacia el tubo derecho hasta ele
@@ -96,7 +102,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s2_7c9787be1cad031fb36b683646d03237980b7173d2f833d96ea505894c35197c.mp4"
+          data-background-video="clase06_4_sala_assets/s02_7bfd497aebb120c32078604d100fe7ac7ae0e4164c5b04ee42d31f28d06cda92.mp4"
           >
             <aside class="notes" data-markdown>- Recordamos la aleta de transferencia de calor
 - Theta segunda igual a m cuadrado por theta, theta igual a T menos T infinito
@@ -108,7 +114,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s2_d4260c063c95609b3e056e56f830ae1f29b621a08303b32900d82f699deddc33.mp4"
+          data-background-video="clase06_4_sala_assets/s02_cae0995355bde5562df742b836d3e8a281b39122676cd602fcf66c3e04bcd93a.mp4"
           >
             <aside class="notes" data-markdown>- Desarrollamos q(x más d x) con un término de Taylor
 - Reemplazamos Fourier y dividimos por k delta p d x
@@ -120,7 +126,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s2_c4feb10e33ac41e781d25079fec47cc7daffab9e12ac61ddfe096d3c08dbbede.mp4"
+          data-background-video="clase06_4_sala_assets/s02_69c5ddc85e82a5de2ae0ead83eb9e5667c1b4e3d09aa258625b353a70e42b295.mp4"
           >
             <aside class="notes" data-markdown>- La solución simétrica es un coseno hiperbólico
 - En x igual a cero la pendiente es nula
@@ -132,7 +138,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s2_e1fb9e7595ca7f70a96205a722f1e7cfbbee15c35d877b315ecf839f13fbf1ff.mp4"
+          data-background-video="clase06_4_sala_assets/s02_8f993b47e737784cbd4e79436841619c3c3bfbd5b9f55c3fc570228988b0a0ea.mp4"
           >
             <aside class="notes" data-markdown>- F es la eficiencia de aleta, no el factor de forma de la clase dos
 - Calor real a la base sobre calor con toda la aleta a temperatura de base
@@ -145,7 +151,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s2_74724beb60327fe23398a575b1f19974f991d81973aef4d353125d9a9bcbd8d0.mp4"
+          data-background-video="clase06_4_sala_assets/s02_e014131923edfc503e20e5081a4d65d01321b748778fc430050f5a3aaaee5cbb.mp4"
           >
             <aside class="notes" data-markdown>- Falta llegar del tubo al fluido con una red de resistencias por largo
 - El sol entra en la base y se reparte entre q u prima y pérdidas
@@ -158,7 +164,17 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s3_ed2cbc606f8c4bc66516060892d8e2a8efd45e50336976af4c75af53cecd462a.mp4"
+          data-background-video="clase06_4_sala_assets/s03_844e68f5967cefbfe113d2d97f712ee99515464e814bf9054df08d7993401648.mp4"
+          >
+            <aside class="notes" data-markdown>- Cerramos la aleta, F igual a 0,96 y F prima 0,887
+- Sección 2, factor de remoción
+- El fluido se calienta a lo largo del tubo y aparece F R
+- Pregunta al curso, ¿qué pasa con F R si baja el caudal?</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_4_sala_assets/s04_9dd54b08071ffe9704a78584031a2c8bd3630adcb73c5e905a760e14af1190e7.mp4"
           >
             <aside class="notes" data-markdown>- Con F prima miramos el colector desde arriba
 - El fluido entra a T e y sale más caliente a lo largo de y
@@ -170,7 +186,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s3_f956c593806886b67bce2648577826c0413ba06be1dea5ce91d52cb8b58be937.mp4"
+          data-background-video="clase06_4_sala_assets/s04_1a4d5556668dd9f88ba076422bd038e037695665917d646675d173b17fd422aa.mp4"
           >
             <aside class="notes" data-markdown>- Misma ecuación de primer orden del estancamiento, ahora en el espacio
 - El fluido tiende a T a más S/U L, 140 °C, línea naranja
@@ -181,7 +197,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s3_5127d1f3d96e4f3b36714f76c86ec14f841787438051fc5b2e3ac8e505a398a8.mp4"
+          data-background-video="clase06_4_sala_assets/s04_3a5317d3411e4e3acf5a16c9b0ac0e0aebdb6b41e54106350423772ca586b91f.mp4"
           >
             <aside class="notes" data-markdown>- Integramos todo el tubo, potencia útil igual a caudal por c p por salto
 - Evaluamos en y igual a L t y reemplazamos T s
@@ -193,7 +209,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s3_5a796f107ecd175e9480a3b2000020a21e2b30d5da89d386c3eb85d06ddbc176.mp4"
+          data-background-video="clase06_4_sala_assets/s04_165efe96491d2126146ec4f48ccbf4336b5ce682538930e0f7562118c83bf0d9.mp4"
           >
             <aside class="notes" data-markdown>- Dos metros cuadrados, U L igual a 5 y caudal del código
 - Eme punto c p sobre A c U L vale 12,56, exponente 0,07
@@ -204,22 +220,22 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s3_a3146e3cb602b1986d74e274d2f4aaf2b9087189f7c19a9fc54a8962d3b9a0f0.mp4"
+          data-background-video="clase06_4_sala_assets/s04_1ffddd20ca9386c18a2fb3158e4666977129002f74b167d31a59583163daf227.mp4"
           >
             <aside class="notes" data-markdown>- Gráfico de F R en función del caudal
 - Con mucho caudal F R tiende a F prima, la línea punteada
 - Con poco caudal el colector trabaja caliente y F R cae a cero
 - Punto amarillo en 0,03 kg/s, cerca de la asíntota
 - Caudal diez veces menor da F R igual a 0,636
-- Respuesta, 1028 W con el caudal del código y 763 W con el chico
 - Pregunta al curso, ¿conviene aumentar el caudal sin límite? Discutan con el compañero</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s3_a635245c759ecbcbf023af8e3a08c42d26d8f0f11d84902a75665912e815f01d.mp4"
+          data-background-video="clase06_4_sala_assets/s04_201144a27015f7e36449be1af913195e132239726a2fdf5a6d08ea69f8c1ced3.mp4"
           >
             <aside class="notes" data-markdown>- No conviene, F R ya está pegado a F prima
+- Respuesta, 1028 W con el caudal del código y 763 W con el chico
 - La temperatura de salida baja y el agua tibia sirve menos
 - La bomba consume más y un caudal alto mezcla el estanque estratificado
 - Fabricantes recomiendan un caudal por metro cuadrado de colector
@@ -228,7 +244,17 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s4_0a8729e73f95d69747861bb54f6dadf987f90d3a13bf3b2cbace18f6e01bd531.mp4"
+          data-background-video="clase06_4_sala_assets/s05_d5a79044b92c443da2accef89cb0d4d84b079e9ce08f1ad87d340610f2704b2e.mp4"
+          >
+            <aside class="notes" data-markdown>- Cerramos factor de remoción, F R igual a 0,856
+- Sección 3, eficiencia
+- Recta de eficiencia instantánea, ensayo y curva normalizada
+- Comparamos sin cubierta, plano selectivo y tubos de vacío</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_4_sala_assets/s06_91c0af7b6d6b1fcd09344e955a11db972d2c5c42744cd6567a72bacd724619a3.mp4"
           >
             <aside class="notes" data-markdown>- Con F R llegamos a la eficiencia instantánea de los catálogos
 - Arriba la potencia útil del fluido en verde azulado
@@ -240,7 +266,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s4_de1e318c8e7ab8c1a37c01b8d2dfaf19ed3f93525c4ba04d63fde294e28114c0.mp4"
+          data-background-video="clase06_4_sala_assets/s06_1f799805df7a5a0dde5648b99cc2e60074d933c3c6a5d2e6473895129539be9f.mp4"
           >
             <aside class="notes" data-markdown>- Arriba la potencia útil con temperatura de entrada y F R
 - Dividimos por área e irradiancia, el área se cancela
@@ -251,21 +277,22 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s4_173e208c8422d443e594c5ca4d2a2f3dc153854cede1da11e3549050d863c7a5.mp4"
+          data-background-video="clase06_4_sala_assets/s06_f5a0bcaa335013aee9e92f2b8b0030e7cbc5f0958012e4d1554f441bda81db82.mp4"
           >
             <aside class="notes" data-markdown>- Es una recta, eje x la temperatura reducida, eje y la eficiencia
 - Intercepto F R tau alfa con 0,85 y 0,75 da 0,64
 - Eficiencia máxima con el fluido entrando a temperatura del aire
 - Hay pérdidas porque la placa está a unos 38 °C de media
-- Pendiente menos F R U L igual a 4,25
+- Pendiente menos F R U L, 4,25 con F R 0,85 de la clase 3
 - Dos parámetros resumen el colector completo</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s4_592f499ceee69fa268804243ef2c8ea5331777e3b239362325a2ddf3c15f6c83.mp4"
+          data-background-video="clase06_4_sala_assets/s06_508986669b508b2bfa49f7e24b7b36d264131d894debbb9645ad7bce0a720fd8.mp4"
           >
             <aside class="notes" data-markdown>- La recta corta el eje en el punto amarillo, eficiencia cero
+- El punto recorre la recta con lectura de x y eta i hasta cero
 - X vale tau alfa/U L, 0,15 K m²/W
 - Con 800 W/m² son 120 K de diferencia
 - Es el estancamiento de la clase tres, 140 °C con aire a 20 °C
@@ -274,7 +301,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s4_451e8e2072fda69d86aeb5b3e67ee705e7da540a470bf00a428e43b53437e941.mp4"
+          data-background-video="clase06_4_sala_assets/s06_e292bf6ea5f187108dc742b6a559a32f76b8716fabae5d26011289c4183e61b9.mp4"
           >
             <aside class="notes" data-markdown>- En banco de ensayo se fija el caudal y se mide en varios puntos
 - Irradiancia, temperaturas de entrada, salida y aire
@@ -286,7 +313,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s4_feb4551d134ef3afa79919ecb2d7d90967f2ac0f1ead21bdb0b283d5f754d49f.mp4"
+          data-background-video="clase06_4_sala_assets/s06_130d031cf3dc9fc561de76db49d193fbc5b258041395d7df81c1d36b25c4c1c1.mp4"
           >
             <aside class="notes" data-markdown>- Volvemos a la superficie selectiva de la clase uno
 - Máximos de Wien en 0,50 µm para el Sol y 8,2 µm para la placa
@@ -297,7 +324,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s5_35e39ee26bb11cb232049f1c5e651ef9f6ea1043f048807e9814aa77f234c935.mp4"
+          data-background-video="clase06_4_sala_assets/s07_0cd4544cde4315b45412d8dd4b5288b99b6fc6406a0ef7091728779a0948355d.mp4"
           >
             <aside class="notes" data-markdown>- La recta anterior usa temperatura de entrada
 - EN ISO 9806 usa T m, promedio entrada y salida, y G igual a I T
@@ -310,7 +337,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s5_8561bbac3d4cb48ffe2497196b3488b72e20dcc1a9e0686df0fc3699cc879a79.mp4"
+          data-background-video="clase06_4_sala_assets/s07_c692d9918c9754749bfeefc7af9c097f1145826b008d3b389b5a2c0d25929e5d.mp4"
           >
             <aside class="notes" data-markdown>- Valores típicos de catálogo para tres tecnologías, los del demo
 - Sin cubierta, eta cero más alto y a uno enorme por el viento
@@ -323,7 +350,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s5_bb34bbcfdb3bfee0cef5fa759009cae0f95e7ca63e8876b7185116f9febf6517.mp4"
+          data-background-video="clase06_4_sala_assets/s07_ef8414f67e9d6ab8637d6e541ce7c7ae5037fec0e1b61e0c8275ee33b476333f.mp4"
           >
             <aside class="notes" data-markdown>- Tres curvas a 800 W/m²
 - Eje horizontal T m menos temperatura del aire
@@ -335,7 +362,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s5_b49b2a7a3e271926a474504aedbfa052c9851397cfbc14c76b87b8db7e1253cd.mp4"
+          data-background-video="clase06_4_sala_assets/s07_5ed2eae0657f078a0da93e11353ed315f161ce22e8306f0443556aa254724119.mp4"
           >
             <aside class="notes" data-markdown>- Recorremos el eje con la línea gris y leemos tres eficiencias
 - Con fluido a temperatura del aire gana el sin cubierta
@@ -346,7 +373,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s5_63c92687523ce80afc9a0c29a62718876f8aa27dee19973340bc13ad6afe4634.mp4"
+          data-background-video="clase06_4_sala_assets/s07_1c199a10199494e50c22bb929242c3859ff9851417e0679b17b81331afb02eaa.mp4"
           >
             <aside class="notes" data-markdown>- Plano selectivo con 800 W/m², aire a 20 °C y T m de 50 °C
 - Temperatura reducida 30/800 igual a 0,0375
@@ -357,7 +384,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s5_0b1a96a6368e46bbd4d9f321b5c98239b809a6bf74412b47afa170792adb17ab.mp4"
+          data-background-video="clase06_4_sala_assets/s07_355ebb478ef24a30d4650113cb055d359cec17158b04cde2f5b678700eed5295.mp4"
           >
             <aside class="notes" data-markdown>- Lineal resta 0,131 y cuadrático 0,017, manda el lineal
 - Eficiencia 0,652
@@ -369,7 +396,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s5_9d25ec031f20ac52582510b5202a887e2cc95c36da8ba8eebf677314f2daec1c.mp4"
+          data-background-video="clase06_4_sala_assets/s07_6cc6df5b4763411dccf014f48fb5c28e81bf241b870b04d3bd9448ff4278e34b.mp4"
           >
             <aside class="notes" data-markdown>- Piscina con agua muy cerca de la temperatura del aire
 - La diferencia en el eje horizontal es casi cero
@@ -379,7 +406,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s5_8a1fabc2ac171352a3150c5fcb4faf9f24debe89fe9427bfd397fbc5156a9b38.mp4"
+          data-background-video="clase06_4_sala_assets/s07_1c0081de13bd041a2c242d5663f848ec226f038ea26265be4d7fe5fae5b6f38a.mp4"
           >
             <aside class="notes" data-markdown>- Respuesta, el colector sin cubierta, más eficiente y más barato
 - Techos de piscinas usan placas negras de polímero sin vidrio
@@ -392,7 +419,17 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s6_4a2ed9afe077ed1f96215b0d7beab3d235c9ee805f64470507ea968cecbb8c3f.mp4"
+          data-background-video="clase06_4_sala_assets/s08_a627c8b9aa24ea91c6354ff9e2d1e025657bf8c2f696a95dd085f0d89d7d7124.mp4"
+          >
+            <aside class="notes" data-markdown>- Cerramos eficiencia, ninguna tecnología gana siempre
+- Sección 4, un día de operación
+- Colector con estanque de 200 L hora a hora
+- Luego notación y síntesis de la unidad</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase06_4_sala_assets/s09_0ea69cb184415950b71333e666422c34bddefd2985b3451eec3262dce9d0c1af.mp4"
           >
             <aside class="notes" data-markdown>- Sistema completo un día entero, modelo del código de programación
 - Estanque de 200 L bien mezclado, T estanque en azul
@@ -405,20 +442,20 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s6_630e2a75869af927e1a58f31dea44194fb65bfaa286214c9f44801657db5cd68.mp4"
+          data-background-video="clase06_4_sala_assets/s09_c39f498e2fb319057b019320bdc051199878fc3751d0076951864eab62e430e8.mp4"
           >
             <aside class="notes" data-markdown>- Corremos el día, la línea gris es el reloj
+- Lectura en vivo de hora, T estanque y P u
 - De noche el estanque pierde un poco hacia la sala
-- A las 7 el consumo lo enfría con agua de red a 15 °C
+- Consumos de las 7 y 21 h enfrían con agua de red a 15 °C
 - Potencia útil aparece cuando la ganancia supera las pérdidas
 - Las nubes la cortan a menos de un quinto
-- Segundo consumo a las 21 h
 - Potencia útil disminuye al calentarse el estanque, con el mismo sol</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s6_d6c60b04b16b01a4fd6fe36782b9673a5fc17c435345efae594513693dd283ba.mp4"
+          data-background-video="clase06_4_sala_assets/s09_ddea9bc6bfb8c11a17b6aafd66a4a0d38ae98938667246f751857ec832c836a3.mp4"
           >
             <aside class="notes" data-markdown>- Máximo 46,4 °C a las 17 y 53, final del día 41,2 °C
 - 58 min con sol sin entrega, 7 al amanecer y 51 al atardecer
@@ -429,7 +466,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s6_df48a7d4c72e609bbfacc97bbcac42d5b2f62dfb6a77250b3662e47575efbfb4.mp4"
+          data-background-video="clase06_4_sala_assets/s09_723b7ee4e054675a9686a31ed6e79bd2b26662c2a95309e52bae4bc71ba3e4fa.mp4"
           >
             <aside class="notes" data-markdown>- Llegan 12,77 kWh de sol y el fluido recibe 6,82 kWh
 - Eficiencia media del día 0,53, menor que el intercepto 0,64
@@ -440,7 +477,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s6_eea8ab2b6de77deb21c1e77e8b07a09bc33c008cb2058f3bb3f693caf06ae0ea.mp4"
+          data-background-video="clase06_4_sala_assets/s09_ca9a12abbc128a811d0f60f7f5c88f21cab48d8f8079212c321d147efa5d5aaa.mp4"
           >
             <aside class="notes" data-markdown>- Fracción solar, uno menos auxiliar sobre carga
 - Carga de 15 a 40 °C, 1,5 kWh, unos 52 L, dos duchas cortas
@@ -453,7 +490,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s6_e3aa109d2beb15e679a4e7ac30bf01264b94e7d7acfa9aa76ab637591134a618.mp4"
+          data-background-video="clase06_4_sala_assets/s09_2115095113a471a0270301f0f6c62c7a924f5cd2f0e156540d83a679017a8728.mp4"
           >
             <aside class="notes" data-markdown>- Mismo colector con estanque de 50 L, en rosado
 - El agua llega a casi 83 °C
@@ -465,7 +502,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s7_d215b2ebb2798929723d6c279b45c2dccb820a4854c22beb5edd0f89828cc235.mp4"
+          data-background-video="clase06_4_sala_assets/s10_21cf636d275b91ce6d8216d6006369d765cf3006e44ccb920ce7b319a1f29389.mp4"
           >
             <aside class="notes" data-markdown>- Notación de las cuatro clases en una lámina, pueden sacar foto
 - Izquierda recurso y colector con colores de siempre
@@ -478,7 +515,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s7_ee624010113acd571aabe00bb3258b81e97dd297565daa02232fa38b834f3f6b.mp4"
+          data-background-video="clase06_4_sala_assets/s10_0ba49464cfb951b6534d4d6802d0e155bc3fce02bdaebf08bd0bf99f0d06cfcc.mp4"
           >
             <aside class="notes" data-markdown>- La unidad completa en una lámina, una línea por clase
 - Recurso en amarillo con R barra, clase dos
@@ -491,7 +528,7 @@
         <section
           data-background-size='contain'
           data-background-color="white"
-          data-background-video="clase06_4_sala_assets/s8_40c7dbf81c79bf90fff5adafed6f41d2e05d2bafd313cc402ffb7aa562a8fe83.mp4"
+          data-background-video="clase06_4_sala_assets/s11_4cccf585bd43adeb99131a56be7e45cf26a0a9e4abbb9e6c4e69094f69805d51.mp4"
           >
             <aside class="notes" data-markdown>- Hipótesis con caudal uniforme, U L, F prima y F R constantes
 - Ensayo con más de 700 W/m² y estanque mezclado
@@ -745,6 +782,29 @@
         }
         Reveal.on("ready", refresh);
         Reveal.on("slidechanged", refresh);
+      })();
+    </script>
+      <div id="anim-done"></div>
+    <script>
+      (function () {
+        var dot = document.getElementById('anim-done');
+        function currentVideo() {
+          var s = Reveal.getCurrentSlide();
+          var bg = s && (s.slideBackgroundContentElement || Reveal.getSlideBackground(s));
+          return bg ? bg.querySelector('video') : null;
+        }
+        setInterval(function () {
+          var v = currentVideo();
+          if (!v || !isFinite(v.duration) || v.duration === 0) {
+            dot.classList.remove('done'); dot.style.setProperty('--p', 0); return;
+          }
+          var p = Math.min(1, v.currentTime / v.duration);
+          var done = v.ended || p > 0.995;
+          dot.classList.toggle('done', done);
+          dot.style.setProperty('--p', done ? 1 : p);
+        }, 100);
+        Reveal.addKeyBinding({ keyCode: 73, key: 'I', description: 'Mostrar u ocultar el indicador de animación' },
+                             function () { dot.classList.toggle('hidden'); });
       })();
     </script>
   </body>
