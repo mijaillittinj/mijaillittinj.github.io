@@ -24,7 +24,7 @@ const T = es
       l6: 'Colectores solares térmicos',
       l6Text: 'Cuatro clases de 50 minutos. El colector plano como intercambiador de calor, el recurso solar sobre una superficie inclinada, sistemas de circulación natural y forzada, el balance de energía de Hottel y Whillier con estancamiento y extracción, y la eficiencia instantánea con la comparación de tecnologías.',
       widget6: 'Ejemplo interactivo, eficiencia de tres colectores',
-      salaShort: 'fondo claro',
+      salaShort: 'fondo claro', pdfLight: 'PDF fondo claro',
       parts: ['El colector solar plano', 'Radiación solar', 'Tipos de colectores y transferencia de calor', 'Eficiencia instantánea'],
       howH: 'Cómo verla',
       how: 'Es una presentación animada en español. Las flechas o la barra espaciadora avanzan, la tecla F activa la pantalla completa, la tecla S abre la vista de orador con las notas y la tecla O muestra todos los estados. Funciona mejor en un computador.',
@@ -41,7 +41,7 @@ const T = es
       l6: 'Solar thermal collectors (in Spanish)',
       l6Text: 'Four 50-minute lectures. The flat-plate collector as a heat exchanger, the solar resource on a tilted surface, natural and forced circulation systems, the Hottel–Whillier energy balance with stagnation and heat extraction, and instantaneous efficiency with a comparison of technologies.',
       widget6: 'Interactive example, efficiency of three collectors',
-      salaShort: 'light background',
+      salaShort: 'light background', pdfLight: 'PDF, light background',
       parts: ['The flat-plate solar collector', 'Solar radiation', 'Collector types and heat transfer', 'Instantaneous efficiency'],
       howH: 'How to view it',
       how: 'This is an animated presentation in Spanish. The arrow keys or the space bar move forward, F turns on full screen, S opens the speaker view with the notes and O shows every state. It works best on a computer.',
@@ -79,7 +79,7 @@ const T = es
           {T.parts.map((name, i) => (
             <li>
               <a href={url(`${base6}${i + 1}/`)}>{name}</a>
-              <span class="meta"> · <a href={url(`${base6}${i + 1}/sala/`)}>{T.salaShort}</a> · <a href={url(`${base6}${i + 1}/clase06_${i + 1}.pdf`)}>PDF</a></span>
+              <span class="meta"> · <a href={url(`${base6}${i + 1}/sala/`)}>{T.salaShort}</a> · <a href={url(`${base6}${i + 1}/clase06_${i + 1}.pdf`)}>PDF</a> · <a href={url(`${base6}${i + 1}/sala/clase06_${i + 1}_sala.pdf`)}>{T.pdfLight}</a></span>
             </li>
           ))}
         </ol>
