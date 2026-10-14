@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="referrer" content="no-referrer">
+<title>Private presentation</title>
+<style>
+  :root { --bg: #0f1218; --fg: #e8eaee; --dim: #9aa1ac; --accent: #4f8fd6; --err: #e57373; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { min-height: 100%; display: flex; align-items: center; justify-content: center; padding: 0 16px; box-sizing: border-box; }
+  form { width: 100%; max-width: 360px; }
+  h1 { font-size: 1.15rem; font-weight: 600; margin: 0 0 .25rem; }
+  p { color: var(--dim); margin: 0 0 1.25rem; font-size: .95rem; }
+  input, button { width: 100%; box-sizing: border-box; font: inherit; padding: .7rem .8rem; border-radius: 8px; }
+  input { background: #171b23; color: var(--fg); border: 1px solid #2c3340; margin-bottom: .75rem; }
+  input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  button { background: var(--accent); color: #fff; border: 0; cursor: pointer; font-weight: 600; }
+  button:disabled { opacity: .6; cursor: default; }
+  #msg { min-height: 1.5em; margin-top: .75rem; font-size: .9rem; color: var(--dim); }
+  #msg.err { color: var(--err); }
+  progress { width: 100%; height: 6px; margin-top: .5rem; display: none; accent-color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <form id="f" autocomplete="off">
+    <h1>Private presentation</h1>
+    <p>Enter the password you received to open the slides.</p>
+    <input id="pw" type="password" placeholder="Password" aria-label="Password" required autofocus>
+    <button id="go" type="submit">Open</button>
+    <progress id="bar" max="1" value="0"></progress>
+    <div id="msg" role="status"></div>
+  </form>
+</main>
+<script>
+(() => {
+  const SALT = 'N/xD4f9thF7Ia3lxnAAyyg==', ITER = 600000;
+  const $ = (id) => document.getElementById(id);
+  const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+
+  async function deriveKey(pw) {
+    const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt: b64(SALT), iterations: ITER },
+      base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+  }
+  async function fetchDec(key, file) {
+    const r = await fetch('d/' + file, { cache: 'force-cache' });
+    if (!r.ok) throw new Error('fetch ' + file + ' ' + r.status);
+    const buf = new Uint8Array(await r.arrayBuffer());
+    return crypto.subtle.decrypt({ name: 'AES-GCM', iv: buf.subarray(0, 12) }, key, buf.subarray(12));
+  }
+
+  $('f').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = $('msg'), bar = $('bar');
+    msg.className = ''; msg.textContent = 'Checking…'; $('go').disabled = true;
+    let key, manifest;
+    try {
+      key = await deriveKey($('pw').value);
+      manifest = JSON.parse(new TextDecoder().decode(await fetchDec(key, 'm.bin')));
+    } catch (err) {
+      msg.className = 'err';
+      msg.textContent = err && err.name === 'OperationError' ? 'Wrong password.' : 'Could not load the presentation.';
+      $('go').disabled = false; return;
+    }
+    try {
+      const refs = Object.keys(manifest.assets);
+      const urls = {}; let done = 0;
+      bar.style.display = 'block'; msg.textContent = 'Loading slides…';
+      const queue = refs.slice();
+      async function worker() {
+        while (queue.length) {
+          const ref = queue.shift(), a = manifest.assets[ref];
+          urls[ref] = URL.createObjectURL(new Blob([await fetchDec(key, a.f)], { type: a.t }));
+          bar.value = ++done / refs.length;
+        }
+      }
+      await Promise.all(Array.from({ length: 6 }, worker));
+      let html = new TextDecoder().decode(await fetchDec(key, manifest.html));
+      for (const ref of refs) html = html.split(ref).join(urls[ref]);
+      document.open(); document.write(html); document.close();
+    } catch (err) {
+      msg.className = 'err'; msg.textContent = 'Could not load the presentation. Please reload and try again.';
+      $('go').disabled = false;
+    }
+  });
+})();
+</script>
+</body>
+</html>
