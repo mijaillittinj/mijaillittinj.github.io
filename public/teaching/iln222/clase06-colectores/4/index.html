@@ -53,490 +53,524 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s00_89b235a2659aaad9e92f9f4b01a30c905aaf532ffd9fe910dbfe222a038760e4.mp4"
+          data-background-video="clase06_4_assets/s00_c26a2fcd342045839231549f2069806a0691f06cf44b990e481f7b9a5e3dce19.mp4"
           data-background-video-muted
           >
-            <aside class="notes" data-markdown>- Buenos días, última clase de la unidad
-- Ya tenemos el balance de energía de la placa
-- Hoy seguimos el calor desde la placa hasta el fluido
-- Llegamos a la eficiencia instantánea, la curva de cualquier catálogo
-- Cerramos con un día completo de colector con su estanque</aside>
+            <aside class="notes" data-markdown>Buenos días. Esta es la tercera y última clase de la unidad, y vamos a ver la eficiencia instantánea. Ya tenemos armado el balance de energía de la placa con U\_L, así que hoy seguimos el calor desde la placa hasta el fluido y llegamos a la curva de eficiencia que aparece en cualquier catálogo.
+
+Al final cerramos con un día completo de operación de un colector con su estanque. Veamos primero el plan de la clase.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s01_118bde36e33690bb9f3fabbba63bfda33d1a5d26fee9c2d444943107f8c47562.mp4"
+          data-background-video="clase06_4_assets/s01_ab5b32a985ae8608195bdefc8ff69541a520d002c3f15a3a59c7095194ad5c33.mp4"
           >
-            <aside class="notes" data-markdown>- Clase cuatro, la última de la unidad, cuatro secciones
-- Aleta, del centro entre tubos al tubo, eficiencia F y factor F prima
-- Factor de remoción, de la placa al fluido
-- Eficiencia, curva instantánea, ensayo y tecnologías
-- Un día de operación con estanque y síntesis de la unidad</aside>
+            <aside class="notes" data-markdown>A la izquierda tienen las tres clases de la unidad, con la de hoy enmarcada, y a la derecha las cuatro secciones que vamos a ver.
+
+Partimos con la aleta: el calor viaja por la placa desde el centro entre tubos hasta el tubo, y ahí aparecen F y F'. Después viene el factor de remoción F\_R, que lleva el calor de la placa al fluido, y la eficiencia, con su curva, el ensayo y las tecnologías. Terminamos con un día de operación con estanque y la síntesis de la unidad.
+
+Entonces partimos por la aleta, que es la franja de placa entre dos tubos.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s02_d77cef445fabd583f9c7ec82a539089fd5de30fa527f8b5d317e65db609222f1.mp4"
+          data-background-image="clase06_4_assets/aleta_1.png"
           >
-            <aside class="notes" data-markdown>- Miramos la placa por dentro, desde abajo hasta verla desde arriba
-- Tubos celestes soldados a la placa, el color es la temperatura calculada
-- Sobre cada tubo la placa está a la temperatura de base, 30 °C
-- El agua del tubo está a 20,6 °C, el calor necesita una diferencia
-- S es el sol absorbido, tau alfa por I T
-- Entre tubos llega a unos 36,5 °C por conducción en lámina delgada
-- Pregunta al curso, ¿qué pasa con las franjas si la placa es de acero?</aside>
+            <aside class="notes" data-markdown>**En pantalla**
+
+- La ecuación de la clase anterior y la cadena de tres pasos hasta T\_e
+
+**Explicación**
+
+- La clase pasada las pérdidas se escribieron con T̄\_p, que nadie mide
+- Lo que se mide es el agua, por eso reemplazamos T̄\_p en tres pasos
+- La aleta lleva de la placa a la base del tubo y da F
+- La unión y la convección interna llevan de la base al agua local y dan F'
+- El largo del tubo lleva del agua local a la entrada y da F\_R
+
+**Paso siguiente**
+
+- Partimos por la placa entre dos tubos</aside>
+          </section>
+          <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_4_assets/s02_b443f11eaa6ab5928df251b25071a0f25245f7c039697a97abae8a7f63584dee.mp4"
+          >
+            <aside class="notes" data-markdown>Aquí estamos viendo la placa desde arriba. Fíjense en las franjas celestes sobre los tubos y las naranjas entre ellos. La escala va de 30 °C en celeste a 36,6 °C en naranja, y el fluido está a 20,6 °C.
+
+Tenemos símbolos nuevos. W es el paso entre ejes de tubos, aquí 15 cm, y D es el diámetro exterior del tubo, 10 mm. T\_b es la temperatura de base, la de la placa justo sobre el tubo, 30 °C. Y S es el sol absorbido por metro cuadrado, (τα) por I\_T, que aquí vale 600 W/m². El calor tiene que caminar por una lámina de 0,5 mm hasta el tubo, por eso el centro queda más caliente y pierde más hacia arriba.
+
+**Pregunta.** ¿Qué pasaría con las franjas naranjas si la placa fuera de acero en vez de cobre?
+
+*(Esperar respuestas.)* Respuesta: el centro se calienta más, porque el acero conduce peor, y se pierde más calor hacia arriba.
+
+Para cuantificar esto vamos a cortar la placa y hacer un balance de energía en una franja.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s02_052feb57fa8a8f65c9f10d77845ff34cd9b4f8edfd896b8b3332c8c80c2d3beb.mp4"
+          data-background-video="clase06_4_assets/s02_42e0fd5c7195f1e1b94fd4cef0864bf7828973dbee58fd79b9c0ec5733f7593a.mp4"
           >
-            <aside class="notes" data-markdown>- Corte transversal con dos tubos celestes y la placa naranja
-- Origen en el punto medio, x hacia el tubo derecho hasta ele
-- Ele es (W menos D)/2, delta p es el espesor de placa
-- Franja d x recibe S d x y el calor conducido q(x)
-- Salen la pérdida hacia arriba y el calor conducido en x más d x
-- Conducción con Fourier, k por delta p por el gradiente
-- Régimen permanente, lo que entra es igual a lo que sale</aside>
+            <aside class="notes" data-markdown>Este es el corte transversal: dos tubos celestes y la placa entre ellos, con la línea punteada marcando el centro. Sobre la franja blanca baja la flecha amarilla, S dx, sube la de pérdidas, y abajo están las flechas de conducción.
+
+Símbolos nuevos: ℓ es el semiancho libre de placa, W menos D sobre dos, aquí 7 cm, medido desde el centro hacia el tubo. δ\_p es el espesor de la placa, 0,5 mm, y k su conductividad en W/(m·K). Recuerden que la pérdida hacia arriba es U\_L por (T menos T\_a), con U\_L igual a 5 W/(m²·K). Por Fourier, k por δ\_p por el gradiente nos da W por metro de largo. Y como estamos en régimen permanente, la franja no acumula: lo que entra por sol y conducción sale por pérdidas y conducción.
+
+Ojo con una cosa: x parte en el centro entre tubos, así la simetría queda en x igual a cero. Antes de resolver, recordemos la aleta del curso de transferencia de calor.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s02_1e16e5650eac21cfec241e224b3a347831e88550401d1628d2f7401d768cdf8f.mp4"
+          data-background-video="clase06_4_assets/s02_e554c3f3e31254a9f849ddf45ec130c1cb6cb6e420e49d6a0a4832659b2f12bf.mp4"
           >
-            <aside class="notes" data-markdown>- Recordamos la aleta de transferencia de calor
-- Theta segunda igual a m cuadrado por theta, theta igual a T menos T infinito
-- Punta adiabática da eficiencia tanh(m ele)/(m ele)
-- Aquí la punta adiabática es el punto medio, por simetría
-- Nuestra aleta recibe sol, la referencia es T a más S/U L
-- Pregunta al curso, ¿dónde está la base de esta aleta? Está sobre el tubo</aside>
+            <aside class="notes" data-markdown>A la derecha aparece la aleta clásica de conducción, con la ecuación de θ y la eficiencia con punta adiabática.
+
+Símbolo nuevo: m, el parámetro de aleta, en 1/m, que dice qué tan rápido cambia la temperatura a lo largo de la aleta. θ es T menos T\_∞, la temperatura medida desde el fluido que rodea la aleta, y con punta adiabática la eficiencia es tanh(mℓ)/(mℓ). Punta adiabática quiere decir que por ahí no sale calor, la pendiente de θ es nula. En el colector esa punta es el centro entre tubos: por simetría, cada mitad manda su calor a su propio tubo. Como nuestra aleta recibe sol, T\_∞ pasa a ser T\_a más S/U\_L, 140 °C, lo que alcanzaría la placa si ningún tubo sacara calor.
+
+**Pregunta.** ¿Dónde está la base de esta aleta?
+
+*(Esperar respuestas.)* Respuesta: sobre el tubo, en x igual a ℓ, donde la placa está a T\_b.
+
+Ahora escribimos nuestra ecuación y vamos a ver que tiene exactamente esta forma.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s02_c08aa238c23aff6ca5111f889c7bc702a715108d516d6e2797b3cc13bebc2ab9.mp4"
+          data-background-video="clase06_4_assets/s02_755333695d57a7a3b349b9ed41766f198cd2b7d3485ef5aa0373692614a59344.mp4"
           >
-            <aside class="notes" data-markdown>- Desarrollamos q(x más d x) con un término de Taylor
-- Reemplazamos Fourier y dividimos por k delta p d x
-- Queda la aleta clásica con theta igual a T menos T a menos S/U L
-- Esa referencia es el estancamiento local de la placa
-- M al cuadrado compara pérdida hacia arriba con conducción en la placa
-- Bordes con simetría en el centro y temperatura de base sobre el tubo</aside>
+            <aside class="notes" data-markdown>Bajo el balance aparece la ecuación de la aleta, con m² igual a U\_L sobre k δ\_p, y debajo las condiciones de borde.
+
+Desarrollamos q(x+dx) con Taylor, reemplazamos Fourier, dividimos por k δ\_p dx y nos queda una ecuación de segundo orden. T\_a más S/U\_L es el estancamiento local, la temperatura donde el sol absorbido iguala a las pérdidas. Fíjense que m² compara la pérdida hacia arriba, U\_L, con la conducción a lo largo de la placa, k por δ\_p. Con m chico la placa conduce bien y queda casi pareja; con m grande el centro se va hacia el estancamiento. Las condiciones de borde son pendiente nula en x igual a cero y T igual a T\_b en x igual a ℓ.
+
+Ojo, esta m es el parámetro de aleta, en 1/m, y nada tiene que ver con una masa. El caudal másico lo escribimos ṁ, con punto. Ahora resolvemos con estas dos condiciones y graficamos el perfil.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s02_b2964696407f1d3395999e25061e8ba3653dfb0ce7efbd4bef75808ff08e49a6.mp4"
+          data-background-video="clase06_4_assets/s02_c36bb2c69748fe8db1a6d8393b389bea75b25749c9bb1a19a3013dd6869bc3b0.mp4"
           >
-            <aside class="notes" data-markdown>- La solución simétrica es un coseno hiperbólico
-- En x igual a cero la pendiente es nula
-- En x igual a ele la temperatura es la de la base
-- Curva naranja de tubo a tubo a lo largo de 15 cm
-- Franjas celestes son el tubo a 30 °C, el centro llega a 36,6 °C
-- Es la franja del dibujo 3D, ahora contamos el calor que llega al tubo</aside>
+            <aside class="notes" data-markdown>En el recuadro naranja está la solución con el coseno hiperbólico, y a la izquierda la curva de tubo a tubo. Las franjas azul oscuro son los tubos a 30 °C, y el máximo, 36,6 °C, queda en el centro, a 7,5 cm.
+
+En x igual a cero el coseno hiperbólico tiene pendiente nula, así que se cumple la simetría. En x igual a ℓ la fracción de cosenos vale uno y la placa queda a T\_b, que es la condición sobre el tubo. La placa sube solo 6,6 grados en 7 cm porque el cobre conduce muy bien y mℓ es chico. Piénsenlo como la lluvia en un techo con canaletas: el agua que cae al medio recorre más camino hasta la canaleta. Esta curva es la misma franja del dibujo 3D, ahora con números.
+
+Ojo, en el gráfico el eje va de tubo a tubo, así que el x igual a cero de la ecuación queda en 7,5 cm. Ahora contamos cuánto de ese calor llega de verdad al tubo.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s02_46f58fc92a3d1b6bd91f101827acdd8cd2bc7f01161f5c6e20ab084bf0a0623a.mp4"
+          data-background-video="clase06_4_assets/s02_3c5a9d83f1eb7c1d082b82f3d0aa407d922fa9d975a1b2d1b8df0f7e44afbc6f.mp4"
           >
-            <aside class="notes" data-markdown>- F es la eficiencia de aleta, no el factor de forma de la clase dos
-- Calor real a la base sobre calor con toda la aleta a temperatura de base
-- Derivando en x igual a ele sale tanh(m ele)/(m ele)
-- Cobre de 0,5 mm y U L igual a 5 da m de 5,1 por metro
-- M ele vale 0,357 y F da 0,96
-- Acero con conductividad 50 da F igual a 0,765, se pierde casi un cuarto
-- Por eso las placas se hacen de cobre o aluminio</aside>
+            <aside class="notes" data-markdown>Aquí tenemos la definición de F, y debajo el cálculo de m para cobre y el valor de F para acero.
+
+Símbolo nuevo: F, la eficiencia de aleta, que es el calor que llega a la base dividido por el calor que llegaría con toda la aleta a T\_b. No tiene unidades. Derivando el perfil en x igual a ℓ sale tanh(mℓ)/(mℓ), igual que en la aleta clásica. Con cobre, k igual a 385 W/(m·K) y 0,5 mm, da m igual a 5,10 por metro y mℓ igual a 0,357. Entonces F vale 0,960: la aleta entrega el 96 % de lo que daría una placa perfectamente conductora.
+
+Con acero, k igual a 50, F cae a 0,765, se pierde casi un cuarto. Esa es la respuesta a la pregunta del inicio. Por eso las placas son de cobre o aluminio, y si usan un material peor necesitan más espesor, porque lo que importa es k por δ\_p. Ojo, esta F es eficiencia de aleta; los factores de forma siempre llevan subíndice, como F\_cielo. Con F listo, seguimos el calor desde la base hasta el fluido.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s02_9d37ca36a93e23f64cfebb234a7dbe200424f8f57843b55be447fc66e0e37f0e.mp4"
+          data-background-video="clase06_4_assets/s02_ab66011f842750a58b0e94b5d65f701aa0991b0d2e00f948c0e91d9dbed76824.mp4"
           >
-            <aside class="notes" data-markdown>- Falta llegar del tubo al fluido con una red de resistencias por largo
-- El sol entra en la base y se reparte entre q u prima y pérdidas
-- Convección interna 1/(pi D i h), unión soldada despreciable
-- Base a 30 °C, fluido a 20,6 °C, nueve grados más abajo
-- F prima es resistencia de placa ideal sobre resistencia real
-- Con h igual a 300 y D i de 9 mm, F prima vale 0,89
-- Siguiente escena, el fluido se calienta a lo largo del tubo</aside>
+            <aside class="notes" data-markdown>Esta es una red de tres resistencias por metro de tubo, desde el fluido a 20,6 °C hasta el aire a T\_a. El sol entra al nodo T\_b, la flecha verde q\_u' va al fluido y la ámbar se pierde al ambiente.
+
+Símbolos nuevos: T\_f, la temperatura local del fluido, y q\_u', el calor útil por metro de tubo, en W/m. También h\_fi, la convección dentro del tubo, en W/(m²·K), y C\_b, la conductancia de la unión entre placa y tubo. Las resistencias valen 0,118 por convección, con D\_i de 9 mm, cero con buena soldadura, y 1,386 de pérdidas, todo en m·K/W. Por el tubo pasan unos 79 W por metro, que por 0,118 dan los 9,4 grados entre la base y el fluido.
+
+Y aparece F', el factor de eficiencia del colector, sin unidades: la resistencia de una placa ideal sobre la resistencia real. F' es 1,333 sobre 1,504, o sea 0,887. Es más bajo que F porque suma aleta, soldadura y convección interna. En la escena siguiente el fluido se calienta a lo largo del tubo y aparece F\_R.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s03_9a8d3b91c0ef1931cce5d08a9ba586703dd958679004c0e26af4f47eb868c74c.mp4"
+          data-background-image="clase06_4_assets/aleta_2.png"
           >
-            <aside class="notes" data-markdown>- Cerramos la aleta, F igual a 0,96 y F prima 0,887
-- Sección 2, factor de remoción
-- El fluido se calienta a lo largo del tubo y aparece F R
-- Pregunta al curso, ¿qué pasa con F R si baja el caudal?</aside>
+            <aside class="notes" data-markdown>**En pantalla**
+
+- Los cinco pasos de la aleta en una lámina, el resultado final en el recuadro
+
+**Explicación**
+
+- Paso 1, balance en la franja dx, sol que entra menos pérdidas más conducción neta igual a cero, Taylor en q(x+dx)
+- Paso 2, θ mide la temperatura desde T\_a + S/U\_L, la que tendría la placa sin tubos, y la ecuación queda θ'' = m²θ
+- Condiciones, pendiente nula en el centro por simetría y T\_b sobre el tubo
+- Paso 3, el coseno hiperbólico cumple ambas, y el calor que llega al tubo dividido por el de una placa toda a T\_b es F = tanh(mℓ)/(mℓ)
+- Paso 4, por metro de tubo ganan las dos aletas, (W−D)F, más el ancho D sobre el tubo
+- Paso 5, pasando de T\_b a T\_f por la soldadura y la convección interna queda q'\_u = W F' [S − U\_L(T\_f − T\_a)]
+- Es la ecuación de la clase pasada con T\_f en vez de T̄\_p y el castigo F' menor que uno
+
+**Paso siguiente**
+
+- Ahora el agua se calienta a lo largo del tubo, integramos esta ecuación y aparece F\_R</aside>
+          </section>
+          <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase06_4_assets/s03_56a1e7754456e6e6f9c965c520e1e901c44887bae27fcafa244a89dfa99207ed.mp4"
+          >
+            <aside class="notes" data-markdown>Pasamos a la sección 2, factor de remoción. Cerramos la aleta con F de 0,96 y F' de 0,887. Ahora el fluido se va calentando a lo largo del tubo, y ahí aparece F\_R.
+
+**Pregunta.** ¿Qué pasa con F\_R si baja el caudal?
+
+*(Esperar respuestas.)* Respuesta: F\_R baja. El fluido sale más caliente, el colector trabaja más caliente y pierde más.
+
+Partimos siguiendo el fluido a lo largo de un tubo.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s04_d1c10775c66b9e54a94865be5917f00715a543c2d565aaf71772959b158c1b65.mp4"
+          data-background-video="clase06_4_assets/s04_3dbc4e591391bb3bd221ad046cc3db7060c0151762bac30d1fd28d81ceb35fd5.mp4"
           >
-            <aside class="notes" data-markdown>- Con F prima miramos el colector desde arriba
-- El fluido entra a T e y sale más caliente a lo largo de y
-- N t tubos de largo L t separados W, área N t W L t
-- Tramo d y gana F prima por S menos pérdidas, con T f local
-- Ese calor sube el fluido, eme punto c p d T f
-- Esa es la ecuación que integramos ahora</aside>
+            <aside class="notes" data-markdown>Aquí vemos el colector desde arriba. El tubo pasa de celeste en la entrada, T\_e, a naranja en la salida, T\_s. El rectángulo blanco es el tramo dy, y el eje y va de 0 a L\_t.
+
+Recuerden T\_e y T\_s, las temperaturas de entrada y salida del fluido, y A\_c, el área del colector. Símbolos nuevos: ṁ, el caudal másico en kg/s, y c\_p, el calor específico del agua, 4186 J/(kg·K). También N\_t, el número de tubos, y L\_t, su largo, así que A\_c es N\_t por W por L\_t.
+
+El tramo dy gana F' por S menos las pérdidas, evaluadas con la temperatura local del fluido, T\_f. Todo ese calor útil sube la temperatura del agua, ṁ c\_p dT\_f, porque en régimen permanente no hay acumulación. Ojo, T\_f cambia con y; T\_e es solo su valor en la entrada. Ahora integramos esta ecuación a lo largo del tubo.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s04_5970c87a9612fdd68d571587e92f12428277d0b8c36def14bf379a1dcfeef8b4.mp4"
+          data-background-video="clase06_4_assets/s04_84de8228e39adfdc881165a6cea9f80ebd89f77db050c3e85c511045cb676c22.mp4"
           >
-            <aside class="notes" data-markdown>- Misma ecuación de primer orden del estancamiento, ahora en el espacio
-- El fluido tiende a T a más S/U L, 140 °C, línea naranja
-- Con 0,03 kg/s la curva es casi recta y sale a 28,2 °C
-- Con caudal diez veces menor sale a unos 80 °C y pierde más
-- Pregunta al curso, ¿cuál de los dos caudales entrega más energía útil?</aside>
+            <aside class="notes" data-markdown>Fíjense en la derecha, ahí está la solución exponencial. A la izquierda, la curva celeste es T\_f a lo largo del tubo, y la línea punteada naranja marca 140 °C. Arriba van viendo cómo cambian ṁ y T\_s cuando movemos el caudal.
+
+Es la misma exponencial del estancamiento de la clase pasada, solo que ahora la variable es el largo del tubo y no el tiempo. El fluido se acerca a T\_a más S/U\_L, o sea 140 °C, que es lo que alcanzaría un tubo infinitamente largo. Con 0,03 kg/s el exponente es chico, la curva es casi recta y el agua sale a 28,2 °C. Si bajamos el caudal diez veces, la curva se dobla, el agua sale a unos 80 °C y el final del tubo pierde bastante más.
+
+**Pregunta.** ¿Cuál de los dos caudales entrega más energía útil?
+
+*(Esperar respuestas.)* Respuesta: el caudal mayor, porque el colector trabaja más frío y pierde menos. Para comprobarlo, evaluamos esta curva a la salida y sacamos la potencia útil.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s04_7a08b5da4b912ff842544f55784f61efc5f75acfabb4fd88cb4a40f570c87986.mp4"
+          data-background-video="clase06_4_assets/s04_2d99ddeca93dea8d18fa266461314db949ce7d622510419f6c24e4283de5ca32.mp4"
           >
-            <aside class="notes" data-markdown>- Integramos todo el tubo, potencia útil igual a caudal por c p por salto
-- Evaluamos en y igual a L t y reemplazamos T s
-- Reordenamos con la temperatura de entrada, la que se mide en ensayo
-- Queda Hottel, Whillier y Bliss de la clase tres con F R deducido
-- F R depende del caudal y de F prima
-- F biprima igual a F R/F prima es el factor de flujo</aside>
+            <aside class="notes" data-markdown>Arriba tenemos la solución, al medio la potencia útil P\_u, y en el recuadro azul aparecen F\_R y F''. Recuerden que P\_u, en W, es el caudal por c\_p por el salto T\_s menos T\_e. Evaluamos la solución en y igual a L\_t y reescribimos todo en función de T\_e, que es la temperatura que se mide en un ensayo.
+
+Lo que queda es la forma de Hottel, Whillier y Bliss de la clase pasada, pero ahora con F\_R deducido de la física. Antes el factor de remoción lo sacábamos del fabricante; aquí vemos que depende del caudal y de F'. En el apunte escrito a este F\_R le dicen η\_pf, pero en clase vamos a seguir escribiendo F\_R. Y aparece un símbolo nuevo, F'', el factor de flujo, que es F\_R sobre F'. Mide lo que se pierde porque el agua se va calentando a lo largo del tubo.
+
+Ojo con esto: F' compara con la T\_f local, F\_R compara con la T\_e de entrada, y F'' es el cociente entre los dos. Ahora pongamos los números del código del curso.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s04_d38a344339d12684e36882110e0c4c3f49c14489b95266c20c91ea11d0c5618d.mp4"
+          data-background-video="clase06_4_assets/s04_60bd93910d83c158024c87dcf97beb6d668f7d0733a81f5de51784e07494e875.mp4"
           >
-            <aside class="notes" data-markdown>- Dos metros cuadrados, U L igual a 5 y caudal del código
-- Eme punto c p sobre A c U L vale 12,56, exponente 0,07
-- F R da 0,856 y el factor de flujo 0,97
-- El fluido sale a 28,2 °C con 1028 W útiles
-- En la clase tres usamos F R igual a 0,85, ahora sabemos de dónde sale</aside>
+            <aside class="notes" data-markdown>Bajo el recuadro está ṁ c\_p sobre A\_c U\_L y el exponente. Esa razón vale 0,03 por 4186 sobre 10, o sea 12,56. El agua tiene mucha capacidad comparada con las pérdidas. El exponente da 0,0706, y por eso la curva salía casi recta y F'' queda en 0,966.
+
+En la fila siguiente, F\_R vale 0,856, el agua sale a 28,2 °C y la potencia útil es 1028 W. Como T\_e es igual a T\_a, el término de pérdidas se anula y P\_u queda como A\_c por F\_R por S. Y fíjense abajo: el 0,85 que usábamos antes venía del código del curso, y ahora sabemos de dónde sale.
+
+**Pregunta.** ¿Qué fracción de los 1200 W absorbidos se transforma en calor útil?
+
+*(Esperar respuestas.)* Respuesta: 1028 de 1200, un 86 %, que es justo F\_R, porque el agua entra a temperatura ambiente. Veamos ahora cómo cambia F\_R si movemos el caudal.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s04_c9386bf58e8d86aeea28c8bd50cf2158d0f3b44992b9626759138797561fdadf.mp4"
+          data-background-video="clase06_4_assets/s04_968d984b099e28ee96151c665d656d00ee70fc7e055f897ad7626ecfb3a7534b.mp4"
           >
-            <aside class="notes" data-markdown>- Gráfico de F R en función del caudal
-- Con mucho caudal F R tiende a F prima, la línea punteada
-- Con poco caudal el colector trabaja caliente y F R cae a cero
-- Punto amarillo en 0,03 kg/s, cerca de la asíntota
-- Caudal diez veces menor da F R igual a 0,636
-- Pregunta al curso, ¿conviene aumentar el caudal sin límite? Discutan con el compañero</aside>
+            <aside class="notes" data-markdown>La curva azul es F\_R en función de ṁ, y la punteada blanca es F' igual a 0,887. Los dos puntos amarillos son 0,856 con 0,03 kg/s y 0,636 con 0,003 kg/s. A la derecha están los dos límites.
+
+Con mucho caudal el agua casi no se calienta, todo el tubo trabaja cerca de T\_e y F\_R tiende a F'. Con poco caudal pasa lo contrario: el agua se calienta harto, el colector trabaja caliente y F\_R cae hacia cero. Nuestro punto de 0,03 kg/s ya está pegado a la asíntota. Con esto respondemos la pregunta de los dos caudales: 1028 W con el caudal del código y 763 W con el caudal chico.
+
+**Pregunta.** ¿Conviene aumentar el caudal sin límite? Discútanlo con la persona del lado.
+
+*(Esperar respuestas.)* Respuesta: no, porque F\_R ya casi no sube y aparecen otros costos. Revisemos esos costos.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s04_89dbc53272d6a4aacf5b02bde5b899fd2ffa531501eaea24c0188d202db0870f.mp4"
+          data-background-video="clase06_4_assets/s04_da896848e95d90ae16ed08fafe2b933006776cf2ccd9b225e455f0e3e3d6b66f.mp4"
           >
-            <aside class="notes" data-markdown>- No conviene, F R ya está pegado a F prima
-- Respuesta, 1028 W con el caudal del código y 763 W con el chico
-- La temperatura de salida baja y el agua tibia sirve menos
-- La bomba consume más y un caudal alto mezcla el estanque estratificado
-- Fabricantes recomiendan un caudal por metro cuadrado de colector
-- Con F R definido volvemos a la eficiencia instantánea</aside>
+            <aside class="notes" data-markdown>Bajo la pregunta aparece la respuesta en azul. Si subimos el caudal desde 0,03 kg/s, F\_R pasa de 0,856 a lo más 0,887, menos de un 4 % más. A cambio, la temperatura de salida baja, y el agua tibia sirve menos para la ducha o la calefacción.
+
+Además, la bomba consume más electricidad, y un caudal alto revuelve las capas de un estanque estratificado. Por eso los fabricantes recomiendan un caudal por metro cuadrado de colector.
+
+Tengan cuidado al leer catálogos: F\_R está referido a T\_e. Una curva escrita con T\_m, la media entre T\_e y T\_s, o con T̄\_p, tiene otros coeficientes. Con F\_R ya definido, volvemos a la eficiencia instantánea y a su recta.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s05_7e3e2cac3c41ef6d714b4eb7317487f5e01ddbdfabc8f6273b46d123a40d07d2.mp4"
+          data-background-video="clase06_4_assets/s05_3e06c721d526faaaca252f99741333b7ccb139f734b8f0b47628a29d4742e586.mp4"
           >
-            <aside class="notes" data-markdown>- Cerramos factor de remoción, F R igual a 0,856
-- Sección 3, eficiencia
-- Recta de eficiencia instantánea, ensayo y curva normalizada
-- Comparamos sin cubierta, plano selectivo y tubos de vacío</aside>
+            <aside class="notes" data-markdown>Pasamos a la sección 3, eficiencia. Cerramos el factor de remoción con F\_R igual a 0,856.
+
+Lo que viene ahora es la recta de eficiencia instantánea, cómo se obtiene en un ensayo y la curva normalizada. Después vamos a comparar un colector sin cubierta, uno plano selectivo y uno de tubos de vacío. Partimos escribiendo η\_i con F\_R.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s06_3e94b93d2fe41cc1cf1b7debd6a28a2659a19d533b57d01feb4706466c3a4112.mp4"
+          data-background-video="clase06_4_assets/s06_d48a373eaac172a4dd8b5edf48c0748e4641d25820376616cf6557b410dd242c.mp4"
           >
-            <aside class="notes" data-markdown>- Con F R llegamos a la eficiencia instantánea de los catálogos
-- Arriba la potencia útil del fluido en verde azulado
-- Abajo la irradiancia en el plano por el área, en amarillo
-- Instantánea porque compara potencias con el sol y temperaturas del momento
-- A la izquierda, los ejes listos con la eficiencia en el vertical
-- Ahora le ponemos adentro el balance con F R</aside>
+            <aside class="notes" data-markdown>A la derecha está la definición de η\_i, con P\_u arriba en verde azulado e I\_T abajo en amarillo. A la izquierda los ejes todavía están vacíos, η\_i en el vertical y x en la abscisa, y la caja de notación resume los símbolos.
+
+η\_i es un símbolo nuevo, la eficiencia instantánea. Es la fracción del sol que llega al plano y termina como calor en el fluido, y no tiene unidades. Recuerden que P\_u es la potencia útil en W, A\_c el área del colector en m² e I\_T la irradiancia en el plano en W/m². El denominador, A\_c I\_T, es todo el sol que cae sobre el colector, y el numerador es lo que efectivamente se lleva el agua. Se llama instantánea porque usa el sol y las temperaturas de ese momento, igual que el consumo de un auto cambia con la velocidad. Las curvas de los catálogos se arman con este cociente, así que conviene leerlo bien.
+
+Ojo, η\_i no es una propiedad fija del colector. Depende de cuánto sol hay y de la temperatura a la que entra el agua. Ahora le metemos adentro el balance con F\_R.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s06_ce8313957e07507bec80200ffa2a39d595f26c5ebbd3281aaece329da20fdeb6.mp4"
+          data-background-video="clase06_4_assets/s06_79611f6d910bfb5ecb080c8aed5ac2abe08eedb0ae89c93c1eb684ebdaf33d1b.mp4"
           >
-            <aside class="notes" data-markdown>- Arriba la potencia útil con temperatura de entrada y F R
-- Dividimos por área e irradiancia, el área se cancela
-- Primer término F R tau alfa, independiente de la temperatura
-- Segundo término resta pérdidas según entrada menos ambiente
-- Pregunta al curso, ¿qué forma tiene si llamamos x a esa fracción?</aside>
+            <aside class="notes" data-markdown>A la derecha aparece P\_u escrita con F\_R y T\_e, y debajo η\_i separada en dos términos, con T\_e en celeste y T\_a en verde claro. Recuerden F\_R, (τα) y U\_L. Con F\_R podemos escribir la potencia útil usando T\_e, que es la temperatura que uno controla y mide fácil.
+
+Dividimos por A\_c I\_T, el área se cancela y la irradiancia queda dividiendo a T\_e menos T\_a. El primer término, F\_R(τα), es la ganancia óptica y no depende de la temperatura del fluido. El segundo son las pérdidas, que crecen con T\_e menos T\_a y pesan menos cuando hay mucho sol. Aquí aparece x, la temperatura reducida, T\_e menos T\_a dividido por I\_T, en K m²/W. Junta temperaturas y sol en una sola variable.
+
+**Pregunta.** ¿Qué forma tiene η\_i si la dibujamos en función de x?
+
+*(Esperar respuestas.)* Respuesta: una recta, porque tomamos F\_R, (τα) y U\_L como constantes. Dibujémosla en los ejes de la izquierda.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s06_5e00e8170f33e0d8157344ed3e90eccb356ca5930859e6721c8f78a685c882eb.mp4"
+          data-background-video="clase06_4_assets/s06_1448377ba48233c6273588deea7f26f7845764d0a05135643b19dfab94af6938.mp4"
           >
-            <aside class="notes" data-markdown>- Es una recta, eje x la temperatura reducida, eje y la eficiencia
-- Intercepto F R tau alfa con 0,85 y 0,75 da 0,64
-- Eficiencia máxima con el fluido entrando a temperatura del aire
-- Hay pérdidas porque la placa está a unos 38 °C de media
-- Pendiente menos F R U L, 4,25 con F R 0,85 de la clase 3
-- Dos parámetros resumen el colector completo</aside>
+            <aside class="notes" data-markdown>La recta cian parte en el eje vertical en F\_R(τα), más o menos 0,64. El triángulo ámbar marca la pendiente, menos F\_R U\_L, que da menos 4,25 calculada con F\_R igual a 0,85.
+
+El intercepto es 0,85 por 0,75, cerca de 0,64, y es la eficiencia máxima, con el agua entrando a la temperatura del aire. Aun con x igual a cero hay pérdidas, porque la placa queda a unos 38 °C, y por eso el intercepto es F\_R(τα) y no (τα). La pendiente F\_R U\_L es 0,85 por 5, o sea 4,25 W/(m² K), las pérdidas ya castigadas por F\_R. En la práctica, cada 0,01 K m²/W que avanza x, la eficiencia cae unos 0,04; a 800 W/m² eso son 8 K más en la entrada. Con dos números resumimos el colector, la óptica en el intercepto y las pérdidas en la inclinación.
+
+Ojo que el 0,64 no es la eficiencia de uso normal. Con agua tibia entrando se lee más a la derecha y da menos. Veamos qué pasa donde la recta toca el eje horizontal.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s06_dca34976a8da9f445b4c6e0334a3f389b1b79b7a177d2d82ec9f8cff65b84114.mp4"
+          data-background-video="clase06_4_assets/s06_25fb55173b65043e2939103670109aa290f957857f4a6b32aec7dd2a7ebc12e7.mp4"
           >
-            <aside class="notes" data-markdown>- La recta corta el eje en el punto amarillo, eficiencia cero
-- El punto recorre la recta con lectura de x y eta i hasta cero
-- X vale tau alfa/U L, 0,15 K m²/W
-- Con 800 W/m² son 120 K de diferencia
-- Es el estancamiento de la clase tres, 140 °C con aire a 20 °C
-- Balance transiente y recta de eficiencia dan el mismo número</aside>
+            <aside class="notes" data-markdown>Sigan el punto amarillo: recorre la recta hasta η\_i igual a cero, en x igual a 0,15. Ahí toda la ganancia óptica se va en pérdidas y el colector no entrega nada. Despejando, x\_0 es (τα)/U\_L, 0,75 sobre 5, o sea 0,15 K m²/W. F\_R multiplica todo el corchete, así que no cambia dónde se anula.
+
+Con I\_T igual a 800 W/m² eso da 120 K sobre el aire, 140 °C con 20 °C de ambiente. Es la temperatura de estancamiento de la clase 2; el balance de placa y la recta de eficiencia dan el mismo número. Es lo que pasa con la bomba detenida a pleno sol, el colector se calienta hasta ahí y los materiales tienen que aguantarlo.
+
+**Pregunta.** ¿Cuánto sería la diferencia de estancamiento con 400 W/m²?
+
+*(Esperar respuestas.)* Respuesta: 0,15 por 400, o sea 60 K, la mitad, porque x\_0 no depende del sol. Ahora veamos cómo se obtiene esta recta en un ensayo real.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s06_dc9185d77532d21d187752f0f274dee35017a27ac537a0945e897cd5e3d16bc9.mp4"
+          data-background-video="clase06_4_assets/s06_585fa89956fbd18fb35e1a614ee97fbf7c1623058d82ed907125683f83732014.mp4"
           >
-            <aside class="notes" data-markdown>- En banco de ensayo se fija el caudal y se mide en varios puntos
-- Irradiancia, temperaturas de entrada, salida y aire
-- Puntos blancos ilustrativos, no vienen de un ensayo real
-- Dispersión por viento que cambia U L y ángulo que cambia tau alfa
-- Mínimos cuadrados entregan los dos números del catálogo
-- En el laboratorio levantarán esta curva con el colector del techo</aside>
+            <aside class="notes" data-markdown>Los puntos blancos alrededor de la recta cian son ilustrativos, no son datos de ensayo. En el banco se fija el caudal y se miden I\_T, T\_e, T\_s y T\_a en varios puntos de operación. Recuerden que T\_s es la temperatura de salida; P\_u es ṁ c\_p por T\_s menos T\_e, y de ahí sale η\_i.
+
+De un punto a otro se cambia T\_e para barrer x, y cada punto blanco es una medición. La dispersión viene del viento, que cambia U\_L, y del ángulo de incidencia, que cambia (τα). Con mínimos cuadrados sacamos el intercepto y la pendiente, que son los dos números del catálogo. En el laboratorio ustedes van a levantar esta curva con el colector del techo.
+
+Ojo, esta recta usa T\_e en la abscisa. Un catálogo que usa la temperatura media del fluido entrega otra recta, y no se mezclan. Volvamos ahora a la superficie selectiva para ver qué aplana la recta.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s06_35f630a51b6f2e7278c30626049496d588cb0837f06e24d77d49bb5d6c4aa549.mp4"
+          data-background-video="clase06_4_assets/s06_d21153dd33912e7053bcb08eee886664f955a19602c1eba880dfd21a15d5a8d0.mp4"
           >
-            <aside class="notes" data-markdown>- Volvemos a la superficie selectiva de la clase uno
-- Máximos de Wien en 0,50 µm para el Sol y 8,2 µm para la placa
-- Selectiva absorbe bien el sol y emite poco en infrarrojo
-- Menos emisión baja U L y la recta se aplana, línea punteada
-- Con la recta comparamos tecnologías, que es lo que sigue</aside>
+            <aside class="notes" data-markdown>Fíjense en la ley de Wien a la derecha. Recuerden de la clase uno: el Sol, a 5780 K, emite cerca de 0,50 µm, y la placa, a 80 °C, emite en el infrarrojo, alrededor de 8,2 µm. Como los dos espectros casi no se tocan, podemos pedirle a la superficie una α\_s alta en 0,5 µm y una ε baja en 8 µm. Ojo, que α\_s y ε no se contradicen: miden la misma superficie, pero en longitudes de onda distintas.
+
+Si la placa emite menos, baja la pérdida por radiación hacia el vidrio, baja U\_L y se achica la pendiente F\_R U\_L. El intercepto casi no cambia, así que la recta pivota en el eje vertical y se aplana. Eso es la línea punteada cian, rotulada menor U\_L. Es una tendencia, ojo, no un colector medido. La ganancia se nota a x alto, o sea con agua caliente o con poco sol.
+
+Con la recta ya podemos comparar tecnologías distintas, y eso es lo que viene.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s07_654dea86021b4dbfac3e38c741d8df72a222f84767912861a9ff59dad35422a0.mp4"
+          data-background-video="clase06_4_assets/s07_706c459f0de59246544f4682ecb33c0524b272f5db8f61a31500ab341cdd299a.mp4"
           >
-            <aside class="notes" data-markdown>- La recta anterior usa temperatura de entrada
-- EN ISO 9806 usa T m, promedio entrada y salida, y G igual a I T
-- Con T m, eta cero es aproximadamente F prima tau alfa
-- Plano selectivo de catálogo tiene eta cero de 0,80
-- No mezclar bases, en RETScreen fijarse cuál piden
-- Término cuadrático a dos por radiación y convección natural
-- Parámetros referidos al área de apertura, eta cero, a uno y a dos</aside>
+            <aside class="notes" data-markdown>Aquí tenemos la curva normalizada que usa la norma EN ISO 9806. Hay símbolos nuevos. T\_m es la temperatura media del fluido, el promedio de entrada y salida, T\_e y T\_s, en °C. La norma la usa porque está más cerca del fluido real que T\_e. Y donde la norma escribe G, ustedes lean la misma I\_T del plano, no la G horizontal de la clase dos.
+
+η\_0 es la eficiencia óptica, el intercepto cuando T\_m es igual a T\_a. Vale cerca de F'(τα), que es mayor que F\_R(τα). a\_1 es el coeficiente lineal de pérdidas, en W/(m² K); es la pendiente, y en base T\_m vale cerca de F' U\_L. a\_2 es el coeficiente cuadrático, en W/(m² K²), y aparece porque la radiación y la convección natural crecen más rápido que la diferencia de temperatura.
+
+Cuidado con confundir η\_0 con F\_R(τα). Los parámetros de una base no se mezclan con los de la otra, así que en RETScreen revisen cuál les piden. Ahora veamos valores típicos de catálogo para tres tecnologías.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s07_67f295a46e5d54e995d5dfaa3621bc63b2721d0f7bf3013bc875daffa822227e.mp4"
+          data-background-video="clase06_4_assets/s07_2b4d9dcfe0e5271051df0ffe8b8abf742da36e39a2140460d1444ac0cf63dfb8.mp4"
           >
-            <aside class="notes" data-markdown>- Valores típicos de catálogo para tres tecnologías, los del demo
-- Sin cubierta, eta cero más alto y a uno enorme por el viento
-- Plano selectivo con vidrio, tubos de vacío con poca convección
-- Más protección baja a uno y un poco eta cero
-- Nuestro colector en base T m da eta cero 0,67 y a uno 4,4
-- Plano modesto frente a equipo nuevo con eta cero 0,80
-- Veamos qué significa la tabla en una curva</aside>
+            <aside class="notes" data-markdown>En la tabla tienen tres tecnologías. El sin cubierta tiene η\_0 de 0,90, el más alto, porque no hay vidrio. Pero su a\_1 es de 17, enorme, porque el viento le barre la placa. El plano selectivo tiene η\_0 de 0,80 y a\_1 de 3,5: el vidrio encierra una capa de aire y la selectiva corta la radiación. Los tubos de vacío tienen η\_0 de 0,75 y a\_1 de 1,5; sin aire alrededor del absorbedor casi no hay convección, igual que en un termo.
+
+Fíjense en el patrón: más protección baja a\_1 y baja un poco η\_0, porque cada capa agrega pérdidas ópticas.
+
+Abajo en gris está nuestro colector de las clases 2 y 3. Su η\_0 es F'(τα), 0,89 por 0,75, cerca de 0,67, y su a\_1 es F' U\_L, 0,89 por 5, cerca de 4,4 W/(m² K). El plano de la tabla es un equipo nuevo medido de frente, y el nuestro es más modesto, con suciedad y ángulos promedio. Los dos son razonables. Veamos ahora la tabla dibujada como curvas.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s07_d0ab18073a0a5d8eaa7378465cdfc250b7f97eb2d2ae43e15e2f618b85f55eee.mp4"
+          data-background-video="clase06_4_assets/s07_7a6b711a23a76c7c6c0f5902f782d25413727d8fc38c0bb6e6b863c8774cc990.mp4"
           >
-            <aside class="notes" data-markdown>- Tres curvas a 800 W/m²
-- Eje horizontal T m menos temperatura del aire
-- Sin cubierta parte arriba y llega a cero cerca de 42 K
-- No sirve para agua de ducha en invierno
-- Plano cae más lento y tubos casi plana
-- Los cruces de curvas deciden la elección</aside>
+            <aside class="notes" data-markdown>Fíjense que el eje horizontal ahora va en kelvin, T\_m menos T\_a, y ya no en x, porque fijamos G en 800 W/m². El sin cubierta parte en 0,90 y cae muy rápido; llega a cero cerca de los 42 K de diferencia. Por eso no les sirve para agua de ducha en invierno, donde la diferencia con el aire frío es de varias decenas de kelvin.
+
+El plano cae más lento y llega a cero cerca de 120 K, del mismo orden que el estancamiento que vimos. Los tubos son casi planos: a 120 K todavía andan cerca de 0,38. Las curvas se cruzan, y cada cruce les dice desde qué diferencia de temperatura conviene cada tecnología.
+
+Ojo con leer siempre en T\_m menos T\_a. Si entran con T\_e, que es menor, quedan más a la izquierda y sobreestiman la eficiencia. Ahora recorremos el eje con una línea para leer las tres eficiencias a la vez.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s07_d973c37a0fb225ad59ba6be1630f708dec04810ae99dd1f4a536961aab007fe8.mp4"
+          data-background-video="clase06_4_assets/s07_92baefdbaed127ed40eae1996a58d2206473b328a7462a56146afdcadbae054f.mp4"
           >
-            <aside class="notes" data-markdown>- Recorremos el eje con la línea gris y leemos tres eficiencias
-- Con fluido a temperatura del aire gana el sin cubierta
-- A 6 K el plano supera al sin cubierta
-- A 18,8 K los tubos superan al plano, por metro cuadrado
-- Dejamos la línea en 30 K, agua caliente sanitaria típica</aside>
+            <aside class="notes" data-markdown>Con el fluido a la temperatura del aire gana el sin cubierta, porque casi no pierde y tiene la mejor óptica. El primer cruce, en 6,0 K, sale de su ventaja óptica, 0,10, dividida por su exceso de a\_1, 13,5, y por 800. En 18,8 K los tubos superan al plano, siempre hablando por metro cuadrado de apertura. Ojo que estos cruces en kelvin valen para 800 W/m²; con menos sol se corren hacia diferencias menores.
+
+La línea gris se detuvo en 30 K, que es típico de agua caliente sanitaria. Ahí leemos η de 0,26 para el sin cubierta, 0,65 para el plano y 0,68 para los tubos. El sin cubierta ya perdió dos tercios de su eficiencia, y entre plano y tubos la diferencia es de apenas 0,03, así que el precio pesa mucho en la elección.
+
+Hagamos ahora el cálculo completo del plano en 30 K.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s07_5ce6f88ceaf5980bc75ec0491f68070cbea8b43018c4cfe86a427a126e0b90a6.mp4"
+          data-background-video="clase06_4_assets/s07_22179ab86916465c96d297c970e3a07aec0f27379e0b9f199be74816a898d839.mp4"
           >
-            <aside class="notes" data-markdown>- Plano selectivo con 800 W/m², aire a 20 °C y T m de 50 °C
-- Temperatura reducida 30/800 igual a 0,0375
-- Eta cero 0,80, término lineal resta 3,5 por esa fracción
-- Cuadrático resta 0,015 por 30²/800
-- Pregunta al curso, ¿cuál de los dos términos pesa más?</aside>
+            <aside class="notes" data-markdown>Los datos: plano selectivo, G de 800 W/m², T\_a de 20 °C y T\_m de 50 °C. La diferencia T\_m menos T\_a son 30 K, y dividida por G da 0,0375 K m²/W.
+
+Partimos de η\_0, 0,80, que es la fracción del sol que pasa la óptica. El término lineal resta 3,5 por 0,0375; es proporcional a la diferencia y se lleva la mayor parte de las pérdidas. El cuadrático resta 0,015 por 30 al cuadrado sobre 800, y crece cuando la diferencia es grande. Fíjense que las unidades cierran: a\_2 en W/(m² K²), por K², sobre W/m², queda sin unidades.
+
+**Pregunta.** ¿Cuál de los dos términos pesa más a esta temperatura?
+
+*(Esperar respuestas.)* Respuesta: el lineal, porque a\_2 es chico y 30 K todavía es una diferencia moderada.
+
+Hagamos las cuentas y lleguemos a la potencia.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s07_e0e80ff9ebd2fd792d1015ac0ad8253c1869e4b4e9678701e1a2e6c945422aa1.mp4"
+          data-background-video="clase06_4_assets/s07_30b1d992b242018c4c246a72bfa08ae830a81fdcff01618de04170a14a142e93.mp4"
           >
-            <aside class="notes" data-markdown>- Lineal resta 0,131 y cuadrático 0,017, manda el lineal
-- Eficiencia 0,652
-- Con 2 m² la potencia útil es 1043 W, un kilowatt aproximadamente
-- Calefón chico unos 10 kW, uno de 11 L/min unos 19 kW
-- Se parece más a un termo eléctrico
-- Punto cian sobre la línea de 30 K</aside>
+            <aside class="notes" data-markdown>Haciendo las cuentas, η queda en 0,80 menos 0,131 menos 0,017, o sea 0,652. A esta temperatura el lineal pesa casi ocho veces más que el cuadrático. Dicho de otra forma, de cada 100 W que llegan al plano, unos 65 terminan en el agua. En el gráfico es el punto cian sobre la línea de 30 K.
+
+La potencia útil P\_u es η por G por A\_c: 0,652 por 800 por 2 m², 1043 W, más o menos un kilowatt. Para comparar, un calefón chico entrega unos 10 kW y uno de 11 L/min unos 19 kW, entre diez y veinte veces más. El colector se parece más a un termo eléctrico, que calienta lento y acumula, y por eso siempre va con estanque.
+
+Ojo que ese kilowatt vale a 800 W/m². Con menos sol baja G y además baja η, porque la abscisa crece. Ahora una pregunta de control con una piscina.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s07_4b54b948edd63248341cc35d6f1f63579434b16f742a28a2fef1f659c080ec95.mp4"
+          data-background-video="clase06_4_assets/s07_c490fb1146e943935938e332073de651f217c92fb9c35395c92d95b596936ee2.mp4"
           >
-            <aside class="notes" data-markdown>- Piscina con agua muy cerca de la temperatura del aire
-- La diferencia en el eje horizontal es casi cero
-- Pregunta al curso, ¿qué colector conviene ahí mirando las curvas?
-- Esperar respuestas antes de avanzar</aside>
+            <aside class="notes" data-markdown>Piensen en una piscina. El agua está a pocos grados del aire, así que T\_m menos T\_a es casi cero. Con esa diferencia casi nula las pérdidas importan poco y lo que manda es η\_0. Miren entonces el borde izquierdo de las curvas, pegado al eje vertical.
+
+**Pregunta.** Mirando las curvas, ¿qué colector conviene para la piscina?
+
+*(Esperar respuestas.)* Respuesta: el sin cubierta, que tiene el η\_0 más alto, 0,90.
+
+Movamos la línea cerca de cero para ver la respuesta.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s07_f8b836865ad3d7fb64159db053490f949946ea3fef256ddbc435b940b6804d8b.mp4"
+          data-background-video="clase06_4_assets/s07_d148f37c307f992e9301eaf75094dbf3e894d6f2df1e7accd6d499d6464e0437.mp4"
           >
-            <aside class="notes" data-markdown>- Respuesta, el colector sin cubierta, más eficiente y más barato
-- Techos de piscinas usan placas negras de polímero sin vidrio
-- No existe un mejor colector absoluto, marcado como interpretación
-- Tubos rinden más por metro cuadrado desde unos 19 K
-- Plano domina agua caliente sanitaria por menor costo por kilowatt útil
-- Estos tres parámetros los pide RETScreen en el taller
-- Ahora un día completo conectado a un estanque</aside>
+            <aside class="notes" data-markdown>Movimos la línea gris a 2 K, y el punto azul acero queda arriba. Ahí el sin cubierta da cerca de 0,86, el plano 0,79 y los tubos 0,75. Además es el más barato, y por eso en los techos de piscinas ven placas negras de polímero sin vidrio.
+
+Fíjense en la etiqueta de interpretación. No hay un mejor colector absoluto, depende de la diferencia de temperatura del uso. Con estos parámetros los tubos rinden más por m² de apertura desde unos 19 K, y el plano domina el agua caliente sanitaria por costo. Ojo que más eficiencia por m² no significa que sea más conveniente; lo que decide es el costo por kilowatt útil.
+
+Estos tres parámetros se los va a pedir RETScreen en el taller. Antes de eso, veamos el colector funcionando un día completo, conectado a un estanque.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s08_706d15642d66d21fd77e4a5289f07670366cbabcb824621f8f3086e3a84d0e5e.mp4"
+          data-background-video="clase06_4_assets/s08_9a37ea233efdc5b44767554c66052fac2703bdfc6837637f7559ae2ad95bb051.mp4"
           >
-            <aside class="notes" data-markdown>- Cerramos eficiencia, ninguna tecnología gana siempre
-- Sección 4, un día de operación
-- Colector con estanque de 200 L hora a hora
-- Luego notación y síntesis de la unidad</aside>
+            <aside class="notes" data-markdown>Con esto cerramos eficiencia, y la conclusión es que ninguna tecnología gana siempre.
+
+Pasamos a la última sección, un día de operación. Vamos a ver el colector con un estanque de 200 L, hora a hora, y después revisamos la notación y hacemos la síntesis de la unidad. Partimos con el modelo del estanque.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s09_766158007bd8aec3a0d3ca2f0f2dc00567578eb34afbc87571cf8846a233e57b.mp4"
+          data-background-video="clase06_4_assets/s09_fe31dc432a1a9381cfc3a1774a2cef402dfd8e8c7148a38075714c9e47eee15d.mp4"
           >
-            <aside class="notes" data-markdown>- Sistema completo un día entero, modelo del código de programación
-- Estanque de 200 L bien mezclado, T estanque en azul
-- Sube con potencia útil, baja con consumo y pérdidas a la sala
-- Entrada del colector es T estanque, red a 15 °C
-- Sobre 40 °C la válvula mezcladora limita la entrega
-- Sol del día arriba con dos nubes
-- Tau alfa constante y bomba ideal que enciende con ganancia positiva</aside>
+            <aside class="notes" data-markdown>Arriba tienen la curva amarilla A\_c I\_T, el sol sobre los 2 m² del colector, con un pico cerca de 1800 W y dos nubes. Símbolo nuevo: T\_est, la temperatura del estanque en °C, en azul para que no la confundan con T\_s, la salida del colector. Piensen el estanque como una alcancía: m\_t c\_p por la pendiente de T\_est es lo que entra menos lo que sale, con m\_t de 200 kg.
+
+Otro símbolo nuevo es P\_cons, la potencia del consumo en W. UA vale 3 W/K y es la fuga hacia la sala, que está a T\_sala de 18 °C. El corchete con signo más es la bomba ideal, que enciende solo cuando hay ganancia positiva. P\_u usa F\_R, (τα) y U\_L, constantes en el modelo, y aquí T\_e es T\_est porque el colector toma agua del estanque. Ojo, T\_e es la entrada al colector, no es T\_m ni T̄\_p, y por eso P\_u usa F\_R.
+
+Cada consumo, con caudal ṁ\_c, cambia agua caliente por agua de red a 15 °C, y sobre 40 °C la válvula mezcladora limita lo retirado. Ahora corramos el día completo y miremos cómo responde T\_est.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s09_1ac9f4137a58b4c09f01def66ded3f1997029eebf79ed78e6c8cdd0c51ed4685.mp4"
+          data-background-video="clase06_4_assets/s09_f55975413a6626923705686615f181cd43e82d84b70311b3337d0233fb2c6be0.mp4"
           >
-            <aside class="notes" data-markdown>- Corremos el día, la línea gris es el reloj
-- Lectura en vivo de hora, T estanque y P u
-- De noche el estanque pierde un poco hacia la sala
-- Consumos de las 7 y 21 h enfrían con agua de red a 15 °C
-- Potencia útil aparece cuando la ganancia supera las pérdidas
-- Las nubes la cortan a menos de un quinto
-- Potencia útil disminuye al calentarse el estanque, con el mismo sol</aside>
+            <aside class="notes" data-markdown>En el gráfico la línea gris es el reloj. Abajo tienen T\_est en azul, T\_a punteada en verde y los consumos en ámbar, a las 7 y a las 21 h. Arriba aparece P\_u en verde azulado bajo la curva amarilla, y la lectura en vivo les va mostrando la hora, T\_est y P\_u.
+
+Fíjense que de noche el estanque casi no se enfría, porque su constante de tiempo, m\_t c\_p sobre UA, es de unos 77 h. P\_u aparece recién cuando (τα) I\_T supera a U\_L por T\_est menos T\_a; antes de eso la bomba sigue apagada. Cuando pasan nubes, P\_u cae a menos de un quinto y al instante, porque el modelo no le da capacidad térmica al colector. Y con el mismo sol, la P\_u de la tarde queda bajo la de la mañana: T\_est subió y las pérdidas crecen.
+
+**Pregunta.** ¿Por qué el consumo de las 7 enfría tan poco el estanque?
+
+*(Esperar respuestas.)* Respuesta: el estanque está a 20 °C, apenas 5 grados sobre la red, así que entrega poca energía y el calefón pone el resto. Ahora leamos los números del día en el panel de la derecha.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s09_c1af9e71dc051d35ebdf1166b24cc7d7c0f647ab14d4523f071610d75f1eb4f4.mp4"
+          data-background-video="clase06_4_assets/s09_72de4e2c986463e513d32808ce84eb97e7887532975e6bc41531285a07391ea6.mp4"
           >
-            <aside class="notes" data-markdown>- Máximo 46,4 °C a las 17 y 53, final del día 41,2 °C
-- 58 min con sol sin entrega, 7 al amanecer y 51 al atardecer
-- Es el corte de la recta de eficiencia, ahora en el tiempo
-- Euler explícito con pasos de 10 s
-- Diferencia máxima de 0,01 °C frente a paso adaptativo, paso adecuado</aside>
+            <aside class="notes" data-markdown>A la derecha tienen el máximo de T\_est, la temperatura a medianoche, los minutos de sol sin calor útil y la comparación de Euler. T\_est llega a 46,4 °C a las 17:53, casi a las seis, y termina el día en 41,2 °C. El máximo llega tarde porque el estanque sigue ganando mientras P\_u supere sus pérdidas, igual que la hora más calurosa del día llega después del mediodía.
+
+Hay 58 min con sol sin entrega: 7 al amanecer y 51 al atardecer, con sol débil y estanque caliente. Es el corte de la recta de eficiencia, pero visto en el tiempo; al atardecer hacen falta unos 200 W/m² solo para cubrir pérdidas. Ojo, la recta corta cuando x llega a (τα)/U\_L, 0,15 K m²/W, y aquí x usa T\_e igual a T\_est, no la T\_m del catálogo.
+
+El código usa Euler explícito: avanza T\_est en pasos de 10 s con la pendiente del momento. Comparado con un integrador de paso adaptativo, la diferencia máxima es 0,01 °C, así que el paso está bien. Ahora sumemos las energías del día completo.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s09_f9d29e7d31774fa62c6086f72d80d74e44e41b92f29fa1778bfd0505a278ec9f.mp4"
+          data-background-video="clase06_4_assets/s09_02cf329527ad33faab3ac07ae5212c590fe2de591f7fe4097983637851f1c319.mp4"
           >
-            <aside class="notes" data-markdown>- Llegan 12,77 kWh de sol y el fluido recibe 6,82 kWh
-- Eficiencia media del día 0,53, menor que el intercepto 0,64
-- El estanque se calienta y el colector se corre a la derecha
-- Útil menos consumo menos pérdidas igual a lo acumulado, 4,93 kWh
-- Comprobar conservación es lo primero en cualquier simulación</aside>
+            <aside class="notes" data-markdown>Arriba a la derecha están E\_in, E\_u y la eficiencia media; en el recuadro azul, el balance del estanque, y abajo la frase del intercepto. Símbolos nuevos: E\_u es la energía útil del día en kWh, la integral de P\_u en el tiempo, y E\_in es la integral de A\_c I\_T. La eficiencia media del día, η̄\_día, es E\_u sobre E\_in: 6,82 sobre 12,77, o sea 0,53.
+
+El intercepto 0,64 es F\_R (τα), 0,85 por 0,75, la eficiencia cuando T\_e es igual a T\_a. Al calentarse el estanque, el colector se corre a la derecha en la recta y su eficiencia baja del intercepto. Ojo que ese 0,64 está en base a T\_e; el η\_0 de catálogo usa T\_m y con estos datos da 0,665.
+
+Otros dos símbolos: E\_cons es la energía que se lleva el consumo y E\_perd la que se fuga a la sala, ambas en kWh. El balance cierra: 6,82 menos 0,89 menos 1,00 da 4,93 kWh, que son los 21 °C que subió el estanque. Eso nos valida el código. Ahora veamos qué parte del consumo cubrió el sol.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s09_08f70b20791bf1c735ce99056ce889229f62c35a8a7e7802f7206d9661bc4a12.mp4"
+          data-background-video="clase06_4_assets/s09_28a9e20209c5ec2b4eb1a2e3ad4867f971b9f41710e47454d1bed7a6a9b90e13.mp4"
           >
-            <aside class="notes" data-markdown>- Fracción solar, uno menos auxiliar sobre carga
-- Carga de 15 a 40 °C, 1,5 kWh, unos 52 L, dos duchas cortas
-- Fracción solar del primer día 0,59, frente a 60 a 70 % anual
-- Consumo de las 7 encuentra el estanque frío, partiendo a 20 °C
-- Segundo día parte a 41 °C y la fracción sube a 0,95
-- Pregunta al curso, ¿qué dice esto del tamaño del colector para este consumo?
-- Es grande, casi 7 kWh captados para carga de 1,5</aside>
+            <aside class="notes" data-markdown>Aquí tienen la definición de f, la carga Q\_carga y, en el recuadro, f igual a 0,59; abajo, en ámbar, el segundo día. La fracción solar f es uno menos Q\_aux sobre Q\_carga, donde Q\_aux es lo que completa el calefón. Q\_carga es la energía para llevar el agua usada de 15 a 40 °C: 1,5 kWh, unos 52 L, dos duchas cortas.
+
+El estanque entrega E\_cons, 0,89 kWh, y el calefón pone el resto, por eso f es 0,89 sobre 1,50. Sale 0,59 porque el consumo de las 7 encuentra el estanque a 20 °C, antes de que salga el sol. No lo comparen con el 60 a 70 % anual de la clase pasada: un segundo día parte de 41 °C y da 0,95.
+
+**Pregunta.** ¿Qué nos dice esto del tamaño del colector para este consumo?
+
+*(Esperar respuestas.)* Respuesta: es grande, capta casi 7 kWh al día para una carga de 1,5 kWh; la f baja viene del horario. Ahora cambiemos solo el estanque y veamos qué pasa si es chico.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s09_db45dc812b08da637bcd9fdc4898ede59f92a24b0c407f08ba1b833eda6a0536.mp4"
+          data-background-video="clase06_4_assets/s09_e101405b178858e0db40a909c90cce062653d5b344abcb4bf345e188f3c998aa.mp4"
           >
-            <aside class="notes" data-markdown>- Mismo colector con estanque de 50 L, en rosado
-- El agua llega a casi 83 °C
-- Potencia útil se apaga temprano, pérdidas igualan ganancia
-- Casi tres horas de sol desperdiciadas
-- Eficiencia del día cae de 0,53 a 0,38
-- Colector y estanque se dimensionan juntos en RETScreen</aside>
+            <aside class="notes" data-markdown>En rosado está el mismo colector con un estanque de 50 L: arriba su P\_u y abajo su temperatura. La azul es la del estanque de 200 L. El de 50 L tiene un cuarto de la masa, así que con la misma energía su temperatura sube cuatro veces más rápido. El agua llega a 82,7 °C, el colector recibe agua más caliente y la P\_u rosada queda bajo la verde todo el día.
+
+Acuérdense de T\_max. Cerca de las 17, T\_est alcanza la T\_max del momento, las pérdidas igualan a la ganancia y P\_u cae a cero. Son 166 min de sol sin calor útil contando las nubes, casi tres horas, y η̄\_día baja de 0,53 a 0,38. Es como un balde chico bajo una llave grande: se llena pronto y lo que sigue cayendo se pierde. Ojo, la fracción solar casi no cambia, 0,57 frente a 0,59; lo que se pierde es energía del colector.
+
+Por eso colector y estanque se dimensionan juntos, y eso lo van a hacer con RETScreen en el taller. Con esto cerramos la operación y juntamos la notación de la unidad en una lámina.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s10_1060a7f98c3327ab5eeba582b67d01beee4ad1806c503bb2f8df9eddada8cd7e.mp4"
+          data-background-video="clase06_4_assets/s10_4bfd74ea49505662dfe24fb04410b09df05aff52bb91dbe37c944987ba66647f.mp4"
           >
-            <aside class="notes" data-markdown>- Notación de las cuatro clases en una lámina, pueden sacar foto
-- Izquierda recurso y colector con colores de siempre
-- Derecha la cadena F, F prima y F R hacia eficiencia instantánea
-- Parámetros de ensayo y fracción solar, cifra central del taller
-- I T en el plano, G de la clase dos global horizontal
-- Norma escribe G para la irradiancia en el plano, igual a I T
-- Material escrito iguala eta p f a F R, valen ambas si se indica</aside>
+            <aside class="notes" data-markdown>Esta lámina tiene la notación de las tres clases en dos columnas; pueden sacarle una foto. A la izquierda, recurso y colector con los colores de siempre; a la derecha, la cadena F, F' y F\_R, y los parámetros η\_0, a\_1, a\_2 y f.
+
+F es la eficiencia de aleta, tanh mℓ sobre mℓ, con ℓ igual a (W menos D)/2, y no tiene nada que ver con un factor de visión. La cadena va de la aleta, F, al colector, F', y al factor de remoción F\_R, que es el que entra en P\_u y en η\_i. Ojo con los valores: F' de 0,887 se refiere al fluido local, F\_R de 0,856 a la entrada T\_e, y F'' de 0,966 es su cociente.
+
+I\_T es la irradiancia en el plano y G la global horizontal de la clase dos, aunque la norma escribe G para la del plano. En el material escrito aparece η\_sp, potencia neta sobre A\_c por I\_T, y ahí η\_pf es F\_R y T\_f,max es T\_max. Aquí F\_R mantiene su significado estándar, el factor que permite usar T\_e. En la prueba valen ambas escrituras si indican cuál usan. Ahora, la unidad completa en una sola lámina.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s10_31b47835647b208ee81f57fc1c4338c36b334ea8cbf52efabc801384279e2762.mp4"
+          data-background-video="clase06_4_assets/s10_1f79ed6aec71dafd795c6f60b2ddae7dcd52abe95d8987f2de136624e02a4c64.mp4"
           >
-            <aside class="notes" data-markdown>- La unidad completa en una lámina, una línea por clase
-- Recurso en amarillo con R barra, clase dos
-- Captación en naranja, vidrio y selectiva de la clase uno, deja S
-- Pérdidas en ámbar, resistencias y balance de placa de la clase tres
-- Eficiencia en cian, cadena F, F prima y F R de hoy
-- Pregunta al curso, ¿por qué están unidas estancamiento y recta de eficiencia?
-- Demos en carpeta python, traer notebook con RETScreen en Windows</aside>
+            <aside class="notes" data-markdown>A la izquierda hay cuatro barras: recurso en amarillo, captación en naranja, pérdidas en ámbar y eficiencia en cian. A la derecha, dos ecuaciones, T\_max en el recuadro naranja y la recta η\_i en cian, y abajo los demos y RETScreen.
+
+La lista sigue el viaje de la energía: cuánta llega al plano, cuánta absorbe la placa, cuánta se pierde y cuánta recibe el fluido. El recurso lo vimos con R̄ en la clase dos; la captación, con la selectiva de la clase uno y el vidrio, que nos dejan S. Las pérdidas, con la red de resistencias y U\_L, y la eficiencia con la cadena F, F' y F\_R de hoy. Si se van a llevar dos ecuaciones, que sean T\_max y la recta de eficiencia con x igual a (T\_e menos T\_a)/I\_T.
+
+**Pregunta.** ¿Por qué están unidas estas dos ecuaciones?
+
+*(Esperar respuestas.)* Respuesta: con η\_i igual a cero, x vale (τα)/U\_L, o sea T\_e llega a T\_max; la recta corta el eje en el estancamiento. Cerramos con hipótesis y tarea. Para el taller traigan notebook con RETScreen, que corre en Windows.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="clase06_4_assets/s11_ae7892d9b5dfdf42f1a677d36c9cee5f4c19d10d7d8ceba153051ba3d582aaed.mp4"
+          data-background-video="clase06_4_assets/s11_1c8f6eea36556aa9187a22cfb54441a27a9a39b8829d28d105f9e85242cd8dfe.mp4"
           >
-            <aside class="notes" data-markdown>- Hipótesis con caudal uniforme, U L, F prima y F R constantes
-- Ensayo con más de 700 W/m² y estanque mezclado
-- Taller RETScreen dos, fracción solar, auxiliar y evaluación económica
-- Clase siete, intercambiadores de calor de sistemas indirectos
-- Tarea con Explorador Solar, plano de 2 m² en enero y julio
-- H barra T igual a R barra por H barra, dividir por 8 h
-- T m 50 °C, eta cero 0,80, a uno 3,5 y a dos 0,015</aside>
+            <aside class="notes" data-markdown>A la izquierda están las hipótesis de hoy, a la derecha lo que viene y abajo la tarea sugerida. Trabajamos con caudal uniforme; U\_L, F' y F\_R constantes; ensayo con G sobre 700 W/m², que es la misma I\_T, y estanque mezclado.
+
+Lo que viene es el taller RETScreen dos, con fracción solar, auxiliar y evaluación económica, y después la clase 7 de intercambiadores, para sistemas indirectos.
+
+Para la tarea, bajen el H̄ horizontal del Explorador Solar y usen H̄\_T igual a R̄ por H̄, con R̄ de la curva de 33° sur. Dividan por unas 8 h: 6 kWh/m² por día dan unos 750 W/m². Usen T\_m de 50 °C, η\_0 de 0,80, a\_1 de 3,5 y a\_2 de 0,015. Nos vemos en el taller con el notebook y RETScreen instalado.</aside>
         </section>
       </div>
     </div>
