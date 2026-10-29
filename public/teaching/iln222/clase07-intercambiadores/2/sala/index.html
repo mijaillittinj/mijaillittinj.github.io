@@ -1,0 +1,646 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Intercambiadores de calor 2, ILN222</title>
+
+    <link rel="stylesheet" href="../../lib/reveal.js/5.2.0/reveal.min.css">
+    <link rel="stylesheet" href="../../lib/reveal.js/5.2.0/theme/white.min.css">
+
+    <!-- Theme used for syntax highlighting of code -->
+    <!-- <link rel="stylesheet" href="../../lib/css/zenburn.css"> -->
+    <!-- <link rel="stylesheet" href="index.css"> -->
+
+    <style>
+      :root {
+        --bg: #FFFFFF;
+        --fg: #111418;
+        --accent: #1F5FA8;
+        --dim: #5E6A78;
+      }
+      html, body, .reveal { background: var(--bg); }
+      .reveal .slides section { height: 100%; }
+      /* thin progress bar in the presentation accent colour */
+      .reveal .progress { height: 4px; color: var(--accent); background: rgba(0,0,0,0.08); }
+      /* discreet state counter, hidden in the overview.  It sits in the top
+         right corner, which every slide leaves empty, because the bottom of
+         the frame already carries the section name and the source note. */
+      #deck-counter {
+        position: fixed; top: 12px; right: 18px; z-index: 30;
+        font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-size: 15px; color: var(--dim); letter-spacing: 0.2px;
+        pointer-events: none; opacity: 0.8;
+      }
+      .reveal.overview #deck-counter { display: none; }
+      /* keep the arrows unobtrusive, the talk is driven by the keyboard */
+      .reveal .controls { opacity: 0.25; }
+      .reveal .controls:hover { opacity: 0.8; }
+          /* animation-progress dot (idea from a colleague's deck): fills while the state's
+         video plays and turns green when it has finished; key I hides it */
+      #anim-done { position: fixed; right: 86px; top: 14px; width: 16px; height: 16px; z-index: 50;
+        border-radius: 50%; pointer-events: none; transition: background 0.25s, box-shadow 0.25s;
+        --p: 0; background: conic-gradient(rgba(150,150,150,0.8) calc(var(--p) * 1turn), rgba(110,110,110,0.3) 0); }
+      #anim-done.done { background: #3fbf6f; box-shadow: 0 0 6px rgba(63,191,111,0.8); }
+      #anim-done.hidden { display: none; }
+    </style>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s00_d5bc854bfef7cd9cc39c6efdfdfbdae98bb2762168f509e624c012df3afd165d.mp4"
+          data-background-video-muted
+          >
+            <aside class="notes" data-markdown>Segunda sesión de intercambiadores de calor. La sesión pasada terminamos con el doble tubo geotérmico del ejemplo 11-4 y con una ecuación incompleta, Q punto igual a U por A s por una diferencia de temperatura que no sabíamos cuál era, porque cambia de un punto a otro del tubo. Hoy buscamos qué valor va en la ecuación y con él calculamos cuántos metros de tubo necesita el equipo del ejemplo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s01_03929a5d85327c8ce45575e909148284d9538757c5b00d8b6a649b07f60bc73f.mp4"
+          >
+            <aside class="notes" data-markdown>Partimos con el modelo del equipo, un balance de energía en una rebanada del tubo, y lo resolvemos en el computador para ver la puesta en marcha. Del régimen estacionario sale la diferencia media logarítmica. Después la miramos como un área, vemos por qué el promedio simple se equivoca y qué pasa en los casos extremos. Luego el factor de corrección para equipos de varios pasos. Al final dimensionamos el doble tubo geotérmico y lo comparamos con la apuesta que van a hacer ahora.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s02_1f01800d931d0cef1a85cb32e45ee8174b0de8ca009a51648f67867eb3b7df14.mp4"
+          >
+            <aside class="notes" data-markdown>Este es el equipo del ejemplo 11-4. Es un doble tubo en contraflujo, con tubo interior de 1,5 centímetros de diámetro, que calienta 1,2 kilos por segundo de agua de 20 a 80 grados con agua geotérmica que entra a 160 grados. Su U es 640 watt por metro cuadrado y grado. Recuerden que U junta las dos convecciones y la conducción de la pared, y que va referido a un área A s. Pregunta de entrada, ¿cuántos metros de tubo hacen falta? Levanten la mano por una de las cuatro casillas (pausa). Casi siempre la mayoría vota entre 1 y 10 metros. Para saberlo nos falta el delta T de esta ecuación, y para encontrarlo vamos a mirar el equipo por dentro.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s03_d5d636272402626644a6ea9f9d6050fec46ea2a1e1ceaa2f669d820a2aeff184.mp4"
+          >
+            <aside class="notes" data-markdown>Para encontrar ese delta T tomamos un pedazo del tubo de largo delta x, con sus tres partes. El caliente va por el tubo interior y el frío por el anillo, separados por la pared. En cada rebanada cada fluido tiene una sola temperatura, la temperatura media de mezcla de su sección, la misma del flujo interno. Para el caliente escribimos el balance de energía que usamos desde la clase 1, lo que cambia adentro es lo que entra menos lo que sale. Entra calor con el fluido por la izquierda, Q punto en x, sale con el fluido por la derecha, Q punto en x más delta x, y se va calor hacia la pared por convección.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s03_7806f98e38c6aee9d8ff228781faafcefb15bb2a9085d837d3c529dad07ecfaa.mp4"
+          >
+            <aside class="notes" data-markdown>Lo que cambia en la rebanada es su masa por c p por el cambio de temperatura en el tiempo. La masa es la densidad por A f por delta x, con A f la sección por donde pasa el fluido, el círculo blanco. Lo que trae el fluido se escribe con C h, la capacidad de la corriente, el caudal másico por el c p, en watt por grado. C h por la diferencia de temperatura entre la entrada y la salida de la rebanada es el calor neto que deja el flujo. Lo que va a la pared es la ley de Newton. A i es el área interior de todo el tubo, así que a la rebanada le toca la fracción delta x partido por L.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s03_c2015483094c4441e6b0c50b3e9bac50cd79fa97c795dded30aefde7d1783164.mp4"
+          >
+            <aside class="notes" data-markdown>Dividimos por delta x, multiplicamos por L y hacemos tender delta x y delta t a cero. Queda una ecuación diferencial parcial para el caliente, con m h la masa de caliente dentro del tubo. La pared tiene capacidad m w por c w, recibe calor del caliente y lo pasa al frío a través de h o por A o, la conductancia exterior. La del frío es como la del caliente, con un signo que depende de hacia dónde corre. Suponemos carcasa aislada y sin conducción a lo largo del tubo. El caliente entra en x igual cero, el frío en cero o en L según el arreglo, y todo parte a temperatura ambiente. Esto no se resuelve a mano, así que vamos al computador.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s04_eded301f5040187458f2d63479f4a69ed2df98643aea0b439ab1ff6a0ee07b72.mp4"
+          >
+            <aside class="notes" data-markdown>Esas tres ecuaciones, arriba a la derecha, las resolvimos en el computador para un equipo de ejemplo con números redondos, no para el doble tubo geotérmico, que retomamos al final. Theta es la temperatura sin dimensiones, cero a la entrada del frío y uno a la del caliente, y todo parte a temperatura ambiente, theta cero coma dos. El tiempo va en tiempos de residencia del caliente. El mapa de la derecha es la temperatura del frío, cada fila es un instante y el tiempo corre hacia abajo. Las flechas sobre el mapa dan el sentido de cada corriente. El reloj parte lento para ver entrar los frentes y después acelera. La pared se queda atrás porque primero tiene que calentarse.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s04_b78f9ca1be145bfd2638feddeded76eddabd4f49b13c9301f06797754d9b0cac.mp4"
+          >
+            <aside class="notes" data-markdown>Ese es el régimen estacionario, y las líneas punteadas son la solución que vamos a deducir, calculada aparte. Coinciden. Miren las dos salidas marcadas. El agua fría sale por la izquierda más caliente de lo que sale el agua caliente por la derecha, lo mismo que vimos la sesión pasada en contraflujo. Pregunta, ¿cuál de los dos fluidos cambia más de temperatura, y por qué? (pausa) Respuesta esperada, el frío, porque es la corriente de menor capacidad, C c menor que C h. En el mapa queda arriba el arranque y abajo el estacionario. Cuánto demora en llegar depende de las masas, y al diseño le importa poco.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s05_cf36256207c781169f921eb9203df9e1395aa93e98a959a634186e0f0af0e656.mp4"
+          >
+            <aside class="notes" data-markdown>Cuando el equipo llega al régimen nada cambia en el tiempo, así que los términos que guardan calor se tachan, en gris. A la izquierda quedó el tubo con los perfiles del estacionario, el caliente arriba, la pared en gris y el frío abajo. La ecuación de la pared es la que más cambia. Sin el término que guarda calor, todo lo que la pared recibe del caliente lo entrega al frío, y queda una igualdad entre las dos convecciones. Pregunta, ¿qué temperatura de la pared cumple esa igualdad? (pausa) Respuesta esperada, una intermedia, más cerca del fluido con el h por área más grande.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s05_58ed8c46b24b63e5ec4a85574f183bc76033f77d57a3fe79ea4831bd865fb45f.mp4"
+          >
+            <aside class="notes" data-markdown>Con esa igualdad despejamos la temperatura de la pared. En la red, R i es uno partido por h i A i y R o es uno partido por h o A o. T h menos T c es el calor por metro de tubo, d Q punto partido por d x, por el largo L y por la suma de las dos, que es uno partido por U A s, el U de la sesión pasada. La pared sale y quedan dos ecuaciones. El frío cambia de signo porque pasamos el término al otro lado. Abajo están las hipótesis. Si un fluido hierve o condensa solo en parte del tubo, el modelo no sirve. Si cambia de fase en todo el equipo a temperatura fija, cabe como caso límite.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s05_973abc0c8916426335e28c3117b5bd45be9061481c3008566ee320d00d58ad4f.mp4"
+          >
+            <aside class="notes" data-markdown>Para escribirlas mejor usamos xi, la posición dividida por el largo, que va de cero a uno. Como d xi es d x partido por L, el L por la derivada en x es la derivada en xi. Dividimos cada ecuación por su capacidad y quedan dos ecuaciones ordinarias, una para el caliente y otra para el frío, con más en paralelo y menos en contraflujo. Las masas ya no están, porque solo fijaban cuánto tardaba el arranque. Miren los dos grupos enmarcados, U por A s dividido por la capacidad de cada corriente. Como xi no tiene unidades, ellos tampoco. La próxima sesión les ponemos nombre.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s06_d48523e7890ae393089dde90de01e156827a40a141c987b4245cdd6b67bda634.mp4"
+          >
+            <aside class="notes" data-markdown>Arriba quedaron las dos ecuaciones del régimen estacionario, ahora con el signo de contraflujo, el mismo arreglo del equipo geotérmico. La rebanada del tubo baja al gráfico como una franja amarilla. El perímetro del tubo es el mismo en todo el largo, así que el área avanza igual que xi, A es A s por xi y d A es A s por d xi. El extremo 1 es donde entra el caliente y el 2 donde sale. En la franja la diferencia de temperatura es casi constante, y el calor que cruza, la flecha blanca, es U por d A por la diferencia local, como en la sesión 1.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s06_1d48fb94398a5ea5915b45b5daf8a343333996e2d0dee8c013fccda679694e0a.mp4"
+          >
+            <aside class="notes" data-markdown>Tomen la ecuación del caliente y multipliquen por C h y por d xi. A la derecha queda U por A s d xi por la diferencia, que es el d Q punto del paso anterior, y a la izquierda C h por d T h con signo menos. El caliente baja de temperatura, de ahí el signo. Lo mismo con el frío, en contraflujo. Pregunta, el frío se calienta, ¿por qué también lleva signo menos? (pausa) Respuesta esperada, porque avanza hacia la izquierda, como muestra la flecha azul. Mirado en el sentido de x su temperatura baja, y la tangente en la franja lo muestra.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s06_edbb0a2afb86d8dd484cf869ae521596430d422dc241d1984df9973660c5c251.mp4"
+          >
+            <aside class="notes" data-markdown>Lo que nos interesa es cómo cambia la diferencia T h menos T c, porque esa es la que va en la ley de Newton. De cada balance despejamos el cambio de temperatura. d T h es menos d Q punto partido por C h, y d T c es menos d Q punto partido por C c. Ahora restamos la segunda de la primera. A la izquierda queda d de T h menos T c. A la derecha sacamos menos d Q punto como factor común y queda uno partido por C h menos uno partido por C c. Con esto la diferencia ya tiene su propia ecuación.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s06_d0467038f4dbcd7c8d337bc3d137477c1789f5573fafd6144a999372fe1f6980.mp4"
+          >
+            <aside class="notes" data-markdown>Llamamos delta T a la diferencia local, T h menos T c, y el paréntesis de la izquierda se convierte en d delta T. En el lugar de d Q punto ponemos lo del primer paso, U por d A por delta T. Ahora delta T está a los dos lados, así que pasamos a dividir. Queda d delta T partido por delta T igual a menos U por el paréntesis por d A. El cambio relativo de delta T es proporcional al área, y la función que cumple eso es una exponencial. Abajo está delta T contra el área. Por eso las curvas de la sesión pasada se separaban o se juntaban de esa forma.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s06_1aee15a1392d23ea2cd25964e625fc74081423f77f8d8f80fa3d7c03d997c0b3.mp4"
+          >
+            <aside class="notes" data-markdown>Integramos del extremo 1 al 2 y el punto recorre la exponencial. U y las dos capacidades no cambian a lo largo del tubo, son las hipótesis 3 y 4 que se encienden abajo, así que salen de la integral. En la línea de la integral, a la izquierda queda d delta T partido por delta T, evaluado entre delta T 1 y delta T 2, y su integral es el logaritmo de delta T 2 partido por delta T 1, la línea de abajo. A la derecha, la integral de d A de cero a A s es A s. Falta sacar las capacidades, que no queremos en la fórmula final.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s06_3bd97ea88464803cfa7c10f103e271f1f001f1c5cc21463f9038ebaab6bb286d.mp4"
+          >
+            <aside class="notes" data-markdown>Para sacar las capacidades usamos el balance de todo el equipo. Q punto es C h por lo que baja el caliente, así que uno partido por C h es T h entrada menos T h salida partido por Q punto. Igual, uno partido por C c es T c salida menos T c entrada partido por Q punto. Al restarlos juntamos las temperaturas por extremo. En x igual cero, el extremo 1, están T h entrada y T c salida, y su diferencia es delta T 1. En x igual L están T h salida y T c entrada, y su diferencia es delta T 2. Quedan escritas abajo, junto a cada extremo. La resta da delta T 1 menos delta T 2 partido por Q punto.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s06_a9238c1cd5804c38d9c7fd087d0de46deb934b913191bbe27ac2f9d7f0899550.mp4"
+          >
+            <aside class="notes" data-markdown>Ponemos la resta del paso anterior dentro del paréntesis del logaritmo. A la derecha queda menos U A s por delta T 1 menos delta T 2 partido por Q punto. El menos lo pasamos al logaritmo, y menos el logaritmo de delta T 2 sobre delta T 1 es el logaritmo de delta T 1 sobre delta T 2. Despejamos Q punto y el calor es U por A s por esta combinación de las diferencias en los extremos. Se llama diferencia de temperatura media logarítmica, delta T m l. Ya la vieron en la clase 4, en el banco de tubos y en un tubo con superficie a temperatura fija.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s06_d7f93b371b2d981e42ac76b1dfbe0761a631e26707b26afc4b889f974e2a98a3.mp4"
+          >
+            <aside class="notes" data-markdown>En flujo paralelo el frío avanza en el mismo sentido que el caliente, sus flechas se invierten y cambian los perfiles. El panel de abajo queda atenuado, es el de contraflujo. En la deducción cambia un solo signo, el del balance del frío. Desde ahí el logaritmo lleva uno partido por C h más uno partido por C c, la línea del medio, y el balance global da esa misma suma igual a delta T 1 menos delta T 2 partido por Q punto. Al sustituir se llega al mismo recuadro. Lo que cambia son las parejas, en paralelo en x igual cero están las dos entradas y en x igual L las dos salidas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s07_503c86a523c7dbbb9d3d03c340ff18795f4c1e7133bdfdac7574c65b03aa83ce.mp4"
+          >
+            <aside class="notes" data-markdown>Ya tenemos la fórmula. Antes de aplicarla al equipo geotérmico conviene entender qué representa. La vamos a dibujar como una altura en el gráfico de delta T contra el área. Con ese dibujo se ve por qué el promedio simple de los dos extremos se equivoca y en qué casos el error se vuelve grande.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s08_68950d59e274a768576ef26f7d707cac683bf555c8f634083fb106b5bdc3c682.mp4"
+          >
+            <aside class="notes" data-markdown>Volvemos al panel de delta T contra el área del contraflujo de la deducción, ahora en grande y en fracciones del extremo mayor. Como d Q punto es U por delta T por d A, el área bajo la curva es el calor partido por U. El recuadro de la deducción dice que ese calor es U por A s por delta T m l, así que delta T m l es el promedio de delta T sobre el área. Un delta T constante que deje pasar el mismo calor tiene altura delta T m l, y mientras la región se aplana la barra de la derecha no cambia.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s08_7b64d90969ae5af541e7e474043ceb240bbfebe55e15b7e87e6a89158074270a.mp4"
+          >
+            <aside class="notes" data-markdown>Error frecuente, usar el promedio simple de delta T 1 y delta T 2. Ese promedio es la altura media de la cuerda recta entre los dos extremos. La exponencial es convexa, se curva hacia arriba como un tazón, y por eso queda siempre bajo la cuerda, sea que delta T suba o baje a lo largo del tubo. La franja clara entre la cuerda y la curva es justo esa diferencia. El rectángulo de la media aritmética sobresale del logarítmico, y ese exceso en rojo es calor que el equipo no entrega. La media aritmética sobreestima el calor y deja el equipo chico.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s08_0bf4e8a7c013360548d2c4baa07731f7bfe59fb49734d4314c1d40eb41971edc.mp4"
+          >
+            <aside class="notes" data-markdown>Llamamos r al delta T mayor dividido por el menor, aquí delta T 2 sobre delta T 1. Si los extremos se parecen, la curva es casi recta y el error es chico. Con r igual a 2 la media aritmética se pasa en un 4 por ciento, con 3 en casi un 10 por ciento, y con 10 en más de un 40 por ciento. El punto blanco recorre la curva del error mientras el exceso rojo crece. En flujo paralelo r suele ser grande, porque las dos entradas están juntas en el mismo extremo, y por eso ahí el promedio simple es más peligroso.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s08_bac3779574e4e45ab8ad1ee6049d000bd2103c8f83a78010984bcf8a85234995.mp4"
+          >
+            <aside class="notes" data-markdown>Caso límite, delta T 1 tiende a delta T 2. La fórmula está escrita con delta T 2 adelante, que da lo mismo porque es simétrica. La curva se aplana hasta una recta y los dos rectángulos se juntan. La fórmula queda cero partido cero, y aun así el límite existe. Si llamamos delta a la diferencia entre los extremos, la media logarítmica es delta T 2 más delta medios menos un término de segundo orden. Al primer orden es justo la media aritmética, por eso las dos coinciden cuando los extremos se parecen. Cuando uno de los delta T se va a cero, la media logarítmica también se va a cero y el área necesaria se va a infinito.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s09_f3bfccd63c5d4d9636b87bc2580fe9e5af9d2070e510e10da0a8509a55420a54.mp4"
+          >
+            <aside class="notes" data-markdown>Ese límite tiene un equipo concreto, el contraflujo con capacidades iguales. Arriba la regla es la razón C c sobre C h. Partimos con el caliente de capacidad doble, 0,5 en la regla, y la vamos bajando hasta que las dos son iguales, con el mismo U A s. Cada watt que sale del caliente le baja la temperatura lo mismo que le sube al frío, así que el paréntesis de la ecuación de la derecha se anula. La diferencia de temperatura no cambia en todo el tubo, los perfiles quedan como dos rectas paralelas y delta T 1 es igual a delta T 2. Ahí la media logarítmica es simplemente ese delta T.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s09_2dd72fef86947826ca96df46c28998f09d6c1dade298e7bf3e92cd14c9bdbe88.mp4"
+          >
+            <aside class="notes" data-markdown>Segundo caso límite, un fluido que condensa a temperatura fija, y el punto de la regla sigue hacia la izquierda. Al condensar el caliente entrega calor sin cambiar de temperatura, d T h es cero, y su capacidad, calor por grado, se va a infinito. Por eso uno partido por C h se va a cero, y este cambio de fase sí cabe en el modelo. La línea punteada marca la salida del frío y el largo de la barra turquesa de la derecha es delta T m l. Pregunta, si damos vuelta el frío y lo hacemos entrar por el mismo lado que el caliente, ¿sale más caliente, más frío o igual? (pausa)</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s09_b2b2948dd715705a6453f236ffd6bd22bba8933d4d6f41672afacebd435cd564.mp4"
+          >
+            <aside class="notes" data-markdown>Respuesta esperada, sale igual. La curva del frío se refleja, termina en la misma línea punteada y la barra de delta T m l no se mueve. Lo único que cambia es qué extremo es el 1 y cuál el 2. Con el caliente a temperatura fija da lo mismo por dónde entra el frío, así que en un condensador no hay diferencia entre paralelo y contraflujo. Es el mismo caso de la clase 4, el tubo con la superficie a temperatura fija, donde ya usaron esta media.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s09_64af4c990ff087b862af4c0872a14615277deaa4dcbab07db8227cc5571d844a.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora las dos capacidades finitas, con los mismos parámetros de la puesta en marcha, que vimos solo en contraflujo, con C c menor que C h. Las líneas llenas son el contraflujo y las punteadas el paralelo, con el mismo U A s y las mismas entradas. Miren las dos salidas del frío marcadas. En contraflujo sale a 0,77 y en paralelo a 0,63. Siempre que las dos capacidades sean finitas el contraflujo transfiere más calor con la misma área, o pide menos área para el mismo calor. Por eso, cuando se puede elegir, se elige contraflujo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s10_c87da96a6b43da08075341c5cccd1c99da20e4722609dff67df40c59beffe7d0.mp4"
+          >
+            <aside class="notes" data-markdown>Todo lo que dedujimos vale para un doble tubo, en paralelo o en contraflujo. La sesión pasada vimos equipos donde el flujo no es ninguno de los dos, el casco y tubos con varios pasos y el flujo cruzado del radiador. En esos equipos un fluido recorre el otro de ida y de vuelta, y la deducción con una sola franja ya no sirve. Ahora vemos cómo se calculan.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s11_28f725483f3481981707cd37995aa5f1e178a7307a8df717431d664ff4d0770a.mp4"
+          >
+            <aside class="notes" data-markdown>En un casco y tubos cada paso es una vez que el fluido de los tubos recorre el casco de punta a punta. Aquí hay un paso por el casco y dos por los tubos, que dan la vuelta en el cabezal de la derecha. El fluido del casco entra arriba a la izquierda y sale abajo a la derecha. Con dos o más pasos el fluido de los tubos va a ratos en paralelo y a ratos en contraflujo. Por eso la media se calcula como si el equipo fuera de contraflujo, emparejando la entrada de un fluido con la salida del otro, y se multiplica por un factor de corrección F. F mide cuánto se aleja el equipo del contraflujo y nunca pasa de uno.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s11_831da8df072b651374c563b03f606befee2a06a093f585e1db0380702d8fa067.mp4"
+          >
+            <aside class="notes" data-markdown>Error frecuente, mezclar este F con el de la clase 6. Allá F era la eficiencia de la aleta, aquí es la corrección de la media logarítmica. Los dos no tienen unidades y valen uno en el caso ideal, por eso se confunden. Uno compara la aleta real con una aleta entera a la temperatura de la base, el otro compara el equipo real con un contraflujo puro. Desde aquí, F es solo el factor de corrección.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s11_a492115af5719f21573062ed9ac0b17da1917fde6e4c8f1a6c350aeb3af73e2d.mp4"
+          >
+            <aside class="notes" data-markdown>Al diagrama se entra con dos razones. P es cuánto cambia la temperatura del fluido de los tubos comparado con lo máximo posible. R F es la capacidad del lado tubos dividida por la del lado casco, que por balance es la razón entre los cambios de temperatura. La t minúscula es el lado de los tubos y la T mayúscula el del casco, aquí no son espesor ni tiempo, y el caliente puede ir por cualquiera de los dos. Le pongo subíndice F a la R para no confundirla con una resistencia. Con dos, cuatro o seis pasos por los tubos la curva es prácticamente la misma. Con R F igual a 1 y P igual a 0,4 se lee F igual 0,921.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s11_c04426b64b79ccaee733861f18dc033b03a0296b2c922233f8946a260923240d.mp4"
+          >
+            <aside class="notes" data-markdown>Si pedimos que el fluido de los tubos cambie más, el punto baja por la curva. En P igual a 0,585 F ya va en 0,31, y en 0,586 llega a cero. Más allá ningún casco de un paso sirve. El recuadro muestra por qué, con un casco muy largo, en rojo punteado el casco y en azul los dos pasos de tubos. Pasado el primer tramo las tres quedan pegadas, y eso es el pellizco. Sin diferencia no pasa calor, así que alargar el tubo ya no sube P. El punto blanco en P igual a 0,5 marca el cruce, donde la salida del frío queda más caliente que la del caliente. Hay equipos que trabajan con cruce, con F cerca de 0,8.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s11_458e13da5048c83aabed6a4ae212f620c865f178f97076740f4ea9bf92a2b992.mp4"
+          >
+            <aside class="notes" data-markdown>Regla de diseño, F mayor que 0,8, que viene de la práctica. Los puntos marcan dónde cada curva cruza 0,8. Si el equipo cae en la franja de abajo se cambia la configuración, más cascos en serie, contraflujo puro o placas. Cerca del borde F cae casi en vertical, así que un error chico en las temperaturas, o un casco que no se comporta como el ideal, cambia mucho el área, y el equipo puede no llegar. Las punteadas son el flujo cruzado con los dos fluidos no mezclados, más arriba. Con R F igual a 1 y P igual a 0,4 da 0,946. No mezclado es que el fluido va encerrado en canales, como el aire entre aletas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s11_b917c8bdf3e970f5b656d101b9120956ca6dfed96881faf7f27cd4d4e14b4ea8.mp4"
+          >
+            <aside class="notes" data-markdown>Antes de dejar el diagrama, un equipo que aparece mucho en centrales y en refrigeración, el condensador. Un lado condensa a temperatura fija, la misma en todo el equipo, igual que en el segundo caso límite de hace un rato. Pregunta, en un condensador, ¿qué F usan? Elijan un número entre cero y uno, y piensen si importa cómo se cruzan los flujos cuando uno de ellos no cambia de temperatura (pausa). Para contestar vamos a mirar qué le pasa a la familia de curvas cuando una de las capacidades crece sin límite.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s11_215284657808ee053c5e22ece2450a728c8394e1fc84e4e654c9c9a627049bb7.mp4"
+          >
+            <aside class="notes" data-markdown>Respuesta esperada, uno. Miren la familia, mientras R F baja hacia cero todas las curvas suben y se aplanan en F igual a uno. Si el que cambia de fase va por el casco, R F se va a cero. Si va por los tubos, P se va a cero. En los dos casos F vale uno, y da lo mismo cómo se cruzan los flujos, igual que en el condensador del caso límite, que dibujamos abajo a la derecha con la curva caliente plana. Aplicar un F menor que uno en un condensador es un error frecuente, y lleva a sobredimensionar el equipo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s12_39b32deaab4d1a36c0903caf140f444958127811b9f2ed58496e59e776980612.mp4"
+          >
+            <aside class="notes" data-markdown>Volvemos al problema geotérmico del comienzo, el que dejamos con la votación. Con lo de hoy ya está todo lo que hace falta para resolverlo, y la sesión pasada nos dejó el U. Antes de meter números conviene escribir el orden de los pasos, porque es el mismo para cualquier problema de diseño que les toque en la guía o en el certamen.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s13_bb7c026cbd2425f079648eb3e4187f6084f0cf1018a9b90cb32d745fe3d5aacb.mp4"
+          >
+            <aside class="notes" data-markdown>El método sirve cuando se conocen las cuatro temperaturas o se pueden sacar por balance. Primero se elige el tipo de equipo. Después, con el balance de cada corriente, se saca la temperatura que falta y el calor. Luego la media logarítmica con las parejas que corresponden, y el factor F si el equipo no es un doble tubo. Se estima U, diciendo sobre qué área está referido, y al final sale el área. Pregunta, si no conocemos ninguna de las dos salidas, ¿en qué paso se traba? (pausa) Respuesta esperada, ya en el dos, porque sin una salida el balance no da la otra, y sin las cuatro temperaturas no hay media. Entonces hay que suponer una e iterar, y eso lo resolvemos la próxima sesión.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s14_557a7223af2fa56ec20bfe4defc5b0c8b08a8c93d6a92553618bd82ae0d8eb64.mp4"
+          >
+            <aside class="notes" data-markdown>Apliquemos el método al ejemplo 11-4, en contraflujo. En la figura del libro el agua fría va por el tubo interior y la geotérmica por el anillo. Nosotros mantenemos la convención de la clase, caliente adentro, y con pared delgada y el mismo U del enunciado el área y el largo son los mismos. Los datos son los del libro, c p del agua 4,18 y de la geotérmica 4,31 kilojoule por kilo y grado. El balance del agua fría da el calor, 1,2 por 4,18 por 60 grados, 301 kilowatt. Lo que gana el agua lo pierde la geotérmica, que baja 301 dividido por 2 por 4,31 y sale a 125 grados, 125,08 sin redondear. Ya conocemos las cuatro temperaturas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s14_66d769285eb26e694cbeeacf3544a05d844515a295d7960c0fa827e0418759e4.mp4"
+          >
+            <aside class="notes" data-markdown>El tubo está pintado con las temperaturas de este equipo, y abajo van los perfiles. En el extremo 1, donde entra la geotérmica, la diferencia es 160 menos 80, 80 grados. En el extremo 2 es 125 menos 20, 105 grados. La media logarítmica da 91,97. Ojo, ese valor sale de las temperaturas sin redondear. Aquí delta T sube a lo largo del tubo. Es un doble tubo en contraflujo, así que F vale 1. Con U de 640 y el calor en watt, 300 960, el área queda en 5,113 metros cuadrados. El libro da 5,12, porque redondea el calor a 301 kilowatt y la media a 91,9.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s14_f1b809604fd6132bf754fbc1564dec4f46aeba28237fd1001b4ccd14955a4cde.mp4"
+          >
+            <aside class="notes" data-markdown>El área que calculamos es la de la pared del tubo interior, pi por D por L, porque es la que separa a la geotérmica del agua. Entonces el largo es el área dividida por pi por el diámetro, 1,5 centímetros, que en metros es cero coma cero quince. Pregunta, ¿cuántos metros cuadrados de pared aporta cada metro de este tubo? (pausa) Respuesta esperada, pi por 0,015, unos 0,047 metros cuadrados. Con eso ya se ve el orden de magnitud, para juntar 5 metros cuadrados hacen falta más de cien metros de tubo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s14_3ed08e792681187d6c789476b844663a626bdda06c6c665ee2d408963c57ec0e.mp4"
+          >
+            <aside class="notes" data-markdown>Son 108 metros y medio. Separamos el tubo interior y lo estiramos sobre una cancha de fútbol dibujada a la misma escala. El grosor no está a escala, por eso la lupa muestra el diámetro aparte. El tubo pasa un poco más allá de la otra línea de fondo. El libro llega a 109 metros por el mismo redondeo que vimos en el área. Comparen con lo que votaron al comienzo, la casilla marcada es la de más de 100 metros. Casi nadie se imagina un tubo tan largo para un equipo que cabe en una sala de máquinas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s14_631ac91bde4d00490f076652e8e121e5a09afc9045cba501e5e62e8710b85997.mp4"
+          >
+            <aside class="notes" data-markdown>Cambiemos una sola cosa. Mismo equipo, mismos caudales, mismas entradas y el mismo U, ahora conectado en paralelo, con el agua fría entrando por el mismo extremo que la geotérmica. Abajo quedó la barra del contraflujo, 108 metros y medio. Pregunta, ¿en paralelo hace falta más tubo o menos, y cuánto, en porcentaje? Recuerden lo que vimos con las dos salidas del frío en los casos límite (pausa). Anoten su número, porque lo vamos a comparar con la barra que viene.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s14_79630040d4df8b08defccad9be5d360c1f872592aef5cc8ef356136f0c9c733b.mp4"
+          >
+            <aside class="notes" data-markdown>La barra de abajo es el paralelo en la misma escala, 119 metros, unos 11 más, un 10 por ciento. En paralelo los extremos son 140 y 45,1 grados, que sale de 125,08 menos 80. La media logarítmica baja a 83,8, así que el área crece a 5,61 metros cuadrados. En contraflujo la media aritmética apenas se equivoca, 92,5 contra 91,97, porque 80 y 105 se parecen. En paralelo la media aritmética también da 92,5, porque la suma de las diferencias en los extremos es la misma, 185 grados. Con la media aritmética contraflujo y paralelo darían el mismo largo, y la barra muestra que no es así.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s14_37608b4e0a321245cf14cd2f4a5a77b5d265e5bf0953ba1f686a771a55a32477.mp4"
+          >
+            <aside class="notes" data-markdown>Nadie construye un tubo recto de 108 metros, ni manda todo el caudal por un solo tubo. Con la convención de la clase, empujar 2 kilos por segundo de geotérmica por un tubo de un centímetro y medio pide unos doce metros y medio por segundo. Con el agua fría por dentro, como en el libro, son unos 7, también demasiado, y la caída de presión sería enorme. En la práctica el tubo se pliega en horquillas, el caudal se reparte en muchos tubos dentro de un casco o se pasa a placas, que para agua con agua es lo natural. Al repartir el caudal baja la velocidad, cambia h y con él U, así que el área hay que recalcularla.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="white"
+          data-background-video="clase07_2_sala_assets/s15_0a318caefe1c9088d5dbadaf174b88b64646e13ce5569588e306cc26474e742f.mp4"
+          >
+            <aside class="notes" data-markdown>Todo lo de hoy supone las cinco hipótesis de la izquierda. La media logarítmica sirve cuando conocemos las cuatro temperaturas y buscamos el tamaño. Si el equipo ya existe y no sabemos a qué temperatura sale cada fluido, habría que suponer una salida y corregirla vuelta a vuelta. Les dejo una pregunta. Si ponemos dos equipos iguales en serie, ¿sale el doble de calor? (pausa) Respuesta esperada, menos del doble, porque al segundo equipo le llega una diferencia de temperatura más chica. Cuánto menos, y cómo se calcula sin adivinar las salidas, lo vemos la próxima sesión.</aside>
+        </section>
+      </div>
+    </div>
+
+    <script src="../../lib/reveal.js/5.2.0/reveal.min.js"></script>
+    <script src="../../lib/reveal.js/5.2.0/plugin/notes/notes.min.js"></script>
+
+    <!-- To include plugins, see: https://revealjs.com/plugins/ -->
+    <script src="../../lib/reveal.js/5.2.0/plugin/markdown/markdown.min.js"></script>
+
+    <!-- <script src="index.js"></script> -->
+    <script>
+      Reveal.initialize({
+        /// The list of RevealJS plugins.
+        plugins: [ RevealMarkdown, RevealNotes ],
+        // The "normal" size of the presentation, aspect ratio will
+        // be preserved when the presentation is scaled to fit different
+        // resolutions. Can be specified using percentage units.
+        width: '100%',
+        height: '100%',
+        // Factor of the display size that should remain empty around
+        // the content
+        margin: 0.04,
+        // Bounds for smallest/largest possible scale to apply to content
+        minScale: 0.2,
+        maxScale: 2.0,
+        // Display presentation control arrows
+        controls: true,
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: true,
+        // Determines where controls appear, "edges" or "bottom-right"
+        // Fixed here because Manim Slides injects the value of
+        // `-ccontrols_layout` without the surrounding quotes.
+        controlsLayout: "edges",
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: "faded",
+        // Display a presentation progress bar
+        progress: true,
+        // Display the page number of the current slide
+        // - true:    Show slide number
+        // - false:   Hide slide number
+        //
+        // Can optionally be set as a string that specifies the number formatting:
+        // - "h.v":   Horizontal . vertical slide number (default)
+        // - "h/v":   Horizontal / vertical slide number
+        // - "c":   Flattened slide number
+        // - "c/t":   Flattened slide number / total slides
+        //
+        // Alternatively, you can provide a function that returns the slide
+        // number for the current slide. The function should take in a slide
+        // object and return an array with one string [slideNumber] or
+        // three strings [n1,delimiter,n2]. See #formatSlideNumber().
+        slideNumber: false,
+        // Can be used to limit the contexts in which the slide number appears
+        // - "all":      Always show the slide number
+        // - "print":    Only when printing to PDF
+        // - "speaker":  Only in the speaker view
+        showSlideNumber: 'all',
+        // Use 1 based indexing for # links to match slide number (default is zero
+        // based)
+        hashOneBasedIndex: false,
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: false,
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: false,
+        // Enable support for jump-to-slide navigation shortcuts
+        jumpToSlide: true,
+        // Push each slide change to the browser history.  Implies `hash: true`
+        history: true,
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+        // Optional function that blocks keyboard events when retuning false
+        //
+        // If you set this to 'focused', we will only capture keyboard events
+        // for embedded decks when they are in focus
+        keyboardCondition: null,
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+        // Enable the slide overview mode
+        overview: true,
+        // Vertical centering of slides
+        center: true,
+        // Enables touch navigation on devices with touch input
+        touch: true,
+        // Loop the presentation
+        loop: false,
+        // Change the presentation direction to be RTL
+        rtl: false,
+        // Changes the behavior of our navigation directions.
+        //
+        // "default"
+        // Left/right arrow keys step between horizontal slides, up/down
+        // arrow keys step between vertical slides. Space key steps through
+        // all slides (both horizontal and vertical).
+        //
+        // "linear"
+        // Removes the up/down arrows. Left/right arrows step through all
+        // slides (both horizontal and vertical).
+        //
+        // "grid"
+        // When this is enabled, stepping left/right from a vertical stack
+        // to an adjacent vertical stack will land you at the same vertical
+        // index.
+        //
+        // Consider a deck with six slides ordered in two vertical stacks:
+        // 1.1    2.1
+        // 1.2    2.2
+        // 1.3    2.3
+        //
+        // If you're on slide 1.3 and navigate right, you will normally move
+        // from 1.3 -> 2.1. If "grid" is used, the same navigation takes you
+        // from 1.3 -> 2.3.
+        navigationMode: 'default',
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+        // Turns fragments on and off globally
+        fragments: true,
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: true,
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+        // Flags if we should show a help overlay when the question-mark
+        // key is pressed
+        help: true,
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+        // Global override for autolaying embedded media (video/audio/iframe)
+        // - null:   Media will only autoplay if data-autoplay is present
+        // - true:   All media will autoplay, regardless of individual setting
+        // - false:  No media will autoplay, regardless of individual setting
+        autoPlayMedia: null,
+        // Global override for preloading lazy-loaded iframes
+        // - null:   Iframes with data-src AND data-preload will be loaded when within
+        //           the viewDistance, iframes with only data-src will be loaded when visible
+        // - true:   All iframes with data-src will be loaded when within the viewDistance
+        // - false:  All iframes with data-src will be loaded only when visible
+        preloadIframes: null,
+        // Can be used to globally disable auto-animation
+        autoAnimate: true,
+        // Optionally provide a custom element matcher that will be
+        // used to dictate which elements we can animate between.
+        autoAnimateMatcher: null,
+        // Default settings for our auto-animate transitions, can be
+        // overridden per-slide or per-element via data arguments
+        autoAnimateEasing: 'ease',
+        autoAnimateDuration: 1.0,
+        autoAnimateUnmatched: true,
+        // CSS properties that can be auto-animated. Position & scale
+        // is matched separately so there's no need to include styles
+        // like top/right/bottom/left, width/height or margin.
+        autoAnimateStyles: ['opacity', 'color', 'background-color', 'padding', 'font-size', 'line-height', 'letter-spacing', 'border-width', 'border-color', 'border-radius', 'outline', 'outline-offset'],
+        // Controls automatic progression to the next slide
+        // - 0:      Auto-sliding only happens if the data-autoslide HTML attribute
+        //           is present on the current slide or fragment
+        // - 1+:     All slides will progress automatically at the given interval
+        // - false:  No auto-sliding, even if data-autoslide is present
+        autoSlide: 0,
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+        // Use this method for navigation when auto-sliding (defaults to navigateNext)
+        autoSlideMethod: null,
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+        // Opens links in an iframe preview overlay
+        // Add `data-preview-link` and `data-preview-link="false"` to customize each link
+        // individually
+        previewLinks: false,
+        // Exposes the reveal.js API through window.postMessage
+        postMessage: true,
+        // Dispatches all reveal.js events to the parent window through postMessage
+        postMessageEvents: false,
+        // Focuses body when page changes visibility to ensure keyboard shortcuts work
+        focusBodyOnPageVisibilityChange: true,
+        // Transition style
+        transition: 'none', // none/fade/slide/convex/concave/zoom
+        // Transition speed
+        transitionSpeed: 'default', // default/fast/slow
+        // Transition style for full page slide backgrounds
+        backgroundTransition: 'none', // none/fade/slide/convex/concave/zoom
+        // The maximum number of pages a single slide can expand onto when printing
+        // to PDF, unlimited by default
+        pdfMaxPagesPerSlide: Number.POSITIVE_INFINITY,
+        // Prints each fragment on a separate slide
+        pdfSeparateFragments: true,
+        // Offset used to reduce the height of content within exported PDF pages.
+        // This exists to account for environment differences based on how you
+        // print to PDF. CLI printing options, like phantomjs and wkpdf, can end
+        // on precisely the total height of the document whereas in-browser
+        // printing has to end one pixel before.
+        pdfPageHeightOffset: -1,
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+        // The display mode that will be used to show slides
+        display: 'block',
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000
+      });
+      // Override SPACE to play / pause the video
+      Reveal.addKeyBinding(
+        {
+          keyCode: 32,
+          key: 'SPACE',
+          description: 'Play / pause video'
+        },
+        () => {
+          var currentVideos = Reveal.getCurrentSlide().slideBackgroundContentElement.getElementsByTagName("video");
+          if (currentVideos.length > 0) {
+            if (currentVideos[0].paused == true) currentVideos[0].play();
+            else currentVideos[0].pause();
+          } else {
+            Reveal.next();
+          }
+        }
+      );
+    </script>
+
+    <div id="deck-counter"></div>
+    <script>
+      (function () {
+        function refresh() {
+          var total = Reveal.getTotalSlides();
+          var idx = Reveal.getSlides().indexOf(Reveal.getCurrentSlide()) + 1;
+          var el = document.getElementById("deck-counter");
+          if (el) el.textContent = idx + " / " + total;
+        }
+        Reveal.on("ready", refresh);
+        Reveal.on("slidechanged", refresh);
+      })();
+    </script>
+      <div id="anim-done"></div>
+    <script>
+      (function () {
+        var dot = document.getElementById('anim-done');
+        function currentVideo() {
+          var s = Reveal.getCurrentSlide();
+          var bg = s && (s.slideBackgroundContentElement || Reveal.getSlideBackground(s));
+          return bg ? bg.querySelector('video') : null;
+        }
+        setInterval(function () {
+          var v = currentVideo();
+          if (!v || !isFinite(v.duration) || v.duration === 0) {
+            dot.classList.remove('done'); dot.style.setProperty('--p', 0); return;
+          }
+          var p = Math.min(1, v.currentTime / v.duration);
+          var done = v.ended || p > 0.995;
+          dot.classList.toggle('done', done);
+          dot.style.setProperty('--p', done ? 1 : p);
+        }, 100);
+        Reveal.addKeyBinding({ keyCode: 73, key: 'I', description: 'Mostrar u ocultar el indicador de animación' },
+                             function () { dot.classList.toggle('hidden'); });
+      })();
+    </script>
+  </body>
+</html>

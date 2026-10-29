@@ -1,0 +1,707 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Intercambiadores de calor 1, ILN222</title>
+
+    <link rel="stylesheet" href="../lib/reveal.js/5.2.0/reveal.min.css">
+    <link rel="stylesheet" href="../lib/reveal.js/5.2.0/theme/black.min.css">
+
+    <!-- Theme used for syntax highlighting of code -->
+    <!-- <link rel="stylesheet" href="../lib/css/zenburn.css"> -->
+    <!-- <link rel="stylesheet" href="index.css"> -->
+
+    <style>
+      :root {
+        --bg: #0D1117;
+        --fg: #E8EDF2;
+        --accent: #6FA8DC;
+        --dim: #5B6775;
+      }
+      html, body, .reveal { background: var(--bg); }
+      .reveal .slides section { height: 100%; }
+      /* thin progress bar in the presentation accent colour */
+      .reveal .progress { height: 4px; color: var(--accent); background: rgba(255,255,255,0.06); }
+      /* discreet state counter, hidden in the overview.  It sits in the top
+         right corner, which every slide leaves empty, because the bottom of
+         the frame already carries the section name and the source note. */
+      #deck-counter {
+        position: fixed; top: 12px; right: 18px; z-index: 30;
+        font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-size: 15px; color: var(--dim); letter-spacing: 0.2px;
+        pointer-events: none; opacity: 0.8;
+      }
+      .reveal.overview #deck-counter { display: none; }
+      /* keep the arrows unobtrusive, the talk is driven by the keyboard */
+      .reveal .controls { opacity: 0.25; }
+      .reveal .controls:hover { opacity: 0.8; }
+          /* animation-progress dot (idea from a colleague's deck): fills while the state's
+         video plays and turns green when it has finished; key I hides it */
+      #anim-done { position: fixed; right: 86px; top: 14px; width: 16px; height: 16px; z-index: 50;
+        border-radius: 50%; pointer-events: none; transition: background 0.25s, box-shadow 0.25s;
+        --p: 0; background: conic-gradient(rgba(150,150,150,0.8) calc(var(--p) * 1turn), rgba(110,110,110,0.3) 0); }
+      #anim-done.done { background: #3fbf6f; box-shadow: 0 0 6px rgba(63,191,111,0.8); }
+      #anim-done.hidden { display: none; }
+    </style>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s00_3706ae110ed05736478f60362dfa99df111575655c3fa1853848d6cb7599056d.mp4"
+          data-background-video-muted
+          >
+            <aside class="notes" data-markdown>Bienvenidos a la primera de tres sesiones sobre intercambiadores de calor. La clase pasada el colector solar llevaba calor del Sol al agua. En el sistema indirecto el circuito del colector lleva anticongelante, que no se mezcla con el agua de la casa, y un equipo pasa el calor de un circuito al otro. Ese equipo es un intercambiador de calor. Hoy lo abrimos para ver cómo está hecho y terminamos con una pregunta práctica, cuánto tubo hace falta para calentar un caudal de agua dado.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s01_2455c958a29aaab808a3bb1df181ee0271295fa2e7a546e93df519f7a357020c.mp4"
+          >
+            <aside class="notes" data-markdown>La unidad tiene tres sesiones. Hoy vemos qué es un intercambiador y cuáles son los tipos que más se usan. Después tomamos el más simple, el doble tubo, y dibujamos cómo cambian las temperaturas de los dos fluidos a lo largo del equipo, en flujo paralelo y en contraflujo. Luego miramos la pared que los separa y la resumimos en un solo número, el coeficiente total U. Cerramos planteando un problema geotérmico que nos va a acompañar las tres sesiones.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s02_610f6e861a580a7db291fba8707d83b8ba746728cd9eae9389a791fdd3b69dd5.mp4"
+          >
+            <aside class="notes" data-markdown>Partimos con una pregunta. Dos corrientes de agua pasan por un mismo equipo sin mezclarse, una entra caliente y la otra entra fría. ¿Puede el agua fría salir más caliente de lo que sale el agua caliente? Los dos termómetros están vacíos a propósito. Levanten la mano los que creen que sí, y después los que creen que no (pausa). Respuesta esperada, la mayoría dice que no, porque el calor va de lo caliente a lo frío. No la contesto todavía. La retomamos al final de los perfiles de temperatura, en esta misma clase.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s02_eb0dd4c1f796721b4c2b9864ef1d22aa30be6aac0d3e82f35dd42ec3c1a40fef.mp4"
+          >
+            <aside class="notes" data-markdown>A la izquierda una cámara de mezcla. Entra una corriente caliente y una fría, se juntan y sale una sola, tibia, que ya no se puede separar. A la derecha un intercambiador. Los dos fluidos van por canales distintos, separados por una pared gris, y las flechas verticales son el calor que la cruza de la corriente caliente a la fría. Cada fluido sale por su lado. El calor llega a la pared por convección, la cruza por conducción y sale por convección al otro fluido, como en las clases 2 a 4. Pregunta, ¿cuál de los dos equipos sirve para calentar el agua de una casa con el anticongelante del colector? (pausa) Respuesta esperada, el de la derecha, porque el anticongelante no puede terminar en la ducha.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s02_6c52eeb20969fc9e3d88c2805b6d24e03317e8397b50cab59850a857c71cc62a.mp4"
+          >
+            <aside class="notes" data-markdown>Los tienen en la casa. El radiador del auto enfría el agua del motor con aire. El refrigerador bota el calor de adentro por el serpentín de atrás, y el calefón calienta el agua de la ducha con los gases de la llama. En la industria chilena aparecen en la electroobtención de cobre, donde un intercambiador de placas calienta el electrolito con agua caliente antes de que entre a las celdas, en los pasteurizadores de placas de las lecherías del sur y en la central geotérmica del altiplano de Antofagasta. En todos hay dos fluidos separados por una pared, y al diseñarlos uno se pregunta lo mismo, qué tamaño necesita el equipo para pasar el calor que se le pide.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s03_0646de221b181d24f091ab5548084772500f8212b1731167ac326cbe5b8e36c3.mp4"
+          >
+            <aside class="notes" data-markdown>Ya sabemos qué hace un intercambiador. Toca ver cómo se construye. Partimos por el radiador del auto, que tiene un flujo distinto a los demás, y seguimos con el casco y tubos y el de placas, que son los que más se ven en una planta. En cada uno miren por dónde va cada fluido y qué los separa.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s04_32a8b61475e01e0f8f3560b7c03df22dc164120fa5db037b873cfbd2a7cb113f.mp4"
+          data-autoslide="2300.0"
+          >
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s04_a95a3398c6f04a53aaaf38b90e39ae3234b6b2dff641f0392c6578f5bb37ae75.mp4"
+          data-background-video-loop
+          >
+            <aside class="notes" data-markdown>Este es el radiador del auto. El agua caliente del motor baja por los tubos. El aire, más frío, entra por la cara de adelante del bloque, pasa entre las aletas perpendicular a los tubos y sale por atrás. A eso se le llama flujo cruzado. Los cuadrados son agua y los anillos son aire. A la derecha está el mismo bloque visto de costado, con la cara de adelante a la izquierda. Las aletas de placa encierran al aire en canales y no lo dejan pasar de un canal al vecino, por eso decimos que el aire va no mezclado. Mezclado se refiere al aire consigo mismo, nunca al agua. Cada canal sale a otra temperatura, más tibio arriba, donde el agua todavía está más caliente.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s04_a13994e513b2eea0bdaaddb5980a88044a0be04b579d1cb0b6fe1ad21c9d7b4a.mp4"
+          data-autoslide="1500.0"
+          >
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s04_8073ff3952f2dedbd269c5b0fcbd989c9552238f469a7b52576b468325830cab.mp4"
+          data-background-video-loop
+          >
+            <aside class="notes" data-markdown>Si sacamos las aletas, quedan solo los tubos planos, con el agua bajando por dentro. Ahora el aire puede moverse hacia arriba y hacia abajo entre los tubos y se mezcla consigo mismo. En la vista de costado se borran las aletas y los canales se juntan en una sola banda. A una misma distancia de la entrada todo el aire tiene la misma temperatura, y el color cambia solo con la profundidad. Que el aire vaya mezclado o no mezclado cambia cuánto calor pasa. En las sesiones 2 y 3 lo van a ver como curvas distintas de un factor de corrección y de la efectividad. Estos equipos compactos se usan sobre todo cuando uno de los fluidos es un gas.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s05_d77a9de61ffaa0fd119cea4f19585e69c4e6b5f2bdf6132936e2deccaae00ff4.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora el de casco y tubos, el que más van a ver en una planta. Miren las piezas antes de que se armen. Un haz de muchos tubos va dentro de un casco grande, los deflectores atraviesan el casco y sostienen los tubos, y en cada extremo hay un cabezal que reparte el fluido de los tubos. Ya armado, uno de los fluidos va por dentro de los tubos y el otro por el casco, por fuera de ellos. Es robusto y aguanta presiones altas en los dos lados.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s05_53f52c8ba167330dfec19968fbd578b35db21b3a07a40ee8a188f5fd37e6221c.mp4"
+          data-autoslide="3300.0"
+          >
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s05_53f37d1042053de96244645c4123a4a003bef633a3c438a7a48417ed013da727.mp4"
+          data-background-video-loop
+          >
+            <aside class="notes" data-markdown>Cortamos el casco por la mitad para mirar adentro. Los puntos son el fluido del casco, que aquí es el caliente. Entra por la boquilla de arriba, sale por la de abajo en el otro extremo y se va enfriando, por eso cambia de color según la barra de la derecha. La línea punteada es su camino. Los deflectores le tapan el paso y lo obligan a cruzar el haz de tubos una y otra vez, en zigzag. Como le pega a los tubos de frente, el coeficiente de convección del lado del casco sube bastante. El precio es una caída de presión mayor, que se paga con más potencia de bomba.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s05_0aa8e38b326009aae791a506f029e4a0f3aea9eadaa5239f11ffed896fe92aab.mp4"
+          data-autoslide="2900.0"
+          >
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s05_b35c83e6d890d9c4c0ae481f0af9f991c063a894c1ed758ee08cd534e633bf0b.mp4"
+          data-background-video-loop
+          >
+            <aside class="notes" data-markdown>Volvemos transparentes los dos cabezales. El fluido de los tubos entra abajo por el cabezal de la izquierda, recorre la mitad inferior del haz, da la vuelta en el cabezal de retorno y regresa por la mitad superior hasta la salida, arriba, por la línea punteada en U. La placa de partición separa la entrada de la salida dentro del mismo cabezal. Decimos que hace dos pasos por los tubos, y el fluido del casco hace uno solo. Con más pasos el fluido de los tubos va más rápido y su coeficiente de convección sube, y también sube la caída de presión. Además los fluidos ya no corren en sentidos opuestos en todo el equipo, y eso lo corrige un factor que vemos en la sesión 2.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s05_9b4a122721b90d64a5447e07ea115688c5fde62348392f2f1f1973a34d68e3f9.mp4"
+          >
+            <aside class="notes" data-markdown>El otro equipo que van a encontrar en planta es el de placas. Apila láminas metálicas corrugadas, apretadas en un bastidor con pernos. Al separarlas se ven los canales entre placa y placa. Los fluidos van en canales alternados, así que cada canal frío queda entre dos calientes y recibe calor por las dos caras. Es muy compacto y se agranda agregando placas, por eso lo usan las lecherías para pasteurizar la leche. Las placas son delgadas y van selladas con empaquetaduras, así que piden presiones parecidas y no muy altas en los dos lados.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s06_e4b39d378ec506022b645846687bcd7781e9739c52657f8c0b3756537f0aa8a0.mp4"
+          >
+            <aside class="notes" data-markdown>Todos estos equipos hacen lo mismo con geometrías enredadas. Para estudiar lo que pasa adentro conviene un equipo donde se pueda seguir cada fluido con el dedo, dos tubos concéntricos. Con él dibujamos cómo cambia la temperatura de cada fluido a lo largo del equipo y contestamos la pregunta del comienzo sobre la salida fría.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s07_81d42c7d40a607daa28df3350876ee3a239fc2d9b2c38c0018c0b7269a273209.mp4"
+          >
+            <aside class="notes" data-markdown>Aquí está, un tubo dentro de otro. Un fluido va por el tubo interior y el otro por el espacio anular, el hueco que queda entre el tubo interior y la carcasa de afuera. Las dos boquillas que ven en la carcasa son la entrada y la salida del espacio anular. Es el intercambiador de doble tubo, y lo vamos a usar como laboratorio durante las tres sesiones.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s07_84926634eafc68877d50d8e0e1019497934681adbfc1d6853cf4845a81c5e26a.mp4"
+          data-autoslide="2600.0"
+          >
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s07_f5e91ed42527ea92c0abb3f5209ebc01401392ffb853e0c63c22a0a0f269e728.mp4"
+          data-background-video-loop
+          >
+            <aside class="notes" data-markdown>Cortamos el tubo a lo largo para mirar por dentro. En nuestro equipo el caliente va por el tubo interior y el frío por el espacio anular. Cada punto es una porción de fluido y su color es su temperatura, según la barra de la derecha. El caliente entra por la izquierda y se va enfriando, el frío entra por la derecha y se va calentando, así que los dos corren en sentidos opuestos. La pared los separa siempre, el calor pasa a través del metal y los fluidos no se mezclan.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s07_8fe6b12cd181eb1f1d02cf7d6210cf0d1d49dc57e654c613138c1ba571c83355.mp4"
+          >
+            <aside class="notes" data-markdown>Giramos hasta mirarlo de lado y lo aplanamos. Este esquema es el mismo equipo dibujado en el papel, con el caliente en la banda del centro y el frío en las bandas de arriba y de abajo. Esas dos bandas son el mismo espacio anular cortado por la mitad, una sola corriente. Debajo de este esquema dibujamos después las temperaturas. T h es la temperatura del fluido caliente y T c la del frío, las dos en grados Celsius. El subíndice ent marca la temperatura con que entra cada fluido y el subíndice sal la temperatura con que sale. Los fluidos entran por extremos opuestos, y eso es contraflujo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s07_9e1e6b6e121cef8882529e9a4b6924b50bb065efaeaa4f8622738dcd897b80af.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora cambiamos las dos conexiones del frío. La entrada pasa a la izquierda y la salida a la derecha, y los dos fluidos entran por el mismo extremo. Eso es flujo paralelo, también se le dice cocorriente. Miren los puntos fríos, ahora avanzan y se calientan de izquierda a derecha. El tubo es el mismo y solo movimos dos conexiones. Pregunta, con el mismo tubo y los mismos caudales, ¿cuál de los dos arreglos calienta más el agua fría? (pausa) Respuesta esperada, el contraflujo. Lo comprobamos en un momento con los perfiles de temperatura.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s08_b8eca21f76dcefd6939c8bc859e2ed525c3bd2277651847fd2dbeb83e8bde805.mp4"
+          >
+            <aside class="notes" data-markdown>Pongamos las temperaturas debajo del tubo. En el eje horizontal va x sobre L, donde x es la posición a lo largo del tubo medida desde donde entra el caliente y L es su largo, así que va de cero a uno. En el vertical va la temperatura, entre la entrada fría abajo y la entrada caliente arriba. La carcasa está aislada, todo lo que pierde el caliente lo gana el frío y nada se va al ambiente. En flujo paralelo los dos entran por la izquierda. Miren la distancia entre la curva roja y la azul. Al principio están muy separadas y el calor pasa rápido, después se acercan y pasa cada vez menos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s08_02eff7deb4cf256279f8aa92fb75e2721f827c61ac8dae8275cb880224325946.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora en contraflujo. Cambiamos las conexiones del frío y entra por la derecha, donde el caliente ya está más tibio. Cambian las dos curvas, porque cada porción de fluido caliente tiene enfrente agua fría a otra temperatura que en paralelo. Las punteadas son las de paralelo, que dejamos como referencia. Las dos marcas azules a la izquierda son la salida fría de cada arreglo. La de paralelo la trajimos desde x igual a L para compararlas lado a lado, y a la derecha están ampliadas. La de contraflujo queda un poco más arriba, así que pasó más calor, como apostaron recién con el doble tubo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s08_540454b438b3e9f1213fa935f41b9c67220d1accb6823c619734d3d8b2509d81.mp4"
+          >
+            <aside class="notes" data-markdown>Le ponemos nombre a esa distancia. Delta T es la diferencia local, T h menos T c en un mismo punto del tubo, y se mide en grados. En los extremos se llama Delta T uno, en x igual a cero, y Delta T dos, en x igual a L. Miren el segmento celeste mientras recorre los dos tubos. En paralelo Delta T parte enorme y termina en menos de un cuarto de lo que era. En contraflujo cambia mucho menos, ni siquiera se duplica de un extremo al otro.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s08_9315c3f968519180da0cb4f49b73815aeb74aba626e7a4f844b25e73ce5fbcd8.mp4"
+          >
+            <aside class="notes" data-markdown>Pregunta. Si hacemos el equipo en paralelo muy, muy largo, ¿puede el frío terminar más caliente que el caliente? El dibujo del tubo queda igual porque medimos en x sobre L, y el medidor de la derecha dice cuántas veces más largo es que el tubo de partida. Ahora marca por uno. Sobre el gráfico quedó escrita la afirmación que vamos a poner a prueba, la salida fría por encima de la salida caliente en paralelo. Piénsenlo antes de que lo alarguemos (pausa).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s08_d6ad0028f09f7d280ef1a93b04027ea0467858bbfb367636aba23d8c5d709acf.mp4"
+          >
+            <aside class="notes" data-markdown>Respuesta esperada, no. Miren cómo se alarga hasta cuatro veces. Las dos salidas se acercan a una temperatura común, la que tendrían si mezcláramos los dos chorros, y ahí se detienen. Es una confusión común, por eso la tachamos. Para ubicar esa temperatura usamos C, el caudal por el calor específico, m punto por c p, en watt por grado Celsius. Dice cuántos watt hay que darle a esa corriente para subirla un grado. Aquí C h es el doble de C c, por eso la temperatura de mezcla queda más cerca de la entrada caliente.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s08_2b193ebb66b36d7fa525fba712323b973ffd33402af8abb73b92b2630f32b763.mp4"
+          >
+            <aside class="notes" data-markdown>Hagamos lo mismo en contraflujo. Volvemos al largo de partida, por eso el medidor se vacía, y cambiamos las conexiones. Vuelve la pregunta del comienzo con sus dos termómetros, el de la salida fría y el de la salida caliente. Con este largo la salida fría todavía queda bajo la caliente, y los termómetros lo muestran. Ahora alarguen el tubo en su cabeza antes de mirar. ¿La salida fría alcanza a la salida caliente, o se queda abajo como en paralelo? (pausa)</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s08_8293c5f1ea303f381898f4d21aac477a4b31fefde3c6ece9421c3e124911e365.mp4"
+          >
+            <aside class="notes" data-markdown>Alargamos el tubo y el medidor sube. Con un largo intermedio, un poco menos de una vez y media el de partida, las dos salidas quedan a la misma altura. Miren la línea punteada celeste, que une la salida fría, a la izquierda, con la salida caliente, a la derecha, y los dos termómetros, que marcan lo mismo. Fíjense también en la curva azul cerca de x igual a cero, cada vez más pegada a la roja.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s08_2b0bb191237608df800283b81002378f0779d33b10e73cfb9da1fe1e1136ad51.mp4"
+          >
+            <aside class="notes" data-markdown>Seguimos alargando hasta cuatro veces. La línea celeste se apaga y la salida fría pasa por encima de la salida caliente, miren los termómetros. Respuesta a la pregunta del comienzo, sí puede, en contraflujo. La salida fría se acerca a la temperatura con que entra el caliente, la línea roja punteada, sin llegar nunca a tocarla. Eso pasa porque aquí el frío es el que tiene la C más chica, y es el que más cambia su temperatura.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s08_4886cb5f7a48c19751e8829159f2765f5fbaac4afd6fd0fb87dd16a464870482.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora una pregunta de control. Recién vimos que en contraflujo la salida fría puede quedar sobre la salida caliente. ¿Entonces pasó calor de lo frío a lo caliente? Para pensarlo, miren el segmento celeste mientras recorre el tubo. Mide en cada punto la distancia entre la curva roja y la azul en un mismo x. Parte casi pegado en x igual a cero, donde entra el caliente y las dos curvas más se acercan, y crece hasta x igual a L. Piénsenlo con lo que acaban de ver (pausa).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s08_c82adc5936610652cd9611c1b75674e66d67c83f5e80dac0badde817cf0354fa.mp4"
+          >
+            <aside class="notes" data-markdown>Respuesta esperada, no. Comparen puntos del mismo x. Ahí la curva roja siempre está sobre la azul y el segmento nunca llegó a cero, ni siquiera en x igual a cero, así que en cada punto del tubo el calor pasa de caliente a frío. Las dos salidas que comparamos están en extremos opuestos del tubo y no intercambian calor entre ellas, así que compararlas no dice en qué sentido va el calor. Lo que la salida fría no puede hacer es superar la temperatura con que entra el caliente, eso sí violaría la segunda ley.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s09_8536c1cd7fd088d366ca025c0fe12033edba64931c2762a97d2f19bea909b55c.mp4"
+          >
+            <aside class="notes" data-markdown>Ya vimos cómo cambian las temperaturas a lo largo del equipo. Ahora nos acercamos a la pared que separa los dos fluidos y contamos cuánto calor deja pasar por cada grado de diferencia. De ahí sale el coeficiente total U. Después vemos cuál de los dos lados controla U y cómo baja U cuando el equipo se ensucia con el uso.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s10_b392c0b5cbe3b182adf96ddd4ac113fa29eb99c930f6e000451157612e5e87dd.mp4"
+          >
+            <aside class="notes" data-markdown>Volvemos al tubo en contraflujo y nos acercamos al círculo blanco, sobre la pared del tubo interior. El corte gira para dejar la pared de pie. A la izquierda queda el fluido caliente que va por dentro, al centro el metal en gris y a la derecha el frío del anillo. La curva es la temperatura. Es plana lejos de la pared, cae en la capa de fluido caliente pegada al metal, la capa límite de la clase 4, baja en línea recta dentro del metal y vuelve a caer en la capa de fluido frío. La caída en el metal está exagerada para que se vea. Cada tramo es un obstáculo distinto para el calor.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s10_91ae50921dc7312cecb1516946d66bfdb06fb60038e3f61d6828c3de89b03f7f.mp4"
+          >
+            <aside class="notes" data-markdown>Esos tramos se dibujan como resistencias en serie, la misma red de la clase 3. R i es la convección del lado caliente, R pared la conducción dentro del metal y R o la convección del lado del anillo. Q punto es el calor por unidad de tiempo que cruza la pared, en watt, y vale la diferencia de temperatura dividida por la suma de las tres resistencias, que se miden en grados por watt. Lo nuevo respecto de la clase 3 es que T h y T c cambian a lo largo del tubo. Por eso la red la pensamos en un tramo corto, de largo L, donde T h menos T c casi no cambia.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s10_01edb801762da841c52b7b2510917a3a1fdf105467860981671635f5f95229a9.mp4"
+          >
+            <aside class="notes" data-markdown>Cada resistencia tiene su fórmula bajo su símbolo. h i es el coeficiente de convección del caliente y h o el del frío, los dos en watt por metro cuadrado y grado. k es la conductividad del metal, en watt por metro y grado. La de la pared es la resistencia de un cilindro hueco que vieron en la clase 3, de ahí el logaritmo. A la derecha está el corte del tubo interior. D i y D o son su diámetro interior y exterior, los dos del mismo tubo, no de la carcasa. Las áreas son pi por el diámetro por L. De las dos circunferencias amarillas la de afuera es más grande, así que R i y R o no usan la misma área.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s10_9f59904a14c95ec302df672482b6cf63e1ff741e329290de0fe0ffdb66951d76.mp4"
+          >
+            <aside class="notes" data-markdown>A la suma R i más R pared más R o la llamamos uno sobre U por A s, y Q punto queda U por A s por Delta T. U es el coeficiente total, con las mismas unidades que h. A s es la superficie por donde pasa el calor, la interior o la exterior, siempre que U vaya con ella. Si el tramo fuera el doble de largo, las resistencias bajarían a la mitad y A s se duplicaría, así que U sirve para el tubo entero, si h i y h o no cambian a lo largo del tubo, que es lo que vamos a suponer. Delta T es la diferencia local, que en el tubo entero cambia.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s10_c167f62597cec6e02439682f4334c4145356ebf3ccd0da59ab179c3067e5bb9d.mp4"
+          >
+            <aside class="notes" data-markdown>U i es el U referido al área interior y U o el referido a la exterior. U i por A i es igual a U o por A o, por eso estos dos rectángulos tienen la misma área. Al pasar de A i a A o la base crece y la altura baja. El pi y el largo se cancelan, y queda U o sobre U i igual a D i sobre D o. Entonces un U sin su área está incompleto, y por eso este 640 escrito solo aparece tachado. En el ejemplo geotérmico del final la pared es delgada, D i y D o casi coinciden, y ahí el mismo 640 sirve para los dos lados. Con pared gruesa hay que decir siempre cuál.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s10_8d770e7c5f0b8c7e15e23a6d26c40d0f269620263212337ab722f2f15ce8552e.mp4"
+          >
+            <aside class="notes" data-markdown>Caso límite, una pared delgada de un metal que conduce bien. Hacemos tender su espesor a cero. La pared del corte se adelgaza, la caída recta dentro del metal desaparece y la resistencia de pared se encoge en la red hasta apagarse. En el corte transversal las dos circunferencias se juntan, así que A i y A o pasan a ser la misma área y ya no hace falta decir el lado. Queda uno sobre U aproximadamente igual a uno sobre h i más uno sobre h o. Esta es la forma que vamos a usar casi siempre en el curso. Ahora vemos qué pasa cuando uno de los dos h es mucho más chico que el otro.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s11_45ac5f8442feacaff9d5742e16ee78aa0aacee30dd0188db09ffb9f9dcc7e349.mp4"
+          >
+            <aside class="notes" data-markdown>Con la pared delgada, las dos resistencias que quedan forman una barra de largo fijo, con la parte de cada lado, el interior a la izquierda y el exterior a la derecha. En el gráfico va U sobre h o contra h i sobre h o, los dos en escala logarítmica. Movemos h i y dejamos fijo h o. Cuando h i baja, su tramo llena la barra y el punto cae sobre la recta U igual a h i. Cuando h i sube, manda el lado exterior y U se pega a h o. U siempre queda bajo el h más chico, y se le acerca cuando el otro es varias veces mayor. Donde h i es igual a h o, U es la mitad de cada uno.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s11_e9776a276fdbf25fe198aa72b504372b2fb38fe0a20e75b8442f7ff99de861a8.mp4"
+          >
+            <aside class="notes" data-markdown>Tomemos líquido por dentro y gas por fuera, con un h del líquido unas cuarenta veces el del gas. Abrimos la barra en dos barras, una para cada resistencia, y abajo su suma, que es uno sobre U por A s. La del gas es mucho más larga. Pregunta, si tienen plata para mejorar un solo lado, ¿cuál mejoran? (pausa) Respuesta esperada, el lado del gas. Lo comprobamos duplicando cada h por turno, primero el del líquido.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s11_26d71d5ab28972b7a08a2180a4881fe1933ca8a7cc399e799e176de35e3dda3d.mp4"
+          >
+            <aside class="notes" data-markdown>Primero el líquido. Si duplicamos su h, su barra se acorta a la mitad y la suma casi no cambia. Gastar en el lado que ya era bueno es plata perdida, y en las pruebas se ve mucho, por eso lo tachamos. Ahora el gas. Si duplicamos su h, su barra baja a la mitad y la suma cae casi a la mitad. Como U es uno sobre esa suma, U casi se duplica, sube 1,95 veces. La mejora rinde donde está la resistencia grande. El gráfico de la derecha quedó apagado porque mide todo en unidades de h o, y acabamos de cambiar h o.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s11_1a3f0c0058cd13d411896b94ee88a2fc21cef21abb172122305e0aeff36a3ebd.mp4"
+          >
+            <aside class="notes" data-markdown>Volvemos al h o de partida, por eso la barra del gas recupera su largo. Las aletas de un radiador van del lado del aire. La aleta deja h igual y multiplica el área del lado malo. A la izquierda está la placa del colector de la clase 6, otra aleta. Allá la placa recibía sol y se calentaba hacia el centro, lejos del tubo. Aquí, con el líquido caliente adentro, la aleta se enfría hacia la punta, miren sus colores. En los dos casos el calor recorre la aleta por conducción, así que lejos de la base la temperatura es otra y esa parte trabaja menos. En el radiador la punta se acerca a la temperatura del aire.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s11_53afed23846ab49a9d8be8076e3ff6375d418d1d787a54f93820f20679d50eaf.mp4"
+          >
+            <aside class="notes" data-markdown>La eficiencia de aleta, que en la clase 6 llamamos F, aquí la escribimos eta aleta, porque en la sesión 2 la letra F va a ser el factor de corrección. Es la fracción del calor que pasaría si toda la aleta estuviera a la temperatura de la base. Por eso solo el área de aleta va multiplicada por eta, y la base trabaja completa. Con aletas el área de afuera es mucho mayor que la de adentro, así que la caja de arriba deja de valer y volvemos a escribir las áreas. Al sumar el área de las aletas, el área exterior pasa a ser la base más las aletas y la barra del gas se encoge.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s12_5dd7f7cbdaeb27d47a562ae71ef07e03ad5b6cda858a988b91f59b0c36eaae85.mp4"
+          >
+            <aside class="notes" data-markdown>Volvemos a la red con sus dos resistencias. Con el uso se forma una capa sobre la pared, como el sarro de una tetera, y aquí la ponemos en la cara interior, del lado caliente. Es una resistencia más en serie, R f i dividido por el área interior. R f es el factor de incrustación, en metro cuadrado grado por watt. También puede haber depósito del lado del anillo, R f o, que va dividido por el área exterior. Con pared delgada las áreas casi coinciden y R f se suma directo a uno sobre U. Vale cero en un equipo nuevo, crece con el tiempo hasta un valor final y U baja con ella. La curva es ilustrativa, la forma real depende del fluido.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s12_7dd49e8dc501331302a72308f89285339eea322d85ecc15f32a89bee224f81dd.mp4"
+          >
+            <aside class="notes" data-markdown>La capa puede ser sarro que precipita del agua, ceniza de los gases de combustión, óxido del propio metal o algas y bacterias. En el diseño eso tiene dos consecuencias. Se compra un equipo más grande, para que siga cumpliendo cuando esté sucio, y se programan detenciones para limpiarlo. La incrustación pesa mucho más en un equipo agua con agua, de U alto, que en uno gas con gas. Si U es chico, uno sobre U es grande, y la misma R f es una parte menor de la suma.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s12_3f43c3fdaa434ec05db6e3243580e9b1dd3f2d062b9f3f2af8c78cce2be291a0.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora valores reales de U, en watt por metro cuadrado y grado, en escala logarítmica. Van de unos 10 en un equipo gas con gas hasta varios miles cuando hay vapor que condensa, casi tres décadas. Los gases conducen mal el calor, su h es chico y su resistencia manda, como vimos recién. Los U más altos aparecen cuando hay vapor que condensa, en los condensadores y en los calentadores de agua de alimentación de las centrales, porque el vapor que condensa tiene un h muy grande. La marca de 640 es el U del ejemplo con que cerramos la clase de hoy. Queda algo bajo el rango agua con agua de la tabla. Es un dato del libro y lo usamos tal cual.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s12_5596f3f2e19d354f7747ad16cc646d59e1b2d7a49560063fb5cec3f12dfac458.mp4"
+          >
+            <aside class="notes" data-markdown>Pregunta. El libro da para un mismo tipo de equipo, agua con aire en tubos con aletas, dos rangos de U, de 30 a 60 watt por metro cuadrado y grado, y de 400 a 850. Un equipo de ese tipo pasa un calor dado con una diferencia de temperatura dada. ¿Cómo puede tener dos valores de U tan distintos? Piénsenlo un momento. Les doy una pista, acuérdense de los dos rectángulos de U por A que dibujamos con el tubo interior (pausa).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s12_810cb1f3d983f1665ca53045c5f2914be1d7f1af50498920bdf8fdb3c0dc8416.mp4"
+          >
+            <aside class="notes" data-markdown>Respuesta esperada, están referidos a áreas distintas. El primero usa el área del lado del aire, que incluye las aletas, y el segundo el área del lado del agua. Como U por A es el mismo, la razón entre los dos U es la razón entre las dos áreas. Según los extremos de la tabla, el área del aire es unas 14 veces la del agua. Ojo si abren el libro, la nota de la tabla marca los dos rangos como referidos al lado del agua. Es una errata, el rango de 30 a 60 solo tiene sentido sobre el área del aire.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s13_8595ba915746b60efbe59e83d1934da2d9befc67e33c8133519128bcbf18d27b.mp4"
+          >
+            <aside class="notes" data-markdown>Con U ya sabemos cuánto calor deja pasar la pared por cada grado y cada metro cuadrado. Ahora lo usamos en un equipo concreto, un doble tubo que calienta agua con agua de un pozo geotérmico. Ese mismo problema lo vamos a resolver de dos maneras en las dos clases que vienen, así que anoten bien los datos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s14_b7117c696fe0753fd838ebfd1aa5922908c8490c9a2eb9034f27a74257bfa58c.mp4"
+          >
+            <aside class="notes" data-markdown>Este es el ejemplo 11-4 del Çengel. Queremos calentar 1,2 kilos por segundo de agua de 20 a 80 grados con agua geotérmica que entra a 160 grados, con un caudal de 2 kilos por segundo. Viene a presión desde el pozo y por eso sigue líquida. El calor específico de la geotérmica es 4,31 kilojoule por kilo y grado, arriba en rojo, y el del agua es 4,18, abajo en azul. Es un doble tubo en contraflujo. El libro no dice qué agua va por dentro, nosotros dejamos la geotérmica al centro. La salida de la geotérmica, a la derecha, todavía no la conocemos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s14_d76c8eab088235447bee760feaec9b7318b4e297e54bc576d9e2ed3d14ebe16d.mp4"
+          >
+            <aside class="notes" data-markdown>El tubo interior tiene 1,5 centímetros de diámetro y pared delgada, así que las dos áreas casi coinciden y U, 640 watt por metro cuadrado y grado, vale para cualquier lado. Es la excepción que vimos con los rectángulos. El libro fija U y no se pregunta por la velocidad. Con 2 kilos por segundo en un tubo de 1,5 centímetros la geotérmica va a unos doce metros y medio por segundo, mucho para un tubo real. Como ejercicio sirve igual. Falta el largo. Anoten cuántos metros creen que necesita (pausa).</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s14_5a5f1e6683e1b57ef687f1a7f53a14e1db2a2c59ec34acf285168a80b467668b.mp4"
+          >
+            <aside class="notes" data-markdown>Para el largo necesitamos el área, y para el área la ecuación que armamos con U, Q punto igual a U por A s por Delta T. El calor lo sabemos, es lo que gana el agua, su caudal por su c p por los 60 grados que sube. Con ese mismo calor se calcula cuánto baja la geotérmica, y eso lo hacemos al empezar la próxima clase. Lo que no sabemos es el Delta T. Miren el segmento celeste, vale 80 grados donde entra la geotérmica y otra cosa en el otro extremo. Si tuvieran que poner un solo Delta T en la ecuación, ¿cuál pondrían? (pausa) Lo más común es proponer el promedio de los dos extremos. La próxima clase vemos si sirve.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_1_assets/s15_e936d206d9213d7747a511125a9cf469a91d65a998c8c9c4a592cc6ea67704a5.mp4"
+          >
+            <aside class="notes" data-markdown>Recuerden lo que supusimos hoy. U es uniforme a lo largo del equipo, la pared es delgada, así que el área de adentro y la de afuera casi coinciden, y la carcasa está aislada, sin pérdidas al ambiente. También supusimos régimen estacionario, un C constante para cada fluido y que ninguno de los dos cambia de fase. Los perfiles que dibujamos hoy y el ejemplo geotérmico dependen de esas hipótesis. La próxima clase escribimos el balance de energía en un pedazo del tubo y miramos cómo arranca el equipo cuando parte frío. Ya en régimen, del balance sale qué Delta T va en la ecuación de U, y con ese Delta T calculamos el largo del doble tubo geotérmico. Traigan anotada su apuesta del largo.</aside>
+        </section>
+      </div>
+    </div>
+
+    <script src="../lib/reveal.js/5.2.0/reveal.min.js"></script>
+    <script src="../lib/reveal.js/5.2.0/plugin/notes/notes.min.js"></script>
+
+    <!-- To include plugins, see: https://revealjs.com/plugins/ -->
+    <script src="../lib/reveal.js/5.2.0/plugin/markdown/markdown.min.js"></script>
+
+    <!-- <script src="index.js"></script> -->
+    <script>
+      Reveal.initialize({
+        /// The list of RevealJS plugins.
+        plugins: [ RevealMarkdown, RevealNotes ],
+        // The "normal" size of the presentation, aspect ratio will
+        // be preserved when the presentation is scaled to fit different
+        // resolutions. Can be specified using percentage units.
+        width: '100%',
+        height: '100%',
+        // Factor of the display size that should remain empty around
+        // the content
+        margin: 0.04,
+        // Bounds for smallest/largest possible scale to apply to content
+        minScale: 0.2,
+        maxScale: 2.0,
+        // Display presentation control arrows
+        controls: true,
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: true,
+        // Determines where controls appear, "edges" or "bottom-right"
+        // Fixed here because Manim Slides injects the value of
+        // `-ccontrols_layout` without the surrounding quotes.
+        controlsLayout: "edges",
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: "faded",
+        // Display a presentation progress bar
+        progress: true,
+        // Display the page number of the current slide
+        // - true:    Show slide number
+        // - false:   Hide slide number
+        //
+        // Can optionally be set as a string that specifies the number formatting:
+        // - "h.v":   Horizontal . vertical slide number (default)
+        // - "h/v":   Horizontal / vertical slide number
+        // - "c":   Flattened slide number
+        // - "c/t":   Flattened slide number / total slides
+        //
+        // Alternatively, you can provide a function that returns the slide
+        // number for the current slide. The function should take in a slide
+        // object and return an array with one string [slideNumber] or
+        // three strings [n1,delimiter,n2]. See #formatSlideNumber().
+        slideNumber: false,
+        // Can be used to limit the contexts in which the slide number appears
+        // - "all":      Always show the slide number
+        // - "print":    Only when printing to PDF
+        // - "speaker":  Only in the speaker view
+        showSlideNumber: 'all',
+        // Use 1 based indexing for # links to match slide number (default is zero
+        // based)
+        hashOneBasedIndex: false,
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: false,
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: false,
+        // Enable support for jump-to-slide navigation shortcuts
+        jumpToSlide: true,
+        // Push each slide change to the browser history.  Implies `hash: true`
+        history: true,
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+        // Optional function that blocks keyboard events when retuning false
+        //
+        // If you set this to 'focused', we will only capture keyboard events
+        // for embedded decks when they are in focus
+        keyboardCondition: null,
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+        // Enable the slide overview mode
+        overview: true,
+        // Vertical centering of slides
+        center: true,
+        // Enables touch navigation on devices with touch input
+        touch: true,
+        // Loop the presentation
+        loop: false,
+        // Change the presentation direction to be RTL
+        rtl: false,
+        // Changes the behavior of our navigation directions.
+        //
+        // "default"
+        // Left/right arrow keys step between horizontal slides, up/down
+        // arrow keys step between vertical slides. Space key steps through
+        // all slides (both horizontal and vertical).
+        //
+        // "linear"
+        // Removes the up/down arrows. Left/right arrows step through all
+        // slides (both horizontal and vertical).
+        //
+        // "grid"
+        // When this is enabled, stepping left/right from a vertical stack
+        // to an adjacent vertical stack will land you at the same vertical
+        // index.
+        //
+        // Consider a deck with six slides ordered in two vertical stacks:
+        // 1.1    2.1
+        // 1.2    2.2
+        // 1.3    2.3
+        //
+        // If you're on slide 1.3 and navigate right, you will normally move
+        // from 1.3 -> 2.1. If "grid" is used, the same navigation takes you
+        // from 1.3 -> 2.3.
+        navigationMode: 'default',
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+        // Turns fragments on and off globally
+        fragments: true,
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: true,
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+        // Flags if we should show a help overlay when the question-mark
+        // key is pressed
+        help: true,
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+        // Global override for autolaying embedded media (video/audio/iframe)
+        // - null:   Media will only autoplay if data-autoplay is present
+        // - true:   All media will autoplay, regardless of individual setting
+        // - false:  No media will autoplay, regardless of individual setting
+        autoPlayMedia: null,
+        // Global override for preloading lazy-loaded iframes
+        // - null:   Iframes with data-src AND data-preload will be loaded when within
+        //           the viewDistance, iframes with only data-src will be loaded when visible
+        // - true:   All iframes with data-src will be loaded when within the viewDistance
+        // - false:  All iframes with data-src will be loaded only when visible
+        preloadIframes: null,
+        // Can be used to globally disable auto-animation
+        autoAnimate: true,
+        // Optionally provide a custom element matcher that will be
+        // used to dictate which elements we can animate between.
+        autoAnimateMatcher: null,
+        // Default settings for our auto-animate transitions, can be
+        // overridden per-slide or per-element via data arguments
+        autoAnimateEasing: 'ease',
+        autoAnimateDuration: 1.0,
+        autoAnimateUnmatched: true,
+        // CSS properties that can be auto-animated. Position & scale
+        // is matched separately so there's no need to include styles
+        // like top/right/bottom/left, width/height or margin.
+        autoAnimateStyles: ['opacity', 'color', 'background-color', 'padding', 'font-size', 'line-height', 'letter-spacing', 'border-width', 'border-color', 'border-radius', 'outline', 'outline-offset'],
+        // Controls automatic progression to the next slide
+        // - 0:      Auto-sliding only happens if the data-autoslide HTML attribute
+        //           is present on the current slide or fragment
+        // - 1+:     All slides will progress automatically at the given interval
+        // - false:  No auto-sliding, even if data-autoslide is present
+        autoSlide: 0,
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+        // Use this method for navigation when auto-sliding (defaults to navigateNext)
+        autoSlideMethod: null,
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+        // Opens links in an iframe preview overlay
+        // Add `data-preview-link` and `data-preview-link="false"` to customize each link
+        // individually
+        previewLinks: false,
+        // Exposes the reveal.js API through window.postMessage
+        postMessage: true,
+        // Dispatches all reveal.js events to the parent window through postMessage
+        postMessageEvents: false,
+        // Focuses body when page changes visibility to ensure keyboard shortcuts work
+        focusBodyOnPageVisibilityChange: true,
+        // Transition style
+        transition: 'none', // none/fade/slide/convex/concave/zoom
+        // Transition speed
+        transitionSpeed: 'default', // default/fast/slow
+        // Transition style for full page slide backgrounds
+        backgroundTransition: 'none', // none/fade/slide/convex/concave/zoom
+        // The maximum number of pages a single slide can expand onto when printing
+        // to PDF, unlimited by default
+        pdfMaxPagesPerSlide: Number.POSITIVE_INFINITY,
+        // Prints each fragment on a separate slide
+        pdfSeparateFragments: true,
+        // Offset used to reduce the height of content within exported PDF pages.
+        // This exists to account for environment differences based on how you
+        // print to PDF. CLI printing options, like phantomjs and wkpdf, can end
+        // on precisely the total height of the document whereas in-browser
+        // printing has to end one pixel before.
+        pdfPageHeightOffset: -1,
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+        // The display mode that will be used to show slides
+        display: 'block',
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000
+      });
+      // Override SPACE to play / pause the video
+      Reveal.addKeyBinding(
+        {
+          keyCode: 32,
+          key: 'SPACE',
+          description: 'Play / pause video'
+        },
+        () => {
+          var currentVideos = Reveal.getCurrentSlide().slideBackgroundContentElement.getElementsByTagName("video");
+          if (currentVideos.length > 0) {
+            if (currentVideos[0].paused == true) currentVideos[0].play();
+            else currentVideos[0].pause();
+          } else {
+            Reveal.next();
+          }
+        }
+      );
+    </script>
+
+    <div id="deck-counter"></div>
+    <script>
+      (function () {
+        function refresh() {
+          var total = Reveal.getTotalSlides();
+          var idx = Reveal.getSlides().indexOf(Reveal.getCurrentSlide()) + 1;
+          var el = document.getElementById("deck-counter");
+          if (el) el.textContent = idx + " / " + total;
+        }
+        Reveal.on("ready", refresh);
+        Reveal.on("slidechanged", refresh);
+      })();
+    </script>
+      <div id="anim-done"></div>
+    <script>
+      (function () {
+        var dot = document.getElementById('anim-done');
+        function currentVideo() {
+          var s = Reveal.getCurrentSlide();
+          var bg = s && (s.slideBackgroundContentElement || Reveal.getSlideBackground(s));
+          return bg ? bg.querySelector('video') : null;
+        }
+        setInterval(function () {
+          var v = currentVideo();
+          if (!v || !isFinite(v.duration) || v.duration === 0) {
+            dot.classList.remove('done'); dot.style.setProperty('--p', 0); return;
+          }
+          var p = Math.min(1, v.currentTime / v.duration);
+          var done = v.ended || p > 0.995;
+          dot.classList.toggle('done', done);
+          dot.style.setProperty('--p', done ? 1 : p);
+        }, 100);
+        Reveal.addKeyBinding({ keyCode: 73, key: 'I', description: 'Mostrar u ocultar el indicador de animación' },
+                             function () { dot.classList.toggle('hidden'); });
+      })();
+    </script>
+  </body>
+</html>

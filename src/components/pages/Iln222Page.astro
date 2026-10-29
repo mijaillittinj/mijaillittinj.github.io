@@ -15,6 +15,7 @@ const base = '/teaching/iln222/clase05-factor-forma/';
 const base6 = '/teaching/iln222/clase06-colectores/';
 // Session folders. The former session 3 was merged into 2 (its folder redirects), so the third session lives in 4/.
 const dirs6 = [1, 2, 4];
+const base7 = '/teaching/iln222/clase07-intercambiadores/';
 const T = es
   ? {
       title: 'Gestión Energética II', eyebrow: 'Docencia · ILN222 · UTFSM · 2026',
@@ -28,9 +29,13 @@ const T = es
       widget6: 'Ejemplo interactivo, eficiencia de tres colectores',
       salaShort: 'fondo claro', pdfLight: 'PDF fondo claro',
       parts: ['El colector solar plano', 'Radiación solar y balance del colector', 'Eficiencia instantánea, Hottel y Whillier'],
+      l7: 'Intercambiadores de calor',
+      l7Text: 'Tres sesiones. Tipos de intercambiadores con modelos 3D, el coeficiente total U como red de resistencias y la incrustación, el balance de energía con la puesta en marcha simulada hasta el estacionario, la deducción de la diferencia de temperatura media logarítmica con el factor de corrección F, y el método de efectividad y NUT con su relación con el colector solar.',
+      parts7: ['Dos fluidos y una pared', 'Diferencia de temperatura media logarítmica', 'Efectividad y NUT'],
+      board7: 'balance de energía paso a paso',
       howH: 'Cómo verla',
       how: 'Es una presentación animada en español. Las flechas o la barra espaciadora avanzan, la tecla F activa la pantalla completa, la tecla S abre la vista de orador con las notas y la tecla O muestra todos los estados. Funciona mejor en un computador.',
-      refH: 'Bibliografía', ref: 'Y. A. Çengel y A. J. Ghajar, Transferencia de calor y masa, capítulos 12 y 13.',
+      refH: 'Bibliografía', ref: 'Y. A. Çengel y A. J. Ghajar, Transferencia de calor y masa, capítulos 11, 12 y 13.',
       back: 'Docencia',
     }
   : {
@@ -45,9 +50,13 @@ const T = es
       widget6: 'Interactive example, efficiency of three collectors',
       salaShort: 'light background', pdfLight: 'PDF, light background',
       parts: ['The flat-plate solar collector', 'Solar radiation and the collector energy balance', 'Instantaneous efficiency, Hottel and Whillier'],
+      l7: 'Heat exchangers (in Spanish)',
+      l7Text: 'Three sessions. Types of heat exchangers with 3D models, the overall coefficient U as a resistance network and fouling, the energy balance with a simulated start-up to steady state, the derivation of the log mean temperature difference with the correction factor F, and the effectiveness–NTU method and its link to the solar collector.',
+      parts7: ['Two fluids and a wall', 'Log mean temperature difference', 'Effectiveness and NTU'],
+      board7: 'energy balance step by step',
       howH: 'How to view it',
       how: 'This is an animated presentation in Spanish. The arrow keys or the space bar move forward, F turns on full screen, S opens the speaker view with the notes and O shows every state. It works best on a computer.',
-      refH: 'Reference', ref: 'Y. A. Çengel and A. J. Ghajar, Heat and Mass Transfer, chapters 12 and 13.',
+      refH: 'Reference', ref: 'Y. A. Çengel and A. J. Ghajar, Heat and Mass Transfer, chapters 11, 12 and 13.',
       back: 'Teaching',
     };
 ---
@@ -86,6 +95,19 @@ const T = es
           ))}
         </ol>
         <p class="links"><a class="more" href={url(base6 + 'interactive/eficiencia_colector.html')}>{T.widget6}</a></p>
+      </article>
+      <article class="lecture">
+        <p class="meta">Clase 07 · tres sesiones</p>
+        <h3>{T.l7}</h3>
+        <p class="desc">{T.l7Text}</p>
+        <ol class="parts">
+          {T.parts7.map((name, i) => (
+            <li>
+              <a href={url(`${base7}${i + 1}/`)}>{name}</a>
+              <span class="meta"> · <a href={url(`${base7}${i + 1}/sala/`)}>{T.salaShort}</a> · <a href={url(`${base7}${i + 1}/clase07_${i + 1}.pdf`)}>PDF</a> · <a href={url(`${base7}${i + 1}/sala/clase07_${i + 1}_sala.pdf`)}>{T.pdfLight}</a>{i === 1 && <> · <a href={url(base7 + '2/pizarra_balance.pdf')}>{T.board7}</a></>}</span>
+            </li>
+          ))}
+        </ol>
       </article>
       </div>
     </div>

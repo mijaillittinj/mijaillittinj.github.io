@@ -1,0 +1,632 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Intercambiadores de calor 3, ILN222</title>
+
+    <link rel="stylesheet" href="../lib/reveal.js/5.2.0/reveal.min.css">
+    <link rel="stylesheet" href="../lib/reveal.js/5.2.0/theme/black.min.css">
+
+    <!-- Theme used for syntax highlighting of code -->
+    <!-- <link rel="stylesheet" href="../lib/css/zenburn.css"> -->
+    <!-- <link rel="stylesheet" href="index.css"> -->
+
+    <style>
+      :root {
+        --bg: #0D1117;
+        --fg: #E8EDF2;
+        --accent: #6FA8DC;
+        --dim: #5B6775;
+      }
+      html, body, .reveal { background: var(--bg); }
+      .reveal .slides section { height: 100%; }
+      /* thin progress bar in the presentation accent colour */
+      .reveal .progress { height: 4px; color: var(--accent); background: rgba(255,255,255,0.06); }
+      /* discreet state counter, hidden in the overview.  It sits in the top
+         right corner, which every slide leaves empty, because the bottom of
+         the frame already carries the section name and the source note. */
+      #deck-counter {
+        position: fixed; top: 12px; right: 18px; z-index: 30;
+        font-family: -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-size: 15px; color: var(--dim); letter-spacing: 0.2px;
+        pointer-events: none; opacity: 0.8;
+      }
+      .reveal.overview #deck-counter { display: none; }
+      /* keep the arrows unobtrusive, the talk is driven by the keyboard */
+      .reveal .controls { opacity: 0.25; }
+      .reveal .controls:hover { opacity: 0.8; }
+          /* animation-progress dot (idea from a colleague's deck): fills while the state's
+         video plays and turns green when it has finished; key I hides it */
+      #anim-done { position: fixed; right: 86px; top: 14px; width: 16px; height: 16px; z-index: 50;
+        border-radius: 50%; pointer-events: none; transition: background 0.25s, box-shadow 0.25s;
+        --p: 0; background: conic-gradient(rgba(150,150,150,0.8) calc(var(--p) * 1turn), rgba(110,110,110,0.3) 0); }
+      #anim-done.done { background: #3fbf6f; box-shadow: 0 0 6px rgba(63,191,111,0.8); }
+      #anim-done.hidden { display: none; }
+    </style>
+  </head>
+
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s00_01fae3170586f52042be5c7f7f4e49a0bfaccff2d192b261d76332713d93415d.mp4"
+          data-background-video-muted
+          >
+            <aside class="notes" data-markdown>Última sesión de intercambiadores de calor. La sesión pasada dimensionamos un equipo conociendo sus cuatro temperaturas, y llegamos a los 108 metros y medio del ejemplo geotérmico. Hoy el equipo ya existe, está instalado, y queremos saber cuánto calor entrega y a qué temperatura sale cada fluido. Para eso vamos a definir dos números sin unidades, la efectividad y el número de unidades de transferencia, y al final vamos a ver que el colector solar de la clase 6 era un intercambiador de este mismo tipo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s01_7127537a1cf528f98a5e15eb6f167b651d087d0d6d886f425f32b49c4147b559.mp4"
+          >
+            <aside class="notes" data-markdown>El plan tiene cuatro partes. Primero vemos por qué la media logarítmica obliga a iterar cuando el equipo ya existe y no conocemos las salidas. Después buscamos el calor máximo que podría pasar con las mismas entradas, definimos la efectividad y el NUT y deducimos la relación entre ellos. En la tercera parte miramos esa relación como curvas y la conectamos con el colector de la clase 6. Terminamos con el ejemplo geotérmico calculado con efectividad y con los criterios para elegir un intercambiador.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s02_4154fb94b6edc59fce957ea20a2dcf2c2d6bc321bfa27f5c132671d0e48ec5bb.mp4"
+          >
+            <aside class="notes" data-markdown>Pregunta de entrada de hoy. Este es el doble tubo geotérmico de la sesión pasada, 108,5 metros de tubo para llevar 1,2 kilos por segundo de agua de 20 a 80 grados con salmuera que entra a 160. Los colores son las temperaturas que calculamos. La salmuera entra por la izquierda, por el tubo del centro, y el agua entra fría por la derecha y sale violeta por la izquierda. Es contraflujo. Ahora piensen en comprar otro tubo igual y ponerlo a continuación.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s02_3f2b26d4304f94318e12634c074dd1f149940616f9b98cf98f0cf73ab9222048.mp4"
+          >
+            <aside class="notes" data-markdown>Compramos otro igual y lo ponemos a continuación, en serie. El agua entra ahora por el tubo nuevo y llega al primero ya calentada, así que al acoplarlo cambian también las temperaturas del primero. Por eso los dos van en gris, todavía no sabemos cómo quedan por dentro, y las dos salidas tienen un signo de pregunta. ¿Sale el doble de calor? Voten por una de las tres casillas. (pausa) Lo habitual es que la mayoría vote que sí. Guarden su voto, más adelante en la clase lo calculamos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s03_7c1725ed19a1d665efa525e0d9ca7b6c06df7b86ae8613ce3e7f88c952686c12.mp4"
+          >
+            <aside class="notes" data-markdown>Hasta ahora el problema era de tamaño. A la izquierda sabíamos las cuatro temperaturas, el agua entraba a 20 y salía a 80, la salmuera entraba a 160 y salía a 125, y buscábamos el largo. Hoy es al revés. El mismo tubo pasa a la derecha, el largo ya está fijo porque el equipo está instalado, y lo que no sabemos son las dos salidas. Por eso va en gris, como el tubo de la pregunta. Es la pregunta típica de quien opera la planta. Cambió el caudal, o llegó el agua más fría, y queremos saber a qué temperatura sale cada fluido y cuánto calor pasa.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s03_ddd6040c5d26a672428bee6f1fd704eb2f8188fc67aa0f22897c11d218fbd2f4.mp4"
+          >
+            <aside class="notes" data-markdown>La media logarítmica usa las diferencias de temperatura en los dos extremos, delta T uno y delta T dos, y para eso hay que conocer las dos salidas. Si no las conocemos, hay que suponer la salida fría, sacar la caliente por balance, calcular la media logarítmica y el calor, y ver si la salida fría que resulta es la supuesta. Si no cuadra, se repite. Abajo está cada suposición en θ, que vale cero en la entrada fría y uno en la caliente. Sube, baja y se acerca a 0,429, los 80 grados de este tubo, y recién ahí el tubo toma sus colores. Cada intento pide un logaritmo nuevo, y en equipos grandes la iteración puede no converger. Kays y London propusieron en 1955 un camino directo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s04_db364796326823e715eaa6ebb216156ed5c6d9aaace5f02735858e09d5a9fb52.mp4"
+          >
+            <aside class="notes" data-markdown>Pasamos a la segunda parte. Para no iterar vamos a comparar el equipo real con el mejor equipo que podría existir con las mismas entradas. Primero buscamos cuánto calor puede pasar como máximo, después definimos la efectividad como la fracción de ese máximo que entrega el equipo y deducimos de qué depende.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s05_8fce2b65616d4c013bd32e584834e4e7bd2c256e89989270edd6770b396812fb.mp4"
+          >
+            <aside class="notes" data-markdown>Para hablar del calor máximo necesitamos una propiedad de cada corriente. Miren estos dos termómetros. El calor que entrega el caliente lo recibe el frío, la flecha del medio es la misma para los dos, y aun así el caliente baja poco y el frío sube el doble. Lo que distingue a las dos corrientes es el caudal por el calor específico, la capacidad calorífica C, en watt por grado, y en los ejemplos en kilowatt por grado. La corriente de C grande cambia poco y la de C chica cambia mucho. Aquí el frío es C mínimo. La c minúscula es la razón de capacidades, la menor dividida por la mayor, aquí 0,5. No la confundan con c p.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s05_b845a333ed349c852d30cd47b40cc0938c26f378ffd6ffda83c9a3a80857696e.mp4"
+          >
+            <aside class="notes" data-markdown>Las columnas de los termómetros se fueron a los extremos de un contraflujo, θ contra x sobre L, con el frío como C mínimo y c igual a 0,5. La columna caliente quedó a la derecha, donde sale el caliente, y la fría a la izquierda, donde sale el frío, y las curvas partieron desde ellas. Las curvas las unen con las entradas, la línea punteada en θ igual a uno para el caliente y el eje, en cero, para el frío. El calor real sale del balance de cualquiera de los dos fluidos, C c por lo que sube el frío o C h por lo que baja el caliente, como escribimos a la derecha.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s05_8684d0a5616b9688fe0b94c80c66aede3b05aa7f39f2a8ad66e33b3f787f7531.mp4"
+          >
+            <aside class="notes" data-markdown>La llave a la izquierda es la mayor diferencia de todo el equipo, entre las dos entradas, delta T máximo, T h entrada menos T c entrada. ¿Puede algún fluido cambiar su temperatura más que delta T máximo? (pausa) Respuesta esperada, no. El frío no puede subir más allá de la entrada del caliente, porque el calor no pasa solo de lo frío a lo caliente, y el caliente no puede bajar de la entrada del frío. Así el calor es a lo más C c por delta T máximo y a lo más C h por delta T máximo. Con esas dos cotas buscamos el calor máximo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s06_13bb84ca47c6230fd8a747367b547ea6f3cd760b5c1f318ca203898439f068b7.mp4"
+          >
+            <aside class="notes" data-markdown>Las dos cotas de la pregunta anterior se cumplen siempre, así que manda la más chica, y el calor es a lo más C mínimo por delta T máximo. ¿Qué equipo llegaría a ese calor? (pausa) Respuesta esperada, un contraflujo infinitamente largo. Arriba está el doble tubo coloreado por temperatura. Lo alargamos sin fin, y la regla de la derecha dice cuántas veces el largo de partida, L cero, que es el equipo que dibujamos recién. El frío, que es C mínimo, sale casi a la entrada del caliente, en 0,99. El caliente se queda en la mitad, porque su capacidad es el doble. Solo con capacidades iguales llegarían los dos. El recuadro marca un límite que ningún equipo real alcanza.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s06_b5496a9b8c5cd84b2326b16588f27718f4e6c68c4f6d4ed8adc3f2e1cfc4f1c9.mp4"
+          >
+            <aside class="notes" data-markdown>Un error frecuente es poner C máximo en el calor máximo. Si el calor fuera C máximo por delta T máximo, el caliente, que es C máximo, bajaría todo delta T máximo, hasta θ cero, y el frío tendría que subir delta T máximo dividido por c, el doble. Para verlo el eje llega hasta θ igual a dos. Las curvas punteadas, más gruesas, son ese caso hipotético. El frío sale por encima de θ igual a uno, más caliente que la entrada del caliente, y en casi todo el tubo queda sobre el caliente que tiene al lado. Toda la zona sombreada viola la segunda ley, porque el calor no pasa solo de lo frío a lo caliente. Ese calor máximo queda tachado.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s07_cab2094e3e33848a3b29e87708c4156e2d65904b8707c5d50c06240e222be0bb.mp4"
+          >
+            <aside class="notes" data-markdown>Sale el caso hipotético y el eje θ vuelve hasta uno. Volvemos a un equipo de largo normal. El cursor de la regla baja a tres veces el largo de partida y la salida fría se separa de la entrada caliente. Para medir qué tan bueno es un equipo lo comparamos con el máximo. La efectividad, ε, es el calor que entrega el equipo dividido por el calor máximo, un número entre cero y uno, sin unidades. La barra verde es ese calor dentro de la barra del máximo. Si conocemos ε, el calor sale solo con las temperaturas de entrada, ε por C mínimo por delta T máximo, sin iterar. Falta saber de qué depende ε.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s07_dd92cb0c902f01b355c5308182f9da9f3a0949f9b9ac6d942ba9fd50e6149c09.mp4"
+          >
+            <aside class="notes" data-markdown>Lo deducimos en un caso. Primero el tubo pasa a flujo paralelo, las dos curvas del perfil cambian juntas y la flecha del frío se da vuelta. Después tomamos el caliente como C mínimo, y las curvas cambian otra vez. Si el frío fuera C mínimo, el resultado sería el mismo. Con ε escribimos las dos salidas. El calor es ε por C h por delta T máximo, así que el caliente baja ε por delta T máximo. El frío recibe el mismo calor con una capacidad mayor y sube ε por c por delta T máximo, porque aquí c es C h sobre C c.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s07_0e774791b8c8f357dbf1f9904d9364698e2fb77e9a605872dfd5b432290a9fb1.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora las diferencias en los dos extremos, las líneas celestes. En paralelo el extremo 1 es donde entran los dos, así que ahí la diferencia es T h entrada menos T c entrada, que es delta T máximo. En el extremo 2 restamos las dos salidas de arriba. Queda delta T máximo menos ε delta T máximo menos ε c delta T máximo, y sacando delta T máximo de factor común, delta T máximo por uno menos ε por uno más c. Con estas dos diferencias vamos a entrar a la ecuación de la sesión pasada.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s07_6787a1044850cd69d28811a66e9f8ec1faf469aeda0b181e821f361bf379ac40.mp4"
+          >
+            <aside class="notes" data-markdown>A la derecha repetimos la deducción de la sesión pasada. En un pedazo de área el calor es U por el área por la diferencia local, que cae según cuánto se enfría el caliente y cuánto se calienta el frío, y al integrar de un extremo al otro sale este logaritmo. Como el caliente es C mínimo, el paréntesis queda uno más c sobre C mínimo, y aparece U A s dividido por una capacidad. Es el grupo que la sesión pasada quedó sin nombre, ahora en verde lima. Se llama número de unidades de transferencia, NUT, y es el tamaño del equipo sin unidades. La regla marcaba tres veces L cero, y L cero tiene NUT 0,5, así que bajo el tubo se lee NUT 1,5.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s07_a8e0675e7500582aab1a52b287ebaf5f2d39d8c2b78b769c06566a94c0c8a885.mp4"
+          >
+            <aside class="notes" data-markdown>Arriba queda la ecuación con su nombre nuevo, el logaritmo de delta T dos sobre delta T uno es igual a menos NUT por uno más c. Abajo vuelven las dos diferencias de los extremos, y ahora las reemplazamos en el cociente. En el numerador va delta T máximo por uno menos ε por uno más c, y en el denominador delta T máximo solo. Delta T máximo se cancela, por eso pasa a gris, y el cociente queda en uno menos ε por uno más c. Eso es lo que va dentro del logaritmo, y la ecuación queda con ε, NUT y c, sin ninguna temperatura.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s07_357f5411330e4f3b16eb1ffcd2b33f1cee0cd3d6ff70e5f6eef4e92d8f69b55c.mp4"
+          >
+            <aside class="notes" data-markdown>Tomamos exponencial a los dos lados, uno menos ε por uno más c es igual a e a la menos NUT por uno más c, y despejamos ε. Queda ε igual a uno menos e a la menos NUT por uno más c, todo dividido por uno más c. Es la efectividad del flujo paralelo, y depende solo de NUT y de c. Pasa lo mismo que con el número de Nusselt, que dependía del Reynolds y del Prandtl. Dos números sin unidades bastan, con NUT y c sacamos ε, y con ε el calor.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s07_b04ddea87bb0cd87ce33935e5f86c0a33aadd202615cddee6c8a69ef17705da5.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora el contraflujo. El tubo y el perfil cambian de arreglo y las líneas celestes se van a sus extremos nuevos. El extremo 1 junta la entrada caliente con la salida fría, y la diferencia ahí es delta T máximo por uno menos ε c. El extremo 2 junta la salida caliente con la entrada fría, delta T máximo por uno menos ε. ¿Qué cambia en el paréntesis de la sesión pasada cuando los fluidos van en sentidos opuestos? (pausa) Respuesta esperada, el frío se calienta en el sentido contrario, así que su término cambia de signo y queda uno sobre C h menos uno sobre C c, con el menos marcado en verde lima.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s07_a05e76d97250127dcce4120a0a3b5561a3fa980412985f761dd1c68e4c207129.mp4"
+          >
+            <aside class="notes" data-markdown>Con ese signo repetimos los pasos del paralelo. El paréntesis queda uno menos c sobre C mínimo, y el logaritmo del cociente de los extremos, uno menos ε sobre uno menos ε c, es igual a menos NUT por uno menos c. Tomamos exponencial, uno menos ε es igual a e a la menos NUT por uno menos c, multiplicado por uno menos ε c. Despejando ε sale la fórmula del recuadro, la del contraflujo. Otra vez no queda ninguna temperatura, y si el frío fuera C mínimo la fórmula sería la misma.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s07_5a74aaaab339b9376298a5e2a866ae15760a98deafffbededb8d2e7bca574ada.mp4"
+          >
+            <aside class="notes" data-markdown>Queda un caso que la fórmula no resuelve, capacidades iguales. Subo c de 0,5 a uno y los perfiles quedan paralelos entre sí, como en la sesión pasada. La diferencia de temperatura es la misma en todo el tubo. ¿Qué da la fórmula del contraflujo con c igual a uno? (pausa) Respuesta esperada, cero sobre cero, y por eso queda marcada en rojo. Tomando el límite, o integrando de nuevo con una diferencia constante, queda ε igual a NUT dividido por uno más NUT. Con NUT 1,5 da 0,60, la lectura bajo el tubo. Con NUT grande también tiende a uno, más lento que con c igual a 0,5.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s07_27db237d3561f2613cbcb364f2382ccb481f50062f91ef32c276d2ba53121f98.mp4"
+          >
+            <aside class="notes" data-markdown>Para casco y tubos y flujo cruzado el libro da fórmulas en la tabla 11-4. No se memorizan, en el certamen se entregan. La de flujo cruzado con los dos fluidos no mezclados es aproximada. A la izquierda quedan las tres que deducimos hoy. En un ejercicio ustedes identifican la configuración del equipo, calculan NUT y c, y con eso sacan ε de la fórmula que corresponde. Lo que una fórmula no deja ver a simple vista es cómo cambia ε cuando el equipo crece o cuando cambia c.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s08_e69f079fcec97f6d5b56dde6e8dd175c01d69cb9e16ca987aa870589ac1ac53b.mp4"
+          >
+            <aside class="notes" data-markdown>Ya tenemos fórmulas para la efectividad. Ahora las miramos como curvas, para ver qué pasa cuando el equipo crece y cuando cambian la razón de capacidades o la configuración. Al final de esta parte volvemos al colector solar de la clase 6 y vemos que es uno de estos casos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s09_bea6e7aa58b38fa4604020f1ec7455d03fa7bbd988530248eaa27d757799ac61.mp4"
+          >
+            <aside class="notes" data-markdown>Vuelve el tubo de recién, en contraflujo, con NUT igual a 1,5 y capacidades iguales, C h igual a C c. Apenas c baja de uno, el frío pasa a ser C mínimo, como al comienzo de la clase. A la izquierda está la efectividad contra NUT, y el punto verde es nuestro equipo. Ahora voy a bajar c de uno a cero sin cambiar el tamaño. ¿La efectividad sube o baja? (pausa) Respuesta esperada, sube. Las curvas tenues quedan como estela, la más baja es c igual a uno y la más alta c igual a cero. El caliente cambia poco su temperatura y la diferencia con el frío se mantiene en todo el tubo. Dejo c en 0,5.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s09_7c798bbc81722e3b52ccf54d6830708e56bfd7703f3a65a78d6473c2892a344e.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora muevo el tamaño. Primero llevo NUT a cero, un equipo sin área. Antes de agrandarlo, ¿hasta dónde puede subir el punto? (pausa) Respuesta esperada, hasta uno, el contraflujo infinito de recién. Lo agrando hasta cinco. El punto sube por la curva y en el tubo la salida fría se calienta. Como el frío es el de menor capacidad, su salida en θ es justo la efectividad, y la lectura del perfil y la de ε dicen lo mismo. Al principio sube rápido y después cada vez menos. En NUT cinco queda la marca hueca. Vuelvo a NUT 1,5 para comparar con otro arreglo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s09_4025f795f7807a0b3f0e04c8e9810c929a0f04b45324991786dc6d97bc82f386.mp4"
+          >
+            <aside class="notes" data-markdown>Saco las curvas tenues y cambio el arreglo a flujo paralelo con el mismo NUT y el mismo c. Ahora los dos fluidos entran por la izquierda, y el frío ya no puede salir más caliente que la salida del caliente. ¿La curva del paralelo queda arriba o abajo de la de contraflujo? (pausa) Respuesta esperada, abajo. La línea punteada es la temperatura de mezcla de la sesión 1, la de los dos fluidos juntos en un estanque, uno partido por uno más c. Alargo el equipo y la salida fría se acerca a esa línea sin pasarla. Como θ c salida es la efectividad, esa línea es el techo del paralelo, y la llevo a los ejes.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s09_fbc2a9e003c96b767366b63a96d1bb4187fa0987d75d99b64a9dafe6bedcf62e.mp4"
+          >
+            <aside class="notes" data-markdown>Casco y tubos y flujo cruzado, con las relaciones del libro, quedan entre contraflujo y paralelo. La de flujo cruzado se dibuja con la serie exacta, porque la fórmula de la tabla es aproximada. Ahora llevo c a cero. Pasa cuando un fluido condensa o hierve, su temperatura no cambia y su capacidad es infinita, y en ese lado el calor se calcula con el caudal por el calor latente. Las cuatro curvas caen en una sola, uno menos e a la menos NUT, y en el tubo el caliente queda de un solo color. Si un fluido está a temperatura fija no importa hacia dónde va el otro. Es el mismo caso en que el factor F de la sesión pasada valía uno.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s09_9b84c70d4481aaac20c38b9b618493c436f47363fbeac90275b47eec7349a3c3.mp4"
+          >
+            <aside class="notes" data-markdown>Ahora un equipo muy chico. Llevo NUT a 0,3 y amplío la esquina, hasta 0,5 en los dos ejes. La recta punteada es ε igual a NUT. Dejo las dos curvas extremas, la de c igual a cero y la de paralelo con c igual a uno. Si achico más el equipo, los dos puntos caen sobre la recta. Los dos fluidos cambian poco frente a delta T máximo, así la diferencia local es casi delta T máximo en todo el tubo, el calor es casi U A s por delta T máximo y ε es casi NUT. El libro dice que bajo NUT 0,3 la efectividad casi no depende de c, y tampoco del arreglo. En 0,3 va de 0,226 a 0,259.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s09_331523057b580131544f81841ec357831a0c93e4a4bc07fa98ff54ab9dfbe9c6.mp4"
+          >
+            <aside class="notes" data-markdown>Y al revés, un equipo muy grande. Volvemos a los ejes completos con c igual a 0,5, primero en paralelo y después en contraflujo, y agrandamos hasta NUT igual a seis. El punto del contraflujo se acerca a uno, el equipo infinito del calor máximo. El punto tenue del paralelo se queda bajo su techo, uno partido por uno más c. El dibujo del tubo no cambia de tamaño, el largo real lo dice NUT. Con c igual a 0,5, desde NUT tres la curva sube poco, de 0,874 a 0,974 hasta NUT seis. La curva punteada, contraflujo con c igual a uno, queda bajo la nuestra y se acerca a uno más despacio, en NUT seis va recién en 0,857.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s10_e50b878e2f1002064d59a315bbc87d9fc9c1629a7ce884f38dd12f69e3f676fd.mp4"
+          >
+            <aside class="notes" data-markdown>Mucha gente piensa que duplicar el equipo duplica el calor. Duplicar el equipo es duplicar el área, y con el mismo caudal eso es duplicar NUT. Cada flecha lleva NUT al doble, en verde lima, y sube hasta la curva de contraflujo con c igual a 0,5. Ese tramo vertical es lo que sube ε, y a la derecha está cuánto sube el calor. Desde 0,5 el calor sube 56 por ciento, desde 3 apenas 11 por ciento. Cerca de NUT cero duplicar casi duplica el calor, y después cada vez menos, porque la curva se aplana. El escalón de 1,5 es el equipo de la deducción. Esto responde la pregunta de entrada, menos del doble, y cuanto más grande el equipo, menos gana.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s10_3c8f993c653a98efed44b0d399aa5fcebf7e45dd830814746734a61fd3f46593.mp4"
+          >
+            <aside class="notes" data-markdown>Si el área cuesta más o menos lo mismo por metro cuadrado, conviene mirar cuánto calor da cada metro. En promedio eso es ε dividido por NUT, la curva continua de abajo, que siempre cae. El promedio no dice dónde parar. ¿Dónde dejarían de agrandar el equipo? (pausa) Respuesta esperada, donde el último metro cuadrado ya no paga lo que cuesta. Lo que agrega ese metro es la pendiente de la curva de arriba, la recta corta que acompaña al punto, y abajo va punteada. En NUT 3 la pendiente es 0,071, contra un promedio de 0,291, y la recta ya está casi horizontal. Con c igual a 0,5, desde NUT 3 cada metro agrega muy poco. Es el análisis marginal de evaluación de proyectos.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s11_22274099f9894504567b36121ce59ea801eb41387004ffd38e63ccb41085205f.mp4"
+          >
+            <aside class="notes" data-markdown>Las curvas de recién pasan a la derecha y bajan a c igual a cero. A la izquierda vuelve el colector solar de la clase 6. La curva es la temperatura del fluido, T f, a lo largo del tubo. S es la radiación absorbida, U L el coeficiente de pérdidas y T a la temperatura ambiente. El fluido se acerca a T a más S sobre U L sin llegar nunca. Si medimos con θ, cero en la entrada y uno en esa línea, y la posición con x sobre L, la línea hace el papel de un fluido caliente a temperatura fija, de capacidad infinita. En el doble tubo de arriba es la corriente roja del centro. El colector es un intercambiador con c igual a cero.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s11_d25adaf504f56427e14608f4c006b39a3d76d85c82227f486ff636152e3d9aa8.mp4"
+          >
+            <aside class="notes" data-markdown>Arriba está el factor de remoción F R de la clase 6 y F prima, el factor de eficiencia. El área del colector por U L por F prima hace de U A s, el caudal por c p hace de C mínimo, y su cociente, N, es el NUT del colector. Así F R sobre F prima es uno menos e a la menos N, dividido por N, la efectividad sobre NUT con c igual a cero. Con el caudal que usamos en la clase 6, diez veces mayor, N baja a 0,0706 y el punto cae junto al origen, que ampliamos. Ahí ε casi es N, F R es el 97 por ciento de F prima, y alargar el colector al doble casi duplica el calor.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s12_600b38cb198db7ad1e4488719212dc425c87f9e87e2366626288f5e50adb931a.mp4"
+          >
+            <aside class="notes" data-markdown>Última parte. Volvemos al ejemplo geotérmico de las dos sesiones anteriores, ahora con efectividad, y respondemos con números la pregunta del comienzo. Después hacemos un ejemplo en que no se conoce ninguna salida y cerramos con los criterios para elegir un intercambiador.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s13_424fc29cbb55697456be724205233350fd22e17c4143803357eec25a4f7ef23b.mp4"
+          >
+            <aside class="notes" data-markdown>En el libro este equipo reaparece como ejemplo 11-8, resuelto con efectividad. Primero las capacidades caloríficas, caudal por calor específico. La salmuera da 2 por 4,31, o sea 8,62 kilowatt por grado, y el agua 1,2 por 4,18, que da 5,016 kilowatt por grado. El agua tiene la menor, así que es C mínimo, y c vale 5,016 dividido por 8,62, que da 0,582. El calor máximo es C mínimo por la diferencia de las dos entradas, 140 grados, y da 702,2 kilowatt. El libro escribe 702,8 porque redondea C c a 5,02 antes de multiplicar.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s13_4bc9fbe4d54224c9b27866770998ff8bc71009d269dd0b4e00bb8c1f9aef1786.mp4"
+          >
+            <aside class="notes" data-markdown>El agua tiene que recibir 301 kilowatt, así que la efectividad es 301 dividido por 702,2, o sea 0,429. Abajo está la curva de contraflujo con c igual a 0,582. Trazamos la línea de ε igual a 0,429 hasta la curva y bajamos al eje. Se lee algo cerca de 0,65, y un gráfico no da tres decimales. Por eso despejamos NUT de la fórmula de contraflujo, el logaritmo de la derecha, y da 0,652. Si lo calculan con 0,429 y 0,582 ya redondeados les sale 0,653, la diferencia es solo de redondeo. El libro trae esta relación despejada en la tabla 11-5, y en el certamen se entrega junto a la 11-4.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s13_1a4422bd9c2b7667460896f22fd943257e67ea0b60a0d925706e89e4fdbc433d.mp4"
+          >
+            <aside class="notes" data-markdown>Con NUT sale el área, NUT por C mínimo dividido por U. Cuidado con las unidades, C mínimo está en kilowatt por grado y U en watt por metro cuadrado y grado, así que multiplicamos por mil. Da 5,11 metros cuadrados, y el largo, el área dividida por pi por el diámetro, da 108,5 metros. Ese largo sale del área sin redondear, 5,113 metros cuadrados. Con 5,11 la calculadora da 108,4. Abajo, en gris, está el largo de la sesión pasada con la media logarítmica, el mismo número. Cuando se conocen las cuatro temperaturas los dos métodos son directos. La ventaja de ε y NUT aparece cuando no conocemos las salidas, y eso pasa con el tubo al doble.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s13_3a71f1ca4243e720a5812dcb85e25668204e6a9503417e7492858bad5ca4caa3.mp4"
+          >
+            <aside class="notes" data-markdown>La pregunta de entrada con números. Acoplamos el segundo tubo, el largo se duplica y NUT también, de 0,652 a 1,305, el doble del valor sin redondear. El punto sube a ε igual a 0,634. El calor es 0,634 por 702,2, o sea 445 kilowatt, 1,48 veces el de antes. Menos del doble, como anticipaban las curvas. ¿Qué notan en las salidas? (pausa) Respuesta esperada, el agua sale a 108,8 grados y la salmuera a 108,3, el agua sale medio grado más caliente que la salmuera. Es el cruce del contraflujo de la primera sesión. Las líneas van presurizadas y el agua sigue líquida. Con un tubo sin fin el agua llegaría a 160 grados y el calor a 702,2 kilowatt.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s14_caeb643da948a12bc9f755c5ce3dac85aefb023a36f55dd251db1eae27bbef3b.mp4"
+          >
+            <aside class="notes" data-markdown>Ejemplo 11-9 del libro, un enfriador de aceite de casco y tubos. El aceite va por el casco y el agua por ocho pasos de tubo. Aquí no conocemos ninguna salida, así que con la media logarítmica habría que suponer una y volver a calcular. Seguimos la receta de la izquierda. Paso uno, las capacidades, 0,639 kilowatt por grado el aceite y 0,836 el agua. Paso dos, el aceite tiene la menor capacidad, c vale 0,764 y el máximo es 0,639 por 130 grados, o sea 83,1 kilowatt. Paso tres, el área de los ocho tramos es 1,759 metros cuadrados, y NUT es 310 por 1,759 dividido por 639 watt por grado, que da 0,853.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s14_87260179d8a162676144912ef80e2d0189d7f5bdb1472e7faf4e78fed68a89d0.mp4"
+          >
+            <aside class="notes" data-markdown>Paso cuatro, la efectividad. Con NUT igual a 0,853, ¿cuánto leen en la curva de casco y tubos? (pausa) Respuesta esperada, cerca de 0,46. La fórmula de casco y tubos de la tabla 11-4, con c igual a 0,764, da 0,462. Paso cinco, el calor es 0,462 por 83,1, que da 38,4 kilowatt. Las salidas vienen del balance. El agua sube 38,4 dividido por 0,836 y sale a 65,9 grados, y el aceite baja 38,4 dividido por 0,639 y sale a 89,9. El libro lee 0,47 en el gráfico, así que su calor es un poco mayor, el agua sale algo más caliente y el aceite algo más frío. Todo salió de una pasada.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s15_7fe44d8ef29078428ca211c6197fb5ea2a48796a5cac8c4e0105aa31ce6878e1.mp4"
+          >
+            <aside class="notes" data-markdown>Con los dos ejemplos ya podemos decir cuándo conviene cada método. Si conocen las temperaturas de entrada y de salida y buscan el tamaño, la media logarítmica es directa, es el dimensionamiento de la sesión pasada. Si el equipo ya existe y buscan las salidas, como en el enfriador de aceite, la efectividad y el NUT evitan las iteraciones, porque NUT sale del equipo y ε de una fórmula o una curva. Cuando los dos métodos se pueden usar llegan al mismo número, como los 108,5 metros del ejemplo geotérmico.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s15_d5b7b22bc2861a8a3fc582bbbc3c81bead05b99a4dad26ec244a774384057911.mp4"
+          >
+            <aside class="notes" data-markdown>Para elegir un equipo, lo primero es que entregue el calor pedido con las temperaturas pedidas. Después vienen el costo de compra y de operación, la bomba que empuja los fluidos, el tamaño y el peso, y los materiales. Duplicar el caudal achica el equipo, porque sube h y con él U. En flujo turbulento la caída de presión crece más o menos con el caudal al cuadrado, y la potencia de bombeo, caída de presión por caudal dividido por el rendimiento de la bomba, crece con el cubo. Con el doble de caudal el libro estima unas ocho veces más potencia. Arriba queda una advertencia. La incertidumbre de U puede pasar del 30 por ciento, por eso se compra un equipo algo más grande que el calculado.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s16_fe3ebc1999bb58fefaad0c92ac41185de7250bfa4485bf5084a5b86d06c63c56.mp4"
+          >
+            <aside class="notes" data-markdown>Esta es la notación de las tres sesiones. A la izquierda están las temperaturas, el coeficiente total con su área, las resistencias, las diferencias en los extremos, la media logarítmica y el factor de corrección. A la derecha están las capacidades, la razón c, delta T máximo, el calor máximo, la efectividad, el NUT y los símbolos del colector. Dos símbolos se repiten con otro significado. F aquí es el factor de corrección, y en la clase 6 era la eficiencia de aleta. R con subíndice F mayúscula es el parámetro de los diagramas de F, C tubo sobre C casco. Puede pasar de uno, así que no es c. R con f minúscula es el factor de incrustación. En el certamen digan siempre qué significa cada símbolo.</aside>
+        </section>
+        <section
+          data-background-size='contain'
+          data-background-color="#0d1117"
+          data-background-video="clase07_3_assets/s17_77bd27673cc6124fcb2a0f2cee2bc288c26e48b5b6ac21e70bda9c343df0965b.mp4"
+          >
+            <aside class="notes" data-markdown>Todo lo de hoy supone régimen estacionario, equipo aislado del exterior, U y c p constantes, y sin conducción a lo largo del tubo. Si un fluido cambia de fase, lo hace a temperatura fija, el caso de c igual a cero. La próxima clase empezamos combustión con una pregunta, cuánta energía entrega un kilo de gas y cuánto aire necesita. El intercambiador vuelve ahí como precalentador de aire, el de abajo a la derecha. En el lado del gas h es bajo y limita U, y hay bastante incrustación, la capa gris por dentro del tubo central. En el laboratorio de intercambiadores van a medir la efectividad real de un equipo chico. Para practicar están los ejemplos 11-4, 11-8 y 11-9 del libro, que vienen resueltos.</aside>
+        </section>
+      </div>
+    </div>
+
+    <script src="../lib/reveal.js/5.2.0/reveal.min.js"></script>
+    <script src="../lib/reveal.js/5.2.0/plugin/notes/notes.min.js"></script>
+
+    <!-- To include plugins, see: https://revealjs.com/plugins/ -->
+    <script src="../lib/reveal.js/5.2.0/plugin/markdown/markdown.min.js"></script>
+
+    <!-- <script src="index.js"></script> -->
+    <script>
+      Reveal.initialize({
+        /// The list of RevealJS plugins.
+        plugins: [ RevealMarkdown, RevealNotes ],
+        // The "normal" size of the presentation, aspect ratio will
+        // be preserved when the presentation is scaled to fit different
+        // resolutions. Can be specified using percentage units.
+        width: '100%',
+        height: '100%',
+        // Factor of the display size that should remain empty around
+        // the content
+        margin: 0.04,
+        // Bounds for smallest/largest possible scale to apply to content
+        minScale: 0.2,
+        maxScale: 2.0,
+        // Display presentation control arrows
+        controls: true,
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: true,
+        // Determines where controls appear, "edges" or "bottom-right"
+        // Fixed here because Manim Slides injects the value of
+        // `-ccontrols_layout` without the surrounding quotes.
+        controlsLayout: "edges",
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: "faded",
+        // Display a presentation progress bar
+        progress: true,
+        // Display the page number of the current slide
+        // - true:    Show slide number
+        // - false:   Hide slide number
+        //
+        // Can optionally be set as a string that specifies the number formatting:
+        // - "h.v":   Horizontal . vertical slide number (default)
+        // - "h/v":   Horizontal / vertical slide number
+        // - "c":   Flattened slide number
+        // - "c/t":   Flattened slide number / total slides
+        //
+        // Alternatively, you can provide a function that returns the slide
+        // number for the current slide. The function should take in a slide
+        // object and return an array with one string [slideNumber] or
+        // three strings [n1,delimiter,n2]. See #formatSlideNumber().
+        slideNumber: false,
+        // Can be used to limit the contexts in which the slide number appears
+        // - "all":      Always show the slide number
+        // - "print":    Only when printing to PDF
+        // - "speaker":  Only in the speaker view
+        showSlideNumber: 'all',
+        // Use 1 based indexing for # links to match slide number (default is zero
+        // based)
+        hashOneBasedIndex: false,
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: false,
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: false,
+        // Enable support for jump-to-slide navigation shortcuts
+        jumpToSlide: true,
+        // Push each slide change to the browser history.  Implies `hash: true`
+        history: true,
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+        // Optional function that blocks keyboard events when retuning false
+        //
+        // If you set this to 'focused', we will only capture keyboard events
+        // for embedded decks when they are in focus
+        keyboardCondition: null,
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+        // Enable the slide overview mode
+        overview: true,
+        // Vertical centering of slides
+        center: true,
+        // Enables touch navigation on devices with touch input
+        touch: true,
+        // Loop the presentation
+        loop: false,
+        // Change the presentation direction to be RTL
+        rtl: false,
+        // Changes the behavior of our navigation directions.
+        //
+        // "default"
+        // Left/right arrow keys step between horizontal slides, up/down
+        // arrow keys step between vertical slides. Space key steps through
+        // all slides (both horizontal and vertical).
+        //
+        // "linear"
+        // Removes the up/down arrows. Left/right arrows step through all
+        // slides (both horizontal and vertical).
+        //
+        // "grid"
+        // When this is enabled, stepping left/right from a vertical stack
+        // to an adjacent vertical stack will land you at the same vertical
+        // index.
+        //
+        // Consider a deck with six slides ordered in two vertical stacks:
+        // 1.1    2.1
+        // 1.2    2.2
+        // 1.3    2.3
+        //
+        // If you're on slide 1.3 and navigate right, you will normally move
+        // from 1.3 -> 2.1. If "grid" is used, the same navigation takes you
+        // from 1.3 -> 2.3.
+        navigationMode: 'default',
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+        // Turns fragments on and off globally
+        fragments: true,
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: true,
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+        // Flags if we should show a help overlay when the question-mark
+        // key is pressed
+        help: true,
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+        // Global override for autolaying embedded media (video/audio/iframe)
+        // - null:   Media will only autoplay if data-autoplay is present
+        // - true:   All media will autoplay, regardless of individual setting
+        // - false:  No media will autoplay, regardless of individual setting
+        autoPlayMedia: null,
+        // Global override for preloading lazy-loaded iframes
+        // - null:   Iframes with data-src AND data-preload will be loaded when within
+        //           the viewDistance, iframes with only data-src will be loaded when visible
+        // - true:   All iframes with data-src will be loaded when within the viewDistance
+        // - false:  All iframes with data-src will be loaded only when visible
+        preloadIframes: null,
+        // Can be used to globally disable auto-animation
+        autoAnimate: true,
+        // Optionally provide a custom element matcher that will be
+        // used to dictate which elements we can animate between.
+        autoAnimateMatcher: null,
+        // Default settings for our auto-animate transitions, can be
+        // overridden per-slide or per-element via data arguments
+        autoAnimateEasing: 'ease',
+        autoAnimateDuration: 1.0,
+        autoAnimateUnmatched: true,
+        // CSS properties that can be auto-animated. Position & scale
+        // is matched separately so there's no need to include styles
+        // like top/right/bottom/left, width/height or margin.
+        autoAnimateStyles: ['opacity', 'color', 'background-color', 'padding', 'font-size', 'line-height', 'letter-spacing', 'border-width', 'border-color', 'border-radius', 'outline', 'outline-offset'],
+        // Controls automatic progression to the next slide
+        // - 0:      Auto-sliding only happens if the data-autoslide HTML attribute
+        //           is present on the current slide or fragment
+        // - 1+:     All slides will progress automatically at the given interval
+        // - false:  No auto-sliding, even if data-autoslide is present
+        autoSlide: 0,
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+        // Use this method for navigation when auto-sliding (defaults to navigateNext)
+        autoSlideMethod: null,
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+        // Opens links in an iframe preview overlay
+        // Add `data-preview-link` and `data-preview-link="false"` to customize each link
+        // individually
+        previewLinks: false,
+        // Exposes the reveal.js API through window.postMessage
+        postMessage: true,
+        // Dispatches all reveal.js events to the parent window through postMessage
+        postMessageEvents: false,
+        // Focuses body when page changes visibility to ensure keyboard shortcuts work
+        focusBodyOnPageVisibilityChange: true,
+        // Transition style
+        transition: 'none', // none/fade/slide/convex/concave/zoom
+        // Transition speed
+        transitionSpeed: 'default', // default/fast/slow
+        // Transition style for full page slide backgrounds
+        backgroundTransition: 'none', // none/fade/slide/convex/concave/zoom
+        // The maximum number of pages a single slide can expand onto when printing
+        // to PDF, unlimited by default
+        pdfMaxPagesPerSlide: Number.POSITIVE_INFINITY,
+        // Prints each fragment on a separate slide
+        pdfSeparateFragments: true,
+        // Offset used to reduce the height of content within exported PDF pages.
+        // This exists to account for environment differences based on how you
+        // print to PDF. CLI printing options, like phantomjs and wkpdf, can end
+        // on precisely the total height of the document whereas in-browser
+        // printing has to end one pixel before.
+        pdfPageHeightOffset: -1,
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+        // The display mode that will be used to show slides
+        display: 'block',
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000
+      });
+      // Override SPACE to play / pause the video
+      Reveal.addKeyBinding(
+        {
+          keyCode: 32,
+          key: 'SPACE',
+          description: 'Play / pause video'
+        },
+        () => {
+          var currentVideos = Reveal.getCurrentSlide().slideBackgroundContentElement.getElementsByTagName("video");
+          if (currentVideos.length > 0) {
+            if (currentVideos[0].paused == true) currentVideos[0].play();
+            else currentVideos[0].pause();
+          } else {
+            Reveal.next();
+          }
+        }
+      );
+    </script>
+
+    <div id="deck-counter"></div>
+    <script>
+      (function () {
+        function refresh() {
+          var total = Reveal.getTotalSlides();
+          var idx = Reveal.getSlides().indexOf(Reveal.getCurrentSlide()) + 1;
+          var el = document.getElementById("deck-counter");
+          if (el) el.textContent = idx + " / " + total;
+        }
+        Reveal.on("ready", refresh);
+        Reveal.on("slidechanged", refresh);
+      })();
+    </script>
+      <div id="anim-done"></div>
+    <script>
+      (function () {
+        var dot = document.getElementById('anim-done');
+        function currentVideo() {
+          var s = Reveal.getCurrentSlide();
+          var bg = s && (s.slideBackgroundContentElement || Reveal.getSlideBackground(s));
+          return bg ? bg.querySelector('video') : null;
+        }
+        setInterval(function () {
+          var v = currentVideo();
+          if (!v || !isFinite(v.duration) || v.duration === 0) {
+            dot.classList.remove('done'); dot.style.setProperty('--p', 0); return;
+          }
+          var p = Math.min(1, v.currentTime / v.duration);
+          var done = v.ended || p > 0.995;
+          dot.classList.toggle('done', done);
+          dot.style.setProperty('--p', done ? 1 : p);
+        }, 100);
+        Reveal.addKeyBinding({ keyCode: 73, key: 'I', description: 'Mostrar u ocultar el indicador de animación' },
+                             function () { dot.classList.toggle('hidden'); });
+      })();
+    </script>
+  </body>
+</html>
