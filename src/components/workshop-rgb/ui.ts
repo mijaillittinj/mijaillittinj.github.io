@@ -15,6 +15,9 @@ import { T0C, type Aperture, type Plateau, type FrameSignal } from '../../lib/wo
 import { LAMBDA_REL_MIN, LAMBDA_REL_MAX } from '../../lib/workshop-rgb/invert.ts';
 import type { BayerPattern, ShiftTest } from '../../lib/workshop-rgb/frames.ts';
 import { buildProblem, initXavier, layout, trainWithEngine, finishStage1, WorkerPoolEngine, createGpuStage1, webgpuAvailable, helperCount, ITER_LONG, type Projections, type TrainResult, type TrainTick } from '../../lib/workshop-rgb/annabel/index.ts';
+import { buildStage2Problem, initStage2, trainStage2, finishStage2, Stage2LocalEngine, STAGE2_DEFAULTS, XCHECK_WARN_K, XCHECK_WARN_P90_K, XCHECK_WARN_FS_LOG, type KernelTable, type XCheck, type BoundReport, type Stage2Problem } from '../../lib/workshop-rgb/annabel/stage2.ts';
+import { Stage2PoolEngine } from '../../lib/workshop-rgb/annabel/workers.ts';
+import { createGpuStage2 } from '../../lib/workshop-rgb/annabel/gpu2.ts';
 import { defaultHelperFactory } from '../../lib/workshop-rgb/annabel/workers.ts';
 import { parseName, parseLog, logFor, parsePfs, parseCrop, cropFor, ignoredSilently, isTiff, ROLES, type Role, type NameInfo, type LogRow, type CropMap } from './names.ts';
 import { readZip, writeZip, ZipError } from './zip.ts';
@@ -26,6 +29,9 @@ import { TOOL_VERSION, TOOL_NAME } from './version.ts';
 import type { ToWorker, FromWorker, PsiMsg } from './protocol.ts';
 import type { FrameInfo, Prepared, AbelOut, AbelRun, TfsOut, FsMode, CalUse, GeometryOpts, Sym, Vignette, OvenResult } from './engine.ts';
 import type { AbelMethod } from '../../lib/workshop-rgb/invert.ts';
+// The app trains 3000 iterations; on the example flame the network needs about 30 000 to agree with the
+// closed form (148 K median gap at 3000, 12 K at 30 000, WEB_REPORT RGB-ANNAbel etapa 2), so the tool starts there.
+const NET_ITERATIONS = 30000;
 
 export interface ExampleSet { file: string; bytes: number; sha256: string; camera: string; available: boolean; preset?: { texpUs: number; mmPerPx: number; zBurnerMm: number } }
 export interface MountOptions { lang: Lang; version: string; commit: string; source?: string; built?: string; base: string; examples: ExampleSet[]; pageUrl: string; biases: { key: string; es: string; en: string }[]; ovenFlameBias?: { es: string; en: string }; tailBias?: { es: string; en: string } }
@@ -78,6 +84,14 @@ interface CalTail {
   driftPct: number; driftNominalPct: number; ratioAfterK: number; ratioBeforeK: number; uFlameK: number; driftBNominalPct: number;
 }
 
+/** T and f_s path of stage 5. 'net' is RGB-ANNAbel stage 2 (Magaña et al. 2025), next to the table. */
+type TfsPath = 'ratio' | 'fit3' | 'net';
+/** Mask bits of TfsOut (engine.ts), saturated height and low signal. */
+const M_SAT = 8, M_LOW = 2;
+const asTfsPath = (v: unknown): TfsPath => (v === 'fit3' || v === 'net' ? v : 'ratio');
+/** What the stage-2 network leaves next to the maps, on the grid of the stage (Nz × Nr, NaN outside). */
+interface NetOut { xcheck: XCheck | null; bounds: BoundReport | null; Tcf: Float64Array; fsCf: Float64Array; bestIter: number; completed: number; planned: number; path: string; elapsedS: number; fsRef: number; nTrain: number; nMask: number; rows: number }
+
 const S = {
   o: null as unknown as MountOptions,
   items: [] as Item[], log: [] as LogRow[], crops: {} as CropMap, source: '', example: null as string | null, loadMsgs: [] as Msg[],
@@ -98,7 +112,7 @@ const S = {
     burnerRow: NaN, zBurner: 0, prepared: null as null | (Prepared & { bgHow?: string; nHot?: number }), height: 0, calUsed: null as CalUse | null, sensorMismatch: false },
   abel: { method: 'tikhonov' as AbelMethod | 'annabel', sym: 'average' as Sym, lambdaRel: 0.1, segments: 12, satLambda: 1e-4, lcurve: null as null | { lambdas: number[]; rho: number[]; eta: number[]; lambda: number; index: number }, out: null as AbelOut | null, outMethod: '' as string, compare: null as null | Record<string, Float64Array>,
     annabel: { running: false, ctrl: null as AbortController | null, tick: null as TrainTick | null, estimate: null as null | { path: string; sPerIter: number }, iterations: ITER_LONG, result: null as TrainResult | null, msgs: [] as Msg[] } },
-  tfs: { path: 'ratio' as 'ratio' | 'fit3', pair: 'RG' as 'RG' | 'BG' | 'BR', em: 'group' as 'group' | 'coeffs' | 'constant', a: 0.284, b: 0.272, c: 0.057, E: 0.3, sigFrac: 0.02, islandFrac: 0.05, zCut: NaN, chemThr: 0.1, fsChannel: 'RG' as FsMode, out: null as TfsOut | null, dec: null as CalDecision | null },
+  tfs: { path: 'ratio' as TfsPath, net: { running: false, ctrl: null as AbortController | null, tick: null as TrainTick | null, estimate: null as null | { path: string; sPerIter: number }, iterations: NET_ITERATIONS, result: null as NetOut | null, msgs: [] as Msg[] }, pair: 'RG' as 'RG' | 'BG' | 'BR', em: 'group' as 'group' | 'coeffs' | 'constant', a: 0.284, b: 0.272, c: 0.057, E: 0.3, sigFrac: 0.02, islandFrac: 0.05, zCut: NaN, chemThr: 0.1, fsChannel: 'RG' as FsMode, out: null as TfsOut | null, dec: null as CalDecision | null },
   res: { Tmin: 1400, Tmax: 2100, Tmanual: false, Tout: 0, bandHow: '' as '' | 'oven' | 'noise' | 'nocal', fsMax: NaN, heights: [] as number[], band: null as null | { Tlo: Float64Array; Thi: Float64Array; fslo: Float64Array; fshi: Float64Array }, seed: 42, nBand: 30, view: 'T' as string },
   stale: {} as Record<number, string>,
   runRef: null as null | { name: string; inputs: { name: string; sha256: string; role: string }[] },
@@ -986,7 +1000,9 @@ async function runTfsNow() {
   renderBusy();
   try {
     S.tfs.dec = calDecision();
-    S.tfs.out = await ask<TfsOut>({ type: 'tfs.run', opts: { path: S.tfs.path, pair: S.tfs.pair, emLaw: emLaw(), sigFrac: S.tfs.sigFrac, islandFrac: S.tfs.islandFrac, chemBG: calDecision().state !== 'uncalibrated', zCutMm: fin(S.tfs.zCut) ? S.tfs.zCut : null, chemThr: S.tfs.chemThr, fsChannel: S.tfs.fsChannel, refine: true, weights: tfsWeights() }, psi: psiMsg() });
+    S.tfs.net.result = null;
+    S.tfs.out = await ask<TfsOut>(tfsRunMsg());
+    if (S.tfs.path === 'net') { S.busy = ''; renderBusy(); await runNet(); }
     delete S.stale[5]; delete S.stale[6];
     S.res.band = null;
     const p = S.flame.prepared!;
@@ -996,6 +1012,96 @@ async function runTfsNow() {
   S.busy = '';
   renderAll();
   announce(5);
+}
+/** The worker computes the table paths. For the network it gives the closed form (fit3), its masks and the table. */
+const workerPath = (): 'ratio' | 'fit3' => (S.tfs.path === 'net' ? 'fit3' : S.tfs.path);
+const tfsRunMsg = () => ({ type: 'tfs.run' as const, opts: { path: workerPath(), pair: S.tfs.pair, emLaw: emLaw(), sigFrac: S.tfs.sigFrac, islandFrac: S.tfs.islandFrac, chemBG: calDecision().state !== 'uncalibrated', zCutMm: fin(S.tfs.zCut) ? S.tfs.zCut : null, chemThr: S.tfs.chemThr, fsChannel: S.tfs.fsChannel, refine: true, weights: tfsWeights() }, psi: psiMsg() });
+/** Stage-1 emission of stage 4 for the network: every height with finite J in the three channels, one frame,
+ *  W m⁻³ sr⁻¹ (j_to_si = 1), kernels G_j(T) of the table on 1000 to 2600 K, chan_w of the calibration. */
+function netInput(t: TfsOut): { J: Float32Array; grid: { nt: number; nz: number; nr: number; rMm: Float64Array; zMm: number[]; times: number[] }; kern: KernelTable; keep: number[] } | null {
+  const p = S.flame.prepared, o = S.abel.out;
+  if (!p || !o || !t.table.G) return null;
+  const nr = p.nr;
+  const keep = Array.from({ length: p.nz }, (_, k) => k).filter((k) => [0, 1, 2].every((c) => Array.from(o.J[c][k]).every(fin)));
+  const J = new Float32Array(keep.length * nr * 3);
+  keep.forEach((k, kk) => { for (let i = 0; i < nr; i++) for (let c = 0; c < 3; c++) J[(kk * nr + i) * 3 + c] = o.J[c][k][i]; });
+  const G = t.table.G, nT = t.table.T.length;
+  const K = new Float32Array(3 * nT);
+  K.set(G.R, 0); K.set(G.G, nT); K.set(G.B, 2 * nT);
+  // f_s,ref of the app in absolute mode (20 ppm); without a calibration f_s is relative and the bound follows the closed form
+  let fsRef = 2e-5;
+  if (calDecision().fs !== 'ppm') { let m = 0; for (let q = 0; q < t.fs.length; q++) if (t.mask[q] & 1 && fin(t.fs[q])) m = Math.max(m, t.fs[q]); fsRef = m > 0 ? 4 * m : 1; }
+  return { J, grid: { nt: 1, nz: keep.length, nr, rMm: p.rMm, zMm: keep.map((k) => p.zMm[k]), times: [0] }, kern: { Tgrid: t.table.T, K, chanW: tfsWeights(), jToSi: 1, fsRef }, keep };
+}
+function netEngine(prob: Stage2Problem, nParams: number) {
+  return helpers.length ? Stage2PoolEngine.create(prob, nParams, { n: helpers.length, factory: poolFactory }) : Promise.resolve(new Stage2LocalEngine(prob));
+}
+function netError(e: unknown): Msg {
+  const m = String((e as Error)?.message ?? e);
+  if (m === 'stage2_two_channels') return { code: 'net_two_channels', level: 'error' };
+  if (m === 'stage2_no_signal') return { code: 'net_no_signal', level: 'error' };
+  return { code: /webgpu|device|lost/i.test(m) ? 'webgpu_lost' : 'worker_failed', level: 'error' };
+}
+async function estimateNet() {
+  const N = S.tfs.net;
+  if (!S.abel.out || N.running) return;
+  N.msgs = N.msgs.filter((m) => m.code !== 'net_slow');
+  S.busy = L('Midiendo 20 iteraciones de la red', 'Timing 20 network iterations');
+  renderBusy();
+  try {
+    // the table and its masks, without touching the result of stage 5
+    const t = S.tfs.out && !S.stale[5] ? S.tfs.out : await ask<TfsOut>(tfsRunMsg());
+    const inp = netInput(t);
+    if (!inp) throw new Error('no_emission');
+    const prob = buildStage2Problem(inp.J, inp.grid, inp.kern, { iterations: N.iterations });
+    const p0 = initStage2(S.res.seed, prob.sizes);
+    if (S.gpu) {
+      const g = await createGpuStage2(prob, p0, 23);
+      try { g.encodeIters(3); await g.done(); const t0 = performance.now(); g.encodeIters(20); await g.done(); N.estimate = { path: 'webgpu', sPerIter: (performance.now() - t0) / 1000 / 20 }; } finally { g.destroy(); }
+    } else {
+      const eng = await netEngine(prob, p0.length);
+      await eng.evaluate(p0, true);
+      const t0 = performance.now();
+      for (let i = 0; i < 5; i++) await eng.evaluate(p0, true);
+      N.estimate = { path: eng.path, sPerIter: (performance.now() - t0) / 1000 / 5 };
+    }
+    const min = (N.estimate.sPerIter * N.iterations) / 60;
+    if (min > 5) N.msgs.push({ code: 'net_slow', vars: { a: Math.max(1, Math.ceil(min)) } });
+  } catch (e) { N.msgs.push(netError(e)); }
+  S.busy = '';
+  renderBusy();
+  renderStage5();
+}
+/** RGB-ANNAbel stage 2 on the emission of stage 4, then T and f_s of the network replace those of the
+ *  closed form inside the display mask of the app. The closed form stays as the cross-check. */
+async function runNet() {
+  const t = S.tfs.out, N = S.tfs.net, p = S.flame.prepared;
+  if (!t || !p) return;
+  const inp = netInput(t);
+  if (!inp) return;
+  N.running = true; N.msgs = []; N.ctrl = new AbortController(); N.tick = null; N.result = null;
+  renderStage5();
+  try {
+    const prob = buildStage2Problem(inp.J, inp.grid, inp.kern, { iterations: N.iterations });
+    const p0 = initStage2(S.res.seed, prob.sizes);
+    const topts = { iterations: N.iterations, signal: N.ctrl.signal, onTick: (tk: TrainTick) => { N.tick = tk; renderNetProgress(); } };
+    let train: TrainResult;
+    if (S.gpu) {
+      const g = await createGpuStage2(prob, p0, N.iterations);
+      try { train = await g.train({ ...topts, itersPerSubmit: 200 }); } finally { g.destroy(); }
+    } else train = await trainStage2(await netEngine(prob, p0.length), p0, prob, topts);
+    const res = finishStage2(prob, inp.J, inp.grid, inp.kern, train);
+    if (train.endReason === 'stopped_by_user') N.msgs.push({ code: 'net_stopped', vars: { n: train.bestIter }, level: 'info' });
+    const nr = p.nr, n = p.nz * nr;
+    const Tcf = new Float64Array(n).fill(NaN), fsCf = new Float64Array(n).fill(NaN);
+    const T = new Float64Array(n).fill(NaN), fs = new Float64Array(n).fill(NaN);
+    const used = new Uint8Array(n);
+    inp.keep.forEach((k, kk) => { for (let i = 0; i < nr; i++) { const q = k * nr + i, sq = kk * nr + i; Tcf[q] = res.Tcf[sq]; fsCf[q] = res.fsCf[sq]; if (!(t.mask[q] & (M_SAT | M_LOW)) && res.mask[sq]) { T[q] = res.T[sq]; fs[q] = res.fs[sq]; used[q] = 1; } } });
+    for (let q = 0; q < n; q++) { t.mask[q] = used[q] ? t.mask[q] | 1 : (t.mask[q] & ~1) | (t.mask[q] & (M_SAT | M_LOW) ? 0 : M_LOW); t.flags[q] = 0; t.chi2rel[q] = NaN; }
+    t.T = T; t.fs = fs;
+    N.result = { xcheck: res.xcheck, bounds: res.bounds, Tcf, fsCf, bestIter: train.bestIter, completed: train.completedIters, planned: train.plannedIters, path: train.path, elapsedS: train.elapsedS, fsRef: inp.kern.fsRef, nTrain: res.meta.nTrain, nMask: res.meta.nMask, rows: inp.keep.length };
+  } catch (e) { N.msgs.push(netError(e)); S.tfs.out = null; }
+  N.running = false; N.ctrl = null;
 }
 /** What the island criterion removed, in words (director after GB3 r1). */
 function islandNote(t: TfsOut): string {
@@ -1032,7 +1138,7 @@ async function runBandNow() {
     const sKrel = (c && c.mode === 'oven' && S.oven.result ? CH.map((ch) => { const x = S.oven.result!.fit.channels[ch]; return fin(x.sKstat / x.K) ? x.sKstat / x.K : 0; }) : [0, 0, 0]) as [number, number, number];
     const scaleRel = fin(S.flame.mmPerPx) && fin(S.flame.scaleUnc) ? S.flame.scaleUnc / 100 : 0;
     S.res.bandHow = c?.mode === 'oven' ? 'oven' : c ? 'noise' : 'nocal';
-    S.res.band = await ask({ type: 'band.run', n: S.res.nBand, seed: S.res.seed, sigmaT: c && fin(c.sigmaT) ? c.sigmaT : 0, Tcal: c && fin(c.Tcal) ? c.Tcal : NaN, eps: S.eps, sKrel, scaleRel, run: abelRun(), tfs: { path: S.tfs.path, pair: S.tfs.pair, emLaw: emLaw(), sigFrac: S.tfs.sigFrac, islandFrac: S.tfs.islandFrac, chemBG: calDecision().state !== 'uncalibrated', zCutMm: fin(S.tfs.zCut) ? S.tfs.zCut : null, chemThr: S.tfs.chemThr, fsChannel: S.tfs.fsChannel, refine: false, weights: tfsWeights() }, psi: psiMsg() });
+    S.res.band = await ask({ type: 'band.run', n: S.res.nBand, seed: S.res.seed, sigmaT: c && fin(c.sigmaT) ? c.sigmaT : 0, Tcal: c && fin(c.Tcal) ? c.Tcal : NaN, eps: S.eps, sKrel, scaleRel, run: abelRun(), tfs: { path: workerPath(), pair: S.tfs.pair, emLaw: emLaw(), sigFrac: S.tfs.sigFrac, islandFrac: S.tfs.islandFrac, chemBG: calDecision().state !== 'uncalibrated', zCutMm: fin(S.tfs.zCut) ? S.tfs.zCut : null, chemThr: S.tfs.chemThr, fsChannel: S.tfs.fsChannel, refine: false, weights: tfsWeights() }, psi: psiMsg() });
   } catch (e) { S.flame.msgs.push({ code: (e as { code: string }).code }); }
   S.busy = '';
   renderBusy();
@@ -1090,7 +1196,9 @@ function settings() {
     calPath: S.calPath,
     flame: { burnerConfirmed: S.flame.burnerOk, texpUs: S.flame.texpUs, texpConfirmed: S.flame.texpConfirmed, times: S.flame.times, sensorQ: S.flame.sensorQ, quarter: S.flame.quarter, mirror: S.flame.mirror, fineDeg: S.flame.fineDeg, axisAuto: S.flame.axisAuto, axisManual: S.flame.axisManual, axisUsed: S.flame.prepared?.axis ?? null, halfWidth: S.flame.halfWidth, nr: S.flame.nr, rowTop: S.flame.rowTop, rowBottom: S.flame.rowBottom, rowsPerHeight: S.flame.rowsPerHeight, mmPerPx: S.flame.mmPerPx, scaleConfirmed: S.flame.scaleConfirmed, scaleUncPct: S.flame.scaleUnc, burnerRow: S.flame.burnerRow, zBurner: S.flame.zBurner },
     abel: { method: S.abel.outMethod || S.abel.method, sym: S.abel.sym, lambdaRel: S.abel.lambdaRel, reg: 'gamma2', segments: S.abel.segments, satLambda: S.abel.satLambda, annabelIterations: S.abel.annabel.iterations, annabelBest: S.abel.annabel.result?.bestIter ?? null },
-    tfs: { path: S.tfs.path, pair: S.tfs.pair, sigFrac: S.tfs.sigFrac, islandFrac: S.tfs.islandFrac, zCutMm: S.tfs.zCut, chemThr: S.tfs.chemThr, fsChannel: S.tfs.fsChannel },
+    tfs: { path: S.tfs.path, pair: S.tfs.pair, sigFrac: S.tfs.sigFrac, islandFrac: S.tfs.islandFrac, zCutMm: S.tfs.zCut, chemThr: S.tfs.chemThr, fsChannel: S.tfs.fsChannel,
+           net: S.tfs.path === 'net' ? { method: 'RGB-ANNAbel stage 2 (Magana et al. 2025), annabel_app/core/stage2.py', iterations: S.tfs.net.iterations, bestIter: S.tfs.net.result?.bestIter ?? null, completed: S.tfs.net.result?.completed ?? null, path: S.tfs.net.result?.path ?? null, fsRef: S.tfs.net.result?.fsRef ?? null,
+             config: { hiddenLayers: STAGE2_DEFAULTS.hiddenLayers, width: STAGE2_DEFAULTS.width, zSub: STAGE2_DEFAULTS.zSub, signalThreshold: STAGE2_DEFAULTS.signalThreshold, lambdaRatio: STAGE2_DEFAULTS.lambdaRatio, lr: STAGE2_DEFAULTS.lr, lrMinFrac: STAGE2_DEFAULTS.lrMinFrac }, xcheck: S.tfs.net.result?.xcheck ?? null } : null },
     results: { Tmin: S.res.Tmin, Tmax: S.res.Tmax, heights: S.res.heights, nBand: S.res.nBand },
   };
 }
@@ -1233,7 +1341,8 @@ async function loadRun(b: Blob, name: string) {
     Object.assign(S.flame, { burnerOk: f.burnerConfirmed === true, texpUs: f.texpUs ?? NaN, texpConfirmed: f.texpConfirmed, times: f.times, sensorQ: f.sensorQ, quarter: f.quarter, mirror: f.mirror, fineDeg: f.fineDeg, axisAuto: f.axisAuto, axisManual: f.axisManual ?? NaN, halfWidth: f.halfWidth ?? NaN, nr: f.nr ?? NaN, rowTop: f.rowTop ?? NaN, rowBottom: f.rowBottom ?? NaN, rowsPerHeight: f.rowsPerHeight, mmPerPx: f.mmPerPx ?? NaN, scaleConfirmed: f.scaleConfirmed, scaleUnc: f.scaleUncPct, burnerRow: f.burnerRow ?? NaN, zBurner: f.zBurner });
     Object.assign(S.abel, { method: s.abel.method, sym: s.abel.sym, lambdaRel: s.abel.lambdaRel, segments: s.abel.segments, satLambda: s.abel.satLambda });
     S.abel.annabel.iterations = s.abel.annabelIterations ?? ITER_LONG;
-    Object.assign(S.tfs, { path: s.tfs.path, pair: s.tfs.pair, sigFrac: s.tfs.sigFrac, islandFrac: s.tfs.islandFrac ?? 0.05, zCut: s.tfs.zCutMm ?? NaN, chemThr: s.tfs.chemThr, fsChannel: asFsMode(s.tfs.fsChannel) });
+    S.tfs.net.iterations = (s.tfs as { net?: { iterations?: number } | null }).net?.iterations ?? NET_ITERATIONS;
+    Object.assign(S.tfs, { path: asTfsPath(s.tfs.path), pair: s.tfs.pair, sigFrac: s.tfs.sigFrac, islandFrac: s.tfs.islandFrac ?? 0.05, zCut: s.tfs.zCutMm ?? NaN, chemThr: s.tfs.chemThr, fsChannel: asFsMode(s.tfs.fsChannel) });
     Object.assign(S.res, { Tmin: s.results.Tmin, Tmax: s.results.Tmax, heights: s.results.heights ?? [], nBand: s.results.nBand ?? 30, seed: j.seed ?? 42 });
     S.runRef = { name, inputs: (j.inputs ?? []).filter((x) => x.sha256) };
     S.loadMsgs.push({ code: 'run_loaded', vars: { file: name }, level: 'info' });
@@ -1947,7 +2056,7 @@ function renderStage3() {
     ${chk('wr-burnerok', S.flame.burnerOk, L('Confirmo que en la vista previa el quemador queda abajo', 'I confirm that the burner is at the bottom of the preview'), L('La herramienta supone que la última fila es la base de la llama. La base es la parte ancha y tenue, y la punta, angosta, va arriba. Una llama cabeza abajo da mapas sin sentido. Si arriba queda más ancha que abajo, la herramienta avisa, y la casilla decide.', 'The tool assumes that the last row is the base of the flame. The base is the wide, dim part and the narrow tip goes at the top. An upside-down flame gives meaningless maps. If it is wider at the top than at the bottom the tool warns, and the box decides.'))}
     ${chk('wr-mirror', S.flame.mirror, L('Espejo izquierda derecha', 'Left-right mirror'))}
     ${numIn('wr-fine', S.flame.fineDeg, 'min="-10" max="10" step="0.1"', L('Rotación fina (°)', 'Fine rotation (°)'))}
-    ${chk('wr-axisauto', S.flame.axisAuto, L('Eje automático (convención de ANNAbel, eje entre dos columnas)', 'Automatic axis (ANNAbel convention, axis between two columns)'))}
+    ${chk('wr-axisauto', S.flame.axisAuto, L('Eje automático (como la app ANNAbel del grupo, eje entre dos columnas)', 'Automatic axis (as in the group’s ANNAbel app, axis between two columns)'))}
     ${!S.flame.axisAuto ? numIn('wr-axis', S.flame.axisManual, 'step="0.05"', L('Eje (columna, píxeles de trabajo)', 'Axis (column, working pixels)')) : ''}
     ${numIn('wr-hw', S.flame.halfWidth, 'min="4" step="1"', L('Semiancho de búsqueda del eje (píxeles)', 'Axis search half-width (pixels)'), L('Si queda vacío, 30 % del ancho.', 'If left empty, 30 % of the width.'))}
     ${numIn('wr-nr', S.flame.nr, 'min="4" step="1"', L('Radios por lado (semiancho del recorte)', 'Radii per side (crop half-width)'), L('Si queda vacío, hasta el borde más cercano.', 'If left empty, up to the nearest edge.'))}
@@ -2050,7 +2159,7 @@ function renderStage4() {
   if (o && o.excluded.length && o.excluded.length !== p?.satRows.length) msgs.push({ code: 'rows_saturated', vars: { n: o.excluded.length }, level: 'info' });
   el.innerHTML = `<h2 class="row__label nonum">${L('Etapa 4 · Inversión de Abel por canal', 'Stage 4 · Abel inversion per channel')}</h2>
   ${statusLine('wr-st4', stage4Status())}
-  <p>${L('Los tres canales usan el mismo método, el mismo λ relativo y la misma malla, porque resoluciones distintas por canal inventan estructura en la razón. La curva L se calcula con el verde y se aplica a todos. Rayos en (i + ½)·dr con el eje entre dos columnas, la convención de ANNAbel.', 'The three channels use the same method, the same relative λ and the same grid, because different resolutions per channel invent structure in the ratio. The L-curve is computed on green and applied to all. Rays at (i + ½)·dr with the axis between two columns, the ANNAbel convention.')}</p>
+  <p>${L('Los tres canales usan el mismo método, el mismo λ relativo y la misma malla, porque resoluciones distintas por canal inventan estructura en la razón. La curva L se calcula con el verde y se aplica a todos. Rayos en (i + ½)·dr con el eje entre dos columnas, la convención de la app ANNAbel del grupo.', 'The three channels use the same method, the same relative λ and the same grid, because different resolutions per channel invent structure in the ratio. The L-curve is computed on green and applied to all. Rays at (i + ½)·dr with the axis between two columns, the convention of the group’s ANNAbel app.')}</p>
   <div class="lab"><div class="lab__grid"><div class="lab__controls">
     <p class="seg" role="group" aria-label="${L('Método', 'Method')}">${(['onion', 'tikhonov', 'sat', 'annabel'] as const).map((m) => `<button type="button" data-method="${m}" aria-pressed="${S.abel.method === m}">${methodName(m)}</button>`).join('')}</p>
     ${sel('wr-sym', S.abel.method === 'sat' || S.abel.method === 'annabel' ? [['both', L('las dos mitades en el ajuste', 'both halves in the fit')], ['average', L('promedio de las mitades', 'mean of the halves')], ['right', L('solo la derecha', 'right only')], ['left', L('solo la izquierda', 'left only')]] : [['average', L('promedio de las mitades', 'mean of the halves')], ['right', L('solo la derecha', 'right only')], ['left', L('solo la izquierda', 'left only')]], S.abel.method === 'annabel' ? 'both' : S.abel.sym === 'both' && S.abel.method !== 'sat' ? 'average' : S.abel.sym, L('Simetrización', 'Symmetrisation'))}
@@ -2086,7 +2195,7 @@ function minText(sec: number): string {
 function annabelPanel(): string {
   const A = S.abel.annabel;
   const est = A.estimate ? L(`Camino ${A.estimate.path === 'webgpu' ? L('tarjeta gráfica', 'graphics card') : `${helpers.length} ${L('hilos del procesador', 'processor threads')}`}, ${num(A.estimate.sPerIter * 1000, 1)} ms por iteración, ${minText(A.estimate.sPerIter * A.iterations)} para ${num(A.iterations)} iteraciones.`, `Path ${A.estimate.path === 'webgpu' ? 'graphics card' : `${helpers.length} processor threads`}, ${num(A.estimate.sPerIter * 1000, 1)} ms per iteration, ${minText(A.estimate.sPerIter * A.iterations)} for ${num(A.iterations)} iterations.`) : '';
-  return `<p class="meta">${L('ANNAbel (Escudero et al., Proc. Combust. Inst. 40 (2024) 105493) ajusta una red de cuatro capas de 64 neuronas a las dos mitades de todas las alturas a la vez. Con 30 000 iteraciones el error esperado es de 3 a 5 %. ', 'ANNAbel (Escudero et al., Proc. Combust. Inst. 40 (2024) 105493) fits a network of four layers of 64 neurons to both halves of every height at once. With 30 000 iterations the expected error is 3 to 5 %. ')}${S.gpu ? L('Este navegador puede usar la tarjeta gráfica.', 'This browser can use the graphics card.') : L('Sin tarjeta gráfica disponible corre en el procesador, más lento, como opción avanzada. Si tarda mucho, usen la app Python con el archivo .npz de la etapa 3.', 'Without the graphics card it runs on the processor, more slowly, as an advanced option. If it takes too long, use the Python app with the .npz file of stage 3.')}</p>
+  return `<p class="meta">${L('ANNAbel (Escudero et al., Proc. Combust. Inst. 40 (2024) 105493). La herramienta usa la red de la app del grupo, que ajusta cuatro capas de 64 neuronas a las dos mitades de todas las alturas a la vez. Con 30 000 iteraciones el error esperado es de 3 a 5 %. ', 'ANNAbel (Escudero et al., Proc. Combust. Inst. 40 (2024) 105493). The tool uses the network of the group’s app, which fits four layers of 64 neurons to both halves of every height at once. With 30 000 iterations the expected error is 3 to 5 %. ')}${S.gpu ? L('Este navegador puede usar la tarjeta gráfica.', 'This browser can use the graphics card.') : L('Sin tarjeta gráfica disponible corre en el procesador, más lento, como opción avanzada. Si tarda mucho, usen la app Python con el archivo .npz de la etapa 3.', 'Without the graphics card it runs on the processor, more slowly, as an advanced option. If it takes too long, use the Python app with the .npz file of stage 3.')}</p>
   ${numIn('wr-ann-it', A.iterations, 'min="100" max="100000" step="100"', L('Iteraciones', 'Iterations'))}
   ${numIn('wr-seed', S.res.seed, 'min="0" step="1"', L('Semilla', 'Seed'))}
   <p>${btn('wr-ann-est', L('Estimar el tiempo', 'Estimate the time'), !S.flame.prepared || A.running)}</p>
@@ -2169,11 +2278,19 @@ function renderStage5() {
     }
     if ((fin(T95) && T95 > 2400) || (fin(F95) && F95 > 50)) msgs.push(fin(F95) ? { code: 'implausible', vars: { a: num(T95), b: sig(F95, 2) } } : { code: 'implausible_T', vars: { a: num(T95) } });
   }
+  if (S.tfs.path === 'net') {
+    msgs.push(...S.tfs.net.msgs);
+    const r = S.tfs.net.result;
+    if (t && r?.xcheck && !r.xcheck.agrees) msgs.push({ code: 'net_xcheck_bad', vars: { a: xcheckBad(r.xcheck) } });
+    if (t && r?.bounds?.warnT) msgs.push({ code: 'net_bounds_T', level: 'info' });
+    if (t && r?.bounds?.warnFs && calDecision().fs === 'ppm') msgs.push({ code: 'net_bounds_fs', level: 'info' });
+  }
   // uncalibrated is said once, in stage 2 (GB3r2-adv-13)
   el.innerHTML = `<h2 class="row__label nonum">${L('Etapa 5 · Temperatura y f<sub>s</sub>', 'Stage 5 · Temperature and f<sub>s</sub>')}</h2>
-  ${statusLine('wr-st5', staleNote(5) || (!S.abel.out ? L('Falta la emisión de la etapa 4', 'The emission of stage 4 is missing') : t ? L('Lista', 'Ready') : L('Lista para calcular', 'Ready to compute')))}
+  ${statusLine('wr-st5', staleNote(5) || (!S.abel.out ? L('Falta la emisión de la etapa 4', 'The emission of stage 4 is missing') : S.tfs.net.running ? L('Red de RGB-ANNAbel entrenando', 'RGB-ANNAbel network training') : t ? L('Lista', 'Ready') : L('Lista para calcular', 'Ready to compute')))}
   <div class="lab"><div class="lab__grid"><div class="lab__controls">
-    ${sel('wr-path', [['ratio', L('razón de dos canales', 'ratio of two channels')], ['fit3', L('avanzado, ajuste de T y f<sub>s</sub> con tres canales', 'advanced, fit of T and f<sub>s</sub> with three channels')]], S.tfs.path, L('Camino', 'Path'), S.tfs.path === 'fit3' ? L('Opción avanzada. El azul entra con su K<sub>B</sub>, que solo vale en la llama con pasa-cortos de 700 nm o con la esfera. Sin eso el camino recomendado es la razón R/G con f<sub>s</sub> de R y G.', 'Advanced option. Blue enters with its K<sub>B</sub>, which only holds in the flame with a 700 nm short-pass filter or with the sphere. Without that the recommended path is the R/G ratio with f<sub>s</sub> from R and G.') : '')}
+    ${sel('wr-path', [['ratio', L('razón de dos canales', 'ratio of two channels')], ['fit3', L('avanzado, ajuste de T y f<sub>s</sub> con tres canales', 'advanced, fit of T and f<sub>s</sub> with three channels')], ['net', L('T y f<sub>s</sub> con red (RGB-ANNAbel)', 'T and f<sub>s</sub> with a network (RGB-ANNAbel)')]], S.tfs.path, L('Camino', 'Path'), S.tfs.path === 'fit3' ? L('Opción avanzada. El azul entra con su K<sub>B</sub>, que solo vale en la llama con pasa-cortos de 700 nm o con la esfera. Sin eso el camino recomendado es la razón R/G con f<sub>s</sub> de R y G.', 'Advanced option. Blue enters with its K<sub>B</sub>, which only holds in the flame with a 700 nm short-pass filter or with the sphere. Without that the recommended path is the R/G ratio with f<sub>s</sub> from R and G.') : '')}
+    ${S.tfs.path === 'net' ? netPanel() : ''}
     ${S.tfs.path === 'ratio' ? sel('wr-pair', [['RG', 'R/G'], ['BG', 'B/G'], ['BR', 'B/R']], S.tfs.pair, L('Par de canales', 'Channel pair'), (preset().id === 'a2A1920-160ucPRO' ? L('R/G es el par principal. Con el sensor de la cámara del laboratorio (Sony IMX392) una misma razón B/G puede corresponder a dos temperaturas, y R/G es más sensible.', 'R/G is the main pair. With the sensor of the lab camera (Sony IMX392) one B/G ratio can belong to two temperatures, and R/G is more sensitive.') : L(`R/G es el par principal, el mismo que usa la presentación. La curva elegida es la de la ${preset().id}.`, `R/G is the main pair, the one the presentation uses. The chosen curve is that of the ${preset().id}.`))) : ''}
     ${sel('wr-em', [['group', L('ley del grupo (Yon et al. 2011)', 'group law (Yon et al. 2011)')], ['coeffs', 'a + b ln²λ + c lnλ/λ'], ['constant', L('E constante', 'constant E')]], S.tfs.em, 'E(m<sub>λ</sub>)', S.tfs.em === 'group' ? '0,284 + 0,272 ln²λ + 0,057 lnλ/λ, λ en µm'.replace(/,(?=\d)/g, getLang() === 'es' ? ',' : '.').replace(' en ', getLang() === 'es' ? ' en ' : ' in ') : '')}
     ${S.tfs.em === 'coeffs' ? `<div class="wr-row">${numIn('wr-ema', S.tfs.a, 'step="any"', 'a')}${numIn('wr-emb', S.tfs.b, 'step="any"', 'b')}${numIn('wr-emc', S.tfs.c, 'step="any"', 'c')}</div>` : ''}
@@ -2183,19 +2300,70 @@ function renderStage5() {
     ${numIn('wr-zcut', S.tfs.zCut, 'step="any"', L('Quimioluminiscencia, alturas bajo z (mm)', 'Chemiluminescence, heights below z (mm)'), t?.zCutSuggest !== null && t?.zCutSuggest !== undefined ? zCutNote(t.zCutSuggest) : '')}
     ${numIn('wr-chem', S.tfs.chemThr * 100, 'min="0" max="200" step="1"', L('y píxeles con B/G sobre el predicho por T de R/G en más de este %', 'and pixels with B/G above the one predicted by T from R/G by more than this %'))}
     ${S.tfs.path === 'ratio' ? sel('wr-fsch', [['RG', L('rojo y verde (por defecto)', 'red and green (default)')], ['R', L('solo rojo', 'red only')], ['G', L('solo verde', 'green only')], ['RGB', L('avanzado, rojo, verde y azul', 'advanced, red, green and blue')], ['B', L('avanzado, solo azul', 'advanced, blue only')]], S.tfs.fsChannel, L('Canales para f<sub>s</sub>, mínimos cuadrados de j<sub>j</sub> = f<sub>s</sub> G<sub>j</sub>(T)', 'Channels for f<sub>s</sub>, least squares of j<sub>j</sub> = f<sub>s</sub> G<sub>j</sub>(T)'), fsChannelNote()) : ''}
-    <p>${btn('wr-tfs', L('Calcular', 'Compute'), !S.abel.out)}</p>
+    <p>${btn('wr-tfs', S.tfs.path === 'net' ? L('Calcular y entrenar la red', 'Compute and train the network') : L('Calcular', 'Compute'), !S.abel.out || S.tfs.net.running)} ${S.tfs.net.running ? btn('wr-net-stop', L('Detener', 'Stop')) : ''}</p>
     <p class="lab__readout">${t && p ? losReading(t, p) : ''}</p>
+    ${S.tfs.path === 'net' && t && S.tfs.net.result ? `<p class="lab__readout" id="wr-net-xc">${netReading(S.tfs.net.result)}</p>` : ''}
   </div><div class="lab__plots">
     <figure><div id="wr-tab" class="wr-plot"></div><figcaption>${L(`Tabla T ↔ ${S.tfs.pair.split('').join('/')} de 1000 a 2600 K cada 1 K, con ψ<sub>j</sub>, Planck y E(m<sub>λ</sub>). Punteada, sensibilidad d ln(razón)/dT en % por 100 K, escalada al rango de la razón y sin eje propio.`, `Table T ↔ ${S.tfs.pair.split('').join('/')} from 1000 to 2600 K every 1 K, with ψ<sub>j</sub>, Planck and E(m<sub>λ</sub>). Dotted, sensitivity d ln(ratio)/dT in % per 100 K, scaled to the range of the ratio, without an axis of its own.`)}</figcaption></figure>
     ${t && S.tfs.path === 'fit3' ? `<figure><canvas id="wr-chi" class="wr-map"></canvas><figcaption>${L('χ² relativo del ajuste de tres canales, de 0 (fondo) a su percentil 99 (tinta). En la zona marcada como quimioluminiscencia el azul tiene peso 0.', 'Relative χ² of the three-channel fit, from 0 (background) to its 99th percentile (ink). In the region marked as chemiluminescence blue has weight 0.')}</figcaption></figure>` : ''}
   </div></div></div>
+  ${t && S.tfs.path === 'net' && S.tfs.net.result ? `<figure class="wr-maps3 wr-netmaps"><div><canvas id="wr-net-tcf" class="wr-map"></canvas><span class="meta">T ${L('forma cerrada', 'closed form')}</span></div><div><canvas id="wr-net-dt" class="wr-map"></canvas><span class="meta">|T<sub>${L('red', 'net')}</sub> − T<sub>${L('cerrada', 'closed')}</sub>|</span></div><figcaption>${L(`Comprobación de la red. A la izquierda, T del ajuste directo por píxel de la misma emisión, con la escala de los mapas de la etapa 6. A la derecha, la diferencia absoluta con la red, de 0 (fondo) a ${num(XCHECK_WARN_P90_K)} K (tinta). Sin color quedan los píxeles fuera de la máscara y los que el ajuste directo deja en un borde de la tabla.`, `Check of the network. Left, T of the direct per-pixel fit of the same emission, with the scale of the stage 6 maps. Right, the absolute difference with the network, from 0 (background) to ${num(XCHECK_WARN_P90_K)} K (ink). Pixels outside the mask, and those the direct fit leaves at an edge of the table, have no colour.`)}</figcaption></figure>` : ''}
   <div class="wr-msgs">${msgHtml(msgs)}</div>`;
   drawTable();
+  const nr = S.tfs.net.result;
+  if (t && p && S.tfs.path === 'net' && nr) {
+    const a = document.getElementById('wr-net-tcf') as HTMLCanvasElement | null, b = document.getElementById('wr-net-dt') as HTMLCanvasElement | null;
+    const d = Float64Array.from(t.T, (v, q) => (fin(v) && fin(nr.Tcf[q]) ? Math.abs(v - nr.Tcf[q]) : NaN));
+    const ext = mapExtent(p);
+    if (a) { drawMap(a, nr.Tcf, p.nz, p.nr, 't', S.res.Tmin, S.res.Tmax); a.style.aspectRatio = `${ext.aspect}`; }
+    if (b) { drawMap(b, d, p.nz, p.nr, 'fs', 0, XCHECK_WARN_P90_K); b.style.aspectRatio = `${ext.aspect}`; }
+  }
   if (t && S.tfs.path === 'fit3') {
     const cv = document.getElementById('wr-chi') as HTMLCanvasElement | null;
     const v = Array.from(t.chi2rel).filter(fin).sort((a, b) => a - b);
     if (cv && p) drawMap(cv, t.chi2rel, p.nz, p.nr, 'fs', 0, v.length ? v[Math.floor(0.99 * (v.length - 1))] : 1);
   }
+}
+/** Panel of the RGB-ANNAbel option, iterations, estimated time, progress bar. */
+function netPanel(): string {
+  const N = S.tfs.net, e = N.estimate;
+  const where = (path: string) => (path === 'webgpu' ? L('tarjeta gráfica', 'graphics card') : path === 'workers' ? L(`${helpers.length} hilos del procesador`, `${helpers.length} processor threads`) : L('un hilo del procesador', 'one processor thread'));
+  const est = e ? L(`Camino ${where(e.path)}, ${num(e.sPerIter * 1000, 1)} ms por iteración, ${minText(e.sPerIter * N.iterations)} para ${num(N.iterations)} iteraciones.`, `Path ${where(e.path)}, ${num(e.sPerIter * 1000, 1)} ms per iteration, ${minText(e.sPerIter * N.iterations)} for ${num(N.iterations)} iterations.`) : '';
+  const tk = N.tick;
+  return `<p class="meta">${L('El segundo paso de RGB-ANNAbel (Magaña et al., Case Stud. Therm. Eng. 76 (2025) 107396). En el artículo el primer paso es ANNAbel. Aquí la red usa la emisión de la etapa 4, del método de inversión que hayan elegido. La red recibe la posición (r, z) y entrega T y f<sub>s</sub>. Se entrena para que f<sub>s</sub> G<sub>j</sub>(T) reproduzca la emisión j<sub>j</sub> de la etapa 4 en una de cada dos alturas, y para que las razones entre canales coincidan con las de la tabla donde hay señal. Reemplaza la lectura de la tabla píxel a píxel. La tabla sigue siendo el camino recomendado. Aquí se calcula también el ajuste directo por píxel, que sirve para revisar la red. La banda de incertidumbre de la etapa 6 usa ese ajuste directo.', 'The second step of RGB-ANNAbel (Magaña et al., Case Stud. Therm. Eng. 76 (2025) 107396). In the paper the first step is ANNAbel. Here the network uses the emission of stage 4, from whichever inversion method you chose. The network takes the position (r, z) and returns T and f<sub>s</sub>. It is trained so that f<sub>s</sub> G<sub>j</sub>(T) reproduces the emission j<sub>j</sub> of stage 4 on one height in two, and so that the ratios between channels match those of the table where there is signal. It replaces reading the table pixel by pixel. The table is still the recommended path. The direct per-pixel fit is computed here too, to check the network. The uncertainty band of stage 6 uses that direct fit.')} ${S.gpu ? L('Este navegador puede usar la tarjeta gráfica.', 'This browser can use the graphics card.') : L('Sin tarjeta gráfica corre en el procesador, más lento.', 'Without the graphics card it runs on the processor, more slowly.')}</p>
+  ${numIn('wr-net-it', N.iterations, 'min="10" max="100000" step="100"', L('Iteraciones de la red', 'Network iterations'), L(`La herramienta usa ${num(NET_ITERATIONS)}. La aplicación usa ${num(STAGE2_DEFAULTS.iterations)}, pero con ellas la red queda lejos del ajuste directo en la llama de ejemplo.`, `The tool uses ${num(NET_ITERATIONS)}. The app uses ${num(STAGE2_DEFAULTS.iterations)}, but with them the network stays far from the direct fit on the example flame.`))}
+  <p>${btn('wr-net-est', L('Estimar el tiempo', 'Estimate the time'), !S.abel.out || N.running)}</p>
+  <p class="meta" id="wr-net-est-t">${est}</p>
+  <progress id="wr-net-bar" class="wr-progress" max="${tk ? tk.total : N.iterations}" value="${tk ? tk.iter : 0}"${N.running || tk ? '' : ' hidden'} aria-label="${L('Avance del entrenamiento de la red', 'Progress of the network training')}"></progress>
+  <p class="meta" id="wr-net-prog" aria-live="polite">${tk ? netProgressText() : ''}</p>`;
+}
+function netProgressText(): string {
+  const t = S.tfs.net.tick;
+  if (!t) return '';
+  return L(`Iteración ${num(t.iter)} de ${num(t.total)}, pérdida ${sig(t.loss, 3)}, mejor ${sig(t.best, 3)} en la ${num(t.bestIter)}${t.etaS !== null && t.iter < t.total ? `, faltan unos ${num(Math.max(t.etaS, 0), 0)} s` : ''}.`, `Iteration ${num(t.iter)} of ${num(t.total)}, loss ${sig(t.loss, 3)}, best ${sig(t.best, 3)} at ${num(t.bestIter)}${t.etaS !== null && t.iter < t.total ? `, about ${num(Math.max(t.etaS, 0), 0)} s left` : ''}.`);
+}
+function renderNetProgress() {
+  const t = S.tfs.net.tick;
+  const bar = document.getElementById('wr-net-bar') as HTMLProgressElement | null;
+  if (bar && t) { bar.hidden = false; bar.max = t.total; bar.value = t.iter; }
+  const e = document.getElementById('wr-net-prog');
+  if (e) e.textContent = netProgressText();
+}
+function xcheckBad(x: XCheck): string {
+  const parts: string[] = [];
+  if (x.bad.includes('T_median')) parts.push(L(`T difiere en ${num(x.TMedianAbsDiffK)} K en la mediana (umbral ${num(XCHECK_WARN_K)} K)`, `T differs by ${num(x.TMedianAbsDiffK)} K in the median (threshold ${num(XCHECK_WARN_K)} K)`));
+  if (x.bad.includes('T_p90')) parts.push(L(`${num(x.TP90AbsDiffK)} K en el percentil 90 (umbral ${num(XCHECK_WARN_P90_K)} K)`, `${num(x.TP90AbsDiffK)} K at the 90th percentile (threshold ${num(XCHECK_WARN_P90_K)} K)`));
+  if (x.bad.includes('fs')) parts.push(L(`f_s difiere en un factor ${num(Math.exp(x.fsMedianAbsLogRatio), 2)} en la mediana (umbral ${num(Math.exp(XCHECK_WARN_FS_LOG), 2)})`, `f_s differs by a factor ${num(Math.exp(x.fsMedianAbsLogRatio), 2)} in the median (threshold ${num(Math.exp(XCHECK_WARN_FS_LOG), 2)})`));
+  return parts.join(L(' y ', ' and ')) + '.';
+}
+/** The _xcheck of the app in words, after training. */
+function netReading(r: NetOut): string {
+  const tr = L(`La red se entrenó ${num(r.completed)} de ${num(r.planned)} iteraciones en ${num(r.elapsedS, 1)} s (${r.path === 'webgpu' ? 'tarjeta gráfica' : 'procesador'}) con ${num(r.nTrain)} puntos de ${num(r.rows)} alturas, una de cada dos, y ${num(r.nMask)} puntos con señal para las razones. Mejor resultado en la iteración ${num(r.bestIter)}.`,
+    `The network trained ${num(r.completed)} of ${num(r.planned)} iterations in ${num(r.elapsedS, 1)} s (${r.path === 'webgpu' ? 'graphics card' : 'processor'}) on ${num(r.nTrain)} points of ${num(r.rows)} heights, one in two, and ${num(r.nMask)} points with signal for the ratios. Best result at iteration ${num(r.bestIter)}.`);
+  const x = r.xcheck;
+  if (!x) return `${tr} ${L('Ningún píxel sirve para comparar con el ajuste directo.', 'No pixel is suitable for comparing with the direct fit.')}`;
+  return `${tr} ${L(`Comparada con el ajuste directo por píxel de la misma emisión en ${num(x.nPixels)} píxeles con señal fuerte, T difiere en ${num(x.TMedianAbsDiffK)} K en la mediana y ${num(x.TP90AbsDiffK)} K en el percentil 90, y la razón f<sub>s</sub> red sobre f<sub>s</sub> directo tiene mediana ${num(x.fsMedianRatio, 2)}. ${x.agrees ? `Está dentro de los umbrales de la aplicación (${num(XCHECK_WARN_K)} K, ${num(XCHECK_WARN_P90_K)} K y un factor ${num(Math.exp(XCHECK_WARN_FS_LOG), 2)}).` : 'Queda fuera de los umbrales de la aplicación. Con más iteraciones la red suele acercarse al ajuste directo.'}`,
+    `Compared with the direct per-pixel fit of the same emission on ${num(x.nPixels)} pixels with strong signal, T differs by ${num(x.TMedianAbsDiffK)} K in the median and ${num(x.TP90AbsDiffK)} K at the 90th percentile, and the ratio of network f<sub>s</sub> to direct f<sub>s</sub> has median ${num(x.fsMedianRatio, 2)}. ${x.agrees ? `It is within the thresholds of the app (${num(XCHECK_WARN_K)} K, ${num(XCHECK_WARN_P90_K)} K and a factor ${num(Math.exp(XCHECK_WARN_FS_LOG), 2)}).` : 'It is outside the thresholds of the app. More iterations usually bring the network closer to the direct fit.'}`)}`;
 }
 /** Hint under the f_s channels. R and G is the default of the presentation, blue is the advanced option (G4 r2, director). */
 function fsChannelNote(): string {
@@ -2428,7 +2596,8 @@ function onInput(e: Event) {
     'wr-ann-it': () => { if (fin(val)) S.abel.annabel.iterations = Math.max(100, Math.round(val)); },
     'wr-seed': () => { if (fin(val)) S.res.seed = Math.round(val); },
     'wr-seed6': () => { if (fin(val)) { S.res.seed = Math.round(val); S.res.band = null; } },
-    'wr-path': () => { S.tfs.path = v as 'ratio' | 'fit3'; invalidate(5, 'tfs'); },
+    'wr-path': () => { S.tfs.path = asTfsPath(v); invalidate(5, 'tfs'); if (S.tfs.path === 'net' && S.abel.out && !S.tfs.net.estimate && !S.tfs.net.running) void estimateNet(); },
+    'wr-net-it': () => { if (fin(val)) { S.tfs.net.iterations = Math.max(10, Math.round(val)); S.tfs.net.msgs = S.tfs.net.msgs.filter((m) => m.code !== 'net_slow'); } },
     'wr-pair': () => { S.tfs.pair = v as 'RG' | 'BG' | 'BR'; invalidate(5, 'tfs'); },
     'wr-em': () => { S.tfs.em = v as typeof S.tfs.em; invalidate(5, 'tfs'); },
     'wr-ema': () => { S.tfs.a = val; invalidate(5, 'tfs'); }, 'wr-emb': () => { S.tfs.b = val; invalidate(5, 'tfs'); }, 'wr-emc': () => { S.tfs.c = val; invalidate(5, 'tfs'); }, 'wr-eme': () => { S.tfs.E = val; invalidate(5, 'tfs'); },
@@ -2517,6 +2686,8 @@ async function onClick(e: MouseEvent) {
     'wr-rclear': () => { S.flame.rulerPts = []; renderStage3(); },
     'wr-abel': runAbelNow,
     'wr-ann-stop': () => S.abel.annabel.ctrl?.abort(),
+    'wr-net-stop': () => S.tfs.net.ctrl?.abort(),
+    'wr-net-est': estimateNet,
     'wr-ann-est': estimateAnnabel,
     'wr-lc': runLcurve,
     'wr-lc-use': () => { if (S.abel.lcurve) { S.abel.lambdaRel = S.abel.lcurve.lambda; invalidate(4, 'abel'); renderAll(); } },

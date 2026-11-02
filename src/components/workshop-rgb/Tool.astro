@@ -116,6 +116,9 @@ const config = JSON.stringify({ lang, version: TOOL_VERSION, commit, source, bui
   .wr-bar { width: min(100%, 15rem); height: 0.8rem; display: block; margin: var(--s-2) auto 0; image-rendering: auto; }
   .wr-barlab { display: flex; justify-content: space-between; width: min(100%, 15rem); margin: 0.1em auto 0; font-size: var(--step--2); font-family: var(--font-mono); }
   .wr-npy .btn { font-family: var(--font-mono); font-size: 0.9em; }
+  .wr-netmaps canvas { width: auto; height: min(24rem, 60vh); }
+  .wr-progress { display: block; width: min(100%, 20rem); height: 0.6rem; accent-color: var(--ink); }
+  .wr-progress[hidden] { display: none; }
   .wr-noscript, .wr-loading { margin-block: var(--s-4); max-width: var(--measure); margin-inline: auto; }
   @media (max-width: 40rem) { .wr-app table { font-size: var(--step--2); } }
   @media print { .wr-app { display: none; } }

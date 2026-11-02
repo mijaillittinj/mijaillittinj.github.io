@@ -11,15 +11,15 @@ import { DEFAULT_LR, DEFAULT_LR_MIN_FRAC, cosineLr } from './train.ts';
 const U_MAP_READ = 0x1, U_COPY_SRC = 0x4, U_COPY_DST = 0x8, U_UNIFORM = 0x40, U_STORAGE = 0x80;
 const MAP_READ = 0x1;
 
-const WG = 256;
-const UHDR = `struct U { N:u32, K:u32, M:u32, wOff:u32, bOff:u32, act:u32, nsplit:u32, chunk:u32,
+export const WG = 256;
+export const UHDR = `struct U { N:u32, K:u32, M:u32, wOff:u32, bOff:u32, act:u32, nsplit:u32, chunk:u32,
   nr:u32, rows:u32, nP:u32, O:u32, os:f32, invM:f32, w0:f32, w1:f32, w2:f32, b1:f32, b2:f32, eps:f32 };
 @group(0) @binding(0) var<uniform> u: U;
 fn gidx(g: vec3u, n: vec3u) -> u32 { return g.x + g.y * n.x * ${WG}u; }
 `;
-const ST = `struct St { step:u32, bestStep:u32, loss:f32, best:f32 };`;
+export const ST = `struct St { step:u32, bestStep:u32, loss:f32, best:f32 };`;
 
-const K_LIN_FWD = UHDR + `
+export const K_LIN_FWD = UHDR + `
 @group(0) @binding(1) var<storage, read> P: array<f32>;
 @group(0) @binding(2) var<storage, read> inp: array<f32>;
 @group(0) @binding(3) var<storage, read_write> outp: array<f32>;
@@ -103,7 +103,7 @@ const K_ABEL_BWD = UHDR + `
   dY[idx] = d * S[idx];
 }`;
 
-const K_DX = UHDR + `
+export const K_DX = UHDR + `
 @group(0) @binding(1) var<storage, read> P: array<f32>;
 @group(0) @binding(2) var<storage, read> dY: array<f32>;
 @group(0) @binding(3) var<storage, read> H: array<f32>;
@@ -119,8 +119,8 @@ const K_DX = UHDR + `
 
 // weight gradient split over samples: workgroup w sums samples [w·chunk, (w+1)·chunk)
 // through a shared-memory tile of 16 samples; then a reduction over the partitions
-const TS = 16;
-const K_DW = UHDR + `
+export const TS = 16;
+export const K_DW = UHDR + `
 @group(0) @binding(1) var<storage, read> dY: array<f32>;
 @group(0) @binding(2) var<storage, read> X: array<f32>;
 @group(0) @binding(3) var<storage, read_write> part: array<f32>;
@@ -157,7 +157,7 @@ var<workgroup> td: array<f32, ${TS * 64}>;
   for (var r = 0u; r < 17u; r++) { let o = t + r * ${WG}u; if (o < u.O) { part[w * u.O + o] = acc[r]; } }
 }`;
 
-const K_DWRED = UHDR + `
+export const K_DWRED = UHDR + `
 @group(0) @binding(1) var<storage, read> part: array<f32>;
 @group(0) @binding(2) var<storage, read_write> G: array<f32>;
 @compute @workgroup_size(${WG}) fn main(@builtin(global_invocation_id) g: vec3u, @builtin(num_workgroups) nw: vec3u) {
@@ -168,7 +168,7 @@ const K_DWRED = UHDR + `
 }`;
 
 // Adam; ss[t] = lr_t / (1 − β1^t) and c2[t] = √(1 − β2^t) precomputed in float64 on the host
-const K_ADAM = UHDR + ST + `
+export const K_ADAM = UHDR + ST + `
 @group(0) @binding(1) var<storage, read_write> P: array<f32>;
 @group(0) @binding(2) var<storage, read> G: array<f32>;
 @group(0) @binding(3) var<storage, read_write> m1: array<f32>;
@@ -186,7 +186,7 @@ const K_ADAM = UHDR + ST + `
   P[q] -= ss * m / (sqrt(v) / c2 + u.eps);
 }`;
 
-const K_BUMP = UHDR + ST + `
+export const K_BUMP = UHDR + ST + `
 @group(0) @binding(1) var<storage, read_write> st: St;
 @compute @workgroup_size(1) fn main() { if (u.N > 0u) { st.step += 1u; } }`;
 

@@ -4,17 +4,23 @@
 import type { FromGradHelper, ToGradHelper } from './workers.ts';
 import type { Stage1Problem } from './problem.ts';
 import { Net } from './net.ts';
+import type { Stage2Problem } from './stage2.ts';
+import { Mlp, stage2LossGrad } from './stage2.ts';
 
 interface WorkerScope { postMessage(m: FromGradHelper, transfer?: Transferable[]): void; onmessage: ((e: MessageEvent<ToGradHelper>) => void) | null }
 const ctx = self as unknown as WorkerScope;
 
 let prob: Stage1Problem | null = null;
 let net: Net | null = null;
+// stage 2 (init2), the same helper switches to it until the next init
+let prob2: Stage2Problem | null = null;
+let net2: Mlp | null = null;
 let params: Float32Array | null = null;
 let grad: Float64Array | null = null;
 let sR = 0, sL = 0;
 
 function work(c: [number, number]) {
+  if (prob2 && net2 && params && grad) { const s = stage2LossGrad(net2, params, prob2, c[0], c[1], grad); sR += s.sD; sL += s.sQ; return; }
   if (!prob || !net || !params || !grad) throw new Error('helper not initialised');
   const s = net.lossGrad(params, prob, c[0], c[1], grad);
   sR += s.sR; sL += s.sL;
@@ -23,7 +29,14 @@ function work(c: [number, number]) {
 ctx.onmessage = (ev) => {
   const m = ev.data;
   try {
-    if (m.type === 'init') {
+    if (m.type === 'init2') {
+      prob = null; net = null;
+      prob2 = m.prob;
+      net2 = new Mlp(m.rowsPerChunk * prob2.nr, prob2.sizes);
+      grad = new Float64Array(net2.nParams);
+      ctx.postMessage({ type: 'ready' });
+    } else if (m.type === 'init') {
+      prob2 = null; net2 = null;
       prob = m.prob;
       net = new Net(m.rowsPerChunk * prob.nr);
       grad = new Float64Array(net.nParams);

@@ -4,17 +4,20 @@
 // gradients. The Adam step stays on the host (train.ts).
 import type { GradEngine } from './train.ts';
 import type { Stage1Problem } from './problem.ts';
+import type { Stage2Problem } from './stage2.ts';
+import { stage2Loss } from './stage2.ts';
 
 /** Messages host ↔ helper (grad.worker.ts). */
 export type ToGradHelper =
   | { type: 'init'; prob: Stage1Problem; rowsPerChunk: number }
+  | { type: 'init2'; prob: Stage2Problem; rowsPerChunk: number }
   | { type: 'params'; params: Float32Array; chunk: [number, number] | null }
   | { type: 'chunk'; chunk: [number, number] }
   | { type: 'finish' };
 export type FromGradHelper =
   | { type: 'ready' }
   | { type: 'done' }
-  | { type: 'grad'; sR: number; sL: number; grad: Float64Array }
+  | { type: 'grad'; sR: number; sL: number; grad: Float64Array }   // stage 2: sR = sD, sL = sQ
   | { type: 'error'; message: string };
 
 /** The default helper, bundled by Vite (and by esbuild for the offline copy). */
@@ -86,5 +89,64 @@ export class WorkerPoolEngine implements GradEngine {
     });
   }
 
+  dispose() { for (const w of this.workers) w.terminate(); this.workers = []; }
+}
+
+/** Stage 2 of RGB-ANNAbel on the same helpers (message init2). Each helper keeps a copy of the
+ *  stage-2 problem and returns the sums sD, sQ and its part of the gradient for the rows it is
+ *  handed, the host adds them and runs Adam (train.ts). */
+export class Stage2PoolEngine implements GradEngine {
+  readonly nParams: number;
+  readonly path = 'workers' as const;
+  workers: Worker[];
+  prob: Stage2Problem;
+  rowsPerChunk: number;
+  constructor(workers: Worker[], prob: Stage2Problem, nParams: number, rowsPerChunk: number) {
+    this.workers = workers; this.prob = prob; this.nParams = nParams; this.rowsPerChunk = rowsPerChunk;
+  }
+  static async create(prob: Stage2Problem, nParams: number, o: { n?: number; rowsPerChunk?: number; factory?: () => Worker } = {}) {
+    const n = Math.max(1, Math.min(o.n ?? helperCount(), prob.rows));
+    const rowsPerChunk = Math.max(1, o.rowsPerChunk ?? Math.min(4, Math.ceil(prob.rows / n)));
+    const make = o.factory ?? defaultHelperFactory;
+    const ws: Worker[] = [];
+    await Promise.all(Array.from({ length: n }, () => new Promise<void>((res, rej) => {
+      const w = make();
+      w.onmessage = (ev: MessageEvent<FromGradHelper>) => (ev.data.type === 'ready' ? res() : rej(new Error(ev.data.type === 'error' ? ev.data.message : 'helper did not start')));
+      w.onerror = (e) => rej(new Error(e.message || 'helper failed to load'));
+      w.postMessage({ type: 'init2', prob, rowsPerChunk } satisfies ToGradHelper);
+      ws.push(w);
+    })));
+    return new Stage2PoolEngine(ws, prob, nParams, rowsPerChunk);
+  }
+  evaluate(p: Float32Array, withGrad: boolean): Promise<{ loss: number; lR: number; lL: number; grad: Float64Array | null }> {
+    const { prob, workers, rowsPerChunk } = this;
+    const queue: [number, number][] = [];
+    for (let a = 0; a < prob.rows; a += rowsPerChunk) queue.push([a, Math.min(prob.rows, a + rowsPerChunk)]);
+    const grad = new Float64Array(this.nParams);
+    let sD = 0, sQ = 0, pending = workers.length;
+    return new Promise((resolve, reject) => {
+      workers.forEach((w) => {
+        w.onerror = (e) => reject(new Error(e.message || 'helper error'));
+        w.onmessage = (ev: MessageEvent<FromGradHelper>) => {
+          const m = ev.data;
+          if (m.type === 'done') {
+            const c = queue.shift();
+            w.postMessage(c ? { type: 'chunk', chunk: c } satisfies ToGradHelper : { type: 'finish' } satisfies ToGradHelper);
+          } else if (m.type === 'grad') {
+            sD += m.sR; sQ += m.sL;
+            for (let k = 0; k < grad.length; k++) grad[k] += m.grad[k];
+            if (--pending === 0) {
+              const l = stage2Loss(prob, { sD, sQ });
+              resolve({ loss: l.loss, lR: l.direct, lL: l.ratio, grad: withGrad ? grad : null });
+            }
+          } else if (m.type === 'error') reject(new Error(m.message));
+        };
+        const c = queue.shift() ?? null;
+        w.postMessage({ type: 'params', params: p.slice(), chunk: c } satisfies ToGradHelper);
+        if (!c) w.postMessage({ type: 'finish' } satisfies ToGradHelper);
+      });
+    });
+  }
+  /** The helpers belong to the caller when it passed a factory of pooled helpers. */
   dispose() { for (const w of this.workers) w.terminate(); this.workers = []; }
 }

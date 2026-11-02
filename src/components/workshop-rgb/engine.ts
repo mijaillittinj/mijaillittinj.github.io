@@ -701,7 +701,8 @@ export interface TfsOut {
   Tlos: Float64Array; ambiguous: number; outside: number; zCutSuggest: number | null;
   /** Loose islands removed from the signal mask, how many, how many pixels, and the criterion used. */
   islands: { n: number; px: number; frac: number; largest: number };
-  table: { T: Float64Array; ratio: Float64Array; dln: Float64Array };
+  /** G_j(T) of the table as well, the kernels of the RGB-ANNAbel network (stage 5) */
+  table: { T: Float64Array; ratio: Float64Array; dln: Float64Array; G?: Rgb<Float64Array> };
 }
 
 /** Mask bits in TfsOut.mask, 1 used, 2 low signal, 4 chemiluminescence, 8 saturated height, 16 ratio outside the table. */
@@ -873,7 +874,7 @@ export function runTfs(J: Float64Array[][], p: Prepared, band: Band, o: TfsOpts,
     const a = Math.max(0, i - 1), b = Math.min(dln.length - 1, i + 1);
     dln[i] = (Math.log(tabR[b]) - Math.log(tabR[a])) / (table.T[b] - table.T[a]);
   }
-  return { T, fs, chi2rel, mask, chem, flags, Tlos, ambiguous, outside, zCutSuggest: zs, islands, table: { T: table.T, ratio: tabR, dln } };
+  return { T, fs, chi2rel, mask, chem, flags, Tlos, ambiguous, outside, zCutSuggest: zs, islands, table: { T: table.T, ratio: tabR, dln, G: table.G } };
 }
 
 // ------------------------------------------------------------------------------------- uncertainty band

@@ -1,8 +1,9 @@
 // ANNAbel stage 1 in the browser (Escudero et al., Proc. Combust. Inst. 40 (2024) 105493),
-// ported from annabel_app/core (abel.py, models.py, stage1.py). Stage 2 of the tool is the
-// direct fit solve_T_fs of the core (radiometry), which takes the channel planes of
-// `channelPlanes(result)` in W m⁻³ sr⁻¹. The app's stage-2 network, the ensemble and the
-// relative mode are not ported (§11.2).
+// ported from annabel_app/core (abel.py, models.py, stage1.py). T and f_s come by default from
+// the direct fit solve_T_fs of the core (radiometry), which takes the channel planes of
+// `channelPlanes(result)` in W m⁻³ sr⁻¹. The stage-2 network of RGB-ANNAbel (Magaña et al.,
+// Case Stud. Therm. Eng. 76 (2025) 107396) is the option of stage2.ts, with runStage2 below.
+// The ensemble (stage 3) and the relative mode are not ported.
 //
 // Paths. 'webgpu' runs the whole iteration on the GPU (gpu.ts). 'workers' computes loss and
 // gradient in a pool of Web Workers with Adam on the calling thread (workers.ts). 'cpu' is the
@@ -14,6 +15,10 @@ import type { GradEngine, Stage1Result, TrainOptions, TrainResult } from './trai
 import { LocalEngine, finishStage1, trainWithEngine } from './train.ts';
 import { WorkerPoolEngine } from './workers.ts';
 import { createGpuStage1, webgpuAvailable } from './gpu.ts';
+import type { KernelTable, Stage2Config, Stage2Result } from './stage2.ts';
+import { buildStage2Problem, Stage2LocalEngine, finishStage2, initStage2, trainStage2 } from './stage2.ts';
+import { Stage2PoolEngine } from './workers.ts';
+import { createGpuStage2 } from './gpu2.ts';
 
 export type { Projections, Stage1Problem } from './problem.ts';
 export type { Stage1Result, TrainResult, TrainTick, TrainOptions } from './train.ts';
@@ -23,6 +28,11 @@ export { Adam, cosineLr, LocalEngine, trainWithEngine, finishStage1, channelPlan
 export { emissionPerMmToSI, emissionSIToPerMm, PER_MM_TO_PER_M } from './units.ts';
 export { WorkerPoolEngine, helperCount } from './workers.ts';
 export { createGpuStage1, webgpuAvailable } from './gpu.ts';
+export { buildStage2Problem, Stage2LocalEngine, Mlp, stage2LossGrad, stage2Loss, finishStage2, initStage2, trainStage2, predictTfs, xcheck, displayMask, boundReport,
+         stage2Sizes, STAGE2_DEFAULTS, XCHECK_WARN_K, XCHECK_WARN_P90_K, XCHECK_WARN_FS_LOG } from './stage2.ts';
+export type { KernelTable, Stage2Config, Stage2Problem, Stage2Result, XCheck, BoundReport } from './stage2.ts';
+export { Stage2PoolEngine } from './workers.ts';
+export { createGpuStage2 } from './gpu2.ts';
 
 /** App presets (EXACTITUD.md): 4000 iterations is the quick demo (25 to 55 % error), 30 000 the
  *  long run (3 to 5 %). The tool offers only the long run for results. */
@@ -94,4 +104,51 @@ export async function estimateSecondsPerIter(proj: Projections, o: Stage1Options
     for (let i = 0; i < probe; i++) await eng.evaluate(p, true);
     return { path, sPerIter: (performance.now() - t0) / 1000 / probe };
   } finally { eng.dispose(); }
+}
+
+export interface Stage2Options extends Omit<TrainOptions, 'iterations'> {
+  iterations?: number;              // Stage2Config 3000
+  cfg?: Partial<Stage2Config>;
+  seed?: number;
+  p0?: Float32Array;                // fixed initial weights (parity)
+  path?: Stage1Path | 'auto';
+  workers?: { n?: number; rowsPerChunk?: number; factory?: () => Worker };
+  itersPerSubmit?: number;
+}
+
+/** RGB-ANNAbel stage 2 end to end on J (Nt, Nz, Nr, 3) in the units of kern (J · j_to_si = kernel units). */
+export async function runStage2(J: ArrayLike<number>, grid: { nt: number; nz: number; nr: number; rMm: ArrayLike<number>; zMm: ArrayLike<number>; times: ArrayLike<number> },
+                                kern: KernelTable, o: Stage2Options = {}): Promise<Stage2Result> {
+  const prob = buildStage2Problem(J, grid, kern, { ...o.cfg, ...(o.iterations ? { iterations: o.iterations } : {}) });
+  const p0 = o.p0 ?? initStage2(o.seed ?? prob.cfg.seed, prob.sizes);
+  const path = await choosePath(o.path);
+  const iterations = prob.cfg.iterations;
+  let train: TrainResult;
+  if (path === 'webgpu') {
+    const g = await createGpuStage2(prob, p0, iterations);
+    try { train = await g.train({ ...o, iterations, itersPerSubmit: o.itersPerSubmit }); } finally { g.destroy(); }
+  } else {
+    const eng = path === 'cpu' ? new Stage2LocalEngine(prob) : await Stage2PoolEngine.create(prob, p0.length, o.workers ?? {});
+    try { train = await trainStage2(eng, p0, prob, { ...o, iterations }); } finally { if (!o.workers?.factory) eng.dispose(); }
+  }
+  return finishStage2(prob, J, grid, kern, train);
+}
+
+/** Seconds per stage-2 iteration on the chosen path, from `probe` iterations. */
+export async function estimateStage2(J: ArrayLike<number>, grid: Parameters<typeof runStage2>[1], kern: KernelTable, o: Stage2Options & { probe?: number } = {}): Promise<{ path: Stage1Path; sPerIter: number }> {
+  const prob = buildStage2Problem(J, grid, kern, o.cfg);
+  const p0 = o.p0 ?? initStage2(o.seed ?? prob.cfg.seed, prob.sizes);
+  const probe = Math.max(3, o.probe ?? 20);
+  const path = await choosePath(o.path);
+  if (path === 'webgpu') {
+    const g = await createGpuStage2(prob, p0, probe + 3);
+    try { g.encodeIters(3); await g.done(); const t0 = performance.now(); g.encodeIters(probe); await g.done(); return { path, sPerIter: (performance.now() - t0) / 1000 / probe }; } finally { g.destroy(); }
+  }
+  const eng = path === 'cpu' ? new Stage2LocalEngine(prob) : await Stage2PoolEngine.create(prob, p0.length, o.workers ?? {});
+  try {
+    await eng.evaluate(p0, true);
+    const t0 = performance.now();
+    for (let i = 0; i < probe; i++) await eng.evaluate(p0, true);
+    return { path, sPerIter: (performance.now() - t0) / 1000 / probe };
+  } finally { if (!o.workers?.factory) eng.dispose(); }
 }

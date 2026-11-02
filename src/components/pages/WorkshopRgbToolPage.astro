@@ -73,7 +73,7 @@ const tailBias = { es: `${ck('oven_tailcal_dT_flame', 'es')}, ${ckCond('oven_tai
 const T = es
   ? {
       title: 'Herramienta de pirometría RGB',
-      abstract: 'Esta herramienta lleva las fotos de la cámara a los mapas de temperatura T(r, z) y de fracción de volumen de hollín f_s(r, z) de una llama axisimétrica. Calibra la cámara con el horno de cuerpo negro, con una esfera integradora o con un archivo, prepara las proyecciones de la llama, las invierte con la transformada de Abel canal por canal y calcula T con la razón de dos canales y f_s con la emisión de uno.',
+      abstract: 'Esta herramienta lleva las fotos de la cámara a los mapas de temperatura T(r, z) y de fracción de volumen de hollín f_s(r, z) de una llama axisimétrica. Calibra la cámara con el horno de cuerpo negro, con una esfera integradora o con un archivo, prepara las proyecciones de la llama, las invierte con la transformada de Abel canal por canal y calcula T con la razón de dos canales y f_s con la emisión de uno. Como opción, T y f_s salen de una red, el método RGB-ANNAbel.',
       about: 'Antes de empezar',
       p1: 'La herramienta corre entera en este navegador. Las imágenes se leen en su computador, no se envían a ningún servidor, y la página sigue funcionando si se corta la red después de abrirla.',
       p2: 'Sirven Chrome, Edge, Firefox y Safari recientes en un computador portátil con unos 2 GB de memoria RAM libre, con otras pestañas y programas cerrados. Un teléfono no alcanza. ANNAbel usa la tarjeta gráfica cuando el navegador lo permite.',
@@ -87,13 +87,13 @@ const T = es
       offline: 'Copia sin conexión de un solo archivo',
       offlineNone: 'La copia sin conexión de un solo archivo se publicará en la página de datos de ejemplo.',
       frozen: 'Versiones congeladas',
-      cite: 'ANNAbel se cita como Escudero et al., Proc. Combust. Inst. 40 (2024) 105493. SAT es el método de Littin et al., Fuel 374 (2024) 132365.',
+      cite: 'ANNAbel se cita como Escudero et al., Proc. Combust. Inst. 40 (2024) 105493. RGB-ANNAbel se cita como Magaña et al., Case Stud. Therm. Eng. 76 (2025) 107396. SAT es el método de Littin et al., Fuel 374 (2024) 132365.',
       tool: 'Herramienta',
       back: 'Docencia',
     }
   : {
       title: 'RGB pyrometry tool',
-      abstract: 'This tool turns the camera photos into maps of the temperature T(r, z) and the soot volume fraction f_s(r, z) of an axisymmetric flame. It calibrates the camera with the blackbody oven, with an integrating sphere or from a file, prepares the flame projections, inverts them with the Abel transform channel by channel and computes T from the ratio of two channels and f_s from the emission of one.',
+      abstract: 'This tool turns the camera photos into maps of the temperature T(r, z) and the soot volume fraction f_s(r, z) of an axisymmetric flame. It calibrates the camera with the blackbody oven, with an integrating sphere or from a file, prepares the flame projections, inverts them with the Abel transform channel by channel and computes T from the ratio of two channels and f_s from the emission of one. As an option, T and f_s come from a network, the RGB-ANNAbel method.',
       about: 'Before you start',
       p1: 'The whole tool runs in this browser. The images are read on your computer, they are not sent to any server, and the page keeps working if the network drops after it opens.',
       p2: 'Recent Chrome, Edge, Firefox and Safari work on a laptop with about 2 GB of free RAM, with other tabs and programs closed. A phone is not enough. ANNAbel uses the graphics card when the browser allows it.',
@@ -107,7 +107,7 @@ const T = es
       offline: 'Single-file offline copy',
       offlineNone: 'The single-file offline copy will be published on the example data page.',
       frozen: 'Frozen versions',
-      cite: 'ANNAbel is cited as Escudero et al., Proc. Combust. Inst. 40 (2024) 105493. SAT is the method of Littin et al., Fuel 374 (2024) 132365.',
+      cite: 'ANNAbel is cited as Escudero et al., Proc. Combust. Inst. 40 (2024) 105493. RGB-ANNAbel is cited as Magaña et al., Case Stud. Therm. Eng. 76 (2025) 107396. SAT is the method of Littin et al., Fuel 374 (2024) 132365.',
       tool: 'Tool',
       back: 'Teaching',
     };
