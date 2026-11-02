@@ -1,9 +1,9 @@
 ---
 /**
- * The RGB pyrometry tool (WEB_SPEC §3.4 and §4). Static text that works without JavaScript, the
- * <noscript> message, and the container that ui.ts fills. Everything the tool needs, its Worker, the
- * ANNAbel helpers, the ψ_j curves and the colour maps, is bundled and loaded when the page opens, with no
- * deferred loading, so an open tab keeps working if the lab network drops (§11.5).
+ * The RGB pyrometry tool (WEB_SPEC §3.4 and §4, layout of manim/qa/redesign/DESIGN.md). Static text that
+ * works without JavaScript, the <noscript> message, and the container that ui.ts fills with five steps.
+ * Everything the tool needs, its Worker, the neural network helpers, the camera curves and the colour maps,
+ * is bundled and loaded when the page opens, so an open tab keeps working if the lab network drops (§11.5).
  */
 import type { Lang } from '../../i18n/ui';
 import { TOOL_VERSION } from './version.ts';
@@ -14,13 +14,14 @@ interface Props {
   built?: string;
   ovenFlameBias?: { es: string; en: string };
   tailBias?: { es: string; en: string };
+  tailRange?: { es: string; en: string };
   examples: { file: string; bytes: number; sha256: string; camera: string; available: boolean }[];
   biases: { key: string; es: string; en: string }[];
   pageUrl: string;
 }
-const { lang, commit, source, built, ovenFlameBias, tailBias, examples, biases, pageUrl } = Astro.props;
+const { lang, commit, source, built, ovenFlameBias, tailBias, tailRange, examples, biases, pageUrl } = Astro.props;
 const es = lang === 'es';
-const config = JSON.stringify({ lang, version: TOOL_VERSION, commit, source, built, base: import.meta.env.BASE_URL.replace(/\/?$/, '/'), examples, biases, ovenFlameBias, tailBias, pageUrl });
+const config = JSON.stringify({ lang, version: TOOL_VERSION, commit, source, built, base: import.meta.env.BASE_URL.replace(/\/?$/, '/'), examples, biases, ovenFlameBias, tailBias, tailRange, pageUrl });
 ---
 <noscript><p class="noscript-note wr-noscript">{es ? 'La herramienta necesita JavaScript. Actívenlo en el navegador para usarla.' : 'The tool needs JavaScript. Enable it in the browser to use it.'}</p><style>.wr-loading { display: none; }</style></noscript>
 <div class="wr-app" id="wr-app" data-config={config} lang={lang}>
@@ -38,14 +39,69 @@ const config = JSON.stringify({ lang, version: TOOL_VERSION, commit, source, bui
   @media (prefers-color-scheme: dark) { :root:not([data-theme='light']) .wr-app { --ch-r: #ff5c5c; --ch-g: #5bd16b; --ch-b: #6b8cff; } }
   :root[data-theme='dark'] .wr-app { --ch-r: #ff5c5c; --ch-g: #5bd16b; --ch-b: #6b8cff; }
   .wr-app { counter-reset: none; }
-  .wr-stage { border-top: 0.5px solid var(--rule); padding-top: var(--s-5); margin-top: var(--s-6); }
-  .wr-stage > h2.row__label.nonum::before { content: none; }
-  .wr-stage h3 { margin-top: var(--s-6); margin-bottom: var(--s-3); }
-  .wr-stage h4 { margin-top: var(--s-4); margin-bottom: var(--s-2); font-size: var(--step-0); }
-  .wr-stage > p, .wr-stage .prose p { margin-block: var(--s-3); }
-  .wr-status { font-size: var(--step--1); margin-bottom: var(--s-3); }
-  .wr-status .label { margin-right: 0.4em; }
-  .wr-busy { position: sticky; top: 0; z-index: 5; background: var(--paper); border-bottom: 0.5px solid var(--rule-strong); padding: var(--s-2) 0; font-size: var(--step--1); font-style: italic; margin: 0; }
+  /* top bar, the step index and the busy line stay in sight (DESIGN §1) */
+  .wr-top { position: sticky; top: 0; z-index: 5; background: var(--paper); border-bottom: 0.5px solid var(--rule-strong); }
+  .wr-steps ol { list-style: none; display: flex; flex-wrap: wrap; gap: 0.2em 1.4em; margin: 0; padding: var(--s-2) 0; font-size: var(--step--1); }
+  .wr-steps a { color: var(--ink); text-decoration: none; white-space: nowrap; }
+  .wr-steps a:hover { color: var(--accent); }
+  .wr-dot { font-size: 0.9em; }
+  .wr-dot--ok { color: var(--ch-g); }
+  .wr-dot--warn, .wr-dot--stop, .wr-dot--stale { color: var(--ink); }
+  .wr-dot--todo { color: var(--ink-3); }
+  .wr-busy { padding: 0 0 var(--s-2); font-size: var(--step--1); font-style: italic; margin: 0; }
+  .wr-busy[hidden] { display: none; }
+  .wr-bar { padding-block: var(--s-4) var(--s-3); }
+  .wr-bar0 { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: var(--s-2) var(--s-4); align-items: center; margin: 0; max-width: none; text-align: left; }
+  .wr-bar0 .meta { margin: 0; }
+  /* a step, what it is for, the inputs, one main button, the result and one fold (DESIGN §0) */
+  .wr-stage { border-top: 0.5px solid var(--rule-strong); padding-top: var(--s-5); margin-top: var(--s-6); scroll-margin-top: 4.5rem; }
+  .wr-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: var(--s-2) var(--s-4); }
+  .wr-head h2 { margin: 0; font-size: var(--step-1); line-height: 1.25; }
+  .wr-pill { margin: 0; font-size: var(--step--1); padding: 0.1em 0.75em; border: 1px solid var(--rule-strong); border-radius: 1em; color: var(--ink-2); }
+  .wr-pill--ok { border-color: var(--ch-g); }
+  .wr-pill--warn, .wr-pill--stop, .wr-pill--stale { border-color: var(--ink); color: var(--ink); font-weight: 600; }
+  .wr-purpose { margin: var(--s-2) 0 var(--s-4); color: var(--ink-2); max-width: var(--measure); }
+  .wr-stage h3, .wr-stage h4 { font-size: var(--step-0); margin: var(--s-4) 0 var(--s-2); }
+  .wr-droplab { margin-top: 0 !important; }
+  .wr-read { font-size: var(--step--1); font-family: var(--font-mono); margin-block: var(--s-2); }
+  .wr-inputs { display: grid; gap: var(--s-3); margin-block: var(--s-3); }
+  .wr-pair { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-5); align-items: end; }
+  .wr-ruler-box { border-left: 2px solid var(--rule); padding-left: var(--s-3); }
+  .wr-method { font-size: var(--step--1); margin-block: var(--s-2); }
+  .wr-result { border-left: 2px solid var(--rule-strong); padding-left: var(--s-4); margin-block: var(--s-4); }
+  .wr-result[hidden] { display: none; }
+  .wr-calline { margin-block: 0 var(--s-2); font-weight: 600; }
+  .wr-big { margin-block: 0 var(--s-2); }
+  .wr-truth { font-size: var(--step--1); margin-block: var(--s-2); }
+  .wr-app table caption { caption-side: top; text-align: left; font-size: var(--step--1); padding-bottom: var(--s-1); color: var(--ink-2); }
+  .wr-ratio-t td:last-child { font-weight: 600; }
+  /* one primary button per step, the rest quiet (DESIGN §0.9) */
+  .wr-btn { font: inherit; cursor: pointer; border-radius: 4px; line-height: 1.2; }
+  .wr-btn--primary { background: var(--accent); color: var(--paper); border: 1px solid var(--accent); min-height: 44px; font-size: 16px; padding: 0.5em 1.3em; font-weight: 600; }
+  .wr-btn--primary:hover:not(:disabled) { background: var(--accent-ink); border-color: var(--accent-ink); }
+  .wr-btn--primary:disabled { background: var(--paper-2); color: var(--ink-3); border-color: var(--rule-strong); cursor: default; font-weight: 400; }
+  .wr-btn--box { background: var(--paper); color: var(--accent); border: 1px solid var(--accent); min-height: 36px; padding: 0.35em 0.9em; font-size: var(--step--1); display: inline-flex; align-items: center; }
+  .wr-btn--box:disabled { color: var(--ink-3); border-color: var(--rule-strong); cursor: default; }
+  .wr-btn--quiet { background: none; border: 0; padding: 0.15em 0; color: var(--accent); font-size: var(--step--1); text-decoration: underline; text-underline-offset: 0.2em; text-decoration-thickness: 0.05em; }
+  .wr-btn--quiet:disabled { color: var(--ink-3); cursor: default; text-decoration: none; }
+  .wr-btn:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
+  .wr-act { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-4); align-items: center; margin-block: var(--s-4); }
+  .wr-why { font-size: var(--step--1); color: var(--ink-3); }
+  /* the result check, a pass or a warning (DESIGN §0.2) */
+  .wr-check { font-size: var(--step--1); margin-block: var(--s-2); }
+  .wr-check__mark { font-weight: 700; }
+  .wr-check--ok .wr-check__mark { color: var(--ch-g); }
+  .wr-check--warn { border-left: 2px solid var(--ink); padding-left: var(--s-2); }
+  /* Options, the only fold of each step */
+  details.wr-opts { margin-top: var(--s-5); border-top: 0.5px dashed var(--rule-strong); }
+  details.wr-opts > summary { cursor: pointer; color: var(--accent); padding: var(--s-2) 0; font-size: var(--step--1); width: max-content; }
+  details.wr-opts > summary:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
+  .wr-opts__body { padding-bottom: var(--s-3); }
+  .wr-osec { border-top: 0.5px solid var(--rule); margin-top: var(--s-3); }
+  .wr-osec > h3 { margin-top: var(--s-3); }
+  .wr-fields { display: grid; gap: var(--s-3) var(--s-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); align-items: end; margin-block: var(--s-2); }
+  .wr-chk { font-size: var(--step--1); display: inline-flex; gap: 0.4em; align-items: baseline; cursor: pointer; }
+  .wr-chk input { width: 1.05rem; height: 1.05rem; }
   .wr-plain { list-style: none; padding: 0; }
   .wr-plain li { margin-block: 0.35em; }
   .wr-filebtn { cursor: pointer; }
@@ -68,10 +124,11 @@ const config = JSON.stringify({ lang, version: TOOL_VERSION, commit, source, bui
   .wr-grid3 { display: grid; gap: var(--s-3) var(--s-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); align-items: start; margin-block: var(--s-4); }
   .wr-row { display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: end; }
   .wr-controls { display: grid; gap: var(--s-3); }
+  .wr-app .control { min-width: 0; max-width: 100%; }
   .wr-app .control select, .wr-app .control input[type='number'] { font: inherit; font-size: var(--step--1); color: var(--ink); background: var(--paper); border: 0; border-bottom: 1px solid var(--ink-3); max-width: 100%; }
   .wr-app .control input[type='number'] { width: 9em; font-family: var(--font-mono); }
   .wr-check { font-size: var(--step--1); display: block; }
-  .wr-check .meta, .wr-app .control .meta { display: block; margin-top: 0.2em; font-style: italic; }
+  .wr-chk .meta, .wr-app .control .meta { display: block; margin-top: 0.2em; font-style: italic; }
   .wr-preview { width: auto; max-width: min(100%, 520px); max-height: 30rem; min-width: 12rem; height: auto; object-fit: contain; image-rendering: pixelated; margin-inline: auto; display: block; background: var(--paper-2, var(--paper)); }
   canvas#wr-pcv, canvas.wr-ruler { cursor: crosshair; }
   .wr-preview:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 2px; }
@@ -92,7 +149,6 @@ const config = JSON.stringify({ lang, version: TOOL_VERSION, commit, source, bui
   .wr-tab { border: 0.5px solid var(--rule-strong); border-bottom-width: 2px; background: var(--paper); color: var(--accent); padding: 0.2em 0.8em; cursor: pointer; font: inherit; }
   .wr-tab[aria-pressed='true'] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
   .wr-tab:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 2px; }
-  details.wr-filetable > summary, details.wr-note > summary { cursor: pointer; font-size: var(--step--1); color: var(--accent); margin-block: var(--s-2); }
   .wr-frames { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s-3); }
   .wr-frame label { display: grid; gap: 0.2em; font-size: var(--step--2); max-width: 9rem; cursor: pointer; }
   .wr-frame canvas { width: 8rem; height: auto; image-rendering: pixelated; }
@@ -113,13 +169,13 @@ const config = JSON.stringify({ lang, version: TOOL_VERSION, commit, source, bui
   .wr-maps3 { display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: end; }
   .wr-maps3 > div { display: grid; justify-items: center; gap: 0.2em; }
   .wr-maps3 canvas { width: 6.5rem; }
-  .wr-bar { width: min(100%, 15rem); height: 0.8rem; display: block; margin: var(--s-2) auto 0; image-rendering: auto; }
+  .wr-cbar { width: min(100%, 15rem); height: 0.8rem; display: block; margin: var(--s-2) auto 0; image-rendering: auto; }
   .wr-barlab { display: flex; justify-content: space-between; width: min(100%, 15rem); margin: 0.1em auto 0; font-size: var(--step--2); font-family: var(--font-mono); }
-  .wr-npy .btn { font-family: var(--font-mono); font-size: 0.9em; }
+  .wr-npy .wr-btn { font-family: var(--font-mono); font-size: 0.9em; }
   .wr-netmaps canvas { width: auto; height: min(24rem, 60vh); }
   .wr-progress { display: block; width: min(100%, 20rem); height: 0.6rem; accent-color: var(--ink); }
   .wr-progress[hidden] { display: none; }
   .wr-noscript, .wr-loading { margin-block: var(--s-4); max-width: var(--measure); margin-inline: auto; }
-  @media (max-width: 40rem) { .wr-app table { font-size: var(--step--2); } }
+  @media (max-width: 40rem) { .wr-app table { font-size: var(--step--2); } .wr-stepname { display: none; } .wr-steps ol { gap: 0.2em 0.9em; } }
   @media print { .wr-app { display: none; } }
 </style>

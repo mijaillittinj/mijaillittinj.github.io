@@ -68,47 +68,30 @@ const biases = [
 ];
 void k; void sk;
 const ovenFlameBias = { es: ck('oven_dT_flame_top_abs', 'es'), en: ck('oven_dT_flame_top_abs', 'en') };
+const tailRange = { es: ck('oven_tailcal_dT_flame', 'es'), en: ck('oven_tailcal_dT_flame', 'en') };
 const tailBias = { es: `${ck('oven_tailcal_dT_flame', 'es')}, ${ckCond('oven_tailcal_dT_flame', 'es')}`, en: `${ck('oven_tailcal_dT_flame', 'en')}, ${ckCond('oven_tailcal_dT_flame', 'en')}` };
 
 const T = es
   ? {
       title: 'Herramienta de pirometría RGB',
-      abstract: 'Esta herramienta lleva las fotos de la cámara a los mapas de temperatura T(r, z) y de fracción de volumen de hollín f_s(r, z) de una llama axisimétrica. Calibra la cámara con el horno de cuerpo negro, con una esfera integradora o con un archivo, prepara las proyecciones de la llama, las invierte con la transformada de Abel canal por canal y calcula T con la razón de dos canales y f_s con la emisión de uno. Como opción, T y f_s salen de una red, el método RGB-ANNAbel.',
-      about: 'Antes de empezar',
-      p1: 'La herramienta corre entera en este navegador. Las imágenes se leen en su computador, no se envían a ningún servidor, y la página sigue funcionando si se corta la red después de abrirla.',
-      p2: 'Sirven Chrome, Edge, Firefox y Safari recientes en un computador portátil con unos 2 GB de memoria RAM libre, con otras pestañas y programas cerrados. Un teléfono no alcanza. ANNAbel usa la tarjeta gráfica cuando el navegador lo permite.',
-      p3: 'Los seis pasos van en el orden de la cadena de medición. Restar el oscuro o el fondo con el mismo tiempo de exposición, dividir por t_exp y por K_j del píxel, rotar, centrar el eje y pasar a milímetros, invertir cada canal con Abel, calcular T con la razón R/G y calcular f_s con el rojo y el verde por mínimos cuadrados de j_j = f_s G_j(T). El azul en f_s es una opción avanzada de la etapa 5.',
+      abstract: 'Del horno y las fotos de la llama a mapas de temperatura y hollín, en cinco pasos. Todo corre en este navegador.',
       version: 'Versión',
       builtOn: 'compilada el',
       ident: 'identificador',
-      local: 'La terminación +local quiere decir que esta versión tiene cambios posteriores a ese commit. Citen el identificador completo que traen sus archivos.',
-      phone: 'Esta herramienta necesita un computador. En un teléfono la memoria no alcanza para las imágenes de la cámara.',
-      offlineLang: '',
-      offline: 'Copia sin conexión de un solo archivo',
-      offlineNone: 'La copia sin conexión de un solo archivo se publicará en la página de datos de ejemplo.',
+      phone: 'Esta herramienta necesita un computador. En un teléfono la memoria no alcanza para las fotos de la cámara.',
+      offline: 'Copia sin conexión',
       frozen: 'Versiones congeladas',
-      cite: 'ANNAbel se cita como Escudero et al., Proc. Combust. Inst. 40 (2024) 105493. RGB-ANNAbel se cita como Magaña et al., Case Stud. Therm. Eng. 76 (2025) 107396. SAT es el método de Littin et al., Fuel 374 (2024) 132365.',
-      tool: 'Herramienta',
       back: 'Docencia',
     }
   : {
       title: 'RGB pyrometry tool',
-      abstract: 'This tool turns the camera photos into maps of the temperature T(r, z) and the soot volume fraction f_s(r, z) of an axisymmetric flame. It calibrates the camera with the blackbody oven, with an integrating sphere or from a file, prepares the flame projections, inverts them with the Abel transform channel by channel and computes T from the ratio of two channels and f_s from the emission of one. As an option, T and f_s come from a network, the RGB-ANNAbel method.',
-      about: 'Before you start',
-      p1: 'The whole tool runs in this browser. The images are read on your computer, they are not sent to any server, and the page keeps working if the network drops after it opens.',
-      p2: 'Recent Chrome, Edge, Firefox and Safari work on a laptop with about 2 GB of free RAM, with other tabs and programs closed. A phone is not enough. ANNAbel uses the graphics card when the browser allows it.',
-      p3: 'The six steps follow the order of the measurement chain. Subtract the dark frame or the background with the same exposure time, divide by t_exp and by the pixel K_j, rotate, centre the axis and convert to millimetres, Abel-invert each channel, compute T from the R/G ratio and compute f_s from red and green by least squares of j_j = f_s G_j(T). Blue in f_s is an advanced option of stage 5.',
+      abstract: 'From the furnace and the flame photos to temperature and soot maps, in five steps. Everything runs in this browser.',
       version: 'Version',
       builtOn: 'built on',
       ident: 'identifier',
-      local: 'The ending +local means this version has changes made after that commit. Cite the full identifier your files carry.',
-      phone: 'This tool needs a computer. A phone does not have enough memory for the camera images.',
-      offlineLang: '',
-      offline: 'Single-file offline copy',
-      offlineNone: 'The single-file offline copy will be published on the example data page.',
+      phone: 'This tool needs a computer. A phone does not have enough memory for the camera photos.',
+      offline: 'Offline copy',
       frozen: 'Frozen versions',
-      cite: 'ANNAbel is cited as Escudero et al., Proc. Combust. Inst. 40 (2024) 105493. RGB-ANNAbel is cited as Magaña et al., Case Stud. Therm. Eng. 76 (2025) 107396. SAT is the method of Littin et al., Fuel 374 (2024) 132365.',
-      tool: 'Tool',
       back: 'Teaching',
     };
 const pageUrl = new URL(url(localized(`${WS}tool/`, lang).replace(import.meta.env.BASE_URL.replace(/\/$/, ''), '')), Astro.site).href;
@@ -121,24 +104,10 @@ const pageUrl = new URL(url(localized(`${WS}tool/`, lang).replace(import.meta.en
     <WorkshopNav lang={lang} current="tool" />
   </header>
 
-  <section class="section frame">
-    <div class="row">
-      <h2 class="label row__label nonum">{T.about}</h2>
-      <div class="prose">
-        <p class="wr-phone-static">{T.phone}</p>
-        <p>{T.p1}</p>
-        <p>{T.p2}</p>
-        <p set:html={tx(T.p3)} />
-        <p class="meta">{T.version} <code>{TOOL_VERSION}</code>, {T.builtOn} {built}{commit && <> · {T.ident} <code>{commit}</code></>}{commit.endsWith('+local') && <> {T.local}</>}</p>
-        {offlineCopy ? <p><a href={url(`${FILES}${offlineCopy}`)} download>{T.offline}</a>{T.offlineLang}</p> : <p class="meta">{T.offlineNone}</p>}
-        {frozen.length > 0 && <p class="meta">{T.frozen} {frozen.map((y, i) => <>{i > 0 && ' · '}<a href={url(`${WS}tool/${y}/`)}>{y}</a></>)}</p>}
-        <p class="meta">{T.cite}</p>
-      </div>
-    </div>
-  </section>
-
   <div class="frame wr-frame-wide">
-    <Tool lang={lang} commit={commit} source={source} built={built} examples={examples} biases={biases} ovenFlameBias={ovenFlameBias} tailBias={tailBias} pageUrl={pageUrl} />
+    <p class="wr-phone-static">{T.phone}</p>
+    <Tool lang={lang} commit={commit} source={source} built={built} examples={examples} biases={biases} ovenFlameBias={ovenFlameBias} tailBias={tailBias} tailRange={tailRange} pageUrl={pageUrl} />
+    <p class="meta wr-foot">{T.version} <code>{TOOL_VERSION}</code>, {T.builtOn} {built}{commit && <> · {T.ident} <code>{commit}</code></>}{offlineCopy && <> · <a href={url(`${FILES}${offlineCopy}`)} download>{T.offline}</a></>}{frozen.length > 0 && <> · {T.frozen} {frozen.map((y, i) => <>{i > 0 && ' '}<a href={url(`${WS}tool/${y}/`)}>{y}</a></>)}</>}</p>
   </div>
 </Base>
 
@@ -146,5 +115,6 @@ const pageUrl = new URL(url(localized(`${WS}tool/`, lang).replace(import.meta.en
   .wr-frame-wide { max-width: calc(var(--wide-block) + 2 * var(--gutter)); margin-inline: auto; }
   /* the phone notice comes first and works without JavaScript (GB3r1-web-04) */
   .wr-phone-static { display: none; font-style: italic; border-left: 2px solid var(--rule-strong); padding-left: var(--s-3); }
+  .wr-foot { margin-block: var(--s-7, 3rem) var(--s-4); border-top: 0.5px solid var(--rule); padding-top: var(--s-3); }
   @media (max-width: 699px), (pointer: coarse) { .wr-phone-static { display: block; } }
 </style>
