@@ -1,0 +1,29 @@
+---
+/** Links between the pages of the RGB pyrometry workshop, under the title block. Hidden in print. */
+import { localized } from '../../i18n/utils';
+import type { Lang } from '../../i18n/ui';
+import { WS, has } from '../../data/workshop-rgb';
+interface Props { lang: Lang; current: 'home' | 'guide' | 'tool' | 'data' | 'equations' }
+const { lang, current } = Astro.props;
+const es = lang === 'es';
+const items: [string, string, string][] = [
+  ['home', es ? 'Portada' : 'Overview', WS],
+  ['guide', es ? 'Guía de laboratorio' : 'Lab guide', `${WS}lab-guide/`],
+  ...(has.tool ? [['tool', es ? 'Herramienta' : 'Tool', `${WS}tool/`] as [string, string, string]] : []),
+  ['data', es ? 'Datos de ejemplo' : 'Example data', `${WS}data/`],
+  ['equations', es ? 'Ecuaciones' : 'Equations', `${WS}equations/`],
+];
+---
+<nav class="ws-nav no-print" aria-label={es ? 'Páginas del workshop' : 'Workshop pages'}>
+  <ul class="links">
+    {items.map(([k, label, href]) => (
+      <li>{k === current ? <span aria-current="page">{label}</span> : <a href={localized(href, lang)}>{label}</a>}</li>
+    ))}
+  </ul>
+</nav>
+
+<style>
+  .ws-nav { margin-top: var(--s-4); }
+  .ws-nav .links { justify-content: center; font-variant: small-caps; }
+  .ws-nav [aria-current] { color: var(--ink-3); padding-block: 0.25em; display: inline-block; }
+</style>

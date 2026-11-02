@@ -113,3 +113,41 @@ export function rms(a: ArrayLike<number>, b: ArrayLike<number>): number {
   for (let i = 0; i < a.length; i++) s += (a[i] - b[i]) ** 2;
   return Math.sqrt(s / a.length);
 }
+
+/**
+ * Lower Cholesky factor of an SPD matrix, row-major n × n, or null if not positive definite.
+ * Same arithmetic as `cholSolve`, so `cholSolveFactored(cholFactor(S), n, b)` equals `cholSolve(S, b)`.
+ */
+export function cholFactor(S: Mat): Float64Array | null {
+  const n = S.n;
+  const L = new Float64Array(n * n);
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j <= i; j++) {
+      let s = S.a[i * n + j];
+      for (let k = 0; k < j; k++) s -= L[i * n + k] * L[j * n + k];
+      if (i === j) {
+        if (s <= 0) return null;
+        L[i * n + i] = Math.sqrt(s);
+      } else {
+        L[i * n + j] = s / L[j * n + j];
+      }
+    }
+  }
+  return L;
+}
+
+/** Solve (L Lᵀ) x = b with a factor from `cholFactor`. */
+export function cholSolveFactored(L: Float64Array, n: number, b: ArrayLike<number>, out = new Float64Array(n)): Float64Array {
+  const y = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    let s = b[i];
+    for (let k = 0; k < i; k++) s -= L[i * n + k] * y[k];
+    y[i] = s / L[i * n + i];
+  }
+  for (let i = n - 1; i >= 0; i--) {
+    let s = y[i];
+    for (let k = i + 1; k < n; k++) s -= L[k * n + i] * out[k];
+    out[i] = s / L[i * n + i];
+  }
+  return out;
+}

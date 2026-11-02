@@ -1,0 +1,32 @@
+{
+ "generated_by": "manim/tools/make_web_samples.py",
+ "sets": [
+  {
+   "file": "horno_ejemplo.zip",
+   "bytes": 14230341,
+   "sha256": "685a31c030126a57445ef431c8aa49c246122b0260e52b1b9a8621567802635d",
+   "images": 20,
+   "camera": "a2A1920-160ucPRO"
+  },
+  {
+   "file": "llama_septiembre_2026.zip",
+   "bytes": 4327433,
+   "sha256": "50e5048e92133a70bdea324b3fc75530fe33ad2b847d5d8e118743ac026cfc02",
+   "images": 7,
+   "camera": "acA2040-55uc"
+  },
+  {
+   "file": "llama_sintetica_coflame.zip",
+   "bytes": 6625791,
+   "sha256": "0ae69ef621584c590183d301b27f2ec0c675e733932d80a4583e8223d8040cae",
+   "images": 31,
+   "camera": "sint\u00e9tica",
+   "preset": {
+    "texpUs": 208.0,
+    "mmPerPx": 0.05,
+    "zBurnerMm": 5.05
+   }
+  }
+ ],
+ "total_bytes": 25183565
+}

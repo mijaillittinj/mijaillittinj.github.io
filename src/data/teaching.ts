@@ -98,3 +98,36 @@ export const pastTeaching = [
     },
   },
 ];
+
+/**
+ * Workshops: short teaching events outside the UTFSM courses. Kept apart from `courses`, which feeds the
+ * home page sentence, the teaching page and the CV and needs a course code and a role.
+ */
+export interface Workshop {
+  slug: string;
+  title: { en: string; es: string };
+  series: string;
+  institution: string;
+  audience: { en: string; es: string };
+  year: string;
+  language: { en: string; es: string };
+  summary: { en: string; es: string };
+  page: string;
+}
+
+export const workshops: Workshop[] = [
+  {
+    slug: 'workshop-rgb-pyrometry',
+    title: { en: 'RGB pyrometry of sooting flames', es: 'Pirometría RGB de llamas con hollín' },
+    series: 'Metrology in Fire Science',
+    institution: 'Universidad Adolfo Ibáñez',
+    audience: { en: 'Master’s students', es: 'Estudiantes de magíster' },
+    year: '2026',
+    language: { en: 'Spanish and English', es: 'Español e inglés' },
+    summary: {
+      en: 'Temperature and soot volume fraction of an axisymmetric flame measured with a colour camera calibrated against a blackbody oven. A presentation, a lab session and a processing tool that runs in the browser, with example data and the equations of the measurement chain.',
+      es: 'Temperatura y fracción de volumen de hollín de una llama axisimétrica medidas con una cámara a color calibrada con un horno de cuerpo negro. Una presentación, una sesión de laboratorio y una herramienta de procesamiento que corre en el navegador, con datos de ejemplo y las ecuaciones de la cadena de medición.',
+    },
+    page: '/teaching/workshop-rgb-pyrometry/',
+  },
+];

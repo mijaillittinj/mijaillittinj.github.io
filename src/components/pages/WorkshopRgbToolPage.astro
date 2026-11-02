@@ -1,0 +1,150 @@
+---
+/**
+ * Tool page of the RGB pyrometry workshop (Metrology in Fire Science, Universidad Adolfo Ibáñez).
+ * Spec: manim/WEB_SPEC.md §3.4, §4 and §12. The text above the tool works without JavaScript. The
+ * commit is read at build time with git (in CI actions/checkout leaves the repository) and gets
+ * "+local" when files of the workshop have uncommitted changes. Numbers come from checks.json through
+ * src/data/workshop-rgb-checks.json, never written by hand.
+ */
+import { execSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
+import Base from '../../layouts/Base.astro';
+import WorkshopNav from '../workshop-rgb/WorkshopNav.astro';
+import Tool from '../workshop-rgb/Tool.astro';
+import { TOOL_VERSION } from '../workshop-rgb/version.ts';
+import { url, localized } from '../../i18n/utils';
+import type { Lang } from '../../i18n/ui';
+import { WS, FILES, offlineCopy as offlineCopyOf, sampleSets, ck, ckCond, isSketch, sketchLabel, tx } from '../../data/workshop-rgb';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const es = lang === 'es';
+const offlineCopy = offlineCopyOf(lang);
+
+function gitCommit(): string {
+  try {
+    const h = execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+    const dirty = execSync('git status --porcelain -- src/components/workshop-rgb src/lib/workshop-rgb src/components/pages/WorkshopRgbToolPage.astro src/pages/teaching/workshop-rgb-pyrometry/tool src/pages/es/teaching/workshop-rgb-pyrometry/tool', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+    return h ? `${h}${dirty ? '+local' : ''}` : '';
+  } catch { return ''; }
+}
+const commit = gitCommit();
+
+/** SHA-256 over the source of the tool, so a run.json points to its code even before a commit (GB3r1-web-09). */
+function sourceSha(): string {
+  const h = createHash('sha256');
+  const walk = (d: string) => {
+    for (const f of readdirSync(d).sort()) {
+      const p = join(d, f);
+      if (statSync(p).isDirectory()) walk(p);
+      else if (/\.(ts|astro|json)$/.test(f)) { h.update(p.slice(process.cwd().length)); h.update(readFileSync(p)); }
+    }
+  };
+  try { walk(join(process.cwd(), 'src/components/workshop-rgb')); walk(join(process.cwd(), 'src/lib/workshop-rgb')); return h.digest('hex'); } catch { return ''; }
+}
+const source = sourceSha();
+const built = new Date().toISOString().slice(0, 10);
+
+const pub = (p: string) => join(process.cwd(), 'public', p.replace(/^\//, ''));
+const examples = sampleSets.map((s) => ({ file: s.file, bytes: s.bytes, sha256: s.sha256, camera: s.camera, preset: s.preset, available: existsSync(pub(`${FILES}${s.file}`)) }));
+const frozenDir = pub(`${WS}tool/`);
+const frozen = existsSync(frozenDir) ? readdirSync(frozenDir).filter((d) => /^\d{4}$/.test(d) && existsSync(join(frozenDir, d, 'index.html'))).sort() : [];
+
+const k = (key: string) => ck(key, lang);
+const sk = (key: string) => (isSketch(key) ? ` (${sketchLabel(lang)})` : '');
+const biases = [
+  { key: 'fs_Em_law_vs_F26', es: `E(m) es incierta. Con E = 0,4 a 650 nm en vez de la ley del grupo, f_s cambia ${ck('fs_Em_law_vs_F26', 'es')}.`, en: `E(m) is uncertain. With E = 0.4 at 650 nm in place of the group law, f_s changes by ${ck('fs_Em_law_vs_F26', 'en')}.` },
+  { key: 'dT_EGER_10pct', es: `La razón E_G/E_R entra en T. Un 10 % en esa razón mueve T unos ${ck('dT_EGER_10pct', 'es')} a 1800 K.`, en: `The ratio E_G/E_R enters T. A 10 % change in that ratio moves T by about ${ck('dT_EGER_10pct', 'en')} at 1800 K.` },
+  { key: 'dT_Em_const', es: `Con E constante en vez de la ley del grupo, la misma razón medida da una T ${ck('dT_Em_const', 'es').replace(/^[+]/, '')} más alta.`, en: `With a constant E in place of the group law, the same measured ratio gives a T ${ck('dT_Em_const', 'en').replace(/^[+]/, '')} higher.` },
+  { key: 'young', es: 'En la base de la llama el hollín joven tiene otra E(m), que la tabla no considera.', en: 'Near the burner the young soot has another E(m), which the table does not include.' },
+  { key: 'rdg', es: 'La emisión de Rayleigh supone partículas pequeñas. Con agregados, la absorción cambia de 10 a 20 % según Sorensen et al. 2018, y f_s en la misma proporción.', en: 'Rayleigh emission assumes small particles. With aggregates, absorption changes by 10 to 20 % according to Sorensen et al. 2018, and f_s by the same proportion.' },
+  { key: 'cof_dT_selfabs', es: `Sin una medición de atenuación en la línea de visión (line-of-sight attenuation, LOSA) no se corrige la autoabsorción. En la llama sintética baja T en el eje en ${ck('cof_dT_selfabs', 'es').replace(/^[−-]/, '')}. La atenuación sola baja f_s ${ck('cof_dfs_att_only', 'es').replace(/^[−-]/, '')}, y en esa llama el cambio de T lo compensa casi entero, ${ck('cof_dfs_selfabs', 'es')} en total.`, en: `Without a line-of-sight attenuation (LOSA) measurement, self-absorption is not corrected. In the synthetic flame it lowers T on the axis by ${ck('cof_dT_selfabs', 'en').replace(/^[−-]/, '')}. Attenuation alone lowers f_s by ${ck('cof_dfs_att_only', 'en').replace(/^[−-]/, '')}, and in that flame the change in T almost cancels it, ${ck('cof_dfs_selfabs', 'en')} in total.` },
+  { key: 'flicker_dT', es: `Promediar cuadros de una llama que parpadea sesga T en unos ${ck('flicker_dT', 'es')}${isSketch('flicker_dT') ? ` (${sketchLabel('es')})` : ''}.`, en: `Averaging frames of a flickering flame biases T by about ${ck('flicker_dT', 'en')}${isSketch('flicker_dT') ? ` (${sketchLabel('en')})` : ''}.` },
+  { key: 'fs_err_1pct_T', es: `Un error de 1 % en T da cerca de ${ck('fs_err_1pct_T', 'es')} en f_s.`, en: `An error of 1 % in T gives about ${ck('fs_err_1pct_T', 'en')} in f_s.` },
+  { key: 'oven_dT_flame_conv', es: `Con las curvas nominales de la cámara, el horno real sesga la T de la llama en ${ck('oven_dT_flame_conv', 'es')}.`, en: `With the nominal camera curves, the real oven biases the flame T by ${ck('oven_dT_flame_conv', 'en')}.` },
+  // shown only with the IR tail calibrated with the oven (stage 1a.7), instead of the line above
+  { key: 'oven_tailcal_dT_flame', es: `Con la cola infrarroja de ψ_R calibrada en el horno del grupo queda un sesgo residual esperado de T a 1800 K ${ck('oven_tailcal_dT_flame', 'es')}, ${ckCond('oven_tailcal_dT_flame', 'es')}. No se resta a T. Sin corregir sería ${ck('oven_dT_flame_top', 'es')}.`, en: `With the IR tail of ψ_R calibrated with the group’s oven, the expected residual bias of T at 1800 K is ${ck('oven_tailcal_dT_flame', 'en')}, ${ckCond('oven_tailcal_dT_flame', 'en')}. It is not subtracted from T. Without the correction it would be ${ck('oven_dT_flame_top', 'en')}.` },
+];
+void k; void sk;
+const ovenFlameBias = { es: ck('oven_dT_flame_top_abs', 'es'), en: ck('oven_dT_flame_top_abs', 'en') };
+const tailBias = { es: `${ck('oven_tailcal_dT_flame', 'es')}, ${ckCond('oven_tailcal_dT_flame', 'es')}`, en: `${ck('oven_tailcal_dT_flame', 'en')}, ${ckCond('oven_tailcal_dT_flame', 'en')}` };
+
+const T = es
+  ? {
+      title: 'Herramienta de pirometría RGB',
+      abstract: 'Esta herramienta lleva las fotos de la cámara a los mapas de temperatura T(r, z) y de fracción de volumen de hollín f_s(r, z) de una llama axisimétrica. Calibra la cámara con el horno de cuerpo negro, con una esfera integradora o con un archivo, prepara las proyecciones de la llama, las invierte con la transformada de Abel canal por canal y calcula T con la razón de dos canales y f_s con la emisión de uno.',
+      about: 'Antes de empezar',
+      p1: 'La herramienta corre entera en este navegador. Las imágenes se leen en su computador, no se envían a ningún servidor, y la página sigue funcionando si se corta la red después de abrirla.',
+      p2: 'Sirven Chrome, Edge, Firefox y Safari recientes en un computador portátil con unos 2 GB de memoria RAM libre, con otras pestañas y programas cerrados. Un teléfono no alcanza. ANNAbel usa la tarjeta gráfica cuando el navegador lo permite.',
+      p3: 'Los seis pasos van en el orden de la cadena de medición. Restar el oscuro o el fondo con el mismo tiempo de exposición, dividir por t_exp y por K_j del píxel, rotar, centrar el eje y pasar a milímetros, invertir cada canal con Abel, calcular T con la razón R/G y calcular f_s con el rojo y el verde por mínimos cuadrados de j_j = f_s G_j(T). El azul en f_s es una opción avanzada de la etapa 5.',
+      version: 'Versión',
+      builtOn: 'compilada el',
+      ident: 'identificador',
+      local: 'La terminación +local quiere decir que esta versión tiene cambios posteriores a ese commit. Citen el identificador completo que traen sus archivos.',
+      phone: 'Esta herramienta necesita un computador. En un teléfono la memoria no alcanza para las imágenes de la cámara.',
+      offlineLang: '',
+      offline: 'Copia sin conexión de un solo archivo',
+      offlineNone: 'La copia sin conexión de un solo archivo se publicará en la página de datos de ejemplo.',
+      frozen: 'Versiones congeladas',
+      cite: 'ANNAbel se cita como Escudero et al., Proc. Combust. Inst. 40 (2024) 105493. SAT es el método de Littin et al., Fuel 374 (2024) 132365.',
+      tool: 'Herramienta',
+      back: 'Docencia',
+    }
+  : {
+      title: 'RGB pyrometry tool',
+      abstract: 'This tool turns the camera photos into maps of the temperature T(r, z) and the soot volume fraction f_s(r, z) of an axisymmetric flame. It calibrates the camera with the blackbody oven, with an integrating sphere or from a file, prepares the flame projections, inverts them with the Abel transform channel by channel and computes T from the ratio of two channels and f_s from the emission of one.',
+      about: 'Before you start',
+      p1: 'The whole tool runs in this browser. The images are read on your computer, they are not sent to any server, and the page keeps working if the network drops after it opens.',
+      p2: 'Recent Chrome, Edge, Firefox and Safari work on a laptop with about 2 GB of free RAM, with other tabs and programs closed. A phone is not enough. ANNAbel uses the graphics card when the browser allows it.',
+      p3: 'The six steps follow the order of the measurement chain. Subtract the dark frame or the background with the same exposure time, divide by t_exp and by the pixel K_j, rotate, centre the axis and convert to millimetres, Abel-invert each channel, compute T from the R/G ratio and compute f_s from red and green by least squares of j_j = f_s G_j(T). Blue in f_s is an advanced option of stage 5.',
+      version: 'Version',
+      builtOn: 'built on',
+      ident: 'identifier',
+      local: 'The ending +local means this version has changes made after that commit. Cite the full identifier your files carry.',
+      phone: 'This tool needs a computer. A phone does not have enough memory for the camera images.',
+      offlineLang: '',
+      offline: 'Single-file offline copy',
+      offlineNone: 'The single-file offline copy will be published on the example data page.',
+      frozen: 'Frozen versions',
+      cite: 'ANNAbel is cited as Escudero et al., Proc. Combust. Inst. 40 (2024) 105493. SAT is the method of Littin et al., Fuel 374 (2024) 132365.',
+      tool: 'Tool',
+      back: 'Teaching',
+    };
+const pageUrl = new URL(url(localized(`${WS}tool/`, lang).replace(import.meta.env.BASE_URL.replace(/\/$/, ''), '')), Astro.site).href;
+---
+<Base title={T.title} description={T.abstract}>
+  <header class="page-head frame">
+    <p class="eyebrow"><a href={localized('/teaching/', lang)}>{T.back}</a> · Metrology in Fire Science · {lang === 'es' ? 'workshop en la' : 'workshop at'} Universidad Adolfo Ibáñez · 2026</p>
+    <h1>{T.title}</h1>
+    <p class="abstract" set:html={tx(T.abstract)} />
+    <WorkshopNav lang={lang} current="tool" />
+  </header>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label nonum">{T.about}</h2>
+      <div class="prose">
+        <p class="wr-phone-static">{T.phone}</p>
+        <p>{T.p1}</p>
+        <p>{T.p2}</p>
+        <p set:html={tx(T.p3)} />
+        <p class="meta">{T.version} <code>{TOOL_VERSION}</code>, {T.builtOn} {built}{commit && <> · {T.ident} <code>{commit}</code></>}{commit.endsWith('+local') && <> {T.local}</>}</p>
+        {offlineCopy ? <p><a href={url(`${FILES}${offlineCopy}`)} download>{T.offline}</a>{T.offlineLang}</p> : <p class="meta">{T.offlineNone}</p>}
+        {frozen.length > 0 && <p class="meta">{T.frozen} {frozen.map((y, i) => <>{i > 0 && ' · '}<a href={url(`${WS}tool/${y}/`)}>{y}</a></>)}</p>}
+        <p class="meta">{T.cite}</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="frame wr-frame-wide">
+    <Tool lang={lang} commit={commit} source={source} built={built} examples={examples} biases={biases} ovenFlameBias={ovenFlameBias} tailBias={tailBias} pageUrl={pageUrl} />
+  </div>
+</Base>
+
+<style>
+  .wr-frame-wide { max-width: calc(var(--wide-block) + 2 * var(--gutter)); margin-inline: auto; }
+  /* the phone notice comes first and works without JavaScript (GB3r1-web-04) */
+  .wr-phone-static { display: none; font-style: italic; border-left: 2px solid var(--rule-strong); padding-left: var(--s-3); }
+  @media (max-width: 699px), (pointer: coarse) { .wr-phone-static { display: block; } }
+</style>

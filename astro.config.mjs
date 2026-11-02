@@ -32,5 +32,7 @@ export default defineConfig({
     shikiConfig: { theme: 'github-light' },
   },
   build: { inlineStylesheets: 'always' },
+  // Module Workers (the workshop tool) come out as a single ES file each (WEB_SPEC §7.1).
+  vite: { worker: { format: 'es' } },
   prefetch: { prefetchAll: false, defaultStrategy: 'hover' },
 });

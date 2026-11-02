@@ -1,0 +1,122 @@
+---
+/**
+ * The RGB pyrometry tool (WEB_SPEC §3.4 and §4). Static text that works without JavaScript, the
+ * <noscript> message, and the container that ui.ts fills. Everything the tool needs, its Worker, the
+ * ANNAbel helpers, the ψ_j curves and the colour maps, is bundled and loaded when the page opens, with no
+ * deferred loading, so an open tab keeps working if the lab network drops (§11.5).
+ */
+import type { Lang } from '../../i18n/ui';
+import { TOOL_VERSION } from './version.ts';
+interface Props {
+  lang: Lang;
+  commit: string;
+  source?: string;
+  built?: string;
+  ovenFlameBias?: { es: string; en: string };
+  tailBias?: { es: string; en: string };
+  examples: { file: string; bytes: number; sha256: string; camera: string; available: boolean }[];
+  biases: { key: string; es: string; en: string }[];
+  pageUrl: string;
+}
+const { lang, commit, source, built, ovenFlameBias, tailBias, examples, biases, pageUrl } = Astro.props;
+const es = lang === 'es';
+const config = JSON.stringify({ lang, version: TOOL_VERSION, commit, source, built, base: import.meta.env.BASE_URL.replace(/\/?$/, '/'), examples, biases, ovenFlameBias, tailBias, pageUrl });
+---
+<noscript><p class="noscript-note wr-noscript">{es ? 'La herramienta necesita JavaScript. Actívenlo en el navegador para usarla.' : 'The tool needs JavaScript. Enable it in the browser to use it.'}</p><style>.wr-loading { display: none; }</style></noscript>
+<div class="wr-app" id="wr-app" data-config={config} lang={lang}>
+  <p class="meta wr-loading">{es ? 'Cargando la herramienta.' : 'Loading the tool.'}</p>
+</div>
+
+<script>
+  import { mount } from './ui.ts';
+  const root = document.getElementById('wr-app');
+  if (root) mount(root, JSON.parse(root.dataset.config ?? '{}'));
+</script>
+
+<style is:global>
+  .wr-app { --ch-r: #c62828; --ch-g: #1b7a32; --ch-b: #1f48c8; --mk-sat: rgb(230 30 30); --mk-low: rgb(40 90 240); --mk-hot: rgb(250 210 0); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme='light']) .wr-app { --ch-r: #ff5c5c; --ch-g: #5bd16b; --ch-b: #6b8cff; } }
+  :root[data-theme='dark'] .wr-app { --ch-r: #ff5c5c; --ch-g: #5bd16b; --ch-b: #6b8cff; }
+  .wr-app { counter-reset: none; }
+  .wr-stage { border-top: 0.5px solid var(--rule); padding-top: var(--s-5); margin-top: var(--s-6); }
+  .wr-stage > h2.row__label.nonum::before { content: none; }
+  .wr-stage h3 { margin-top: var(--s-6); margin-bottom: var(--s-3); }
+  .wr-stage h4 { margin-top: var(--s-4); margin-bottom: var(--s-2); font-size: var(--step-0); }
+  .wr-stage > p, .wr-stage .prose p { margin-block: var(--s-3); }
+  .wr-status { font-size: var(--step--1); margin-bottom: var(--s-3); }
+  .wr-status .label { margin-right: 0.4em; }
+  .wr-busy { position: sticky; top: 0; z-index: 5; background: var(--paper); border-bottom: 0.5px solid var(--rule-strong); padding: var(--s-2) 0; font-size: var(--step--1); font-style: italic; margin: 0; }
+  .wr-plain { list-style: none; padding: 0; }
+  .wr-plain li { margin-block: 0.35em; }
+  .wr-filebtn { cursor: pointer; }
+  .wr-filebtn:focus-within { outline: 1.5px solid var(--focus, var(--accent)); outline-offset: 3px; }
+  .wr-tablewrap { overflow-x: auto; margin-block: var(--s-3); }
+  .wr-app td, .wr-app th { font-size: var(--step--1); }
+  .wr-app td { font-variant-numeric: tabular-nums; }
+  .wr-path { font-family: var(--font-mono); font-size: 0.85em; word-break: break-all; }
+  table.wr-files input[type='number'] { width: 7.5em; font-family: var(--font-mono); font-size: 0.92em; border: 0; border-bottom: 1px solid var(--ink-3); background: var(--paper); color: var(--ink); }
+  table.wr-files input.wr-missing { border-bottom: 2px solid var(--ink); }
+  .wr-msgs { margin-block: var(--s-3); }
+  /* DESIGN_SYSTEM principles 3 and 4, an italic label says the kind, a plain rule beside it (GB3r1-web-11) */
+  .wr-msg { font-size: var(--step--1); border-left: 1px solid var(--rule-strong); padding-left: var(--s-3); margin-block: var(--s-2); text-align: left; }
+  .wr-msg--error { border-left: 2px solid var(--ink); }
+  .wr-msg__lab { font-style: italic; margin-right: 0.15em; }
+  .wr-msg__files { display: block; color: var(--ink-3); font-family: var(--font-mono); font-size: 0.85em; word-break: break-all; }
+  .wr-drop { border-block: 0.5px solid var(--rule-strong); padding: var(--s-3) 0; margin-block: var(--s-3); }
+  .wr-drop.wr-over { border-color: var(--accent); }
+  .wr-grid2 { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr)); align-items: start; }
+  .wr-grid3 { display: grid; gap: var(--s-3) var(--s-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); align-items: start; margin-block: var(--s-4); }
+  .wr-row { display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: end; }
+  .wr-controls { display: grid; gap: var(--s-3); }
+  .wr-app .control select, .wr-app .control input[type='number'] { font: inherit; font-size: var(--step--1); color: var(--ink); background: var(--paper); border: 0; border-bottom: 1px solid var(--ink-3); max-width: 100%; }
+  .wr-app .control input[type='number'] { width: 9em; font-family: var(--font-mono); }
+  .wr-check { font-size: var(--step--1); display: block; }
+  .wr-check .meta, .wr-app .control .meta { display: block; margin-top: 0.2em; font-style: italic; }
+  .wr-preview { width: auto; max-width: min(100%, 520px); max-height: 30rem; min-width: 12rem; height: auto; object-fit: contain; image-rendering: pixelated; margin-inline: auto; display: block; background: var(--paper-2, var(--paper)); }
+  canvas#wr-pcv, canvas.wr-ruler { cursor: crosshair; }
+  .wr-preview:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 2px; }
+  .wr-plot { min-height: 12rem; }
+  .wr-mk { padding: 0 0.2em; }
+  .wr-mk--sat { box-shadow: inset 0 -0.35em 0 var(--mk-sat); }
+  .wr-mk--low { box-shadow: inset 0 -0.35em 0 var(--mk-low); }
+  .wr-mk--hot { box-shadow: inset 0 -0.35em 0 var(--mk-hot); }
+  .wr-app .lineplot .s-chR { stroke: var(--ch-r); fill: var(--ch-r); }
+  .wr-app .lineplot .s-chG { stroke: var(--ch-g); fill: var(--ch-g); }
+  .wr-app .lineplot .s-chB { stroke: var(--ch-b); fill: var(--ch-b); }
+  .wr-app .lineplot .line.s-chR, .wr-app .lineplot .line.s-chG, .wr-app .lineplot .line.s-chB { fill: none; }
+  .wr-app .lineplot .wr-thin { stroke-width: 0.8; opacity: 0.8; }
+  .wr-app .lineplot .wr-thick { stroke-width: 2.4; }
+  .wr-app .lab { width: 100%; margin-left: 0; transform: none; }
+  .wr-tabs { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4em; margin-block: var(--s-3); font-size: var(--step--1); }
+  .wr-tabs .label { margin-right: 0.6em; }
+  .wr-tab { border: 0.5px solid var(--rule-strong); border-bottom-width: 2px; background: var(--paper); color: var(--accent); padding: 0.2em 0.8em; cursor: pointer; font: inherit; }
+  .wr-tab[aria-pressed='true'] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+  .wr-tab:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 2px; }
+  details.wr-filetable > summary, details.wr-note > summary { cursor: pointer; font-size: var(--step--1); color: var(--accent); margin-block: var(--s-2); }
+  .wr-frames { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s-3); }
+  .wr-frame label { display: grid; gap: 0.2em; font-size: var(--step--2); max-width: 9rem; cursor: pointer; }
+  .wr-frame canvas { width: 8rem; height: auto; image-rendering: pixelated; }
+  .wr-frame.wr-off canvas { opacity: 0.35; filter: grayscale(1); }
+  .wr-map { image-rendering: pixelated; height: auto; display: block; background: var(--paper); }
+  .wr-map--big { width: min(100%, 15rem); margin-inline: auto; }
+  .wr-mapax { position: relative; margin: 0.6em auto 2.8em; left: 1.4rem; }
+  .wr-mapax > canvas { width: 100%; outline: 1px solid var(--rule-strong); }
+  .wr-tk { position: absolute; font-size: var(--step--2); font-family: var(--font-mono); white-space: nowrap; line-height: 1; }
+  .wr-tk--x { top: 100%; transform: translateX(-50%); padding-top: 6px; }
+  .wr-tk--x::before { content: ''; position: absolute; left: 50%; top: 0; height: 4px; border-left: 1px solid currentColor; }
+  .wr-tk--y { left: 0; transform: translate(calc(-100% - 6px), -50%); }
+  .wr-tk--y::after { content: ''; position: absolute; right: -6px; top: 50%; width: 4px; border-top: 1px solid currentColor; }
+  .wr-axt { position: absolute; font-size: var(--step--2); font-style: italic; white-space: nowrap; }
+  .wr-axt--x { top: calc(100% + 1.5em); left: 50%; transform: translateX(-50%); }
+  .wr-axt--y { bottom: 100%; left: 0; transform: translate(-100%, -0.3em); }
+  .wr-maps { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); align-items: end; margin-block: var(--s-4); }
+  .wr-maps3 { display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: end; }
+  .wr-maps3 > div { display: grid; justify-items: center; gap: 0.2em; }
+  .wr-maps3 canvas { width: 6.5rem; }
+  .wr-bar { width: min(100%, 15rem); height: 0.8rem; display: block; margin: var(--s-2) auto 0; image-rendering: auto; }
+  .wr-barlab { display: flex; justify-content: space-between; width: min(100%, 15rem); margin: 0.1em auto 0; font-size: var(--step--2); font-family: var(--font-mono); }
+  .wr-npy .btn { font-family: var(--font-mono); font-size: 0.9em; }
+  .wr-noscript, .wr-loading { margin-block: var(--s-4); max-width: var(--measure); margin-inline: auto; }
+  @media (max-width: 40rem) { .wr-app table { font-size: var(--step--2); } }
+  @media print { .wr-app { display: none; } }
+</style>

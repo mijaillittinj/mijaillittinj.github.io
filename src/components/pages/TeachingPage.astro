@@ -1,6 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { courses } from '../../data/teaching';
+import { courses, workshops } from '../../data/teaching';
 import { modules, categories } from '../../data/learn';
 import { url, localized } from '../../i18n/utils';
 import type { Lang } from '../../i18n/ui';
@@ -15,6 +15,7 @@ const T = es
       lede: 'Enseño ingeniería térmica y de energía con un enfoque computacional. Los estudiantes escriben modelos, comprueban que sean correctos y los usan para tomar decisiones de diseño. Algunos métodos que uso en investigación, como la optimización y el aprendizaje automático, se incorporan al curso como herramientas de trabajo.',
       current: 'Cursos actuales', areas: 'Áreas de docencia', open: 'Material abierto', past: 'Experiencia previa',
       coursePage: 'Página del curso',
+      workshops: 'Workshops', workshopPage: 'Página del workshop',
       areasList: [
         ['Modelación y simulación de sistemas térmicos', 'Modelos con propiedades uniformes y con variación espacial, análisis dimensional, verificación de resultados numéricos y análisis de sensibilidad.'],
         ['Optimización', 'Problemas con restricciones y sus condiciones de óptimo (KKT), y los métodos de gradiente que se usan hoy en ingeniería y aprendizaje automático, como momentum, Adam y BFGS.'],
@@ -42,6 +43,7 @@ const T = es
       lede: 'I teach thermal and energy engineering with a computational emphasis. Students write models, check that they are correct and use them to make design decisions. Some methods from my research, such as optimisation and machine learning, are brought into the course as working tools.',
       current: 'Current courses', areas: 'Teaching areas', open: 'Open material', past: 'Earlier teaching',
       coursePage: 'Course page',
+      workshops: 'Workshops', workshopPage: 'Workshop page',
       areasList: [
         ['Modelling and simulation of thermal systems', 'Models with uniform and with spatially varying properties, dimensional analysis, verification of numerical results and sensitivity analysis.'],
         ['Optimisation', 'Constrained problems and their optimality conditions (KKT), and the gradient methods used today in engineering and machine learning, such as momentum, Adam and BFGS.'],
@@ -87,6 +89,26 @@ const T = es
       </div>
     </div>
   </section>
+
+  {workshops.length > 0 && (
+    <section class="section frame">
+      <div class="row">
+        <h2 class="label row__label">{T.workshops}</h2>
+        <div>
+          {workshops.map((w) => (
+            <article class="course">
+              <p class="meta">{w.series} · {w.institution} · {w.year}</p>
+              <h3><a href={localized(w.page, lang)}>{w.title[lang]}</a></h3>
+              {!es && <p class="meta orig" lang="es">{w.title.es}</p>}
+              <p class="desc">{w.summary[lang]}</p>
+              <p class="meta">{w.audience[lang]} · {w.language[lang]}</p>
+              <a class="more" href={localized(w.page, lang)}>{T.workshopPage}</a>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
 
   <section class="section frame">
     <div class="row">

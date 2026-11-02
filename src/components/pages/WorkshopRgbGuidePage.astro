@@ -1,0 +1,371 @@
+---
+/**
+ * Printable lab guide of the RGB pyrometry workshop. Spec: manim/WEB_SPEC.md §3.3, with the director's
+ * decisions in manim/AGENT_BRIEF.md (pylon 16-bit RGB format, oven calibration, infrared tail calibrated with the oven, no short-pass filter).
+ * Figures come from data/checks.json through src/data/workshop-rgb-checks.json.
+ * The PDF in files/ is printed from this page by scripts/make-workshop-rgb-guide-pdf.sh.
+ */
+import Base from '../../layouts/Base.astro';
+import WorkshopNav from '../workshop-rgb/WorkshopNav.astro';
+import { url, localized } from '../../i18n/utils';
+import type { Lang } from '../../i18n/ui';
+import { WS, FILES, GUIDE_PDF, LOG_TEMPLATE, has, ck, ckCond, isSketch, tx, sketchLabel, tailTable } from '../../data/workshop-rgb';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const es = lang === 'es';
+const k = (key: string) => ck(key, lang);
+const sk = (key: string) => (isSketch(key) ? ` (${sketchLabel(lang)})` : '');
+const site = new URL(localized(WS, lang), Astro.site).href.replace(/^https?:\/\//, '');
+
+const T = es
+  ? {
+      title: 'Guía de laboratorio',
+      lede: 'Los pasos de la adquisición en el orden en que se hacen, desde la seguridad hasta la revisión antes de irse. Las imágenes de esta sesión son la entrada de la herramienta, así que los ajustes de la cámara y los nombres de las carpetas importan tanto como la llama. Se puede imprimir desde el navegador o bajar en PDF.',
+      pdf: 'Guía en PDF',
+      address: 'Dirección del workshop',
+      plan: 'Plan de la sesión',
+      planText: 'El orden es seguridad, montaje, foco, ajustes de la cámara, prueba de exposición con la llama, horno de la temperatura más baja a la más alta, oscuros, llama, regla y revisión. El horno se sube de temperatura y no se baja, porque calentar es más rápido que enfriar. La duración de cada paso está al lado de su título y no cuenta el tiempo que tarda el horno en estabilizarse.',
+      minimum: 'Si el tiempo no alcanza, esto basta para medir',
+      minimumList: [
+        'el horno a tres temperaturas, hasta la más alta, para calibrar la cola,',
+        'oscuros con el t_exp de la llama,',
+        'diez cuadros de la llama y su fondo,',
+        'la imagen de la regla.',
+      ],
+      fill: ['Distancia de trabajo (mm)', 'Número f', 'Ganancia (dB)', 't_exp de la llama (µs)', 'Filtro delante del lente'],
+      min: 'min',
+    }
+  : {
+      title: 'Lab guide',
+      lede: 'The acquisition steps in the order they are done, from safety to the check before you leave. The images from this session are the input of the tool, so the camera settings and the folder names matter as much as the flame. It can be printed from the browser or downloaded as PDF.',
+      pdf: 'Guide as PDF',
+      address: 'Workshop address',
+      plan: 'Session plan',
+      planText: 'The order is safety, setup, focus, camera settings, exposure test on the flame, oven from the lowest to the highest temperature, dark frames, flame, ruler and check. The oven goes up in temperature and never down, because heating is faster than cooling. The duration of each step is next to its title and does not include the time the oven needs to settle.',
+      minimum: 'If time runs short, this is enough to measure',
+      minimumList: [
+        'the oven at three temperatures, up to the highest, to calibrate the tail,',
+        'dark frames at the flame t_exp,',
+        'ten flame frames and their background,',
+        'the ruler image.',
+      ],
+      fill: ['Working distance (mm)', 'f-number', 'Gain (dB)', 'Flame t_exp (µs)', 'Filter in front of the lens'],
+      min: 'min',
+    };
+
+// Steps. Each body is a list of paragraphs, lists or tables, written once per language.
+type Block = { p: string } | { ul: string[] } | { ol: string[] } | { table: { head: string[]; rows: string[][] } } | { pre: string };
+type Step = { id: string; h: string; min?: string; blocks: Block[] };
+
+const pylonRows = es
+  ? [
+      ['PixelFormat', 'Bayer RG 12. Al guardar, pylon escribe un TIFF RGB de 16 bits con los 12 bits desplazados, el mismo formato de las fotos del horno del grupo'],
+      ['ExposureAuto, GainAuto', 'Off'],
+      ['Gain', 'Fija y anotada, 0 dB salvo indicación'],
+      ['BalanceWhiteAuto', 'Off'],
+      ['BalanceRatio', '1 en R, G y B'],
+      ['LightSourcePreset', 'Off'],
+      ['Gamma', '1'],
+      ['ColorTransformation (matriz de color)', 'Apagada o identidad'],
+      ['BlackLevel', 'Un pedestal positivo de unas decenas de DN de 12 bits, igual en todas las tomas'],
+      ['ReverseX, ReverseY', 'Off'],
+      ['Width, Height, OffsetX, OffsetY', 'Sensor completo, sin recorte ni desplazamiento'],
+      ['Formato de archivo', 'TIFF'],
+    ]
+  : [
+      ['PixelFormat', 'Bayer RG 12. When saving, pylon writes a 16-bit RGB TIFF with the 12 bits shifted up, the same format as the group’s oven photographs'],
+      ['ExposureAuto, GainAuto', 'Off'],
+      ['Gain', 'Fixed and written down, 0 dB unless told otherwise'],
+      ['BalanceWhiteAuto', 'Off'],
+      ['BalanceRatio', '1 for R, G and B'],
+      ['LightSourcePreset', 'Off'],
+      ['Gamma', '1'],
+      ['ColorTransformation (colour matrix)', 'Off or identity'],
+      ['BlackLevel', 'A positive offset of a few tens of 12-bit DN, the same in every shot'],
+      ['ReverseX, ReverseY', 'Off'],
+      ['Width, Height, OffsetX, OffsetY', 'Full sensor, no crop and no offset'],
+      ['File format', 'TIFF'],
+    ];
+
+const tree = `sesion/
+  registro.csv
+  regla.tiff
+  horno/
+    800C/      20000exp.tiff  40000exp.tiff  …
+    900C/      4000exp.tiff   8000exp.tiff   …
+    1000C/     …
+    1050C/     …
+    oscuro/    20000exp.tiff  4000exp.tiff  …  ${es ? '(un oscuro por cada tiempo de exposición)' : '(one dark per exposure time)'}
+  campo_plano/                                  ${es ? '(opcional)' : '(optional)'}
+    imagen/    500exp.tiff
+    oscuro/    500exp.tiff
+  llama/
+    condicion_1/  220exp_01.tiff  220exp_02.tiff  …
+      fondo/   220exp_01.tiff  …
+  *.pfs  ${es ? '(archivo de ajustes de pylon en cada carpeta)' : '(pylon settings file in every folder)'}`;
+
+const steps: Step[] = es
+  ? [
+      { id: 'seguridad', h: 'Seguridad', min: '5', blocks: [
+        { p: 'Lean esta sección antes de encender nada.' },
+        { ul: [
+          'Llama abierta. Pelo tomado, nada inflamable sobre la mesa, extintor a mano y la llama nunca sola.',
+          'Con un Bunsen, revisen mangueras y llave de gas antes de encender, trabajen con la sala ventilada y cierren el gas antes de tocar el quemador.',
+          'Horno caliente. Las superficies pasan de 800 °C. Usen guantes térmicos, marquen en la mesa la distancia mínima y no miren la abertura de cerca por mucho rato.',
+          'Cables y mangueras lejos del horno y de la llama.',
+          'El horno no se mueve caliente. Si su abertura debe quedar donde estará la llama, se mueve el quemador frío o la cámara en un riel con un tope marcado.',
+        ] },
+      ] },
+      { id: 'montaje', h: 'Montaje', min: '15', blocks: [
+        { ul: [
+          'Cámara en trípode o en riel, con el eje óptico horizontal y perpendicular al eje de la llama.',
+          'La llama protegida de corrientes de aire con un cilindro o una cortina, y un fondo oscuro y mate detrás.',
+          'La abertura del horno en el mismo lugar del cuadro que ocupará la llama. Sin campo plano, la calibración vale solo en esa zona del sensor.',
+          'Luz de la sala apagada durante las tomas, o igual en la llama y en su fondo.',
+          'Anoten en la tabla de abajo la distancia de trabajo, el número f, la ganancia y el filtro que usen.',
+        ] },
+      ] },
+      { id: 'cola', h: 'Cola infrarroja de la cámara y prueba de la razón', blocks: [
+        { p: `El motivo es la respuesta de la cámara sobre 700 nm. En las curvas del fabricante esa cola es pequeña. Un cuerpo a 1273 K emite sobre todo en el infrarrojo, así que a la temperatura del horno esa cola pequeña lleva una parte grande de la señal. La tabla da, con las curvas nominales, la parte de la señal de cada canal que viene de sobre 700 nm. El horno y la llama ven entonces bandas distintas, y la calibración del horno no se traslada a la llama.` },
+        { table: tailTable('es') },
+        { p: `Las fotos del horno del grupo muestran ese efecto. Con las curvas nominales, K_R/K_G cambia ${k('oven_KRKG_drift')} entre 800 y 1050 °C, y llevado a una llama de 1800 K el error de T sin corregir queda en ${k('oven_dT_flame_top')}. La matriz de color de pylon estaba apagada en esas fotos, así que la causa está en la respuesta espectral.` },
+        { p: 'En el laboratorio no hay filtro de paso corto, y no se pone otro filtro delante del lente. La cola se calibra con el horno. Con tres o más temperaturas la herramienta ajusta un factor sobre la cola de ψ_R sobre 700 nm, calcula K_j con esa curva y muestra la prueba de la razón dejando fuera una temperatura cada vez. La calibración pasa si K_R/K_G deriva menos de 1 % en la temperatura que queda fuera. La prueba más exigente es dejar fuera la más fría.' },
+        { p: `En la herramienta la corrección está en la etapa 1a.7, bajo la prueba de la razón, y viene encendida. Con las fotos del grupo el factor da s_R = ${k('oven_tail_scale_R')} ${ckCond('oven_tail_scale_R', 'es')}${sk('oven_tail_scale_R')}, K_R/K_G cambia ${k('oven_tailcal_loo_KRKG')} como máximo en la temperatura que queda fuera, y la prueba de la razón llevada a una llama de 1800 K baja de cientos de kelvin a ${k('oven_tailcal_ratio_test_loo_dT')}. Con otra óptica, un filtro de paso corto de 700 nm delante del lente también resolvería el problema.` },
+        { p: 'Por eso fotografíen el horno a tres temperaturas o más, hasta la más alta. Si la prueba pasa, informen T con el sesgo residual que da la herramienta, que depende de la forma de la cola y no se resta. El canal azul no pasa la prueba y queda fuera de T y de f_s. Anoten en el registro el factor de la cola y el resultado de la prueba.' },
+      ] },
+      { id: 'foco', h: 'Foco y diafragma', min: '5', blocks: [
+        { p: 'Enfoquen sobre la llama, o sobre una aguja puesta en el eje del quemador, y fijen el anillo de foco y el de diafragma con cinta. No se tocan desde ese momento hasta terminar la llama. Cambiar el diafragma invalida la calibración, y reenfocar la cambia en unos pocos por ciento.' },
+      ] },
+      { id: 'pylon', h: 'Formato y ajustes en pylon', min: '10', blocks: [
+        { p: 'Las imágenes deben ser lineales, sin gamma, sin balance de blancos y sin matriz de color, con la ganancia fija. Revisen estos parámetros en pylon Viewer antes de la primera toma y otra vez si alguien reinicia la cámara.' },
+        { table: { head: ['Parámetro de pylon', 'Valor'], rows: pylonRows } },
+        { p: 'No usen RGB 8 ni otros formatos de 8 bits, que traen gamma y balance. Comprueben el pedestal con un oscuro. Ningún píxel del oscuro debe valer 0, y si muchos valen 0 suban BlackLevel. Guarden el archivo de ajustes .pfs en cada carpeta.' },
+        { p: 'En el RGB de pylon el rojo y el azul de cada bloque de 2 × 2 vienen de un solo sitio del mosaico, a medio píxel del centro del verde en cada eje. La herramienta agrupa 2 × 2 en la fase del rojo y puede correr R y B a ese centro, igual que con el mosaico Bayer. Ese centrado viene apagado, porque el sentido del corrimiento no está confirmado con esta cámara. Supone el patrón Bayer RG del sensor completo, así que dejen ReverseX, ReverseY y los desplazamientos como dice la tabla.' },
+        { p: 'Copien los archivos tal cual. No los abran, giren ni guarden de nuevo con otro programa. Las fotos de la llama de septiembre se guardaron de nuevo con el visor de fotos de Windows, que las dejó giradas respecto del sensor.' },
+      ] },
+      { id: 'exposicion', h: 'Prueba de exposición con la llama', min: '5', blocks: [
+        { p: `Enciendan la llama y tomen una serie de 10 cuadros. Elijan el t_exp con que el cuadro más brillante deja el canal rojo bajo 70 % de la escala, anótenlo y apaguen la llama. Para una vela el cálculo da unos ${k('texp_candle')}${sk('texp_candle')}. Ese t_exp fija el rango que el horno debe cubrir.` },
+      ] },
+      { id: 'horno', h: 'Horno', min: '10 a 15 min por temperatura', blocks: [
+        { ul: [
+          'Esperen que el termopar esté estable, menos de 2 K en cinco minutos, y anoten su lectura al inicio y al final de cada serie.',
+          'Usen temperaturas en orden creciente, por ejemplo 800, 900, 1000 y 1050 °C, o las que permita el horno.',
+          'En cada temperatura tomen de 8 a 10 tiempos de exposición repartidos entre 10 y 90 % de la escala del canal más brillante, con al menos tres entre 50 y 70 %. Ninguno bajo 100 µs, porque el obturador deja de ser exacto.',
+          'Las temperaturas más altas deben cubrir el t_exp de la llama.',
+          'Para el azul tomen también tiempos más largos, con el rojo saturado si hace falta. El ajuste es canal por canal y un rojo saturado deja fuera solo el canal rojo de esa imagen.',
+        ] },
+        { p: 'Tiempos de exposición de las fotos del horno del grupo. El juego de ejemplo de la página de datos trae cinco de esos tiempos por temperatura.' },
+        { table: { head: ['Horno', 'Tiempo de exposición usado'], rows: [['800 °C', '10 a 250 ms'], ['900 °C', '2 a 30 ms'], ['1000 °C', '0,5 a 8 ms'], ['1050 °C', '0,3 a 4 ms']] } },
+      ] },
+      { id: 'oscuros', h: 'Imágenes oscuras', min: '10', blocks: [
+        { p: 'Con la tapa del lente puesta y la misma ganancia, tomen oscuros en unos cinco tiempos que cubran el rango del horno, más uno con el t_exp exacto de la llama. Repitan una serie de oscuros al final de la sesión. El oscuro de la llama se puede reemplazar por el fondo sin llama del mismo t_exp, que además quita la luz de la sala.' },
+      ] },
+      { id: 'campo-plano', h: 'Campo plano (opcional)', min: '10', blocks: [
+        { p: 'Usen una esfera integradora o un difusor que llene el cuadro, con su oscuro, con el mismo foco, diafragma, ganancia y formato de la llama. Dejen el canal más brillante entre 40 y 70 % de la escala. El campo plano corrige el viñeteo, la caída de señal hacia los bordes del cuadro. Sin campo plano, la llama debe quedar en la zona del sensor donde estuvo la abertura del horno.' },
+      ] },
+      { id: 'llama', h: 'Llama', min: '20', blocks: [
+        { p: `Tomen al menos 10 cuadros por condición con el t_exp de la prueba de exposición, para promediar el parpadeo de la llama. Si el tiempo y el pendrive lo permiten, tomen más. En la llama sintética del workshop hicieron falta ${k('n_frames_rec')} cuadros promediados para bajar el ruido de T a 10 K en una fila.` },
+        { p: 'Tomen también imágenes de fondo con la llama apagada y el mismo t_exp, en la carpeta fondo/ de cada condición.' },
+      ] },
+      { id: 'regla', h: 'Regla en el plano de la llama', min: '5', blocks: [
+        { p: 'Con la llama apagada y el quemador frío, pongan una regla en el eje de la llama, en el plano que contiene el eje y mira a la cámara. Iluminen con la luz de la sala y usen un t_exp más largo, sin tocar foco ni diafragma. Las marcas que se usen para medir deben estar separadas al menos 10 mm. Guárdenla como regla.tiff en la carpeta de la sesión. Esta imagen da los milímetros por píxel.' },
+        { p: 'La regla tiene bordes nítidos, y con ella la etapa 3 de la herramienta prueba el corrimiento de R y B respecto del verde. Enfoquen bien, eviten que sature y dejen marcas a la vista en las dos direcciones. Si la prueba dice que conviene, marquen «Centrar R y B» en la etapa 3. Si dice que no o no decide, déjenlo apagado.' },
+      ] },
+      { id: 'nombres', h: 'Nombres de archivo y registro', blocks: [
+        { p: 'La herramienta lee la temperatura del horno y el tiempo de exposición desde los nombres, así que no hay que escribirlos a mano. El nombre de la carpeta <T>C/ lleva la temperatura del termopar en °C y el del archivo <t_exp>exp.tiff el tiempo de exposición en microsegundos. Creen la carpeta antes de cada serie y fijen en pylon la carpeta de destino.' },
+        { pre: tree },
+        { p: 'Si pylon guarda varios cuadros con su propio nombre, déjenlos así dentro de una carpeta <t_exp>exp/ y la herramienta toma el t_exp de la carpeta.' },
+        { p: 'El archivo registro.csv lleva una fila por serie con las columnas de abajo. Si la temperatura del termopar difiere de la del nombre de la carpeta, manda la del registro.' },
+        { table: { head: ['carpeta', 'T_termopar_C', 'texp_us', 'ganancia_dB', 'numero_f', 'hora', 'nota'], rows: [['horno/800C', '801', '20000', '0', '', '10:42', ''], ['', '', '', '', '', '', ''], ['', '', '', '', '', '', ''], ['', '', '', '', '', '', '']] } },
+      ] },
+      { id: 'revision', h: 'Revisión rápida en el laboratorio', min: '2 min por serie', blocks: [
+        { p: 'Después de cada serie, carguen la carpeta en la revisión rápida de la herramienta. En segundos muestra por canal el porcentaje de la escala, los píxeles saturados y los oscuros que valen 0, y si los nombres se entienden.' },
+        { ul: [
+          'Si hay saturados en la zona central de la abertura o en la llama, bajen t_exp y repitan esa toma.',
+          'Si muchos píxeles del oscuro valen 0, suban BlackLevel y repitan los oscuros.',
+          'Si un nombre no se entiende, corrijan la carpeta o el archivo antes de seguir.',
+        ] },
+      ] },
+      { id: 'antes-de-irse', h: 'Antes de irse', min: '10', blocks: [
+        { p: 'Corran la calibración completa en la herramienta antes de apagar el horno. Si una temperatura falla, todavía se puede repetir.' },
+        { ul: [
+          'Todas las carpetas del horno, con su temperatura en el nombre.',
+          'Los oscuros de cada t_exp, incluido el de la llama.',
+          'Los cuadros de la llama y su fondo.',
+          'regla.tiff.',
+          'Un archivo .pfs por carpeta.',
+          'registro.csv completo.',
+          'Una copia en el pendrive, revisada en su computador.',
+        ] },
+      ] },
+    ]
+  : [
+      { id: 'seguridad', h: 'Safety', min: '5', blocks: [
+        { p: 'Read this section before switching anything on.' },
+        { ul: [
+          'Open flame. Hair tied back, nothing flammable on the table, an extinguisher at hand and the flame never left alone.',
+          'With a Bunsen burner, check the hoses and the gas tap before lighting, work in a ventilated room and close the gas before touching the burner.',
+          'Hot oven. Its surfaces are above 800 °C. Wear thermal gloves, mark the minimum distance on the table and do not look into the aperture from close up for long.',
+          'Cables and hoses away from the oven and the flame.',
+          'The oven is never moved while hot. If its aperture must sit where the flame will be, move the cold burner or the camera on a rail with a marked stop.',
+        ] },
+      ] },
+      { id: 'montaje', h: 'Setup', min: '15', blocks: [
+        { ul: [
+          'Camera on a tripod or a rail, with the optical axis horizontal and perpendicular to the flame axis.',
+          'The flame shielded from draughts with a cylinder or a curtain, and a dark matte background behind it.',
+          'The oven aperture at the same place in the frame that the flame will occupy. Without a flat field, the calibration only holds in that region of the sensor.',
+          'Room lights off during the shots, or the same for the flame and its background.',
+          'Write the working distance, f-number, gain and filter you use in the table below.',
+        ] },
+      ] },
+      { id: 'cola', h: 'Infrared tail of the camera and ratio test', blocks: [
+        { p: `The reason is the camera response above 700 nm. In the manufacturer’s curves that tail is small. A body at 1273 K emits mostly in the infrared, so at oven temperature this small tail carries a large share of the signal. The table gives, with the nominal curves, the share of the signal of each channel that comes from above 700 nm. The oven and the flame then see different bands, and the oven calibration does not carry over to the flame.` },
+        { table: tailTable('en') },
+        { p: `The group’s oven photographs show this effect. With the nominal curves, K_R/K_G changes by ${k('oven_KRKG_drift')} between 800 and 1050 °C, and carried to a flame at 1800 K the uncorrected error in T is ${k('oven_dT_flame_top')}. The pylon colour matrix was off in those photographs, so the cause lies in the spectral response.` },
+        { p: 'The laboratory has no short-pass filter, and no other filter goes in front of the lens. The tail is calibrated with the oven. With three or more temperatures the tool fits one factor on the tail of ψ_R above 700 nm, computes K_j with that curve and shows the ratio test leaving one temperature out at a time. The calibration passes if K_R/K_G drifts less than 1 % at the temperature left out. The hardest test is leaving out the coldest one.' },
+        { p: `In the tool the correction is in stage 1a.7, under the ratio test, and it is on by default. With the group’s photographs the factor gives s_R = ${k('oven_tail_scale_R')} ${ckCond('oven_tail_scale_R', 'en')}${sk('oven_tail_scale_R')}, K_R/K_G changes by ${k('oven_tailcal_loo_KRKG')} at most at the temperature left out, and the ratio test carried to a flame at 1800 K drops from hundreds of kelvin to ${k('oven_tailcal_ratio_test_loo_dT')}. With other optics, a 700 nm short-pass filter in front of the lens would also solve the problem.` },
+        { p: 'So photograph the oven at three temperatures or more, up to the highest. If the test passes, report T with the residual bias the tool gives, which depends on the tail shape and is not subtracted. The blue channel fails the test and is left out of T and f_s. Write the tail factor and the test result in the log.' },
+      ] },
+      { id: 'foco', h: 'Focus and aperture', min: '5', blocks: [
+        { p: 'Focus on the flame, or on a needle placed on the burner axis, and tape the focus ring and the aperture ring. Leave them alone until the flame series is done. Changing the aperture invalidates the calibration, and refocusing changes it by a few per cent.' },
+      ] },
+      { id: 'pylon', h: 'Format and settings in pylon', min: '10', blocks: [
+        { p: 'The images must be linear, with no gamma, no white balance and no colour matrix, and with a fixed gain. Check these parameters in pylon Viewer before the first shot and again if anyone restarts the camera.' },
+        { table: { head: ['pylon parameter', 'Value'], rows: pylonRows } },
+        { p: 'Do not use RGB 8 or any other 8-bit format, which carry gamma and white balance. Check the offset with a dark frame. No pixel of the dark frame should be 0, and if many are, raise BlackLevel. Save the .pfs settings file in every folder.' },
+        { p: 'In pylon RGB the red and the blue of each 2 × 2 block come from a single mosaic site, half a pixel off the centre of the green on each axis. The tool groups 2 × 2 on the red phase and can move R and B to that centre, as with the Bayer mosaic. That centring comes switched off, because the direction of the shift is not confirmed with this camera. It assumes the Bayer RG pattern of the full sensor, so leave ReverseX, ReverseY and the offsets as the table says.' },
+        { p: 'Copy the files as they are. Do not open, rotate or save them again with another program. The September flame photographs were saved again by the Windows photo viewer, which left them rotated with respect to the sensor.' },
+      ] },
+      { id: 'exposicion', h: 'Exposure test on the flame', min: '5', blocks: [
+        { p: `Light the flame and take a series of 10 frames. Choose the t_exp at which the brightest frame keeps the red channel below 70 % of the scale, write it down and put the flame out. For a candle the calculation gives about ${k('texp_candle')}${sk('texp_candle')}. That t_exp sets the range the oven has to cover.` },
+      ] },
+      { id: 'horno', h: 'Oven', min: '10 to 15 min per temperature', blocks: [
+        { ul: [
+          'Wait until the thermocouple is stable, less than 2 K in five minutes, and write down its reading at the start and at the end of each series.',
+          'Go up in temperature, for example 800, 900, 1000 and 1050 °C, or whatever the oven allows.',
+          'At each temperature take 8 to 10 exposure times spread between 10 and 90 % of the scale of the brightest channel, with at least three between 50 and 70 %. None below 100 µs, where the shutter is no longer exact.',
+          'The highest temperatures must cover the flame t_exp.',
+          'For the blue channel also take longer exposures, with red saturated if needed. The fit is done channel by channel, so a saturated red only drops out of its own channel.',
+        ] },
+        { p: 'Exposure times of the group’s oven photographs. The example set on the data page holds five of those times per temperature.' },
+        { table: { head: ['Oven', 'Exposure time used'], rows: [['800 °C', '10 to 250 ms'], ['900 °C', '2 to 30 ms'], ['1000 °C', '0.5 to 8 ms'], ['1050 °C', '0.3 to 4 ms']] } },
+      ] },
+      { id: 'oscuros', h: 'Dark frames', min: '10', blocks: [
+        { p: 'With the lens cap on and the same gain, take dark frames at about five exposure times spanning the oven range, plus one at the exact flame t_exp. Repeat a series of dark frames at the end of the session. The flame dark frame can be replaced by a background frame taken with the flame out at the same t_exp, which also removes the room light.' },
+      ] },
+      { id: 'campo-plano', h: 'Flat field (optional)', min: '10', blocks: [
+        { p: 'Use an integrating sphere or a diffuser that fills the frame, with its dark frame, with the same focus, aperture, gain and format as the flame. Keep the brightest channel between 40 and 70 % of the scale. The flat field corrects vignetting, the drop of signal towards the edges of the frame. Without a flat field, the flame must sit in the region of the sensor where the oven aperture was.' },
+      ] },
+      { id: 'llama', h: 'Flame', min: '20', blocks: [
+        { p: `Take at least 10 frames per condition at the t_exp of the exposure test, to average out the flicker of the flame. If time and the USB stick allow, take more. The workshop’s synthetic flame needed ${k('n_frames_rec')} averaged frames to bring the noise in T down to 10 K along one row.` },
+        { p: 'Also take background images with the flame out and the same t_exp, in the fondo/ folder of each condition.' },
+      ] },
+      { id: 'regla', h: 'Ruler in the flame plane', min: '5', blocks: [
+        { p: 'With the flame out and the burner cold, place a ruler on the flame axis, in the plane that contains the axis and faces the camera. Light it with the room lights and use a longer t_exp, without touching focus or aperture. The marks used for measuring must be at least 10 mm apart. Save it as regla.tiff in the session folder. This image gives the millimetres per pixel.' },
+        { p: 'The ruler has sharp edges, and with it stage 3 of the tool tests the shift of R and B against the green. Focus well, keep it unsaturated and show marks in both directions. If the test says it helps, tick «Centre R and B» in stage 3. If it says no or does not decide, leave it off.' },
+      ] },
+      { id: 'nombres', h: 'File names and log', blocks: [
+        { p: 'The tool reads the oven temperature and the exposure time from the names, so nothing has to be typed by hand. The folder name <T>C/ holds the thermocouple temperature in °C and the file name <t_exp>exp.tiff the exposure time in microseconds. Create the folder before each series and set it as the destination in pylon. Folder names and the column names of registro.csv stay in Spanish, as in the tree and the template (horno is the oven, llama the flame, fondo the background, oscuro the dark frames, regla the ruler). The tool also accepts flame, background, dark, sphere and flat as folder names.' },
+        { pre: tree },
+        { p: 'If pylon saves several frames under its own names, leave them as they are inside a folder <t_exp>exp/ and the tool takes the t_exp from the folder.' },
+        { p: 'The log registro.csv has one row per series with the columns below. If the thermocouple temperature differs from the one in the folder name, the log value is used.' },
+        { table: { head: ['carpeta', 'T_termopar_C', 'texp_us', 'ganancia_dB', 'numero_f', 'hora', 'nota'], rows: [['horno/800C', '801', '20000', '0', '', '10:42', ''], ['', '', '', '', '', '', ''], ['', '', '', '', '', '', ''], ['', '', '', '', '', '', '']] } },
+      ] },
+      { id: 'revision', h: 'Quick check in the lab', min: '2 min per series', blocks: [
+        { p: 'After each series, load the folder into the quick check of the tool. Within seconds it shows for each channel the percentage of full scale, the saturated pixels and the dark pixels at 0, and whether the names are understood.' },
+        { ul: [
+          'If there are saturated pixels in the centre of the aperture or in the flame, shorten t_exp and repeat that shot.',
+          'If many dark pixels are 0, raise BlackLevel and repeat the dark frames.',
+          'If a name is not understood, fix the folder or the file before going on.',
+        ] },
+      ] },
+      { id: 'antes-de-irse', h: 'Before you leave', min: '10', blocks: [
+        { p: 'Run the full calibration in the tool before the oven is switched off. If one temperature fails it can still be repeated.' },
+        { ul: [
+          'Every oven folder, with its temperature in the name.',
+          'The dark frames for every t_exp, including the flame one.',
+          'The flame frames and their background.',
+          'regla.tiff.',
+          'One .pfs file per folder.',
+          'A complete registro.csv.',
+          'A copy on the USB stick, checked on your own computer.',
+        ] },
+      ] },
+    ];
+---
+<Base title={T.title + (es ? ' · Pirometría RGB' : ' · RGB pyrometry')} description={T.lede}>
+  <header class="page-head frame">
+    <p class="eyebrow"><a href={localized(WS, lang)}>{es ? 'Pirometría RGB' : 'RGB pyrometry'}</a> · Metrology in Fire Science · {es ? 'workshop en la' : 'workshop at'} Universidad Adolfo Ibáñez</p>
+    <h1>{T.title}</h1>
+    <p class="abstract">{T.lede}</p>
+    <WorkshopNav lang={lang} current="guide" />
+    {has.guidePdf[lang] && <p class="no-print pdf"><a class="btn" href={url(`${FILES}${GUIDE_PDF[lang]}`)}>{T.pdf}</a></p>}
+    <p class="addr meta">{T.address} <span class="url">{site}</span></p>
+  </header>
+
+  <section class="section frame keep">
+    <div class="row">
+      <h2 class="label row__label nonum">{T.plan}</h2>
+      <div class="prose">
+        <p>{T.planText}</p>
+        <p>{T.minimum}</p>
+        <ul>{T.minimumList.map((m) => <li set:html={tx(m)} />)}</ul>
+        <table class="fill">
+          <tbody>{T.fill.map((f) => <tr><th scope="row" set:html={tx(f)} /><td></td></tr>)}</tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  {steps.map((s) => (
+    <section class="section frame keep" id={s.id}>
+      <div class="row">
+        <h2 class="label row__label">{s.h}{s.min && <span class="dur"> · {s.min}{/^\d+$/.test(s.min) ? ` ${T.min}` : ''}</span>}</h2>
+        <div class="prose">
+          {s.blocks.map((b) =>
+            'p' in b ? <p set:html={tx(b.p)} />
+            : 'ul' in b ? <ul>{b.ul.map((x) => <li set:html={tx(x)} />)}</ul>
+            : 'ol' in b ? <ol>{b.ol.map((x) => <li set:html={tx(x)} />)}</ol>
+            : 'pre' in b ? <pre class="tree">{b.pre}</pre>
+            : (
+              <div class="tw">
+                <table>
+                  <thead><tr>{b.table.head.map((h) => <th scope="col">{h}</th>)}</tr></thead>
+                  <tbody>{b.table.rows.map((r) => <tr>{r.map((c) => <td>{c || ' '}</td>)}</tr>)}</tbody>
+                </table>
+              </div>
+            )
+          )}
+          {s.id === 'nombres' && <p class="no-print"><a href={url(`${FILES}${LOG_TEMPLATE}`)} download>{es ? 'Plantilla del registro (CSV)' : 'Log template (CSV)'}</a></p>}
+        </div>
+      </div>
+    </section>
+  ))}
+</Base>
+
+<style>
+  /* the header line is not split across lines with a hyphen, on screen or in the PDF (GB3r3-estudiante-21) */
+  .page-head .eyebrow { hyphens: manual; -webkit-hyphens: manual; }
+  .dur { font-weight: 400; font-style: italic; color: var(--ink-3); font-size: 0.8em; }
+  .pdf { margin-top: var(--s-3); text-align: center; }
+  .addr { text-align: center; margin-top: var(--s-3); }
+  .addr .url { font-family: var(--font-mono); color: var(--ink); }
+  .tw { overflow-x: auto; }
+  .tw table td, .tw table th { padding: 0.3em 0.6em 0.3em 0; vertical-align: top; text-align: left; }
+  .tw table th { border-bottom: 1px solid var(--ink); font-weight: 600; }
+  .tw table tbody tr + tr td { border-top: 1px solid var(--rule); }
+  .tw table td:first-child { white-space: nowrap; }
+  .tree { font-family: var(--font-mono); font-size: var(--step--1); line-height: 1.45; overflow-x: auto; padding: var(--s-3) 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .fill { margin-top: var(--s-4); }
+  .fill th { text-align: left; font-weight: 400; width: 45%; padding: 0.55em 0.6em 0.55em 0; }
+  .fill td { border-bottom: 1px solid var(--ink-3); }
+  .fill tr + tr th { border-top: 0; }
+  @media print {
+    .prose li, .prose p { break-inside: avoid; }
+    .tree, .tw table, .fill { break-inside: avoid; }
+    .row__label { break-after: avoid; }
+    .page-head { padding-top: 0; }
+    .addr .url { font-size: 1.15em; }
+  }
+</style>

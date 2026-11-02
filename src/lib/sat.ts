@@ -12,7 +12,7 @@
  * Geometry: n annuli of width 1/n (radius normalised by R); ray i passes at offset
  * y_i = i/n, as in `chordMatrix`.
  */
-import { zeros, gram, cholSolve, type Mat } from './linalg.ts';
+import { zeros, gram, cholSolve, cholFactor, cholSolveFactored, type Mat } from './linalg.ts';
 import { chordMatrix } from './abel.ts';
 
 /**
@@ -118,4 +118,43 @@ export function satSolve(A: Mat, g: ArrayLike<number>, B: Mat, lambda: number): 
 export function sootEmission(fs: number, T: number, lambda = 660e-9): number {
   const c2 = 1.438777e-2;
   return (fs / lambda) / (lambda ** 5 * (Math.exp(c2 / (lambda * T)) - 1));
+}
+
+// ---------------------------------------------------------------------------------------------
+// Reusable SAT factorisation (workshop RGB pyrometry tool). `satSolve` above is unchanged.
+
+export interface SatFactor { R: Float64Array; M: number; G: Mat; B: Mat; s: number }
+
+/**
+ * Factor of the SAT normal matrix (A B)ᵀ(A B) + λ s D₂ᵀD₂ (+ the same 1e-12 tr jitter as `satSolve`),
+ * computed once per λ and reused for every row and channel. For the workshop A is
+ * `chordMatrixHalf(n, dr)` with dr in metres and κ = 0 (no trapping), so f comes out per metre.
+ */
+export function satFactor(A: Mat, B: Mat, lambda: number): SatFactor {
+  const G = mul(A, B);
+  const S = gram(G);
+  const M = B.m;
+  const DtD = zeros(M, M);
+  for (let r = 0; r + 2 < M; r++) {
+    const idx = [r, r + 1, r + 2], w = [1, -2, 1];
+    for (let a = 0; a < 3; a++) for (let b = 0; b < 3; b++) DtD.a[idx[a] * M + idx[b]] += w[a] * w[b];
+  }
+  let tg = 0, td = 0;
+  for (let q = 0; q < M; q++) { tg += S.a[q * M + q]; td += DtD.a[q * M + q]; }
+  const s = (lambda * tg) / (td || 1);
+  for (let q = 0; q < M * M; q++) S.a[q] += s * DtD.a[q] + (q % (M + 1) === 0 ? 1e-12 * tg : 0);
+  const R = cholFactor(S);
+  if (!R) throw new Error('sat_not_spd');
+  return { R, M, G, B, s };
+}
+
+/** f = B c with c from the factor, for one projection g (same arithmetic as `satSolve`). */
+export function satApply(F: SatFactor, g: ArrayLike<number>): Float64Array {
+  const { M, G, B } = F;
+  const rhs = new Float64Array(M);
+  for (let q = 0; q < M; q++) { let t = 0; for (let i = 0; i < G.n; i++) t += G.a[i * M + q] * g[i]; rhs[q] = t; }
+  const c = cholSolveFactored(F.R, M, rhs);
+  const f = new Float64Array(B.n);
+  for (let i = 0; i < B.n; i++) { let t = 0; for (let q = 0; q < M; q++) t += B.a[i * M + q] * c[q]; f[i] = t; }
+  return f;
 }

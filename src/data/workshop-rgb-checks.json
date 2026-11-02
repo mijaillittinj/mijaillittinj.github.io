@@ -1,0 +1,481 @@
+{
+ "_generated_by": "manim/tools/make_web_checks.py from manim/data/checks.json",
+ "tail700_frac": {
+  "es": "20, 17 y 55 % a 1273 K, 6, 4 y 15 % a 1800 K",
+  "en": "20, 17 and 55 % at 1273 K, 6, 4 and 15 % at 1800 K",
+  "unidad": null,
+  "esquema": false
+ },
+ "tail700_R_1273": {
+  "es": "20 %",
+  "en": "20 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "tail700_G_1273": {
+  "es": "17 %",
+  "en": "17 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "tail700_B_1273": {
+  "es": "55 %",
+  "en": "55 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "tail700_R_1800": {
+  "es": "6 %",
+  "en": "6 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "tail700_G_1800": {
+  "es": "4 %",
+  "en": "4 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "tail700_B_1800": {
+  "es": "15 %",
+  "en": "15 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "sp700_dT_flame": {
+  "es": "2 K",
+  "en": "2 K",
+  "unidad": "K",
+  "esquema": true
+ },
+ "sp700_dT_flame_OD2": {
+  "es": "5 K",
+  "en": "5 K",
+  "unidad": "K",
+  "esquema": true
+ },
+ "sp700_loss_R": {
+  "es": "5 %",
+  "en": "5 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "sp700_loss_G": {
+  "es": "3 %",
+  "en": "3 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "sp700_loss_B": {
+  "es": "9 %",
+  "en": "9 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "sp700_oven_drift": {
+  "es": "0,1 %",
+  "en": "0.1 %",
+  "unidad": "%",
+  "esquema": true
+ },
+ "oven_KRKG_drift": {
+  "es": "27 %",
+  "en": "27 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "oven_dT_flame_conv": {
+  "es": "−180 a −200 K si se calibra a 1323 K, y −320 a −340 K con la media de las cuatro temperaturas",
+  "en": "−180 to −200 K when calibrating at 1323 K, and −320 to −340 K with the mean of the four temperatures",
+  "unidad": "K",
+  "esquema": false
+ },
+ "oven_dT_flame_nominal": {
+  "es": "−180 a −200 K",
+  "en": "−180 to −200 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "oven_dT_flame_model": {
+  "es": "6 K",
+  "en": "6 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "oven_K_sens_5K": {
+  "es": "6,6 %",
+  "en": "6.6 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "oven_KRKG_sens_5K": {
+  "es": "0,35 %",
+  "en": "0.35 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "dT_flame_oven5K": {
+  "es": "6,1 K",
+  "en": "6.1 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "oven_ratio_test_dT": {
+  "es": "−177 K",
+  "en": "−177 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "oven_ratio_test_top_dT": {
+  "es": "+346 K a 800 °C, +154 K a 900 °C, +36 K a 1000 °C",
+  "en": "+346 K at 800 °C, +154 K at 900 °C, +36 K at 1000 °C",
+  "unidad": null,
+  "esquema": false
+ },
+ "oven_T_unc": {
+  "es": "5 K",
+  "en": "5 K",
+  "unidad": "K",
+  "esquema": true
+ },
+ "oven_T_min": {
+  "es": "1073 K",
+  "en": "1073 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "oven_T_max": {
+  "es": "1323 K",
+  "en": "1323 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "ir_cut50_nm": {
+  "es": "645 ± 10 nm",
+  "en": "645 ± 10 nm",
+  "unidad": "nm",
+  "esquema": false
+ },
+ "lambda_ref": {
+  "es": "550 nm",
+  "en": "550 nm",
+  "unidad": "nm",
+  "esquema": false
+ },
+ "raw_ceiling": {
+  "es": "65 520 DN",
+  "en": "65 520 DN",
+  "unidad": "DN",
+  "esquema": false
+ },
+ "raw_bits": {
+  "es": "12 bits",
+  "en": "12 bits",
+  "unidad": "bits",
+  "esquema": false
+ },
+ "dT_KRKG_5pct": {
+  "es": "85 K",
+  "en": "85 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "dT_EGER_10pct": {
+  "es": "175 K",
+  "en": "175 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "fs_from_EGER": {
+  "es": "−68 % o +287 %",
+  "en": "−68 % or +287 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "dT_Em_const": {
+  "es": "+61 K",
+  "en": "+61 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "fs_Em20_abs": {
+  "es": "17 %",
+  "en": "17 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "fs_Em_law_vs_F26": {
+  "es": "35 %",
+  "en": "35 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "dT_no_lambda": {
+  "es": "−40 K",
+  "en": "−40 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "dT_no_lambda_nocal": {
+  "es": "−124 K",
+  "en": "−124 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "dT_basis_after_oven": {
+  "es": "+43 K",
+  "en": "+43 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "dT_cut": {
+  "es": "168 K",
+  "en": "168 K",
+  "unidad": "K",
+  "esquema": true
+ },
+ "cof_dT_selfabs": {
+  "es": "−10 K",
+  "en": "−10 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "cof_dfs_att_only": {
+  "es": "−8 %",
+  "en": "−8 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "cof_dfs_selfabs": {
+  "es": "+0,1 %",
+  "en": "+0.1 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "flicker_dT": {
+  "es": "+44 K",
+  "en": "+44 K",
+  "unidad": "K",
+  "esquema": true
+ },
+ "dT_los_ratio": {
+  "es": "+147 K",
+  "en": "+147 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "dT_abel_per_channel": {
+  "es": "−0,4 K",
+  "en": "−0.4 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "abel_center_halfpx": {
+  "es": "5 %",
+  "en": "5 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "fs_err_1pct_T": {
+  "es": "12 %",
+  "en": "12 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "wien_err_ratio_RG": {
+  "es": "0,28 × 10⁻⁴",
+  "en": "0.28 × 10⁻⁴",
+  "unidad": null,
+  "esquema": false
+ },
+ "sens_RG_per100K": {
+  "es": "−5,7 %",
+  "en": "−5.7 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "ratio_RG_1800": {
+  "es": "1,360",
+  "en": "1.360",
+  "unidad": null,
+  "esquema": false
+ },
+ "Em_650": {
+  "es": "0,297",
+  "en": "0.297",
+  "unidad": null,
+  "esquema": false
+ },
+ "Em_F26": {
+  "es": "0,4 ± 0,1",
+  "en": "0.4 ± 0.1",
+  "unidad": null,
+  "esquema": false
+ },
+ "chain_T_rms": {
+  "es": "28 K",
+  "en": "28 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "chain_fs_rms": {
+  "es": "13 %",
+  "en": "13 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "chain_T_tol": {
+  "es": "50 K",
+  "en": "50 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "chain_fs_tol": {
+  "es": "25 %",
+  "en": "25 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "chain_method": {
+  "es": "Tikhonov, esquina de la curva L",
+  "en": "Tikhonov, L-curve corner",
+  "unidad": null,
+  "esquema": false
+ },
+ "n_frames_rec": {
+  "es": "128",
+  "en": "128",
+  "unidad": null,
+  "esquema": false
+ },
+ "chain_T_rms_N4": {
+  "es": "61 K",
+  "en": "61 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "chain_fs_rms_N4": {
+  "es": "112 %",
+  "en": "112 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "chain_texp_us": {
+  "es": "208 µs",
+  "en": "208 µs",
+  "unidad": "µs",
+  "esquema": false
+ },
+ "texp_candle": {
+  "es": "220 µs",
+  "en": "220 µs",
+  "unidad": "µs",
+  "esquema": true
+ },
+ "mask_thr_pct": {
+  "es": "2 %",
+  "en": "2 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "annabel_long_err": {
+  "es": "3 a 5 %",
+  "en": "3 to 5 %",
+  "unidad": null,
+  "esquema": false
+ },
+ "oven_tail_scale_R": {
+  "es": "0,12 ± 0,02",
+  "en": "0.12 ± 0.02",
+  "unidad": null,
+  "esquema": true,
+  "cond_es": "con ψ_G nominal",
+  "cond_en": "with nominal ψ_G"
+ },
+ "oven_tailcal_KRKG": {
+  "es": "1,0458",
+  "en": "1.0458",
+  "unidad": null,
+  "esquema": false
+ },
+ "oven_tailcal_drift": {
+  "es": "−0,3 %",
+  "en": "−0.3 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "oven_tailcal_loo_KRKG": {
+  "es": "0,4 %",
+  "en": "0.4 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "oven_tailcal_ratio_test_loo_dT": {
+  "es": "6 K",
+  "en": "6 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "oven_tailcal_dT_flame": {
+  "es": "de −31 a +49 K",
+  "en": "−31 to +49 K",
+  "unidad": "K",
+  "esquema": true,
+  "cond_es": "según la forma de la cola, sin dato para elegirla; termopar ±5 K supuesto",
+  "cond_en": "depending on the tail shape, which the oven cannot tell; thermocouple ±5 K assumed"
+ },
+ "oven_tailcal_dT_flame_param": {
+  "es": "9 K",
+  "en": "9 K",
+  "unidad": "K",
+  "esquema": true
+ },
+ "oven_tailcal_dT_flame_G": {
+  "es": "unos 12 K",
+  "en": "about 12 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "oven_tailcal_KR": {
+  "es": "0,468",
+  "en": "0.468",
+  "unidad": "10⁶ DN s⁻¹ W⁻¹ m² sr",
+  "esquema": false
+ },
+ "oven_tailcal_loo_resid": {
+  "es": "0,3 %",
+  "en": "0.3 %",
+  "unidad": "%",
+  "esquema": false
+ },
+ "oven_tailcal_loo_dT": {
+  "es": "5 K",
+  "en": "5 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "oven_tailcal_ratio_test_dT": {
+  "es": "7 K",
+  "en": "7 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "oven_dT_flame_top": {
+  "es": "−180 a −200 K",
+  "en": "−180 to −200 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "oven_dT_flame_top_abs": {
+  "es": "unos 180 a 200 K",
+  "en": "about 180 to 200 K",
+  "unidad": "K",
+  "esquema": false
+ },
+ "fs_Em20_both": {
+  "es": "−17 % o +25 %",
+  "en": "−17 % or +25 %",
+  "unidad": "%",
+  "esquema": false
+ }
+}

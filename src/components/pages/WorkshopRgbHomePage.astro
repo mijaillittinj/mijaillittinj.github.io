@@ -1,0 +1,201 @@
+---
+/**
+ * Overview of the RGB pyrometry workshop (Metrology in Fire Science, Universidad Adolfo Ibáñez).
+ * Spec: manim/WEB_SPEC.md §3.1. Spanish is the students' language, English is a faithful translation.
+ */
+import Base from '../../layouts/Base.astro';
+import WorkshopNav from '../workshop-rgb/WorkshopNav.astro';
+import { url, localized } from '../../i18n/utils';
+import type { Lang } from '../../i18n/ui';
+import { WS, FILES, GUIDE_PDF, LOG_TEMPLATE, has, offlineCopy as offlineCopyOf, deckPdf, deckHtml, tx } from '../../data/workshop-rgb';
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const es = lang === 'es';
+const offlineCopy = offlineCopyOf(lang);
+
+// presentation folders: Spanish in presentacion/, English in presentacion/en/
+const deck = es
+  ? { dark: 'presentacion/', light: 'presentacion/sala/', exists: has.presentation, other: 'presentacion/en/', otherExists: has.presentationEn }
+  : { dark: 'presentacion/en/', light: 'presentacion/en/sala/', exists: has.presentationEn, other: 'presentacion/', otherExists: has.presentation };
+const pdfDark = deck.exists ? deckPdf(deck.dark) : undefined;
+const pdfLight = deck.exists ? deckPdf(deck.light) : undefined;
+const lightDeck = deck.exists && deckHtml(deck.light);
+
+const T = es
+  ? {
+      title: 'Pirometría RGB de llamas con hollín',
+      eyebrow: 'Docencia · Metrology in Fire Science · Universidad Adolfo Ibáñez · 2026',
+      abstract: 'En este workshop ustedes miden la temperatura T(r, z) y la fracción de volumen de hollín (soot volume fraction) f_s(r, z) de una llama axisimétrica con una cámara a color. La cámara se calibra con un horno de cuerpo negro de temperatura conocida. Las imágenes de la llama se invierten con la transformada de Abel canal por canal, la razón entre el rojo y el verde (two-color pyrometry) da la temperatura y la emisión de un canal da el hollín. Todo el procesamiento corre en el navegador de su computador. El workshop se dicta en la Universidad Adolfo Ibáñez, dentro de la serie Metrology in Fire Science.',
+      program: 'Programa',
+      steps: [
+        ['Teoría.', 'Una presentación de unos 50 minutos sobre la emisión del hollín, el modelo de la cámara, la inversión de Abel, la temperatura por razón de canales, la fracción de hollín y la calibración, con una prueba completa sobre una llama sintética.'],
+        ['Laboratorio.', 'La adquisición con la guía de laboratorio. Calibración con el horno, imágenes oscuras, cuadros de la llama y una imagen de regla.'],
+        ['Procesamiento.', 'La herramienta del workshop, con sus propias imágenes o con los datos de ejemplo, hasta los mapas de T y f_s.'],
+      ],
+      bring: 'Qué traer',
+      bringList: [
+        'Un computador portátil con Chrome, Edge, Firefox o Safari en una versión reciente, y su cargador. Un teléfono no sirve para la herramienta.',
+        'Un pendrive de 8 GB o más para copiar las imágenes desde el computador de la cámara. Cada imagen pesa unos 14 MB y una sesión deja cerca de 100 imágenes, unos 1,5 GB. Se copian tal cual, sin comprimir ni abrir con otro programa.',
+        'Unos 2 GB de memoria RAM libre, con otras pestañas y programas cerrados.',
+      ],
+      before: 'Antes del día',
+      beforeList: [
+        'Abrir la herramienta y pasar la comprobación del navegador.',
+        'Bajar al menos un juego de datos de ejemplo.',
+        'Correr una vez el juego sintético completo, de la calibración a los mapas. La página de datos dice con qué se calibra cada juego y hasta dónde llega.',
+      ],
+      beforeOffline: 'Bajar la copia sin conexión de la herramienta, que funciona sin red si la del laboratorio falla.',
+      material: 'Material',
+      deckLabel: 'Presentación',
+      deckLinks: ['fondo oscuro', 'fondo claro para sala', 'PDF', 'PDF para sala'],
+      deckOther: 'Versión en inglés',
+      deckPending: 'La presentación se publicará en esta página, en español y en inglés, con fondo oscuro, con fondo claro para sala y en PDF.',
+      guide: 'Guía de laboratorio',
+      guidePdf: 'PDF para imprimir',
+      tool: 'Herramienta de procesamiento',
+      toolPending: 'La herramienta se publicará en esta página antes del laboratorio.',
+      offline: 'Copia sin conexión de la herramienta',
+      data: 'Datos de ejemplo',
+      eqs: 'Ecuaciones y referencias',
+      log: 'Plantilla del registro de adquisición (CSV)',
+      privacy: 'Privacidad',
+      privacyText: 'Las imágenes no salen de su computador. La herramienta lee los archivos en el navegador, hace los cálculos ahí mismo y no envía nada a ningún servidor. Las páginas del workshop no usan cookies ni estadísticas de visitas.',
+      cite: 'La inversión con red neuronal de la herramienta sigue el método ANNAbel (Escudero et al., Proc. Combust. Inst. 40 (2024) 105493). La inversión con splines es SAT (Littin et al., Fuel 374 (2024) 132365).',
+      back: 'Docencia',
+    }
+  : {
+      title: 'RGB pyrometry of sooting flames',
+      eyebrow: 'Teaching · Metrology in Fire Science · Universidad Adolfo Ibáñez · 2026',
+      abstract: 'In this workshop you measure the temperature T(r, z) and the soot volume fraction f_s(r, z) of an axisymmetric flame with a colour camera. The camera is calibrated with a blackbody oven of known temperature. The flame images are inverted with the Abel transform channel by channel, the ratio of red to green gives the temperature and the emission of one channel gives the soot. All the processing runs in the browser on your own computer. The workshop takes place at Universidad Adolfo Ibáñez, within the Metrology in Fire Science series.',
+      program: 'Programme',
+      steps: [
+        ['Theory.', 'A presentation of about 50 minutes on soot emission, the camera model, Abel inversion, temperature from the channel ratio, soot volume fraction and calibration, with a complete test on a synthetic flame.'],
+        ['Laboratory.', 'Acquisition with the lab guide. Calibration with the oven, dark frames, flame frames and an image of a ruler.'],
+        ['Processing.', 'The workshop tool, with your own images or with the example data, up to the maps of T and f_s.'],
+      ],
+      bring: 'What to bring',
+      bringList: [
+        'A laptop with a recent version of Chrome, Edge, Firefox or Safari, and its charger. A phone will not do for the tool.',
+        'A USB stick of 8 GB or more to copy the images from the camera computer. Each image is about 14 MB and a session leaves close to 100 images, about 1.5 GB. They are copied as they are, without compressing them or opening them in another program.',
+        'About 2 GB of free RAM, with other tabs and programs closed.',
+      ],
+      before: 'Before the day',
+      beforeList: [
+        'Open the tool and pass the browser check.',
+        'Download at least one example data set.',
+        'Run the synthetic set once from calibration to maps. The data page says what each set is calibrated with and how far it goes.',
+      ],
+      beforeOffline: 'Download the offline copy of the tool, which keeps working if the lab network fails.',
+      material: 'Material',
+      deckLabel: 'Presentation',
+      deckLinks: ['dark background', 'light background for the room', 'PDF', 'PDF for the room'],
+      deckOther: 'Spanish version',
+      deckPending: 'The presentation will be published on this page, in Spanish and in English, with a dark background, with a light background for the room and as PDF.',
+      guide: 'Lab guide',
+      guidePdf: 'PDF for printing',
+      tool: 'Processing tool',
+      toolPending: 'The tool will be published on this page before the lab session.',
+      offline: 'Offline copy of the tool',
+      data: 'Example data',
+      eqs: 'Equations and references',
+      log: 'Acquisition log template (CSV)',
+      privacy: 'Privacy',
+      privacyText: 'The images never leave your computer. The tool reads the files in the browser, does the computation there and sends nothing to any server. The workshop pages use no cookies and no visitor statistics.',
+      cite: 'The neural-network inversion of the tool follows the ANNAbel method (Escudero et al., Proc. Combust. Inst. 40 (2024) 105493). The spline inversion is SAT (Littin et al., Fuel 374 (2024) 132365).',
+      back: 'Teaching',
+    };
+
+const guidePdf = has.guidePdf[lang] ? `${FILES}${GUIDE_PDF[lang]}` : undefined;
+const jsonld = [{
+  '@context': 'https://schema.org', '@type': 'Course',
+  name: T.title, inLanguage: lang, description: T.abstract,
+  provider: { '@type': 'CollegeOrUniversity', name: 'Universidad Adolfo Ibáñez' },
+  instructor: { '@type': 'Person', name: 'Mijail Littin' },
+}];
+---
+<Base title={T.title} description={T.abstract} jsonld={jsonld}>
+  <header class="page-head frame">
+    <p class="eyebrow"><a href={localized('/teaching/', lang)}>{T.back}</a> · Metrology in Fire Science · {lang === 'es' ? 'workshop en la' : 'workshop at'} Universidad Adolfo Ibáñez · 2026</p>
+    <h1>{T.title}</h1>
+    <p class="abstract" set:html={tx(T.abstract)} />
+    <WorkshopNav lang={lang} current="home" />
+  </header>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label">{T.program}</h2>
+      <ol class="prose steps">
+        {T.steps.map(([h, d]) => <li><strong>{h}</strong> <span set:html={tx(d)} /></li>)}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label">{T.bring}</h2>
+      <div class="prose">
+        <ul>{T.bringList.map((b) => <li>{b}</li>)}</ul>
+        <h3>{T.before}</h3>
+        <ol>
+          {T.beforeList.map((b) => <li>{b}</li>)}
+          {offlineCopy && <li>{T.beforeOffline}</li>}
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label">{T.material}</h2>
+      <ul class="material">
+        <li>
+          <span class="what">{T.deckLabel}</span>
+          {deck.exists ? (
+            <span>
+              <a href={url(`${WS}${deck.dark}`)}>{T.deckLinks[0]}</a>
+              {lightDeck && <> · <a href={url(`${WS}${deck.light}`)}>{T.deckLinks[1]}</a></>}
+              {pdfDark && <> · <a href={url(`${WS}${deck.dark}${pdfDark}`)}>{T.deckLinks[2]}</a></>}
+              {pdfLight && <> · <a href={url(`${WS}${deck.light}${pdfLight}`)}>{T.deckLinks[3]}</a></>}
+              {deck.otherExists && <> · <a href={url(`${WS}${deck.other}`)}>{T.deckOther}</a></>}
+            </span>
+          ) : <span class="pending">{T.deckPending}</span>}
+        </li>
+        <li>
+          <span class="what">{T.guide}</span>
+          <span><a href={localized(`${WS}lab-guide/`, lang)}>{es ? 'página' : 'web page'}</a>{guidePdf && <> · <a href={url(guidePdf)}>{T.guidePdf}</a></>}</span>
+        </li>
+        <li>
+          <span class="what">{T.tool}</span>
+          {has.tool ? <span><a href={localized(`${WS}tool/`, lang)}>{es ? 'abrir la herramienta' : 'open the tool'}</a></span> : <span class="pending">{T.toolPending}</span>}
+        </li>
+        {offlineCopy && (
+          <li><span class="what">{T.offline}</span><span><a href={url(`${FILES}${offlineCopy}`)} download>{offlineCopy}</a></span></li>
+        )}
+        <li><span class="what">{T.data}</span><span><a href={localized(`${WS}data/`, lang)}>{es ? 'tres juegos para descargar' : 'three sets to download'}</a></span></li>
+        <li><span class="what">{T.eqs}</span><span><a href={localized(`${WS}equations/`, lang)}>{es ? 'cadena de medición y presupuesto de error' : 'measurement chain and error budget'}</a></span></li>
+        <li><span class="what">{T.log}</span><span><a href={url(`${FILES}${LOG_TEMPLATE}`)} download>{LOG_TEMPLATE}</a></span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section frame">
+    <div class="row">
+      <h2 class="label row__label">{T.privacy}</h2>
+      <div class="prose">
+        <p>{T.privacyText}</p>
+        <p class="meta">{T.cite}</p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .steps { padding-left: 1.6em; }
+  .steps li + li { margin-top: 0.5em; }
+  .material { list-style: none; padding: 0; margin: 0; }
+  .material li { display: grid; grid-template-columns: minmax(0, 15rem) minmax(0, 1fr); gap: 0.2rem var(--s-4); padding-block: var(--s-2); border-bottom: 1px solid var(--rule); }
+  .material li:first-child { border-top: 1px solid var(--rule); }
+  .material .what { font-variant: small-caps; font-family: var(--font-caps); text-transform: lowercase; font-size: 1.05em; }
+  .material .pending { font-style: italic; color: var(--ink-3); }
+  @media (max-width: 34rem) { .material li { grid-template-columns: 1fr; } }
+</style>

@@ -12,7 +12,7 @@
  * the same smoothness idea as the spline-based Abel transform (SAT, Littin et al.,
  * Fuel 2024).
  */
-import { zeros, matvec, gram, tvec, cholSolve, solveUpper, type Mat } from './linalg.ts';
+import { zeros, matvec, gram, tvec, cholSolve, solveUpper, cholFactor, cholSolveFactored, type Mat } from './linalg.ts';
 
 export function chordMatrix(n: number, R = 1): Mat {
   const dr = R / n;
@@ -100,4 +100,92 @@ export function profile(kind: ProfileKind, r: number, a: number, b: number): num
       return 0.35 * core + 0.65 * Math.exp(-((r - edge) ** 2) / (2 * 0.06 ** 2));
     }
   }
+}
+
+// ---------------------------------------------------------------------------------------------
+// ANNAbel ray convention and reusable Tikhonov factorisation (workshop RGB pyrometry tool).
+// Added without changing anything above: `chordMatrix`, `tikhonov` and their users are untouched.
+
+/**
+ * ANNAbel convention: ring j covers [j·dr, (j+1)·dr), ray i at y = (i + ½)·dr, axis between columns.
+ * Same matrix as annabel_app/core/abel.py op_matrix(n, dr) (0-based here, same arithmetic order).
+ * Length unit of dr, so P = L f with f per unit length of dr.
+ */
+export function chordMatrixHalf(n: number, dr: number): Mat {
+  const L = zeros(n, n);
+  for (let i = 0; i < n; i++) {
+    const h = i + 0.5, h2 = h * h;
+    for (let j = i; j < n; j++) {
+      const outer = Math.sqrt((j + 1) * (j + 1) - h2);
+      const inner = j > i ? Math.sqrt(j * j - h2) : 0;
+      L.a[i * n + j] = 2 * ((outer - inner) * dr);
+    }
+  }
+  return L;
+}
+
+/**
+ * Regulariser of a Tikhonov factor.
+ *  'site'    the existing `secondDiffGram` and λ = λ_rel · tr(LᵀL)/n, exactly what `tikhonov` does.
+ *  'gamma2'  the second difference Γ of the workshop presentation (manim/tools/prepare_data.py gamma2):
+ *            row 0 is −2 f₀ + 2 f₁ (f₋₁ = f₁, zero slope on the axis), interior rows f_{k−1} − 2 f_k + f_{k+1},
+ *            last row f_{N−2} − 2 f_{N−1} (f_N = 0 outside the edge), and α = λ_rel · tr(LᵀL)/tr(ΓᵀΓ).
+ */
+export type TikhonovReg = 'site' | 'gamma2';
+
+/** ΓᵀΓ of the 'gamma2' regulariser. */
+export function gamma2Gram(n: number): Mat {
+  const Gm = zeros(n, n);
+  for (let i = 0; i < n; i++) {
+    if (i === 0) { Gm.a[0] = -2; if (n > 1) Gm.a[1] = 2; }
+    else { Gm.a[i * n + i - 1] = 1; Gm.a[i * n + i] = -2; if (i + 1 < n) Gm.a[i * n + i + 1] = 1; }
+  }
+  return gram(Gm);
+}
+
+export function regGram(n: number, reg: TikhonovReg = 'site'): Mat {
+  return reg === 'gamma2' ? gamma2Gram(n) : secondDiffGram(n);
+}
+
+export interface TikhonovFactor { R: Float64Array; n: number; lam: number; reg: TikhonovReg; lambdaRel: number }
+
+/** Cholesky factor of LᵀL + λ s DᵀD, computed once per λ and reused for every row and channel. */
+export function tikhonovFactor(L: Mat, lambdaRel: number, reg: TikhonovReg = 'site'): TikhonovFactor {
+  const n = L.m;
+  const A = gram(L);
+  let tr = 0;
+  for (let i = 0; i < n; i++) tr += A.a[i * n + i];
+  const D = regGram(n, reg);
+  let scale = n;
+  if (reg === 'gamma2') { scale = 0; for (let i = 0; i < n; i++) scale += D.a[i * n + i]; }
+  const lam = lambdaRel * (tr / scale);
+  for (let i = 0; i < n * n; i++) A.a[i] += lam * D.a[i];
+  const R = cholFactor(A);
+  if (!R) throw new Error('tikhonov_not_spd');
+  return { R, n, lam, reg, lambdaRel };
+}
+
+export function tikhonovApply(F: { R: Float64Array; n: number }, L: Mat, p: ArrayLike<number>): Float64Array {
+  return cholSolveFactored(F.R, F.n, tvec(L, p));
+}
+
+/**
+ * L-curve over several rows: for each λ, res = √(Σ_rows ‖L f − p‖²) and rough = √(Σ_rows fᵀ DᵀD f),
+ * with the same D as the factor. One factorisation per λ, reused for every row.
+ */
+export function lcurve(L: Mat, P: Float64Array[], lambdas: number[], reg: TikhonovReg = 'site'): { lambda: number; res: number; rough: number }[] {
+  const n = L.m;
+  const D = regGram(n, reg);
+  return lambdas.map((lambda) => {
+    const F = tikhonovFactor(L, lambda, reg);
+    let res = 0, rough = 0;
+    for (const p of P) {
+      const f = tikhonovApply(F, L, p);
+      const q = matvec(L, f);
+      for (let i = 0; i < q.length; i++) res += (q[i] - p[i]) ** 2;
+      const Df = matvec(D, f);
+      for (let i = 0; i < n; i++) rough += f[i] * Df[i];
+    }
+    return { lambda, res: Math.sqrt(res), rough: Math.sqrt(Math.max(rough, 0)) };
+  });
 }
