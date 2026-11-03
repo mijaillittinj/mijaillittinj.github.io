@@ -141,7 +141,7 @@ const steps: Step[] = es
         { table: { head: ['Parámetro de pylon', 'Valor'], rows: pylonRows } },
         { p: 'No usen RGB 8 ni otros formatos de 8 bits, que traen gamma y balance. Comprueben el pedestal con un oscuro. Ningún píxel del oscuro debe valer 0, y si muchos valen 0 suban BlackLevel. Guarden el archivo de ajustes .pfs en cada carpeta.' },
         { p: 'En el RGB de pylon el rojo y el azul de cada bloque de 2 × 2 vienen de un solo sitio del mosaico, a medio píxel del centro del verde en cada eje. La herramienta agrupa 2 × 2 en la fase del rojo y puede correr R y B a ese centro, igual que con el mosaico Bayer. Ese centrado viene apagado, porque el sentido del corrimiento no está confirmado con esta cámara. Supone el patrón Bayer RG del sensor completo, así que dejen ReverseX, ReverseY y los desplazamientos como dice la tabla.' },
-        { p: 'Copien los archivos tal cual. No los abran, giren ni guarden de nuevo con otro programa. Las fotos de la llama de septiembre se guardaron de nuevo con el visor de fotos de Windows, que las dejó giradas respecto del sensor.' },
+        { p: 'Copien los archivos tal cual. No los abran, giren ni guarden de nuevo con otro programa, porque otro programa puede girarlos o cambiar su formato.' },
       ] },
       { id: 'exposicion', h: 'Prueba de exposición con la llama', min: '5', blocks: [
         { p: `Enciendan la llama y tomen una serie de 10 cuadros. Elijan el t_exp con que el cuadro más brillante deja el canal rojo bajo 70 % de la escala, anótenlo y apaguen la llama. Para una vela el cálculo da unos ${k('texp_candle')}${sk('texp_candle')}. Ese t_exp fija el rango que el horno debe cubrir.` },
@@ -235,7 +235,7 @@ const steps: Step[] = es
         { table: { head: ['pylon parameter', 'Value'], rows: pylonRows } },
         { p: 'Do not use RGB 8 or any other 8-bit format, which carry gamma and white balance. Check the offset with a dark frame. No pixel of the dark frame should be 0, and if many are, raise BlackLevel. Save the .pfs settings file in every folder.' },
         { p: 'In pylon RGB the red and the blue of each 2 × 2 block come from a single mosaic site, half a pixel off the centre of the green on each axis. The tool groups 2 × 2 on the red phase and can move R and B to that centre, as with the Bayer mosaic. That centring comes switched off, because the direction of the shift is not confirmed with this camera. It assumes the Bayer RG pattern of the full sensor, so leave ReverseX, ReverseY and the offsets as the table says.' },
-        { p: 'Copy the files as they are. Do not open, rotate or save them again with another program. The September flame photographs were saved again by the Windows photo viewer, which left them rotated with respect to the sensor.' },
+        { p: 'Copy the files as they are. Do not open, rotate or save them again with another program, because another program can rotate them or change their format.' },
       ] },
       { id: 'exposicion', h: 'Exposure test on the flame', min: '5', blocks: [
         { p: `Light the flame and take a series of 10 frames. Choose the t_exp at which the brightest frame keeps the red channel below 70 % of the scale, write it down and put the flame out. For a candle the calculation gives about ${k('texp_candle')}${sk('texp_candle')}. That t_exp sets the range the oven has to cover.` },

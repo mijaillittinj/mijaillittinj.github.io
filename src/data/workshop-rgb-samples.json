@@ -3,22 +3,35 @@
  "sets": [
   {
    "file": "horno_ejemplo.zip",
-   "bytes": 14230341,
-   "sha256": "685a31c030126a57445ef431c8aa49c246122b0260e52b1b9a8621567802635d",
+   "bytes": 14230347,
+   "sha256": "f19393e9a45be9270803acb8363bb9f97ab72a52805c8f8e4aeb7715548c268e",
    "images": 20,
    "camera": "a2A1920-160ucPRO"
   },
   {
-   "file": "llama_septiembre_2026.zip",
-   "bytes": 4327433,
-   "sha256": "50e5048e92133a70bdea324b3fc75530fe33ad2b847d5d8e118743ac026cfc02",
-   "images": 7,
-   "camera": "acA2040-55uc"
+   "file": "llama_laboratorio.zip",
+   "bytes": 1761269,
+   "sha256": "644dda118073e4ace762fb910c6aaf5b015dd5230449e946eef7c636b0d4a5ba",
+   "images": 2,
+   "camera": "a2A1920-160ucPRO",
+   "preset": {
+    "texpUs": 200.0,
+    "mmPerPx": 0.1102,
+    "zBurnerMm": 0.0,
+    "quarter": 1,
+    "fineDeg": 2.0,
+    "burnerRow": 329,
+    "rowBottom": 329,
+    "lambdaRel": 0.1
+   },
+   "with": [
+    "horno_ejemplo.zip"
+   ]
   },
   {
    "file": "llama_sintetica_coflame.zip",
-   "bytes": 6625791,
-   "sha256": "0ae69ef621584c590183d301b27f2ec0c675e733932d80a4583e8223d8040cae",
+   "bytes": 6625793,
+   "sha256": "f8fb55bb60106f387ca56e2dd1393c7271cf81c87e2bd903a120d773b455541c",
    "images": 31,
    "camera": "sint\u00e9tica",
    "preset": {
@@ -28,5 +41,5 @@
    }
   }
  ],
- "total_bytes": 25183565
+ "total_bytes": 22617409
 }

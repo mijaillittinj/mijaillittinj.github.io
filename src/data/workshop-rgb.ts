@@ -41,9 +41,10 @@ export function isSketch(key: string): boolean {
   return C[key]?.esquema === true;
 }
 
-/** Values the example button fills in stage 3 (from the LEEME of the set). */
-export interface SamplePreset { texpUs: number; mmPerPx: number; zBurnerMm: number }
-export interface SampleSet { file: string; bytes: number; sha256: string; images: number; camera: string; preset?: SamplePreset }
+/** Values the example button fills in stage 3 (from the LEEME of the set), with the rotation, rows and smoothing when the set needs them. */
+export interface SamplePreset { texpUs: number; mmPerPx: number; zBurnerMm: number; quarter?: number; fineDeg?: number; burnerRow?: number; rowBottom?: number; lambdaRel?: number }
+/** `with` names the sets loaded together with this one (the furnace that calibrates the laboratory flame). */
+export interface SampleSet { file: string; bytes: number; sha256: string; images: number; camera: string; preset?: SamplePreset; with?: string[] }
 export const sampleSets = (samples as { sets: SampleSet[] }).sets;
 export const sampleTotal = (samples as { total_bytes: number }).total_bytes;
 export const sample = (file: string): SampleSet => {

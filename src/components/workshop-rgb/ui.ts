@@ -34,7 +34,7 @@ import type { AbelMethod } from '../../lib/workshop-rgb/invert.ts';
 // closed form (148 K median gap at 3000, 12 K at 30 000, WEB_REPORT RGB-ANNAbel etapa 2), so the tool starts there.
 const NET_ITERATIONS = 30000;
 
-export interface ExampleSet { file: string; bytes: number; sha256: string; camera: string; available: boolean; preset?: { texpUs: number; mmPerPx: number; zBurnerMm: number } }
+export interface ExampleSet { file: string; bytes: number; sha256: string; camera: string; available: boolean; preset?: { texpUs: number; mmPerPx: number; zBurnerMm: number; quarter?: number; fineDeg?: number; burnerRow?: number; rowBottom?: number; lambdaRel?: number }; with?: string[] }
 export interface MountOptions { lang: Lang; version: string; commit: string; source?: string; built?: string; base: string; examples: ExampleSet[]; pageUrl: string; biases: { key: string; es: string; en: string }[]; ovenFlameBias?: { es: string; en: string }; tailBias?: { es: string; en: string }; tailRange?: { es: string; en: string } }
 
 // ============================================================================ worker plumbing
@@ -111,7 +111,7 @@ const S = {
     sensorQ: 0, quarter: 0, mirror: false, fineDeg: 0, axisAuto: true, axisManual: NaN, halfWidth: NaN, nr: NaN, rowTop: NaN, rowBottom: NaN, rowsPerHeight: 4,
     burnerOk: false, mmPerPx: NaN, scaleConfirmed: false, scaleUnc: 1, rulerId: '' as string, rulerPts: [] as [number, number][], rulerMm: 10, rulerScale: 1, rulerPreview: null as null | Planes, shift: null as null | (ShiftTest & { pattern: BayerPattern }),
     burnerRow: NaN, zBurner: 0, prepared: null as null | (Prepared & { bgHow?: string; nHot?: number }), height: 0, calUsed: null as CalUse | null, sensorMismatch: false },
-  abel: { method: 'tikhonov' as AbelMethod | 'annabel', sym: 'average' as Sym, lambdaRel: 0.1, lambdaAuto: true, lcFor: null as unknown, lcSym: '' as string, segments: 12, satLambda: 1e-4, lcurve: null as null | { lambdas: number[]; rho: number[]; eta: number[]; lambda: number; index: number }, out: null as AbelOut | null, outMethod: '' as string, compare: null as null | Record<string, Float64Array>,
+  abel: { method: 'tikhonov' as AbelMethod | 'annabel', sym: 'average' as Sym, lambdaRel: 0.1, lambdaAuto: true, lamFlat: false, lcFor: null as unknown, lcSym: '' as string, segments: 12, satLambda: 1e-4, lcurve: null as null | { lambdas: number[]; rho: number[]; eta: number[]; lambda: number; index: number }, out: null as AbelOut | null, outMethod: '' as string, compare: null as null | Record<string, Float64Array>,
     annabel: { running: false, ctrl: null as AbortController | null, tick: null as TrainTick | null, estimate: null as null | { path: string; sPerIter: number }, iterations: ITER_LONG, result: null as TrainResult | null, msgs: [] as Msg[] } },
   tfs: { path: 'ratio' as TfsPath, net: { running: false, ctrl: null as AbortController | null, tick: null as TrainTick | null, estimate: null as null | { path: string; sPerIter: number }, iterations: NET_ITERATIONS, result: null as NetOut | null, msgs: [] as Msg[] }, pair: 'RG' as 'RG' | 'BG' | 'BR', em: 'group' as 'group' | 'coeffs' | 'constant', a: 0.284, b: 0.272, c: 0.057, E: 0.3, sigFrac: 0.02, islandFrac: 0.05, zCut: NaN, chemThr: 0.1, fsChannel: 'RG' as FsMode, out: null as TfsOut | null, dec: null as CalDecision | null },
   res: { Tmin: 1400, Tmax: 2100, Tmanual: false, Tout: 0, bandHow: '' as '' | 'oven' | 'noise' | 'nocal', fsMax: NaN, heights: [] as number[], band: null as null | { Tlo: Float64Array; Thi: Float64Array; fslo: Float64Array; fshi: Float64Array }, seed: 42, nBand: 30, view: 'T' as string },
@@ -356,23 +356,35 @@ async function harmonise() {
   if (redo.length) await scanItems(redo);
 }
 
+/** The sets an example button loads, the furnace of `with` first and then the set itself. */
+function exampleSets(ex: ExampleSet): ExampleSet[] {
+  return [...(ex.with ?? []).map((f) => S.o.examples.find((x) => x.file === f)).filter((x): x is ExampleSet => !!x), ex];
+}
 async function loadExample(ex: ExampleSet) {
-  if (!ex.available) { S.loadMsgs = [{ code: 'example_missing' }]; renderStage0(); return; }
+  const sets = exampleSets(ex);
+  if (sets.some((x) => !x.available)) { S.loadMsgs = [{ code: 'example_missing' }]; renderStage0(); return; }
   S.busy = L('Bajando el juego de ejemplo', 'Downloading the example set');
   renderBusy();
   try {
-    const r = await fetch(`${S.o.base}teaching/workshop-rgb-pyrometry/files/${ex.file}`);
-    if (!r.ok) throw new Error('http');
-    const blob = await r.blob();
+    const files: InFile[] = [];
+    for (const x of sets) {
+      const r = await fetch(`${S.o.base}teaching/workshop-rgb-pyrometry/files/${x.file}`);
+      if (!r.ok) throw new Error('http');
+      files.push({ path: x.file, blob: await r.blob() });
+    }
     S.busy = '';
     const cleared = S.items.length > 0;
     if (cleared) await clearTable();
+    // each example starts from the default view, so one set does not inherit the rotation or the rows of another
+    const pr = ex.preset;
+    Object.assign(S.flame, { quarter: pr?.quarter ?? 0, mirror: false, fineDeg: pr?.fineDeg ?? 0, axisAuto: true, axisManual: NaN, rowTop: NaN, rowBottom: pr?.rowBottom ?? NaN, burnerRow: pr?.burnerRow ?? NaN, burnerOk: false,
+      texpUs: NaN, texpConfirmed: false, mmPerPx: NaN, scaleConfirmed: false, zBurner: 0 });
+    Object.assign(S.abel, { lambdaRel: pr?.lambdaRel ?? 0.1, lambdaAuto: pr?.lambdaRel === undefined, lamFlat: pr?.lambdaRel !== undefined, lcurve: null, lcFor: null });
     S.loadFrom = 1;
-    await loadFiles([{ path: ex.file, blob }], ex.file, ex.file);
+    await loadFiles(files, ex.file, ex.file);
     if (cleared) { S.loadMsgs.unshift({ code: 'example_cleared', level: 'info' }); renderAll(); }
     // the documented case of the set, so the result compares with its ground truth (GB3r2-estudiante-03)
-    if (ex.preset) {
-      const pr = ex.preset;
+    if (pr) {
       Object.assign(S.flame, { texpUs: pr.texpUs, texpConfirmed: true, mmPerPx: pr.mmPerPx, scaleConfirmed: true, zBurner: pr.zBurnerMm });
       S.flame.msgs = [{ code: 'example_preset', vars: { a: num(pr.texpUs), b: num(pr.mmPerPx, 2), c: num(pr.zBurnerMm, 2) }, level: 'info' }, ...S.flame.msgs];
       invalidate(3, 'flame');
@@ -884,9 +896,16 @@ async function runLcurve() {
     S.abel.lcFor = p; S.abel.lcSym = S.abel.sym;
     // the corner is applied at once, so Compute does not run with the old λ (GB3r2-estudiante-16), and the
     // later steps go out of date only when the value changes (DESIGN §4, E4-6)
-    if (S.abel.lcurve && fin(S.abel.lcurve.lambda)) {
-      const changed = Math.abs(S.abel.lcurve.lambda / S.abel.lambdaRel - 1) > 1e-9;
-      S.abel.lambdaRel = S.abel.lcurve.lambda; S.abel.lambdaAuto = true;
+    // with smoothing set by hand or fixed, the curve is only drawn, «Back to automatic» applies it (redesign g)
+    const lc = S.abel.lcurve as (typeof S.abel.lcurve & { kappa?: number[] }) | null;
+    if (lc && S.abel.lambdaAuto && !hasCorner(lc)) {
+      const was = S.abel.lambdaRel;
+      S.abel.lambdaRel = 0.1; S.abel.lambdaAuto = false; S.abel.lamFlat = true;
+      if (was !== 0.1) invalidate(4, 'abel');
+    }
+    else if (lc && fin(lc.lambda) && S.abel.lambdaAuto) {
+      const changed = Math.abs(lc.lambda / S.abel.lambdaRel - 1) > 1e-9;
+      S.abel.lambdaRel = lc.lambda; S.abel.lamFlat = false;
       if (changed) invalidate(4, 'abel');
     }
   } catch { /* the plot stays empty */ }
@@ -894,13 +913,19 @@ async function runLcurve() {
   renderBusy();
   renderAll();
 }
+/** False when the curvature of the L-curve is nowhere positive inside the range, so the curve has no corner to pick. */
+function hasCorner(lc: { kappa?: number[] }): boolean {
+  const k = lc.kappa;
+  if (!k || k.length < 3) return true;
+  return k.slice(1, -1).some((x) => fin(x) && x > 0);
+}
 /** The main button of step 3. With automatic smoothing and Tikhonov the L-curve corner comes first (DESIGN §4, §9.1). */
 async function abelClick() {
   if (!S.flame.prepared) return;
   if (!burnerGate()) return;
   if (S.abel.method === 'tikhonov' && S.abel.lambdaAuto) {
     if (S.abel.lcFor !== S.flame.prepared || S.abel.lcSym !== S.abel.sym || !S.abel.lcurve) await runLcurve();
-    if (S.abel.lcurve && fin(S.abel.lcurve.lambda)) S.abel.lambdaRel = S.abel.lcurve.lambda;
+    if (S.abel.lambdaAuto && S.abel.lcurve && fin(S.abel.lcurve.lambda)) S.abel.lambdaRel = S.abel.lcurve.lambda;
   }
   await runAbelNow();
 }
@@ -1012,7 +1037,13 @@ async function runTfsNow() {
     delete S.stale[5]; delete S.stale[6];
     S.res.band = null;
     const p = S.flame.prepared!;
-    if (!S.res.heights.length) S.res.heights = [Math.floor(p.nz * 0.25), Math.floor(p.nz * 0.5), Math.floor(p.nz * 0.75)];
+    if (!S.res.heights.length) {
+      // the three default heights fall inside the rows with cells in use, so every profile has data
+      const t = S.tfs.out!, rows: number[] = [];
+      for (let k = 0; k < p.nz; k++) for (let i = 0; i < p.nr; i++) if (t.mask[k * p.nr + i] & 1) { rows.push(k); break; }
+      const k0 = rows.length ? rows[0] : 0, k1 = rows.length ? rows[rows.length - 1] : p.nz - 1;
+      S.res.heights = [0.25, 0.5, 0.75].map((f) => Math.round(k0 + f * (k1 - k0)));
+    }
     defaultScales();
   } catch (e) { S.flame.msgs.push({ code: (e as { code: string }).code }); }
   S.busy = '';
@@ -1165,8 +1196,11 @@ async function recommended() {
   if (!S.flame.prepared) return;
   // an upside-down flame passes every test, so the student says where the burner is, now with the preview in sight (GB3r2-adv-02, r3-adv-01)
   if (!burnerGate()) return;
-  await runLcurve();
-  if (S.abel.lcurve) S.abel.lambdaRel = S.abel.lcurve.lambda;
+  // a fixed smoothing (the example, or an L-curve without a corner) stays as it is
+  if (S.abel.lambdaAuto) {
+    await runLcurve();
+    if (S.abel.lambdaAuto && S.abel.lcurve) S.abel.lambdaRel = S.abel.lcurve.lambda;
+  }
   await runAbelNow();
   await runTfsNow();
   await runBandNow();
@@ -1297,7 +1331,7 @@ async function pngOf(which: 'T' | 'fs'): Promise<Blob | null> {
   const label = calDecision();
   const lab = stateLabel(label);
   return mapPng(cv, which === 'T' ? 't' : 'fs', {
-    title: which === 'T' ? `T(r, z) · ${lab}` : `f_s(r, z) · ${lab}`, unit: which === 'T' ? 'K' : fs?.unit ?? '',
+    title: which === 'T' ? `T(r, z) · ${lab}` : `fₛ(r, z) · ${lab}`, unit: which === 'T' ? 'K' : fs?.unit ?? '',
     vmin: which === 'T' ? num(S.res.Tmin) : '0', vmax: which === 'T' ? num(S.res.Tmax) : sig(fs ? S.res.fsMax : 1, 2),
     axes: L(`r de −${num(p.rMm[p.nr - 1] + p.drMm / 2, 2)} a ${num(p.rMm[p.nr - 1] + p.drMm / 2, 2)} mm, z de ${num(p.zMm[0], 1)} a ${num(p.zMm[p.nz - 1], 1)} mm`, `r from −${num(p.rMm[p.nr - 1] + p.drMm / 2, 2)} to ${num(p.rMm[p.nr - 1] + p.drMm / 2, 2)} mm, z from ${num(p.zMm[0], 1)} to ${num(p.zMm[p.nz - 1], 1)} mm`),
   }, 4, { ...mapExtent(p), fmt: tickFmt });
@@ -1339,7 +1373,7 @@ async function loadRun(b: Blob, name: string) {
     const f = s.flame;
     Object.assign(S.flame, { burnerOk: f.burnerConfirmed === true, texpUs: f.texpUs ?? NaN, texpConfirmed: f.texpConfirmed, times: f.times, sensorQ: f.sensorQ, quarter: f.quarter, mirror: f.mirror, fineDeg: f.fineDeg, axisAuto: f.axisAuto, axisManual: f.axisManual ?? NaN, halfWidth: f.halfWidth ?? NaN, nr: f.nr ?? NaN, rowTop: f.rowTop ?? NaN, rowBottom: f.rowBottom ?? NaN, rowsPerHeight: f.rowsPerHeight, mmPerPx: f.mmPerPx ?? NaN, scaleConfirmed: f.scaleConfirmed, scaleUnc: f.scaleUncPct, burnerRow: f.burnerRow ?? NaN, zBurner: f.zBurner });
     // a log repeats its own smoothing, with or without the key lambdaAuto (DESIGN §9, C4)
-    Object.assign(S.abel, { method: s.abel.method, sym: s.abel.sym, lambdaRel: s.abel.lambdaRel, lambdaAuto: false, segments: s.abel.segments, satLambda: s.abel.satLambda });
+    Object.assign(S.abel, { method: s.abel.method, sym: s.abel.sym, lambdaRel: s.abel.lambdaRel, lambdaAuto: false, lamFlat: false, segments: s.abel.segments, satLambda: s.abel.satLambda });
     S.abel.annabel.iterations = s.abel.annabelIterations ?? ITER_LONG;
     S.tfs.net.iterations = (s.tfs as { net?: { iterations?: number } | null }).net?.iterations ?? NET_ITERATIONS;
     Object.assign(S.tfs, { path: asTfsPath(s.tfs.path), pair: s.tfs.pair, sigFrac: s.tfs.sigFrac, islandFrac: s.tfs.islandFrac ?? 0.05, zCut: s.tfs.zCutMm ?? NaN, chemThr: s.tfs.chemThr, fsChannel: asFsMode(s.tfs.fsChannel) });
@@ -1499,11 +1533,13 @@ function browserOk(): boolean { return typeof Worker !== 'undefined' && !!global
 function renderStage0() {
   const el = document.getElementById('wr-s0');
   if (!el) return;
-  const k = Math.max(0, S.o.examples.findIndex((x) => /sintetica/.test(x.file)));
+  // the workshop example, the laboratory flame with the furnace it is calibrated with
+  const k = Math.max(0, S.o.examples.findIndex((x) => /laboratorio/.test(x.file)));
   const ex = S.o.examples[k];
+  const exMb = ex ? exampleSets(ex).reduce((a, x) => a + x.bytes, 0) / 1e6 : 0;
   const msgs: Msg[] = S.loadMsgs.filter((m) => /^example_/.test(m.code) && m.level !== 'info');
   if (!browserOk()) msgs.push({ code: 'browser_missing', level: 'error' });
-  el.innerHTML = `<p class="wr-bar0">${ex ? `<button class="wr-btn wr-btn--box" type="button" id="wr-ex-${k}">${L('Cargar el ejemplo', 'Load the example')}</button> <span class="meta">${L(`Horno y llama sintética, ${num(ex.bytes / 1e6, 0)} MB.`, `Furnace and synthetic flame, ${num(ex.bytes / 1e6, 0)} MB.`)}</span>` : ''}<span class="sr-only" id="wr-st0">${L('Listo', 'Done')}</span></p>
+  el.innerHTML = `<p class="wr-bar0">${ex ? `<button class="wr-btn wr-btn--box" type="button" id="wr-ex-${k}">${L('Cargar el ejemplo', 'Load the example')}</button> <span class="meta">${L(`Horno y llama del laboratorio, ${num(exMb, 0)} MB.`, `Furnace and laboratory flame, ${num(exMb, 0)} MB.`)}</span>` : ''}<span class="sr-only" id="wr-st0">${L('Listo', 'Done')}</span></p>
   ${msgBox(msgs)}`;
 }
 function renderQuick() {
@@ -1617,7 +1653,7 @@ function renderStage1() {
   const respMsgs: Msg[] = [];
   if (mismatch) respMsgs.push({ code: 'preset_mismatch', vars: { a: p.id, b: cam!.cam } });
   if (p.allowRemoveIr && !S.custom && !S.irOn) respMsgs.push({ code: 'no_ir_cut' });
-  const exOven = S.o.examples.findIndex((x) => /^horno/.test(x.file)), exSep = S.o.examples.findIndex((x) => /septiembre/.test(x.file));
+  const exOven = S.o.examples.findIndex((x) => /^horno/.test(x.file)), exSyn = S.o.examples.findIndex((x) => /sintetica/.test(x.file));
   el.innerHTML = `${stepHead(1, L('Calibración con el horno', 'Calibration with the furnace'), 'wr-st1', st1(), L('Mide cuánta señal da cada canal de la cámara con el horno a temperatura conocida.', 'Measures how much signal each camera channel gives with the furnace at a known temperature.'))}
   <div class="wr-drop" id="wr-drop">
     <h3 class="wr-droplab">${L('Fotos del horno y sus oscuros', 'Furnace photos and their darks')}</h3>
@@ -1652,11 +1688,11 @@ function renderStage1() {
     osec(L('Campo plano', 'Flat field'), '<div id="wr-flat"></div>'),
     osec(L('Otra forma de calibrar', 'Another way to calibrate'), `<p class="wr-tabs" role="group" aria-label="${L('Forma de calibrar', 'Way to calibrate')}">${(['oven', 'sphere', 'file'] as const).map((k) => `<button type="button" class="wr-tab" data-calpath="${k}" aria-pressed="${S.calPath === k}">${k === 'oven' ? L('Horno', 'Furnace') : k === 'sphere' ? L('Esfera integradora', 'Integrating sphere') : L('Archivo', 'File')}</button>`).join('')}</p>
       <div id="wr-calpath"></div>
-      ${exSep >= 0 ? `<p>${btn(`wr-ex-${exSep}`, L('Cargar otro ejemplo, calibrado con esfera integradora', 'Load another example, calibrated with an integrating sphere'))} <span class="meta">${kB(S.o.examples[exSep].bytes)}</span></p>` : ''}
       <p>${btn('wr-cal-save', L('Guardar la calibración (.json)', 'Save the calibration (.json)'), !S.cal)}</p>`),
     osec(L('Revisar una imagen suelta', 'Check a single image'), `<p>${L('Muestra saturados y ceros de una foto antes de seguir tomando.', 'Shows saturated pixels and zeros of a photo before taking more.')}</p>
       <p class="cluster">${fileBtn('wr-q-file', L('Elegir un TIFF', 'Choose a TIFF'), '.tif,.tiff,image/tiff')} ${fileBtn('wr-q-dir', L('Elegir una carpeta', 'Choose a folder'), '', true)}</p><div id="wr-quick"></div>`),
-    exOven >= 0 ? osec(L('Ejemplo', 'Example'), `<p>${btn(`wr-ex-${exOven}`, L('Cargar solo el horno del laboratorio', 'Load only the lab furnace'))} <span class="meta">${kB(S.o.examples[exOven].bytes)}</span></p>`) : '',
+    exOven >= 0 || exSyn >= 0 ? osec(L('Ejemplo', 'Example'), `${exOven >= 0 ? `<p>${btn(`wr-ex-${exOven}`, L('Cargar solo el horno del laboratorio', 'Load only the lab furnace'))} <span class="meta">${kB(S.o.examples[exOven].bytes)}</span></p>` : ''}
+      ${exSyn >= 0 ? `<p>${btn(`wr-ex-${exSyn}`, L('Cargar la llama sintética, con su respuesta conocida', 'Load the synthetic flame, with its known answer'))} <span class="meta">${kB(S.o.examples[exSyn].bytes)}</span></p>` : ''}`) : '',
   ])}`;
   const ps = psiNow();
   const m = Math.max(...ps.psi.R);
@@ -1840,7 +1876,7 @@ function renderFit() {
     ${f.ratio.RG.tested ? `<figure><div id="wr-kt" class="wr-plot"></div><figcaption>${L('Sensibilidad de cada canal en cada temperatura, sobre la que se usa.', 'Sensitivity of each channel at each temperature, over the one used.')}</figcaption></figure>` : ''}
     <p>${f.ratio.RG.tested ? L(`Dispersión de la razón de sensibilidades rojo/verde entre temperaturas, ${num(f.ratio.RG.dispersion * 100, 2)} %.`, `Scatter of the red/green sensitivity ratio across temperatures, ${num(f.ratio.RG.dispersion * 100, 2)} %.`) : ''}
     ${L(`Respuesta lineal con el tiempo de exposición. Desviación máxima R ${num(lin[0], 1)} %, G ${num(lin[1], 1)} %, B ${num(lin[2], 1)} %.`, `Linear response with exposure time. Largest departure R ${num(lin[0], 1)} %, G ${num(lin[1], 1)} %, B ${num(lin[2], 1)} %.`)}${blueOut ? ` ${L('El azul no se usa en T ni en f_s.', 'Blue is not used for T or f_s.').replace(/f_s/, 'f<sub>s</sub>')}` : ''}</p>
-    ${rowsLoo.length ? `<h4>${L('Dejando fuera cada temperatura', 'Leaving each temperature out')}</h4>${tableHtml([L('Horno', 'Furnace'), L('Leída', 'Read'), L('Diferencia', 'Difference')], rowsLoo)}` : ''}
+    ${rowsLoo.length ? `<h4>${S.cal?.tail?.applied ? L('Dejando fuera cada temperatura, sin corregir sobre 700 nm', 'Leaving each temperature out, without the correction above 700 nm') : L('Dejando fuera cada temperatura', 'Leaving each temperature out')}</h4>${tableHtml([L('Horno', 'Furnace'), L('Leída', 'Read'), L('Diferencia', 'Difference')], rowsLoo)}` : ''}
     <h4>${L('Imágenes del horno', 'Furnace images')}</h4>${tableHtml([L('Serie', 'Series'), L('Exposición (µs)', 'Exposure (µs)'), L('Uso de la escala', 'Use of full scale') + ' R / G / B', L('Entra', 'Used') + ' R / G / B'], imgRows)}
     ${msgBox(msgs)}`;
     const kt: Series[] = [];
@@ -2060,9 +2096,36 @@ function drawRuler() {
   const cv = document.getElementById('wr-rcv') as HTMLCanvasElement | null;
   const pv = S.flame.rulerPreview;
   if (!cv || !pv) return;
-  const g = drawPreview(cv, pv, 3, false, 1.2);
-  for (const [x, y] of S.flame.rulerPts) circle(g, x / pv.step, y / pv.step, 4, '#00d0ff', false, 2);
-  if (S.flame.rulerPts.length === 2) line(g, S.flame.rulerPts[0][0] / pv.step, S.flame.rulerPts[0][1] / pv.step, S.flame.rulerPts[1][0] / pv.step, S.flame.rulerPts[1][1] / pv.step, '#00d0ff');
+  // the ruler photo was taken with the same turned camera, so it is shown with the rotation of the flame
+  const src = document.createElement('canvas');
+  drawPreview(src, pv, 3, false, 1.2);
+  const V = rulerView(pv);
+  cv.width = V.W; cv.height = V.H;
+  const g = cv.getContext('2d')!;
+  g.save(); g.translate(V.W / 2, V.H / 2); g.rotate((V.q * Math.PI) / 2); if (S.flame.mirror) g.scale(-1, 1);
+  g.drawImage(src, -pv.w / 2, -pv.h / 2); g.restore();
+  const pts = S.flame.rulerPts.map(([x, y]) => V.fwd(x / pv.step, y / pv.step));
+  for (const [u, v] of pts) circle(g, u, v, 4, '#00d0ff', false, 2);
+  if (pts.length === 2) line(g, pts[0][0], pts[0][1], pts[1][0], pts[1][1], '#00d0ff');
+}
+/**
+ * Display of the ruler preview with the flame rotation (S.flame.quarter, S.flame.mirror), as drawThumb does.
+ * fwd maps a preview pixel of the file to the canvas, inv maps a canvas pixel back. The marks are kept in file
+ * pixels, so the distance between them, and the scale, do not depend on the rotation.
+ */
+function rulerView(pv: Planes) {
+  const q = ((S.flame.quarter % 4) + 4) % 4, m = S.flame.mirror, swap = q % 2 === 1;
+  const W = swap ? pv.h : pv.w, H = swap ? pv.w : pv.h;
+  const c = [1, 0, -1, 0][q], s = [0, 1, 0, -1][q];
+  const fwd = (x: number, y: number): [number, number] => {
+    const px = (m ? -1 : 1) * (x - pv.w / 2), py = y - pv.h / 2;
+    return [W / 2 + c * px - s * py, H / 2 + s * px + c * py];
+  };
+  const inv = (u: number, v: number): [number, number] => {
+    const a = u - W / 2, b = v - H / 2;
+    return [pv.w / 2 + (m ? -1 : 1) * (c * a + s * b), pv.h / 2 - s * a + c * b];
+  };
+  return { q, W, H, fwd, inv };
 }
 function drawFlame() {
   const p = S.flame.prepared;
@@ -2122,9 +2185,9 @@ function renderStage4() {
   const lr = Math.log10(S.abel.lambdaRel);
   const { v, o: om } = splitMsgs(abelMsgs(), STEP3_VIEW);
   const m = S.abel.method;
-  const smooth = m === 'tikhonov' ? ` · ${S.abel.lambdaAuto ? L('Suavizado automático', 'Automatic smoothing') : L(`Suavizado ${sig(S.abel.lambdaRel, 2)}, elegido a mano`, `Smoothing ${sig(S.abel.lambdaRel, 2)}, set by hand`)}` : '';
+  const smooth = m === 'tikhonov' ? ` · ${S.abel.lambdaAuto ? L('Suavizado automático', 'Automatic smoothing') : S.abel.lamFlat ? L(`Suavizado ${sig(S.abel.lambdaRel, 2)} fijo, la curva L no tiene esquina`, `Smoothing ${sig(S.abel.lambdaRel, 2)} fixed, the L-curve has no corner`) : L(`Suavizado ${sig(S.abel.lambdaRel, 2)}, elegido a mano`, `Smoothing ${sig(S.abel.lambdaRel, 2)}, set by hand`)}` : '';
   const symOpts: [string, string][] = m === 'sat' || m === 'annabel' ? [['both', L('las dos mitades en el ajuste', 'both halves in the fit')], ['average', L('las dos mitades promediadas', 'both halves averaged')], ['right', L('solo la derecha', 'right only')], ['left', L('solo la izquierda', 'left only')]] : [['average', L('las dos mitades promediadas', 'both halves averaged')], ['right', L('solo la derecha', 'right only')], ['left', L('solo la izquierda', 'left only')]];
-  el.innerHTML = `${stepHead(3, L('Inversión de Abel', 'Abel inversion'), 'wr-st4', st4(), L('Pasa de la imagen, que suma la luz a lo largo de la línea de visión, a la emisión en cada radio.', 'Goes from the image, which adds up the light along the line of sight, to the emission at each radius.'))}
+  el.innerHTML = `${stepHead(3, L('Inversión de Abel', 'Abel inversion'), 'wr-st4', st4(), L('Pasa de la luz sumada en la línea de visión a la emisión en cada radio.', 'Goes from the light summed along the line of sight to the emission at each radius.'))}
   ${p ? `<p class="wr-method">${L('Método', 'Method')} ${methodLong(m)}${smooth}</p>` : ''}
   ${pbtn('wr-abel', m === 'annabel' ? L('Entrenar la red neuronal', 'Train the neural network') : L('Invertir', 'Invert'), !p || !S.flame.burnerOk || A.running, !p ? L('Primero preparen las imágenes en el paso 2.', 'Prepare the images in step 2 first.') : !S.flame.burnerOk ? L('Primero confirmen el quemador en el paso 2.', 'Confirm the burner in step 2 first.') : '', A.running ? ` ${btn('wr-ann-stop', L('Detener', 'Stop'))}` : '')}
   ${m === 'annabel' && (A.running || A.tick) ? '<p class="meta" id="wr-ann-prog" aria-live="polite"></p>' : ''}
@@ -2592,8 +2655,8 @@ function onInput(e: Event) {
     'wr-rmm': () => { S.flame.rulerMm = val; rulerScale(); },
     'wr-sym': () => { S.abel.sym = v as Sym; invalidate(4, 'abel'); },
     // a value set by the student turns the automatic smoothing off (DESIGN §4, C4), drawing never fires this
-    'wr-lam': () => { S.abel.lambdaRel = 10 ** val; S.abel.lambdaAuto = false; const o = t.parentElement?.querySelector('output'); if (o) o.textContent = sig(S.abel.lambdaRel, 2); invalidate(4, 'abel'); },
-    'wr-lam-auto': () => { S.abel.lambdaAuto = (t as HTMLInputElement).checked; if (S.abel.lambdaAuto && S.abel.lcurve && S.abel.lcFor === S.flame.prepared) { S.abel.lambdaRel = S.abel.lcurve.lambda; } invalidate(4, 'abel'); },
+    'wr-lam': () => { S.abel.lambdaRel = 10 ** val; S.abel.lambdaAuto = false; S.abel.lamFlat = false; const o = t.parentElement?.querySelector('output'); if (o) o.textContent = sig(S.abel.lambdaRel, 2); invalidate(4, 'abel'); },
+    'wr-lam-auto': () => { S.abel.lambdaAuto = (t as HTMLInputElement).checked; S.abel.lamFlat = false; if (S.abel.lambdaAuto && S.abel.lcurve && S.abel.lcFor === S.flame.prepared) { S.abel.lambdaRel = S.abel.lcurve.lambda; } invalidate(4, 'abel'); },
     'wr-seg': () => { if (fin(val)) { S.abel.segments = Math.round(val); invalidate(4, 'abel'); } },
     'wr-satl': () => { if (fin(val)) { S.abel.satLambda = val; invalidate(4, 'abel'); } },
     'wr-ann-it': () => { if (fin(val)) S.abel.annabel.iterations = Math.max(100, Math.round(val)); },
@@ -2668,10 +2731,10 @@ async function onClick(e: MouseEvent) {
     return;
   }
   if (id === 'wr-rcv' && S.flame.rulerPreview) {
-    const pv = S.flame.rulerPreview, r = t.getBoundingClientRect();
-    const x = ((e.clientX - r.left) / r.width) * pv.w * pv.step, y = ((e.clientY - r.top) / r.height) * pv.h * pv.step;
+    const pv = S.flame.rulerPreview, r = t.getBoundingClientRect(), V = rulerView(pv);
+    const [x, y] = V.inv(((e.clientX - r.left) / r.width) * V.W, ((e.clientY - r.top) / r.height) * V.H);
     if (S.flame.rulerPts.length >= 2) S.flame.rulerPts = [];
-    S.flame.rulerPts.push([x, y]);
+    S.flame.rulerPts.push([x * pv.step, y * pv.step]);
     rulerScale();
     keepFocus(renderStage3);
     return;
@@ -2694,7 +2757,7 @@ async function onClick(e: MouseEvent) {
     'wr-net-est': estimateNet,
     'wr-ann-est': estimateAnnabel,
     'wr-lc': runLcurve,
-    'wr-lc-use': () => { if (S.abel.lcurve) { S.abel.lambdaRel = S.abel.lcurve.lambda; invalidate(4, 'abel'); renderAll(); } },
+    'wr-lc-use': () => { if (S.abel.lcurve) { S.abel.lambdaRel = S.abel.lcurve.lambda; S.abel.lambdaAuto = true; S.abel.lamFlat = false; invalidate(4, 'abel'); renderAll(); } },
     'wr-cmp': compareMethods,
     'wr-tfs': runTfsNow,
     'wr-band': runBandNow,

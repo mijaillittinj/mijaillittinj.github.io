@@ -47,7 +47,7 @@ const source = sourceSha();
 const built = new Date().toISOString().slice(0, 10);
 
 const pub = (p: string) => join(process.cwd(), 'public', p.replace(/^\//, ''));
-const examples = sampleSets.map((s) => ({ file: s.file, bytes: s.bytes, sha256: s.sha256, camera: s.camera, preset: s.preset, available: existsSync(pub(`${FILES}${s.file}`)) }));
+const examples = sampleSets.map((s) => ({ file: s.file, bytes: s.bytes, sha256: s.sha256, camera: s.camera, preset: s.preset, with: s.with, available: existsSync(pub(`${FILES}${s.file}`)) }));
 const frozenDir = pub(`${WS}tool/`);
 const frozen = existsSync(frozenDir) ? readdirSync(frozenDir).filter((d) => /^\d{4}$/.test(d) && existsSync(join(frozenDir, d, 'index.html'))).sort() : [];
 
@@ -75,6 +75,7 @@ const T = es
   ? {
       title: 'Herramienta de pirometría RGB',
       abstract: 'Del horno y las fotos de la llama a mapas de temperatura y hollín, en cinco pasos. Todo corre en este navegador.',
+      credits: 'Taller de Mijail Littin y Joaquín Ferrer. Joaquín hizo los experimentos del horno y de la llama.',
       version: 'Versión',
       builtOn: 'compilada el',
       ident: 'identificador',
@@ -86,6 +87,7 @@ const T = es
   : {
       title: 'RGB pyrometry tool',
       abstract: 'From the furnace and the flame photos to temperature and soot maps, in five steps. Everything runs in this browser.',
+      credits: 'Workshop by Mijail Littin and Joaquín Ferrer. Joaquín did the furnace and flame experiments.',
       version: 'Version',
       builtOn: 'built on',
       ident: 'identifier',
@@ -101,6 +103,7 @@ const pageUrl = new URL(url(localized(`${WS}tool/`, lang).replace(import.meta.en
     <p class="eyebrow"><a href={localized('/teaching/', lang)}>{T.back}</a> · Metrology in Fire Science · {lang === 'es' ? 'workshop en la' : 'workshop at'} Universidad Adolfo Ibáñez · 2026</p>
     <h1>{T.title}</h1>
     <p class="abstract" set:html={tx(T.abstract)} />
+    <p class="meta wr-credits">{T.credits}</p>
     <WorkshopNav lang={lang} current="tool" />
   </header>
 

@@ -104,7 +104,8 @@ export function parseName(path: string): NameInfo {
   if (!p && !f && !fp) info.timeS = parseTimeFromName(clean);
 
   const has = (...names: string[]) => low.some((d) => names.includes(d));
-  if (/^(regla|ruler)/i.test(base)) info.role = 'ruler';
+  // Escala.tiff is how the lab saved its ruler photo
+  if (/^(regla|ruler|escala|scale)/i.test(base)) info.role = 'ruler';
   else if (has('campo_plano', 'flat')) info.role = low.includes('oscuro') || low.includes('dark') ? 'dark' : 'flat';
   else if (has('oscuro', 'dark') || /_oscuro\.tiff?$/i.test(base)) info.role = 'dark';
   else if (has('esfera', 'sphere')) info.role = low.includes('oscuro') ? 'dark' : 'sphere';

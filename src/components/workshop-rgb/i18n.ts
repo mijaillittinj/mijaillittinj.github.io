@@ -124,7 +124,7 @@ const MESSAGES: Record<string, T2> = {
   lcurve_edge: { es: 'No se encontró un suavizado automático claro. Súbanlo en Opciones hasta que el ruido cerca del eje desaparezca.', en: 'No clear automatic smoothing was found. Raise it in Options until the noise near the axis disappears.' },
   texp_typed: { es: 'Los nombres no traen el tiempo de exposición. Se usa el escrito, {a} µs.', en: 'The names do not carry the exposure time. The typed one, {a} µs, is used.' },
   upside_down: { es: 'Confirmen que el quemador queda abajo en la imagen orientada. Si no, usen «Girar».', en: 'Confirm that the burner is at the bottom of the oriented image. If not, use «Rotate».' },
-  example_preset: { es: 'El ejemplo llenó el tiempo de exposición, la escala y la altura del quemador.', en: 'The example filled in the exposure time, the scale and the burner height.' },
+  example_preset: { es: 'El ejemplo llenó el tiempo de exposición, la escala, el giro y la altura del quemador.', en: 'The example filled in the exposure time, the scale, the rotation and the burner height.' },
   implausible: { es: 'T o f_s salen altos para una llama con hollín. Revisen el giro, el quemador y la escala del paso 2.', en: 'T or f_s come out high for a sooting flame. Check the rotation, the burner and the scale in step 2.' },
   cal_untested: { es: 'Con una sola temperatura no se puede probar la calibración. Carguen al menos dos.', en: 'With a single temperature the calibration cannot be tested. Load at least two.' },
   cal_inconsistent: { es: 'La calibración no pasa la prueba y no se calcula f_s.', en: 'The calibration does not pass the test and f_s is not computed.' },
