@@ -16,7 +16,7 @@ import Tool from '../workshop-rgb/Tool.astro';
 import { TOOL_VERSION } from '../workshop-rgb/version.ts';
 import { url, localized } from '../../i18n/utils';
 import type { Lang } from '../../i18n/ui';
-import { WS, FILES, offlineCopy as offlineCopyOf, sampleSets, ck, ckCond, isSketch, sketchLabel, tx } from '../../data/workshop-rgb';
+import { WS, FILES, offlineCopy as offlineCopyOf, sampleSets, ck, isSketch, sketchLabel, tx } from '../../data/workshop-rgb';
 interface Props { lang: Lang }
 const { lang } = Astro.props;
 const es = lang === 'es';
@@ -62,19 +62,13 @@ const biases = [
   { key: 'cof_dT_selfabs', es: `Sin una medición de atenuación en la línea de visión (line-of-sight attenuation, LOSA) no se corrige la autoabsorción. En la llama sintética baja T en el eje en ${ck('cof_dT_selfabs', 'es').replace(/^[−-]/, '')}. La atenuación sola baja f_s ${ck('cof_dfs_att_only', 'es').replace(/^[−-]/, '')}, y en esa llama el cambio de T lo compensa casi entero, ${ck('cof_dfs_selfabs', 'es')} en total.`, en: `Without a line-of-sight attenuation (LOSA) measurement, self-absorption is not corrected. In the synthetic flame it lowers T on the axis by ${ck('cof_dT_selfabs', 'en').replace(/^[−-]/, '')}. Attenuation alone lowers f_s by ${ck('cof_dfs_att_only', 'en').replace(/^[−-]/, '')}, and in that flame the change in T almost cancels it, ${ck('cof_dfs_selfabs', 'en')} in total.` },
   { key: 'flicker_dT', es: `Promediar cuadros de una llama que parpadea sesga T en unos ${ck('flicker_dT', 'es')}${isSketch('flicker_dT') ? ` (${sketchLabel('es')})` : ''}.`, en: `Averaging frames of a flickering flame biases T by about ${ck('flicker_dT', 'en')}${isSketch('flicker_dT') ? ` (${sketchLabel('en')})` : ''}.` },
   { key: 'fs_err_1pct_T', es: `Un error de 1 % en T da cerca de ${ck('fs_err_1pct_T', 'es')} en f_s.`, en: `An error of 1 % in T gives about ${ck('fs_err_1pct_T', 'en')} in f_s.` },
-  { key: 'oven_dT_flame_conv', es: `Con las curvas nominales de la cámara, el horno real sesga la T de la llama en ${ck('oven_dT_flame_conv', 'es')}.`, en: `With the nominal camera curves, the real oven biases the flame T by ${ck('oven_dT_flame_conv', 'en')}.` },
-  // shown only with the IR tail calibrated with the oven (stage 1a.7), instead of the line above
-  { key: 'oven_tailcal_dT_flame', es: `Con la cola infrarroja de ψ_R calibrada en el horno del grupo queda un sesgo residual esperado de T a 1800 K ${ck('oven_tailcal_dT_flame', 'es')}, ${ckCond('oven_tailcal_dT_flame', 'es')}. No se resta a T. Sin corregir sería ${ck('oven_dT_flame_top', 'es')}.`, en: `With the IR tail of ψ_R calibrated with the group’s oven, the expected residual bias of T at 1800 K is ${ck('oven_tailcal_dT_flame', 'en')}, ${ckCond('oven_tailcal_dT_flame', 'en')}. It is not subtracted from T. Without the correction it would be ${ck('oven_dT_flame_top', 'en')}.` },
 ];
 void k; void sk;
-const ovenFlameBias = { es: ck('oven_dT_flame_top_abs', 'es'), en: ck('oven_dT_flame_top_abs', 'en') };
-const tailRange = { es: ck('oven_tailcal_dT_flame', 'es'), en: ck('oven_tailcal_dT_flame', 'en') };
-const tailBias = { es: `${ck('oven_tailcal_dT_flame', 'es')}, ${ckCond('oven_tailcal_dT_flame', 'es')}`, en: `${ck('oven_tailcal_dT_flame', 'en')}, ${ckCond('oven_tailcal_dT_flame', 'en')}` };
 
 const T = es
   ? {
       title: 'Herramienta de pirometría RGB',
-      abstract: 'Del horno y las fotos de la llama a mapas de temperatura y hollín, en cinco pasos. Todo corre en este navegador.',
+      abstract: 'Del horno y las fotos de la llama a mapas de temperatura y hollín, en cinco pasos, uno a la vez. Todo corre en este navegador.',
       credits: 'Taller de Mijail Littin y Joaquín Ferrer.',
       version: 'Versión',
       builtOn: 'compilada el',
@@ -86,7 +80,7 @@ const T = es
     }
   : {
       title: 'RGB pyrometry tool',
-      abstract: 'From the furnace and the flame photos to temperature and soot maps, in five steps. Everything runs in this browser.',
+      abstract: 'From the furnace and the flame photos to temperature and soot maps, in five steps, one at a time. Everything runs in this browser.',
       credits: 'Workshop by Mijail Littin and Joaquín Ferrer.',
       version: 'Version',
       builtOn: 'built on',
@@ -109,7 +103,7 @@ const pageUrl = new URL(url(localized(`${WS}tool/`, lang).replace(import.meta.en
 
   <div class="frame wr-frame-wide">
     <p class="wr-phone-static">{T.phone}</p>
-    <Tool lang={lang} commit={commit} source={source} built={built} examples={examples} biases={biases} ovenFlameBias={ovenFlameBias} tailBias={tailBias} tailRange={tailRange} pageUrl={pageUrl} />
+    <Tool lang={lang} commit={commit} source={source} built={built} examples={examples} biases={biases} pageUrl={pageUrl} />
     <p class="meta wr-foot">{T.version} <code>{TOOL_VERSION}</code>, {T.builtOn} {built}{commit && <> · {T.ident} <code>{commit}</code></>}{offlineCopy && <> · <a href={url(`${FILES}${offlineCopy}`)} download>{T.offline}</a></>}{frozen.length > 0 && <> · {T.frozen} {frozen.map((y, i) => <>{i > 0 && ' '}<a href={url(`${WS}tool/${y}/`)}>{y}</a></>)}</>}</p>
   </div>
 </Base>

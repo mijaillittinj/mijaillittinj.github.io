@@ -1,10 +1,10 @@
 /**
  * Canvas drawing of the tool. Previews in grey with gamma 2,2 (for viewing only, rotulado), flag marks,
  * circles and lines over the previews, and the result maps with the colour maps of utils/maps.py
- * (src/lib/workshop-rgb/colormaps.ts), true aspect ratio, masked pixels as the page background and never
+ * (src/lib/workshop-rgb/colormaps.ts), r stretched by a factor that is said (rStretch), masked pixels as the page background and never
  * as zero, with a colour bar and its units. PNG export draws the same into an off-screen canvas.
  */
-import { colorize, table, type MapName, type Theme } from '../../lib/workshop-rgb/colormaps.ts';
+import { colorize, contourf, table, type MapName, type Theme } from '../../lib/workshop-rgb/colormaps.ts';
 
 export function theme(): Theme {
   const t = document.documentElement.dataset.theme;
@@ -68,20 +68,23 @@ export function line(g: CanvasRenderingContext2D, x0: number, y0: number, x1: nu
 
 /**
  * Map of a field (nz × nr, row 0 the lowest height) mirrored about the axis, so the canvas is 2 nr wide
- * and nz tall with the highest z on top, the true aspect ratio 2R × Δz.
+ * and nz tall with the highest z on top. Its box on screen sets the shape, 2R × Δz with r stretched.
  */
-export function drawMap(cv: HTMLCanvasElement, f: ArrayLike<number>, nz: number, nr: number, name: MapName, vmin: number, vmax: number, mask?: ArrayLike<number> | null): void {
-  const W = 2 * nr, H = nz;
+export function drawMap(cv: HTMLCanvasElement, f: ArrayLike<number>, nz: number, nr: number, name: MapName, vmin: number, vmax: number, mask?: ArrayLike<number> | null, axisNode = false, levels = 0): void {
+  // with axisNode the first radius is r = 0, so the two halves share that column
+  const W = axisNode ? 2 * nr - 1 : 2 * nr, H = nz, c0 = axisNode ? nr - 1 : nr, c1 = nr - 1;
   const vals = new Float64Array(W * H), m = new Uint8Array(W * H);
   for (let k = 0; k < nz; k++) for (let i = 0; i < nr; i++) {
     const y = nz - 1 - k, v = f[k * nr + i], ok = mask ? (mask[k * nr + i] ? 1 : 0) : 1;
-    vals[y * W + nr + i] = v; vals[y * W + nr - 1 - i] = v;
-    m[y * W + nr + i] = ok; m[y * W + nr - 1 - i] = ok;
+    vals[y * W + c0 + i] = v; vals[y * W + c1 - i] = v;
+    m[y * W + c0 + i] = ok; m[y * W + c1 - i] = ok;
   }
-  const rgba = colorize(vals, name, vmin, vmax, theme(), paperHex(), m);
-  cv.width = W; cv.height = H;
+  // filled contours with `levels` bands, or one colour per cell with 0; the same s on both sides keeps the shape of the canvas
+  const s = levels > 0 ? Math.min(16, Math.max(1, Math.ceil(960 / Math.max(W, H)))) : 1;
+  const rgba = levels > 0 ? contourf(vals, W, H, s, name, vmin, vmax, levels, theme(), paperHex(), m) : colorize(vals, name, vmin, vmax, theme(), paperHex(), m);
+  cv.width = W * s; cv.height = H * s; cv.dataset.levels = String(levels);
   const g = cv.getContext('2d')!;
-  const im = g.createImageData(W, H);
+  const im = g.createImageData(W * s, H * s);
   im.data.set(rgba);
   g.putImageData(im, 0, 0);
 }
@@ -98,6 +101,23 @@ export function niceTicks(a: number, b: number, n = 5): number[] {
 }
 export interface MapExtent { rMax: number; zBot: number; zTop: number }
 /**
+ * Width / height a result map aims for on screen, and the height it does not pass. A flame is much taller than wide,
+ * so with its true shape the map is a strip. The box widens r by a round factor, so the page and the PNG can say it.
+ * The marks are placed from the extent in mm, so they stay true at any factor. A shape already wide stays as it is.
+ */
+export const MAP_ASPECT = 0.7;
+const PNG_MIN_W = 936;
+export const MAP_HEIGHT_REM = 30;
+export function rStretch(aspect: number): number {
+  const raw = MAP_ASPECT / aspect;
+  if (!(raw >= 1.25) || !Number.isFinite(raw)) return 1;
+  return raw < 3 ? Math.round(raw * 2) / 2 : Math.round(raw);
+}
+/** CSS width of a map box of proportions `shown`, inside its column and under the height limit, also on a short window. */
+export function mapWidthCss(shown: number): string {
+  return `min(100% - 3.5rem, min(${MAP_HEIGHT_REM}rem, 85vh) * ${shown.toFixed(4)})`;
+}
+/**
  * Axes in mm around a result map (director after GB3 r1). `box` holds the canvas and gets tick labels
  * placed in % of its size, r below (−R to R) and z on the left (zBot at the bottom, zTop at the top).
  */
@@ -113,26 +133,37 @@ export function mapAxes(box: HTMLElement, e: MapExtent, fmt: (v: number) => stri
 }
 
 /** Horizontal colour bar. */
-export function drawBar(cv: HTMLCanvasElement, name: MapName, w = 256, h = 12): void {
+export function drawBar(cv: HTMLCanvasElement, name: MapName, w = 256, h = 12, levels = 0): void {
   cv.width = w; cv.height = h;
   const g = cv.getContext('2d')!;
   const t = table(name, theme());
-  for (let x = 0; x < w; x++) { g.fillStyle = t[Math.round((x / (w - 1)) * 255)]; g.fillRect(x, 0, 1, h); }
+  for (let x = 0; x < w; x++) {
+    const f = x / (w - 1), b = levels > 0 ? (Math.min(levels - 1, Math.floor(f * levels)) + 0.5) / levels : f;
+    g.fillStyle = t[Math.round(b * 255)]; g.fillRect(x, 0, 1, h);
+  }
 }
 
 /**
  * PNG of a map with its colour bar, units and labels, in the current theme (the file name says it).
  * Each data pixel becomes `scale` screen pixels.
  */
-export async function mapPng(src: HTMLCanvasElement, name: MapName, labels: { title: string; unit: string; vmin: string; vmax: string; axes: string }, scale = 4, ext?: MapExtent & { aspect: number; fmt: (v: number) => string }): Promise<Blob> {
-  // true aspect ratio when the extent is known (the canvas holds one pixel per cell, cells are not square)
-  const W = src.width * scale, H = ext ? Math.round(W / ext.aspect) : src.height * scale;
+export async function mapPng(src: HTMLCanvasElement, name: MapName, labels: { title: string; unit: string; vmin: string; vmax: string; axes: string; fitTitle?: boolean }, scale = 4, ext?: MapExtent & { aspect: number; fmt: (v: number) => string }): Promise<Blob> {
+  // the shape of the box on screen when the extent is known (the canvas holds one pixel per cell, cells are not square)
+  // a contour map already holds its fine image, a map of cells grows by `scale`
+  const lv = +(src.dataset.levels ?? 0);
+  // and a tall flame stays under 1600 pixels high, so its labels can be read
+  // a narrow crop holds few columns, so its image grows to the width of the usual map, under the same height limit
+  const W = lv > 0 ? Math.round(Math.min(ext ? Math.max(src.width, PNG_MIN_W) : src.width, ext ? 1600 * ext.aspect : src.width)) : src.width * scale, H = ext ? Math.round(W / ext.aspect) : src.height * scale;
   const pad = 16, barH = 14, textH = 18, left = ext ? 56 : 0, tickH = ext ? 34 : 0;
   const out = document.createElement('canvas');
   out.width = Math.max(W + left, 320) + 2 * pad; out.height = H + barH + 3 * textH + 3 * pad + tickH;
-  const g = out.getContext('2d')!;
+  let g = out.getContext('2d')!;
+  // a title with the mask or the factor is longer, and so is the line that says r is stretched, so the image grows to hold them
+  g.font = '14px "CMU Serif", serif';
+  const need = Math.max(g.measureText(labels.axes).width, labels.fitTitle ? g.measureText(labels.title).width : 0);
+  if (Math.ceil(need) + 2 * pad > out.width) { out.width = Math.ceil(need) + 2 * pad; g = out.getContext('2d')!; }
   g.fillStyle = paperHex(); g.fillRect(0, 0, out.width, out.height);
-  g.imageSmoothingEnabled = false;
+  g.imageSmoothingEnabled = lv > 0;
   const x0 = pad + left, y0 = pad + textH;
   g.drawImage(src, x0, y0, W, H);
   const ink = cssVar('--ink') || '#111111';
@@ -157,7 +188,7 @@ export async function mapPng(src: HTMLCanvasElement, name: MapName, labels: { ti
   }
   g.fillText(labels.axes, pad, pad + textH + H + 14 + tickH);
   const bar = document.createElement('canvas');
-  drawBar(bar, name, 256, barH);
+  drawBar(bar, name, 256, barH, lv);
   const by = pad * 2 + textH * 2 + H + tickH;
   g.drawImage(bar, pad, by, Math.min(256, out.width - 2 * pad), barH);
   g.fillText(labels.vmin, pad, by + barH + 14);

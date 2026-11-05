@@ -8,7 +8,7 @@ import type { BayerPattern } from '../../lib/workshop-rgb/frames.ts';
 import type { DarkMode } from '../../lib/workshop-rgb/oven.ts';
 import type { EmLaw, Ch } from '../../lib/workshop-rgb/radiometry.ts';
 import type { SpectrumUnit } from '../../lib/workshop-rgb/sphere.ts';
-import type { AbelRun, CalUse, EncOverride, GeometryOpts, Sym, TfsOpts } from './engine.ts';
+import type { AbelRun, CalUse, EmissionNet, EncOverride, GeometryOpts, RefineKind, Sym, TfsNet, TfsOpts } from './engine.ts';
 
 export interface PsiMsg { lamNm: Float64Array; R: Float64Array; G: Float64Array; B: Float64Array }
 export interface SeriesMsg { tC: number; frames: { id: string; texpUs: number }[] }
@@ -32,7 +32,8 @@ export type ToWorker =
   | { req: number; type: 'abel.lcurve'; rows: number[]; ref: 'G' | 'sum'; sym: Sym }
   | { req: number; type: 'abel.set'; J: Float64Array[][]; reproj: Float64Array[][]; run: AbelRun }
   | { req: number; type: 'tfs.run'; opts: TfsOpts; psi: PsiMsg }
-  | { req: number; type: 'band.run'; n: number; seed: number; sigmaT: number; Tcal: number; eps: number; run: AbelRun; tfs: TfsOpts; psi: PsiMsg; sKrel?: [number, number, number]; scaleRel?: number };
+  | { req: number; type: 'band.run'; n: number; seed: number; sigmaT: number; Tcal: number; eps: number; run: AbelRun; tfs: TfsOpts; psi: PsiMsg; sKrel?: [number, number, number]; scaleRel?: number }
+  | { req: number; type: 'refine.run'; kind: RefineKind; factor: number; run: AbelRun; tfs: TfsOpts; psi: PsiMsg; base: { T: Float64Array; fs: Float64Array; mask: Uint8Array; chem: Uint8Array; J: Float64Array[][] }; emission: EmissionNet | null; net: TfsNet | null };
 
 export type FromWorker =
   | { req: number; kind: 'ok'; data: unknown }

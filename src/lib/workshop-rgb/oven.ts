@@ -12,7 +12,7 @@
  * r = √((y − cy)² + (x − cx)²). Times in µs in names ending in Us, seconds elsewhere. T in K inside.
  */
 import { median, percentile, linfit, bisect } from './stats.ts';
-import { CH, bandX, scaleTail, tailFraction, type Band, type Ch, type Rgb } from './radiometry.ts';
+import { CH, bandX, bandG, scaleTail, tailFraction, type Band, type Ch, type Rgb } from './radiometry.ts';
 import { robustSigma } from './frames.ts';
 
 export const T0C = 273.15;
@@ -510,6 +510,27 @@ export function fitOven(signals: FrameSignal[], opts: OvenFitOptions): OvenFit {
     strayPct[c] = worst;
   }
   return { signals, accepted, channels, ratio: { RG, BG }, consistent, calibrated: cal, ratioTest, ratioTestTop, Ttop, perT: perTMode, calibrateAt: calAt, order: { ok, proposal }, darkMode: mode, strayPct };
+}
+
+/** Above this change of the flame T between the two hottest oven temperatures the tool warns (professor, 2026-11-03). */
+export const HOT_SHIFT_WARN_K = 100;
+export const HOT_FLAME_K = 1800;
+export interface HotCompare { rows: { tC: number; KRKG: number }[]; tUsed: number; tNext: number | null; shiftK: number | null }
+/**
+ * K_R/K_G per oven temperature and what the choice of temperature does to a flame (professor, 2026-11-03).
+ * K_j comes from the hottest temperature with nominal ψ_j. A cold oven sends a larger part of its signal
+ * from above 700 nm, so K_R/K_G changes with T. A flame that reads Tflame with K_R/K_G of the hottest
+ * temperature has the measured ratio q_top r(Tflame), with r = G_R/G_G. shiftK is the T that same measured
+ * ratio gives with K_R/K_G of the second hottest, minus Tflame. Null with fewer than two temperatures.
+ */
+export function compareHottest(fit: OvenFit, band: Band, Tflame = HOT_FLAME_K): HotCompare {
+  const rows = fit.channels.R.perT.flatMap((p) => { const q = fit.channels.G.perT.find((x) => x.tC === p.tC); return q ? [{ tC: p.tC, KRKG: p.K / q.K }] : []; }).sort((a, b) => a.tC - b.tC);
+  const top = rows[rows.length - 1], next = rows[rows.length - 2];
+  if (!top || !next) return { rows, tUsed: top?.tC ?? NaN, tNext: null, shiftK: null };
+  const r = (T: number) => bandG(band, 'R', T) / bandG(band, 'G', T);
+  const target = Math.log(top.KRKG * r(Tflame));
+  const T = bisect((x) => Math.log(next.KRKG * r(x)) - target, 700, 6000, 1e-14);
+  return { rows, tUsed: top.tC, tNext: next.tC, shiftK: T - Tflame };
 }
 
 /** Linear fit of dark frames D = a + b·t_exp(s) per channel (darkMode 'files'). */

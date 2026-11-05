@@ -13,16 +13,13 @@ interface Props {
   commit: string;
   source?: string;
   built?: string;
-  ovenFlameBias?: { es: string; en: string };
-  tailBias?: { es: string; en: string };
-  tailRange?: { es: string; en: string };
   examples: { file: string; bytes: number; sha256: string; camera: string; available: boolean; preset?: SamplePreset; with?: string[] }[];
   biases: { key: string; es: string; en: string }[];
   pageUrl: string;
 }
-const { lang, commit, source, built, ovenFlameBias, tailBias, tailRange, examples, biases, pageUrl } = Astro.props;
+const { lang, commit, source, built, examples, biases, pageUrl } = Astro.props;
 const es = lang === 'es';
-const config = JSON.stringify({ lang, version: TOOL_VERSION, commit, source, built, base: import.meta.env.BASE_URL.replace(/\/?$/, '/'), examples, biases, ovenFlameBias, tailBias, tailRange, pageUrl });
+const config = JSON.stringify({ lang, version: TOOL_VERSION, commit, source, built, base: import.meta.env.BASE_URL.replace(/\/?$/, '/'), examples, biases, pageUrl });
 ---
 <noscript><p class="noscript-note wr-noscript">{es ? 'La herramienta necesita JavaScript. Actívenlo en el navegador para usarla.' : 'The tool needs JavaScript. Enable it in the browser to use it.'}</p><style>.wr-loading { display: none; }</style></noscript>
 <div class="wr-app" id="wr-app" data-config={config} lang={lang}>
@@ -42,20 +39,37 @@ const config = JSON.stringify({ lang, version: TOOL_VERSION, commit, source, bui
   .wr-app { counter-reset: none; }
   /* top bar, the step index and the busy line stay in sight (DESIGN §1) */
   .wr-top { position: sticky; top: 0; z-index: 5; background: var(--paper); border-bottom: 0.5px solid var(--rule-strong); }
-  .wr-steps ol { list-style: none; display: flex; flex-wrap: wrap; gap: 0.2em 1.4em; margin: 0; padding: var(--s-2) 0; font-size: var(--step--1); }
-  .wr-steps a { color: var(--ink); text-decoration: none; white-space: nowrap; }
-  .wr-steps a:hover { color: var(--accent); }
+  .wr-steplist { display: flex; gap: var(--s-1) var(--s-2); }
+  .wr-step { font: inherit; font-size: var(--step--1); line-height: 1.2; background: none; border: 0; border-bottom: 2px solid transparent; color: var(--ink); padding: 0.75em 0.6em 0.65em; min-height: 44px; cursor: pointer; white-space: nowrap; }
+  .wr-step:hover { color: var(--accent); }
+  .wr-step[aria-selected='true'] { border-bottom-color: var(--accent); font-weight: 600; }
+  .wr-step[aria-selected='true']:hover { color: var(--ink); }
+  .wr-step:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: -2px; }
+  .wr-step[data-state='warn'], .wr-step[data-state='stop'], .wr-step[data-state='stale'] { font-weight: 600; }
+  .wr-stepnote { font-weight: 400; color: var(--ink-2); font-size: 0.9em; }
+  .wr-legend { margin: 0; padding: 0 0.6em var(--s-1); font-size: var(--step--2); color: var(--ink-2); }
+  .wr-legend[hidden] { display: none; }
   .wr-dot { font-size: 0.9em; }
   .wr-dot--ok { color: var(--ch-g); }
-  .wr-dot--warn, .wr-dot--stop, .wr-dot--stale { color: var(--ink); }
+  .wr-dot--warn, .wr-dot--stop, .wr-dot--stale { color: var(--ink); font-size: 1.05em; }
   .wr-dot--todo { color: var(--ink-3); }
+  .wr-dot--busy { color: var(--accent); }
   .wr-busy { padding: 0 0 var(--s-2); font-size: var(--step--1); font-style: italic; margin: 0; }
   .wr-busy[hidden] { display: none; }
   .wr-bar { padding-block: var(--s-4) var(--s-3); }
   .wr-bar0 { display: flex; flex-wrap: wrap; justify-content: flex-start; gap: var(--s-2) var(--s-4); align-items: center; margin: 0; max-width: none; text-align: left; }
   .wr-bar0 .meta { margin: 0; }
   /* a step, what it is for, the inputs, one main button, the result and one fold (DESIGN §0) */
-  .wr-stage { border-top: 0.5px solid var(--rule-strong); padding-top: var(--s-5); margin-top: var(--s-6); scroll-margin-top: 4.5rem; }
+  .wr-stage { border-top: 0.5px solid var(--rule-strong); padding-top: var(--s-5); margin-top: var(--s-2); scroll-margin-top: 4.5rem; }
+  .wr-stage[hidden] { display: none; }
+  .wr-stage:focus { outline: none; }
+  .wr-next { display: flex; justify-content: flex-end; margin-block: var(--s-4) 0; }
+  /* step 2, the settings on the left and the view of the flame on the right, one column when they do not fit */
+  .wr-two { display: grid; gap: var(--s-4) var(--s-6); grid-template-columns: repeat(auto-fit, minmax(min(100%, 23rem), 1fr)); align-items: start; }
+  .wr-two > * { min-width: 0; }
+  .wr-two__view .wr-result { margin-block: var(--s-3) 0; }
+  .wr-two__view figure { margin-block: var(--s-3); }
+  .wr-scaleline { font-size: var(--step--1); margin: 0; }
   .wr-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: var(--s-2) var(--s-4); }
   .wr-head h2 { margin: 0; font-size: var(--step-1); line-height: 1.25; }
   .wr-pill { margin: 0; font-size: var(--step--1); padding: 0.1em 0.75em; border: 1px solid var(--rule-strong); border-radius: 1em; color: var(--ink-2); }
@@ -95,14 +109,19 @@ const config = JSON.stringify({ lang, version: TOOL_VERSION, commit, source, bui
   .wr-check--warn { border-left: 2px solid var(--ink); padding-left: var(--s-2); }
   /* Options, the only fold of each step */
   details.wr-opts { margin-top: var(--s-5); border-top: 0.5px dashed var(--rule-strong); }
-  details.wr-opts > summary { cursor: pointer; color: var(--accent); padding: var(--s-2) 0; font-size: var(--step--1); width: max-content; }
-  details.wr-opts > summary:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
+  details.wr-opts > summary, details.wr-fold > summary { cursor: pointer; color: var(--accent); padding: var(--s-2) 0; font-size: var(--step--1); width: max-content; }
+  details.wr-opts > summary:focus-visible, details.wr-fold > summary:focus-visible { outline: 2px solid var(--focus, var(--accent)); outline-offset: 2px; }
   .wr-opts__body { padding-bottom: var(--s-3); }
   .wr-osec { border-top: 0.5px solid var(--rule); margin-top: var(--s-3); }
   .wr-osec > h3 { margin-top: var(--s-3); }
   .wr-fields { display: grid; gap: var(--s-3) var(--s-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); align-items: end; margin-block: var(--s-2); }
   .wr-chk { font-size: var(--step--1); display: inline-flex; gap: 0.4em; align-items: baseline; cursor: pointer; }
   .wr-chk input { width: 1.05rem; height: 1.05rem; }
+  .wr-chk--num input[type='number'] { width: 4.5em; height: auto; font: inherit; font-family: var(--font-mono); color: var(--ink); background: var(--paper); border: 0; border-bottom: 1px solid var(--rule-strong); }
+  .wr-howband { font-size: var(--step--1); margin-block: 0 var(--s-3); max-width: var(--measure); }
+  .wr-howband ol { margin: 0; padding-left: 1.4em; }
+  .wr-howband ul { margin: 0.2em 0 0.3em; padding-left: 1.1em; }
+  .wr-howband p { margin-block: var(--s-1) 0; }
   .wr-plain { list-style: none; padding: 0; }
   .wr-plain li { margin-block: 0.35em; }
   .wr-filebtn { cursor: pointer; }
@@ -132,6 +151,7 @@ const config = JSON.stringify({ lang, version: TOOL_VERSION, commit, source, bui
   .wr-chk .meta, .wr-app .control .meta { display: block; margin-top: 0.2em; font-style: italic; }
   .wr-preview { width: auto; max-width: min(100%, 520px); max-height: 30rem; min-width: 12rem; height: auto; object-fit: contain; image-rendering: pixelated; margin-inline: auto; display: block; background: var(--paper-2, var(--paper)); }
   canvas#wr-pcv, canvas.wr-ruler { cursor: crosshair; }
+  canvas#wr-fcv { cursor: crosshair; touch-action: none; }
   .wr-preview:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 2px; }
   .wr-plot { min-height: 12rem; }
   .wr-mk { padding: 0 0.2em; }
@@ -147,15 +167,14 @@ const config = JSON.stringify({ lang, version: TOOL_VERSION, commit, source, bui
   .wr-app .lab { width: 100%; margin-left: 0; transform: none; }
   .wr-tabs { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4em; margin-block: var(--s-3); font-size: var(--step--1); }
   .wr-tabs .label { margin-right: 0.6em; }
-  .wr-tab { border: 0.5px solid var(--rule-strong); border-bottom-width: 2px; background: var(--paper); color: var(--accent); padding: 0.2em 0.8em; cursor: pointer; font: inherit; }
-  .wr-tab[aria-pressed='true'] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+  .wr-tab { border: 0.5px solid var(--rule-strong); border-bottom-width: 2px; background: var(--paper); color: var(--accent); padding: 0.35em 0.8em; cursor: pointer; font: inherit; min-height: 36px; }
+  .wr-tab[aria-pressed='true'] { color: var(--ink); background: var(--paper-2, var(--paper)); border-bottom-color: var(--accent); font-weight: 600; }
   .wr-tab:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 2px; }
   .wr-frames { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: var(--s-3); }
   .wr-frame label { display: grid; gap: 0.2em; font-size: var(--step--2); max-width: 9rem; cursor: pointer; }
   .wr-frame canvas { width: 8rem; height: auto; image-rendering: pixelated; }
   .wr-frame.wr-off canvas { opacity: 0.35; filter: grayscale(1); }
-  .wr-map { image-rendering: pixelated; height: auto; display: block; background: var(--paper); }
-  .wr-map--big { width: min(100%, 15rem); margin-inline: auto; }
+  .wr-map { height: auto; display: block; background: var(--paper); }
   .wr-mapax { position: relative; margin: 0.6em auto 2.8em; left: 1.4rem; }
   .wr-mapax > canvas { width: 100%; outline: 1px solid var(--rule-strong); }
   .wr-tk { position: absolute; font-size: var(--step--2); font-family: var(--font-mono); white-space: nowrap; line-height: 1; }
@@ -166,17 +185,20 @@ const config = JSON.stringify({ lang, version: TOOL_VERSION, commit, source, bui
   .wr-axt { position: absolute; font-size: var(--step--2); font-style: italic; white-space: nowrap; }
   .wr-axt--x { top: calc(100% + 1.5em); left: 50%; transform: translateX(-50%); }
   .wr-axt--y { bottom: 100%; left: 0; transform: translate(-100%, -0.3em); }
-  .wr-maps { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); align-items: end; margin-block: var(--s-4); }
-  .wr-maps3 { display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: end; }
-  .wr-maps3 > div { display: grid; justify-items: center; gap: 0.2em; }
-  .wr-maps3 canvas { width: 6.5rem; }
-  .wr-cbar { width: min(100%, 15rem); height: 0.8rem; display: block; margin: var(--s-2) auto 0; image-rendering: auto; }
-  .wr-barlab { display: flex; justify-content: space-between; width: min(100%, 15rem); margin: 0.1em auto 0; font-size: var(--step--2); font-family: var(--font-mono); }
+  .wr-maps { display: grid; gap: var(--s-4); grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); align-items: start; margin-block: var(--s-4); }
+  figure.wr-maps > figcaption { grid-column: 1 / -1; }
+  .wr-maps .wr-mapax { margin-bottom: 2.8em; }
+  .wr-maplab { display: block; text-align: center; }
+  .wr-plot .band.s-data { fill: color-mix(in srgb, var(--c-data) 14%, transparent); }
+  .wr-plot .band.s-physics { fill: color-mix(in srgb, var(--c-physics) 14%, transparent); }
+  .wr-plot .band.s-learned { fill: color-mix(in srgb, var(--c-learned) 14%, transparent); }
+  .wr-cbar { width: var(--wr-mapw, min(100%, 15rem)); height: 0.8rem; display: block; margin: var(--s-2) auto 0; position: relative; left: 1.4rem; image-rendering: auto; }
+  .wr-barlab { display: flex; justify-content: space-between; width: var(--wr-mapw, min(100%, 15rem)); margin: 0.1em auto 0; position: relative; left: 1.4rem; font-size: var(--step--2); font-family: var(--font-mono); }
   .wr-npy .wr-btn { font-family: var(--font-mono); font-size: 0.9em; }
-  .wr-netmaps canvas { width: auto; height: min(24rem, 60vh); }
   .wr-progress { display: block; width: min(100%, 20rem); height: 0.6rem; accent-color: var(--ink); }
   .wr-progress[hidden] { display: none; }
   .wr-noscript, .wr-loading { margin-block: var(--s-4); max-width: var(--measure); margin-inline: auto; }
-  @media (max-width: 40rem) { .wr-app table { font-size: var(--step--2); } .wr-stepname { display: none; } .wr-steps ol { gap: 0.2em 0.9em; } }
+  /* on a phone the bar fits with the name of the step on screen only */
+  @media (max-width: 40rem) { .wr-app table { font-size: var(--step--2); } .wr-stepname { display: none; } .wr-step[aria-selected='true'] .wr-stepname { display: inline; } .wr-steplist { justify-content: space-between; gap: 0; } .wr-step { padding-inline: 0.45em; } }
   @media print { .wr-app { display: none; } }
 </style>

@@ -3,20 +3,20 @@
  * offline single-file copy can be built from the same source with esbuild. `mount` fills the container
  * that Tool.astro writes with five steps in the order of the lab (manim/qa/redesign/DESIGN.md), each with
  * what it is for, its inputs, one main button, its result with one check and a single Options fold.
+ * One step is on screen at a time (qa/hottest/f5), the bar of tabs says the state of the others.
  * Nothing heavy runs without being asked, and changing a setting marks as outdated only the stages that
  * depend on it. All the heavy work runs in the coordinator Worker (pyro.worker.ts), ANNAbel runs here on
  * WebGPU or on its own pool of helper Workers, created at load time with everything else (§11.5).
  */
 import { LinePlot, type Series } from '../../lib/plot.ts';
 import { PRESETS, DEFAULT_PRESET, presetFor, type Preset } from '../../lib/workshop-rgb/presets.ts';
-import { buildPsi, parseResponseCsv, makeBand, bandX, ratioTable, CH, SP700, type Ch, type EmLaw, type Rgb, type IrCut, type ShortPass } from '../../lib/workshop-rgb/radiometry.ts';
-import { scaleTailR, TAIL_CUT_NM, type TailCal } from '../../lib/workshop-rgb/tailcal.ts';
+import { buildPsi, parseResponseCsv, makeBand, ratioTable, CH, SP700, type Ch, type EmLaw, type Rgb, type IrCut, type ShortPass } from '../../lib/workshop-rgb/radiometry.ts';
 import { decideCalibration, type CalDecision } from '../../lib/workshop-rgb/calstate.ts';
-import { T0C, type Aperture, type Plateau, type FrameSignal } from '../../lib/workshop-rgb/oven.ts';
+import { T0C, compareHottest, HOT_SHIFT_WARN_K, HOT_FLAME_K, type HotCompare, type Aperture, type Plateau, type FrameSignal } from '../../lib/workshop-rgb/oven.ts';
 import { LAMBDA_REL_MIN, LAMBDA_REL_MAX } from '../../lib/workshop-rgb/invert.ts';
 import type { BayerPattern, ShiftTest } from '../../lib/workshop-rgb/frames.ts';
 import { buildProblem, initXavier, layout, trainWithEngine, finishStage1, WorkerPoolEngine, createGpuStage1, webgpuAvailable, helperCount, ITER_LONG, type Projections, type TrainResult, type TrainTick } from '../../lib/workshop-rgb/annabel/index.ts';
-import { buildStage2Problem, initStage2, trainStage2, finishStage2, Stage2LocalEngine, STAGE2_DEFAULTS, XCHECK_WARN_P90_K, type KernelTable, type XCheck, type BoundReport, type Stage2Problem } from '../../lib/workshop-rgb/annabel/stage2.ts';
+import { buildStage2Problem, initStage2, trainStage2, finishStage2, Stage2LocalEngine, STAGE2_DEFAULTS, XCHECK_WARN_K, XCHECK_WARN_P90_K, XCHECK_WARN_FS_LOG, type KernelTable, type XCheck, type BoundReport, type Stage2Problem } from '../../lib/workshop-rgb/annabel/stage2.ts';
 import { Stage2PoolEngine } from '../../lib/workshop-rgb/annabel/workers.ts';
 import { createGpuStage2 } from '../../lib/workshop-rgb/annabel/gpu2.ts';
 import { defaultHelperFactory } from '../../lib/workshop-rgb/annabel/workers.ts';
@@ -25,17 +25,25 @@ import { readZip, writeZip, ZipError } from './zip.ts';
 import { npy, npyString, npz } from './npy.ts';
 import { sha256Plain } from './sha256.ts';
 import { L, num, sig, pct, esc, chName, setLang, getLang, msgHtml, msgText, CH_LETTER, type Lang, type Msg } from './i18n.ts';
-import { drawPreview, drawGrey, drawMap, drawBar, circle, line, mapPng, mapAxes, cssVar, theme, type Planes, type MapExtent } from './draw.ts';
+import { drawPreview, drawGrey, drawMap, drawBar, circle, line, mapPng, mapAxes, rStretch, mapWidthCss, cssVar, theme, type Planes, type MapExtent } from './draw.ts';
 import { TOOL_VERSION, TOOL_NAME } from './version.ts';
 import type { ToWorker, FromWorker, PsiMsg } from './protocol.ts';
-import type { FrameInfo, Prepared, AbelOut, AbelRun, TfsOut, FsMode, CalUse, GeometryOpts, Sym, Vignette, OvenResult } from './engine.ts';
+import type { FrameInfo, Prepared, AbelOut, AbelRun, TfsOut, FsMode, CalUse, GeometryOpts, Sym, Vignette, OvenResult, RefineOut, RefineKind, EmissionNet, TfsNet } from './engine.ts';
+import { REFINE_MAX_POINTS, REFINE_TOL_T_K, REFINE_TOL_REL, FS_MASK_DEFAULT_PCT, finePoints, fsMaskOf, refineFactor, runsOf, validMaskPct, type FsMask, type RefineFactor } from '../../lib/workshop-rgb/refine.ts';
 import type { AbelMethod } from '../../lib/workshop-rgb/invert.ts';
 // The app trains 3000 iterations; on the example flame the network needs about 30 000 to agree with the
 // closed form (148 K median gap at 3000, 12 K at 30 000, WEB_REPORT RGB-ANNAbel etapa 2), so the tool starts there.
 const NET_ITERATIONS = 30000;
+/**
+ * Weight of the ratio term of stage 2. The app's 10⁻² needs many iterations before T follows the ratio, with fewer the
+ * network stays at the wrong T. On the laboratory flame the gap to the smoothed direct T is 21 to 26 K with 10⁻² at
+ * 20 000 and 30 000 iterations (four seeds), 24 K with 0,1 at 10 000 and 23 K with 1 at 3000 and 5000 (qa/hottest/netlab).
+ */
+const netLambda = (iterations: number) => (iterations >= 20000 ? 1e-2 : iterations >= 10000 ? 0.1 : 1);
+const NET_FEW_ITERATIONS = 10000;
 
 export interface ExampleSet { file: string; bytes: number; sha256: string; camera: string; available: boolean; preset?: { texpUs: number; mmPerPx: number; zBurnerMm: number; quarter?: number; fineDeg?: number; burnerRow?: number; rowBottom?: number; lambdaRel?: number }; with?: string[] }
-export interface MountOptions { lang: Lang; version: string; commit: string; source?: string; built?: string; base: string; examples: ExampleSet[]; pageUrl: string; biases: { key: string; es: string; en: string }[]; ovenFlameBias?: { es: string; en: string }; tailBias?: { es: string; en: string }; tailRange?: { es: string; en: string } }
+export interface MountOptions { lang: Lang; version: string; commit: string; source?: string; built?: string; base: string; examples: ExampleSet[]; pageUrl: string; biases: { key: string; es: string; en: string }[] }
 
 // ============================================================================ worker plumbing
 let worker: Worker;
@@ -76,22 +84,21 @@ interface Calibration {
   vignette: { block: number; bw: number; bh: number; R: string; G: string; B: string } | null; hot: string | null;
   darkLine: [number, number, number] | null; darkLineFit?: Rgb<{ a: number; b: number }> | null; ovenTemps: number[]; texpRangeUs: [number, number]; ratioWorst: number | null;
   plateau?: { cy: number; cx: number; radius: number } | null; darkMode?: string;
-  /** IR tail calibration of ψ_R with the oven (tailcal.ts). With applied, K_R = K_G · K_R/K_G of the tail fit and psi is the corrected ψ. */
-  tail?: CalTail | null;
-}
-interface CalTail {
-  applied: boolean; s: number; u: number; KRKG: number; uKRKG: number; cutNm: number; temps: number[];
-  criterionPct: number; criterionNominalPct: number; criterionFrom: number[]; pass: boolean; strongT: number; strongPct: number;
-  driftPct: number; driftNominalPct: number; ratioAfterK: number; ratioBeforeK: number; uFlameK: number; driftBNominalPct: number;
+  /** K_R/K_G per oven temperature and the change of a flame at 1800 K between the two hottest ones. */
+  compare?: HotCompare | null;
 }
 
+/** The band as it ran (engine.ts runBand), for the list next to it. */
+interface BandInfo { n: number; how: 'oven' | 'noise' | 'nocal'; sigmaT: number; ovenApplied: boolean; kStat: boolean; scalePct: number; method: string; sym: string; path: TfsPath; shiftK: number | null; tUsed: number; tNext: number | null }
 /** T and f_s path of stage 5. 'net' is RGB-ANNAbel stage 2 (Magaña et al. 2025), next to the table. */
 type TfsPath = 'ratio' | 'fit3' | 'net';
 /** Mask bits of TfsOut (engine.ts), saturated height and low signal. */
 const M_SAT = 8, M_LOW = 2;
 const asTfsPath = (v: unknown): TfsPath => (v === 'fit3' || v === 'net' ? v : 'ratio');
 /** What the stage-2 network leaves next to the maps, on the grid of the stage (Nz × Nr, NaN outside). */
-interface NetOut { xcheck: XCheck | null; bounds: BoundReport | null; Tcf: Float64Array; fsCf: Float64Array; bestIter: number; completed: number; planned: number; path: string; elapsedS: number; fsRef: number; nTrain: number; nMask: number; rows: number }
+interface NetOut { eval: TfsNet; xcheck: XCheck | null; bounds: BoundReport | null; Tcf: Float64Array; fsCf: Float64Array; bestIter: number; completed: number; planned: number; path: string; elapsedS: number; fsRef: number; nTrain: number; nMask: number; rows: number; gap: NetGap | null; lambdaRatio: number }
+/** Network against the direct calculation after smoothing its noise. 'noise' means the only remaining gap is the noise of the direct map. */
+interface NetGap { verdict: 'agree' | 'noise' | 'bad'; TMedK: number; TP90K: number; fsLog: number; noiseP90K: number }
 
 const S = {
   o: null as unknown as MountOptions,
@@ -99,7 +106,7 @@ const S = {
   quick: [] as Item[], quickMsgs: [] as Msg[], phoneDismissed: false, busy: '' as string, gpu: null as boolean | null,
   presetId: DEFAULT_PRESET.id as Preset['id'], presetWhy: 'default' as string, presetManual: false, basis: DEFAULT_PRESET.basis as 'photon' | 'energy',
   irOn: true, irCutNm: 630, irWidthNm: 12, sp: false, custom: null as null | { name: string; lamNm: Float64Array; eta: Rgb<Float64Array> },
-  eps: 1, sigmaT: 5, known: true, darkMode: 'auto' as 'auto' | 'intercept' | 'strip' | 'files', perT: 'slope' as 'slope' | 'band', calibrateAt: 'highest' as 'highest' | 'all', tailOn: true,
+  eps: 1, sigmaT: 5, known: true, darkMode: 'auto' as 'auto' | 'intercept' | 'strip' | 'files', perT: 'slope' as 'slope' | 'band', calibrateAt: 'highest' as 'highest' | 'all',
   group: true, bayer: 'RGGB' as BayerPattern, centre: false,
   calPath: 'oven' as 'oven' | 'sphere' | 'file',
   oven: { series: [] as SeriesView[], cur: 0, plateaus: {} as Record<string, { cy: number; cx: number; radius: number }>, darks: [] as { id: string; texpUs: number; level: Rgb<number>; zeroFrac: number }[], ceil12: 4095, result: null as null | (OvenResult & { darkLine: Rgb<{ a: number; b: number }> | null; hot: Int32Array }), view: 1, analysing: false },
@@ -112,12 +119,20 @@ const S = {
     burnerOk: false, mmPerPx: NaN, scaleConfirmed: false, scaleUnc: 1, rulerId: '' as string, rulerPts: [] as [number, number][], rulerMm: 10, rulerScale: 1, rulerPreview: null as null | Planes, shift: null as null | (ShiftTest & { pattern: BayerPattern }),
     burnerRow: NaN, zBurner: 0, prepared: null as null | (Prepared & { bgHow?: string; nHot?: number }), height: 0, calUsed: null as CalUse | null, sensorMismatch: false },
   abel: { method: 'tikhonov' as AbelMethod | 'annabel', sym: 'average' as Sym, lambdaRel: 0.1, lambdaAuto: true, lamFlat: false, lcFor: null as unknown, lcSym: '' as string, segments: 12, satLambda: 1e-4, lcurve: null as null | { lambdas: number[]; rho: number[]; eta: number[]; lambda: number; index: number }, out: null as AbelOut | null, outMethod: '' as string, compare: null as null | Record<string, Float64Array>,
-    annabel: { running: false, ctrl: null as AbortController | null, tick: null as TrainTick | null, estimate: null as null | { path: string; sPerIter: number }, iterations: ITER_LONG, result: null as TrainResult | null, msgs: [] as Msg[] } },
-  tfs: { path: 'ratio' as TfsPath, net: { running: false, ctrl: null as AbortController | null, tick: null as TrainTick | null, estimate: null as null | { path: string; sPerIter: number }, iterations: NET_ITERATIONS, result: null as NetOut | null, msgs: [] as Msg[] }, pair: 'RG' as 'RG' | 'BG' | 'BR', em: 'group' as 'group' | 'coeffs' | 'constant', a: 0.284, b: 0.272, c: 0.057, E: 0.3, sigFrac: 0.02, islandFrac: 0.05, zCut: NaN, chemThr: 0.1, fsChannel: 'RG' as FsMode, out: null as TfsOut | null, dec: null as CalDecision | null },
-  res: { Tmin: 1400, Tmax: 2100, Tmanual: false, Tout: 0, bandHow: '' as '' | 'oven' | 'noise' | 'nocal', fsMax: NaN, heights: [] as number[], band: null as null | { Tlo: Float64Array; Thi: Float64Array; fslo: Float64Array; fshi: Float64Array }, seed: 42, nBand: 30, view: 'T' as string },
+    annabel: { running: false, ctrl: null as AbortController | null, tick: null as TrainTick | null, estimate: null as null | { path: string; sPerIter: number }, iterations: ITER_LONG, result: null as TrainResult | null, eval: null as EmissionNet | null, msgs: [] as Msg[] } },
+  tfs: { path: 'ratio' as TfsPath, net: { running: false, ctrl: null as AbortController | null, tick: null as TrainTick | null, estimate: null as null | { path: string; sPerIter: number }, iterations: NET_ITERATIONS, result: null as NetOut | null, msgs: [] as Msg[] }, runMsgs: [] as Msg[], pair: 'RG' as 'RG' | 'BG' | 'BR', em: 'group' as 'group' | 'coeffs' | 'constant', a: 0.284, b: 0.272, c: 0.057, E: 0.3, sigFrac: 0.02, islandFrac: 0.05, zCut: NaN, chemThr: 0.1, fsChannel: 'RG' as FsMode, out: null as TfsOut | null, dec: null as CalDecision | null },
+  res: { levels: 12, Tmin: 1400, Tmax: 2100, Tmanual: false, Tout: 0, bandHow: '' as '' | 'oven' | 'noise' | 'nocal', fsMax: NaN, heights: [] as number[], band: null as null | { Tlo: Float64Array; Thi: Float64Array; fslo: Float64Array; fshi: Float64Array }, seed: 42, nBand: 30, view: 'T' as string,
+    /** What the band really used, written when it is computed, so its explanation says what ran. */
+    bandInfo: null as null | BandInfo,
+    /** More points with SAT or a network. Factor 1 is the base grid and draws nothing new. */
+    fineFactor: 1 as RefineFactor, fine: null as null | (RefineOut & { forT: TfsOut }), fineBad: '' as '' | 'mismatch' | 'failed',
+    /** Mask by f_s, only what is shown. It never touches S.tfs.out. */
+    fsMaskOn: false, fsMaskPct: FS_MASK_DEFAULT_PCT,
+    /** Why the last band could not be computed, said in step 5 where it was asked for. */
+    bandMsgs: [] as Msg[] },
   stale: {} as Record<number, string>,
-  /** Interface only, never saved, open state of the Options fold of each step (DESIGN §0.3). */
-  ui: { open: {} as Record<number, boolean> },
+  /** Interface only, never saved. Open state of the Options fold of each step (DESIGN §0.3), of the other folds, the step on screen and the ruler. */
+  ui: { open: {} as Record<number, boolean>, folds: {} as Record<string, boolean>, step: 1, scaleOpen: false, reconfirm: false },
   /** Ground truth of the synthetic flame when the loaded set brings verdad_T_fs.csv, for the line of step 5. */
   truth: null as null | { zg: Float64Array; rp: Float64Array; T: Float64Array; F: Float64Array; nr: number },
   /** Step whose loader brought the last files, so its messages are shown there (1 furnace, 3 flame). */
@@ -127,6 +142,7 @@ const S = {
 };
 let idN = 0;
 let timesSet = false;
+let fineTok = 0, fineRunning = 0;
 
 const kB = (b: number) => (b >= 1e6 ? `${num(b / 1e6, 1)} MB` : `${num(b / 1e3, 0)} kB`);
 const tLabel = (tC: number) => `${num(tC, Number.isInteger(tC) ? 0 : 1)} °C`;
@@ -136,8 +152,6 @@ const encName = (e: string) => ({ u12_shifted: L('12 bits desplazados', '12-bit,
 const roleName = (r: Role) => ({ oven: L('horno', 'furnace'), dark: L('oscuro', 'dark'), flat: L('campo plano', 'flat field'), sphere: L('esfera', 'sphere'), flame: L('llama', 'flame'), background: L('fondo', 'background'), ruler: L('regla', 'ruler'), ignore: L('ignorar', 'ignore') } as Record<Role, string>)[r];
 const subs = (t: string) => t.replace(/f_s/g, 'f<sub>s</sub>').replace(/E_G\/E_R/g, 'E<sub>G</sub>/E<sub>R</sub>').replace(/K_j/g, 'K<sub>j</sub>');
 const fin = (x: number) => Number.isFinite(x);
-/** Number with its sign, +342 or −29. */
-const sgn = (x: number, d = 0) => (fin(x) && x > 0 ? `+${num(x, d)}` : num(x, d));
 
 // ============================================================================ spectral response
 function preset(): Preset { return PRESETS.find((p) => p.id === S.presetId) ?? DEFAULT_PRESET; }
@@ -150,14 +164,8 @@ function irCutNow(): IrCut | null {
 /** Short-pass filter declared in front of the lens (preset "pasa-cortos 700 nm", decision after G4 r3). It enters τ(λ). */
 const spNow = (): ShortPass | null => (S.sp ? SP700 : null);
 const spName = () => (S.sp ? ' SP 700 nm OD 3' : '');
-/** ψ_j used downstream of the calibration, the corrected ψ_R when the oven calibration calibrated its IR tail. */
-function psiNow(basis = S.basis): { lamNm: Float64Array; psi: Rgb<Float64Array>; name: string } {
-  const p = psiBase(basis);
-  const t = S.cal?.mode === 'oven' ? S.cal.tail : null;
-  if (!t?.applied) return p;
-  return { lamNm: p.lamNm, psi: scaleTailR(p.lamNm, p.psi, t.s, t.cutNm), name: `${p.name}${tailName(t.s)}` };
-}
-const tailName = (s: number) => L(` · cola de R sobre 700 nm × ${num(s, 3)}`, ` · R tail above 700 nm × ${num(s, 3)}`);
+/** ψ_j used downstream of the calibration. */
+const psiNow = (basis = S.basis) => psiBase(basis);
 /** ψ_j from the response settings, before any correction of the oven (what the oven fit and the sphere use). */
 function psiBase(basis = S.basis): { lamNm: Float64Array; psi: Rgb<Float64Array>; name: string } {
   if (S.cal && S.cal.mode === 'file') {
@@ -205,7 +213,7 @@ function invalidate(from: number, reason: string) {
     const has = s === 1 ? !!S.oven.result || !!S.cal : s === 3 ? !!S.flame.prepared : s === 4 ? !!S.abel.out : s === 5 || s === 6 ? !!S.tfs.out : false;
     if (has) S.stale[s] = reason;
   }
-  if (from <= 6) S.res.band = null;
+  if (from <= 6) { S.res.band = null; S.res.bandMsgs = []; S.res.fine = null; S.res.fineBad = ''; fineTok++; }
 }
 
 // ============================================================================ files in
@@ -292,13 +300,31 @@ async function loadFiles(files: InFile[], source: string, example: string | null
   await harmonise();
   autoPreset();
   checkRun();
+  const fresh = forgetOldPhotos(added, example);
   renderAll();
   if (S.items.some((it) => it.role === 'oven' && it.status === 'ok')) await analyseOven();
   if (added.some((it) => it.role === 'flame' && it.status === 'ok')) await loadFlame();
-  if (added.some((it) => it.role === 'ruler' && it.status === 'ok') && !S.items.some((x) => x.id === S.flame.rulerId && x.role === 'ruler')) { S.flame.rulerId = added.find((it) => it.role === 'ruler')!.id; await loadRuler(); }
+  if (added.some((it) => it.role === 'ruler' && it.status === 'ok') && (fresh || !S.items.some((x) => x.id === S.flame.rulerId && x.role === 'ruler'))) { S.flame.rulerId = added.find((it) => it.role === 'ruler')!.id; await loadRuler(); }
   if (added.some((it) => it.role === 'sphere') && !added.some((it) => it.role === 'oven')) { S.calPath = 'sphere'; S.ui.open[1] = true; const s = added.find((it) => it.role === 'sphere'); if (s?.texpUs) S.sphere.tSphUs = s.texpUs; }
   renderAll();
   announce(added.some((it) => it.role === 'flame') && !added.some((it) => it.role === 'oven' || it.role === 'sphere') ? 3 : 1);
+}
+/**
+ * The scale and the exposure time belong to the photos they were given for. New flame or ruler photos do not inherit
+ * them, from the example or from another set, unless they are the photos of a restored log. With no scale the step stops
+ * and asks for it, a scale kept on other photos would give a wrong f_s without any warning.
+ */
+function forgetOldPhotos(added: Item[], example: string | null): boolean {
+  const photos = added.filter((it) => it.role === 'flame' || it.role === 'ruler');
+  if (example || !photos.length) return false;
+  const r = S.runRef;
+  if (r && photos.every((it) => r.inputs.some((x) => x.sha256 === it.sha))) return false;
+  const texp = added.find((it) => it.role === 'flame' && it.texpUs !== undefined)?.texpUs;
+  const had = fin(S.flame.mmPerPx) || S.flame.scaleConfirmed || (added.some((it) => it.role === 'flame') && S.flame.texpConfirmed);
+  if (!had) return false;
+  S.flame.mmPerPx = NaN; S.flame.scaleConfirmed = false; S.ui.scaleOpen = false; S.ui.reconfirm = true;
+  if (added.some((it) => it.role === 'flame')) { S.flame.texpConfirmed = false; if (texp !== undefined) S.flame.texpUs = texp; }
+  return true;
 }
 /** verdad_T_fs.csv of the synthetic flame (z_mm, r_mm, T_K, fs_ppm on a regular grid), r = 0 repeats the first column. */
 function parseTruth(text: string): typeof S.truth {
@@ -363,6 +389,8 @@ function exampleSets(ex: ExampleSet): ExampleSet[] {
 async function loadExample(ex: ExampleSet) {
   const sets = exampleSets(ex);
   if (sets.some((x) => !x.available)) { S.loadMsgs = [{ code: 'example_missing' }]; renderStage0(); return; }
+  // the example can be loaded again with one click, photos of the student cannot
+  if (S.items.length && !S.example && !window.confirm(L('El ejemplo reemplaza sus fotos y lo calculado. ¿Seguir?', 'The example replaces your photos and what was computed. Continue?'))) return;
   S.busy = L('Bajando el juego de ejemplo', 'Downloading the example set');
   renderBusy();
   try {
@@ -373,11 +401,14 @@ async function loadExample(ex: ExampleSet) {
       files.push({ path: x.file, blob: await r.blob() });
     }
     S.busy = '';
+    // a new example starts the work over, so its first step is the one to do. A failed download stays where it was
+    setStep(1);
+    S.ui.scaleOpen = false;
     const cleared = S.items.length > 0;
     if (cleared) await clearTable();
     // each example starts from the default view, so one set does not inherit the rotation or the rows of another
     const pr = ex.preset;
-    Object.assign(S.flame, { quarter: pr?.quarter ?? 0, mirror: false, fineDeg: pr?.fineDeg ?? 0, axisAuto: true, axisManual: NaN, rowTop: NaN, rowBottom: pr?.rowBottom ?? NaN, burnerRow: pr?.burnerRow ?? NaN, burnerOk: false,
+    Object.assign(S.flame, { quarter: pr?.quarter ?? 0, mirror: false, fineDeg: pr?.fineDeg ?? 0, axisAuto: true, axisManual: NaN, nr: NaN, rowTop: NaN, rowBottom: pr?.rowBottom ?? NaN, burnerRow: pr?.burnerRow ?? NaN, burnerOk: false,
       texpUs: NaN, texpConfirmed: false, mmPerPx: NaN, scaleConfirmed: false, zBurner: 0 });
     Object.assign(S.abel, { lambdaRel: pr?.lambdaRel ?? 0.1, lambdaAuto: pr?.lambdaRel === undefined, lamFlat: pr?.lambdaRel !== undefined, lcurve: null, lcFor: null });
     S.loadFrom = 1;
@@ -488,32 +519,22 @@ function setCalFromOven() {
   const crop = it.crop ?? { x0: 0, y0: 0 };
   const allT = S.items.filter((x) => x.role === 'oven' && x.texpUs !== undefined).map((x) => x.texpUs!);
   const dl = r.darkLine;
-  // IR tail of ψ_R calibrated with the oven, by default with three or more temperatures (professor after G5)
-  const tc = r.tail;
-  const tail: CalTail | null = tc && tc.ok ? {
-    applied: S.tailOn, s: tc.s, u: tc.u.s, KRKG: tc.KRKG, uKRKG: tc.u.KRKG, cutNm: TAIL_CUT_NM, temps: tc.temps,
-    criterionPct: tc.criterion.worstPct, criterionNominalPct: tc.criterion.nominalPct, criterionFrom: tc.criterion.from, pass: tc.criterion.pass,
-    strongT: tc.criterion.strongT, strongPct: tc.criterion.strongPct, driftPct: tc.driftPct, driftNominalPct: tc.driftNominalPct,
-    ratioAfterK: tc.ratioTest.afterK, ratioBeforeK: tc.ratioTest.beforeK, uFlameK: tc.u.flameK, driftBNominalPct: tc.driftNominalByChannelPct.B,
-  } : null;
-  const on = !!tail?.applied;
+  // K_j of the hottest temperature with nominal ψ_j (professor, 2026-11-03). The change of K_R/K_G with T is shown, it does not reject the calibration. T and f_s use R and G, blue has K_B and stays out
   const base = psiBase();
-  const psiRec = on ? basePsiRecord({ lamNm: base.lamNm, psi: scaleTailR(base.lamNm, base.psi, tail!.s, tail!.cutNm), name: `${base.name}${tailName(tail!.s)}` }) : basePsiRecord(base);
-  // with the tail, K_G stays the oven K_G (nominal ψ_G) and K_R = K_G · K_R/K_G of the tail fit; blue does not pass and stays out
-  const KG = f.channels.G.K, sKG = f.channels.G.sK;
-  const K = on ? { R: KG * tail!.KRKG, G: KG, B: f.channels.B.K } : { R: f.channels.R.K, G: f.channels.G.K, B: f.channels.B.K };
-  const sK = on ? { R: KG * tail!.KRKG * Math.hypot(sKG / KG, tail!.uKRKG / tail!.KRKG), G: sKG, B: f.channels.B.sK } : { R: f.channels.R.sK, G: f.channels.G.sK, B: f.channels.B.sK };
-  const consistent = on ? tail!.pass : f.consistent;
-  const calibrated: Ch[] = on ? (tail!.pass ? ['R', 'G'] : []) : f.calibrated;
+  const psiRec = basePsiRecord(base);
+  const K = { R: f.channels.R.K, G: f.channels.G.K, B: f.channels.B.K };
+  const sK = { R: f.channels.R.sK, G: f.channels.G.sK, B: f.channels.B.sK };
+  const calibrated: Ch[] = (['R', 'G'] as Ch[]).filter((c) => f.channels[c].perT.length > 0);
+  const compare = compareHottest(f, makeBand(base.lamNm, base.psi, 'gl', emLaw()));
   S.cal = {
     format: 'rgbpyro.calibration', version: 1, tool: { name: TOOL_NAME, version: TOOL_VERSION, commit: S.o.commit }, created: new Date().toISOString(),
     mode: 'oven', K, sK,
-    sigmaT: S.sigmaT, Tcal: f.channels.R.Tcal, eps: S.eps, emissivityKnown: S.known, ndDeclared: false, absolute: S.known, calibrated, consistent, tested: on ? true : f.ratio.RG.tested, unit: 'DN12',
+    sigmaT: S.sigmaT, Tcal: f.channels.R.Tcal, eps: S.eps, emissivityKnown: S.known, ndDeclared: false, absolute: S.known, calibrated, consistent: true, tested: f.ratio.RG.tested, unit: 'DN12',
     sensor: sensorOf(it), frame: { width: fi.width, height: fi.height }, binning: fi.binning, scale: fi.scale, gx0: fi.gx0, gy0: fi.gy0, origin: crop, encoding: fi.encoding,
     camera: cameraOf(S.items)?.cam ?? preset().id, preset: S.custom ? S.custom.name : preset().id, basis: S.basis, irCut: irCutNow(), shortPass: spNow(), psi: psiRec,
     vignette: S.flat.vignette ? { block: S.flat.vignette.block, bw: S.flat.vignette.bw, bh: S.flat.vignette.bh, R: b64(S.flat.vignette.R), G: b64(S.flat.vignette.G), B: b64(S.flat.vignette.B) } : null,
     hot: r.hot.length ? b64(r.hot) : null, darkLine: null, darkLineFit: dl, ovenTemps: S.oven.series.map((s) => s.tC),
-    texpRangeUs: [Math.min(...allT), Math.max(...allT)], ratioWorst: r.ratioWorst, plateau: S.oven.plateaus[String(top.tC)], darkMode: darkModeNow(), tail,
+    texpRangeUs: [Math.min(...allT), Math.max(...allT)], ratioWorst: r.ratioWorst, plateau: S.oven.plateaus[String(top.tC)], darkMode: darkModeNow(), compare,
   };
   invalidate(2, 'cal');
 }
@@ -878,9 +899,10 @@ async function runAbelNow() {
   try {
     S.abel.out = await ask<AbelOut>({ type: 'abel.run', run: abelRun() });
     S.abel.outMethod = S.abel.method;
+    S.abel.annabel.msgs = [];
     delete S.stale[4];
     invalidate(5, 'abel');
-  } catch (e) { S.abel.annabel.msgs = [{ code: (e as { code: string }).code }]; }
+  } catch (e) { S.abel.annabel.msgs = [{ code: (e as { code: string }).code, level: 'error' }]; }
   S.busy = '';
   renderAll();
   announce(4);
@@ -986,11 +1008,11 @@ async function runAnnabel() {
   const A = S.abel.annabel;
   const p = S.flame.prepared!;
   A.running = true; A.msgs = []; A.ctrl = new AbortController(); A.tick = null;
-  renderStage4();
+  renderStage4(); renderStage6();
   try {
     const prob = buildProblem(a.proj);
     const p0 = initXavier(S.res.seed);
-    const topts = { iterations: A.iterations, signal: A.ctrl.signal, onTick: (t: TrainTick) => { A.tick = t; renderAnnabelProgress(); } };
+    const topts = { iterations: A.iterations, signal: A.ctrl.signal, onTick: (t: TrainTick) => { A.tick = t; renderAnnabelProgress(); renderTrain(); } };
     let train: TrainResult;
     if (S.gpu) {
       const g = await createGpuStage1(prob, p0, A.iterations);
@@ -1003,6 +1025,7 @@ async function runAnnabel() {
     if (train.endReason === 'stopped_by_user') A.msgs.push({ code: 'annabel_stopped', vars: { n: train.bestIter }, level: 'info' });
     const absolute = !!S.flame.calUsed;
     const res = finishStage1(prob, a.proj.b, { rMm: a.proj.rMm, zMm: a.proj.zMm, times: a.proj.times }, train, { absolute });
+    A.eval = { params: train.params, norm: prob.norm, outScale: prob.outScale, bScale: prob.bScale };
     const src = res.jSI ?? Float32Array.from(res.jPerMm, (v) => v * 1e3);
     const nr = p.nr;
     const J: Float64Array[][] = [[], [], []], R: Float64Array[][] = [[], [], []];
@@ -1029,15 +1052,18 @@ async function runTfsNow() {
   if (!burnerGate()) return;
   S.busy = L('Calculando la temperatura y la fracción de hollín', 'Computing the temperature and the soot volume fraction');
   renderBusy();
+  S.tfs.runMsgs = [];
   try {
     S.tfs.dec = calDecision();
     S.tfs.net.result = null;
+    S.res.fine = null; S.res.fineBad = ''; fineTok++;
     S.tfs.out = await ask<TfsOut>(tfsRunMsg());
     if (S.tfs.path === 'net') { S.busy = ''; renderBusy(); await runNet(); }
     delete S.stale[5]; delete S.stale[6];
     S.res.band = null;
     const p = S.flame.prepared!;
-    if (!S.res.heights.length) {
+    // a new crop can have fewer rows than the heights chosen before, those heights no longer exist
+    if (!S.res.heights.length || S.res.heights.some((k) => fin(k) && k >= p.nz)) {
       // the three default heights fall inside the rows with cells in use, so every profile has data
       const t = S.tfs.out!, rows: number[] = [];
       for (let k = 0; k < p.nz; k++) for (let i = 0; i < p.nr; i++) if (t.mask[k * p.nr + i] & 1) { rows.push(k); break; }
@@ -1045,10 +1071,11 @@ async function runTfsNow() {
       S.res.heights = [0.25, 0.5, 0.75].map((f) => Math.round(k0 + f * (k1 - k0)));
     }
     defaultScales();
-  } catch (e) { S.flame.msgs.push({ code: (e as { code: string }).code }); }
+  } catch (e) { S.tfs.runMsgs = [{ code: (e as { code: string }).code, level: 'error' }]; }
   S.busy = '';
   renderAll();
   announce(5);
+  void refreshFine();
 }
 /** The worker computes the table paths. For the network it gives the closed form (fit3), its masks and the table. */
 const workerPath = (): 'ratio' | 'fit3' => (S.tfs.path === 'net' ? 'fit3' : S.tfs.path);
@@ -1066,9 +1093,57 @@ function netInput(t: TfsOut): { J: Float32Array; grid: { nt: number; nz: number;
   const K = new Float32Array(3 * nT);
   K.set(G.R, 0); K.set(G.G, nT); K.set(G.B, 2 * nT);
   // f_s,ref of the app in absolute mode (20 ppm); without a calibration f_s is relative and the bound follows the closed form
-  let fsRef = 2e-5;
-  if (calDecision().fs !== 'ppm') { let m = 0; for (let q = 0; q < t.fs.length; q++) if (t.mask[q] & 1 && fin(t.fs[q])) m = Math.max(m, t.fs[q]); fsRef = m > 0 ? 4 * m : 1; }
+  // the upper bound of f_s follows the flame, as a fixed 20 ppm leaves a weak flame in the flat end of the sigmoid (0,7 ppm needs 3,5 % of the range)
+  let m = 0;
+  for (let q = 0; q < t.fs.length; q++) if (t.mask[q] & 1 && fin(t.fs[q])) m = Math.max(m, t.fs[q]);
+  const fsRef = m > 0 ? 4 * m : calDecision().fs === 'ppm' ? 2e-5 : 1;
   return { J, grid: { nt: 1, nz: keep.length, nr, rMm: p.rMm, zMm: keep.map((k) => p.zMm[k]), times: [0] }, kern: { Tgrid: t.table.T, K, chanW: tfsWeights(), jToSi: 1, fsRef }, keep };
+}
+/**
+ * Starts the outputs at the median T and f_s of the closed form, through the bias of the last layer. From σ(0) the network
+ * starts at 1800 K and half the bound of f_s, far above the emission, and T falls to about 1100 K with f_s almost constant
+ * because lowering T is the fastest way to lower the emission. It stays on that flat solution for thousands of iterations.
+ * The app starts at σ(0), the parity of tests/workshop-rgb-stage2.test.ts is on initStage2, which is not changed.
+ */
+function netStart(prob: Stage2Problem, seed: number): Float32Array {
+  const p0 = initStage2(seed, prob.sizes);
+  const T: number[] = [], F: number[] = [];
+  for (let n = 0; n < prob.N; n++) if (prob.xmask[n] && fin(prob.Tcf[n]) && fin(prob.fsCf[n])) { T.push(prob.Tcf[n]); F.push(prob.fsCf[n]); }
+  if (!T.length) return p0;
+  T.sort((a, b) => a - b); F.sort((a, b) => a - b);
+  const logit = (x: number) => { const c = Math.min(1 - 1e-6, Math.max(1e-6, x)); return Math.log(c / (1 - c)); };
+  const b = layout(prob.sizes).bOff[prob.sizes.length - 2];
+  p0[b] = logit((T[T.length >> 1] - prob.Tlo) / (prob.Thi - prob.Tlo));
+  p0[b + 1] = logit(F[F.length >> 1] / prob.fsRef);
+  return p0;
+}
+/** Mean over the 5 × 5 neighbours with a value, the direct map without its pixel noise. */
+function smoothMap(v: ArrayLike<number>, use: Uint8Array, nz: number, nr: number): Float64Array {
+  const o = new Float64Array(v.length).fill(NaN);
+  for (let k = 0; k < nz; k++) for (let i = 0; i < nr; i++) {
+    let a = 0, n = 0;
+    for (let dk = -2; dk <= 2; dk++) for (let di = -2; di <= 2; di++) {
+      const kk = k + dk, ii = i + di;
+      if (kk < 0 || kk >= nz || ii < 0 || ii >= nr) continue;
+      const q = kk * nr + ii;
+      if (use[q] && fin(v[q])) { a += v[q]; n++; }
+    }
+    if (n) o[k * nr + i] = a / n;
+  }
+  return o;
+}
+/** Same limits as the cross-check of the library, against the smoothed direct map, on the cells in use. */
+function netGap(T: Float64Array, fs: Float64Array, Tcf: Float64Array, fsCf: Float64Array, used: Uint8Array, nz: number, nr: number, x: XCheck | null): NetGap | null {
+  const ok = Uint8Array.from(used, (u, q) => (u && fin(Tcf[q]) && fin(fsCf[q]) && fsCf[q] > 0 ? 1 : 0));
+  const lf = Float64Array.from(fsCf, (v) => (v > 0 ? Math.log(v) : NaN));
+  const Ts = smoothMap(Tcf, ok, nz, nr), Fs = smoothMap(lf, ok, nz, nr);
+  const dT: number[] = [], dN: number[] = [], dF: number[] = [];
+  for (let q = 0; q < T.length; q++) if (ok[q] && fin(T[q]) && fin(Ts[q]) && fs[q] > 0) { dT.push(Math.abs(T[q] - Ts[q])); dN.push(Math.abs(Tcf[q] - Ts[q])); dF.push(Math.abs(Math.log(fs[q]) - Fs[q])); }
+  if (!dT.length) return null;
+  for (const a of [dT, dN, dF]) a.sort((u, w) => u - w);
+  const TMedK = pctOf(dT, 0.5), TP90K = pctOf(dT, 0.9), fsLog = pctOf(dF, 0.5);
+  const verdict = x?.agrees ? 'agree' : TMedK <= XCHECK_WARN_K && TP90K <= XCHECK_WARN_P90_K && fsLog <= XCHECK_WARN_FS_LOG ? 'noise' : 'bad';
+  return { verdict, TMedK, TP90K, fsLog, noiseP90K: pctOf(dN, 0.9) };
 }
 function netEngine(prob: Stage2Problem, nParams: number) {
   return helpers.length ? Stage2PoolEngine.create(prob, nParams, { n: helpers.length, factory: poolFactory }) : Promise.resolve(new Stage2LocalEngine(prob));
@@ -1090,8 +1165,8 @@ async function estimateNet() {
     const t = S.tfs.out && !S.stale[5] ? S.tfs.out : await ask<TfsOut>(tfsRunMsg());
     const inp = netInput(t);
     if (!inp) throw new Error('no_emission');
-    const prob = buildStage2Problem(inp.J, inp.grid, inp.kern, { iterations: N.iterations });
-    const p0 = initStage2(S.res.seed, prob.sizes);
+    const prob = buildStage2Problem(inp.J, inp.grid, inp.kern, { iterations: N.iterations, lambdaRatio: netLambda(N.iterations) });
+    const p0 = netStart(prob, S.res.seed);
     if (S.gpu) {
       const g = await createGpuStage2(prob, p0, 23);
       try { g.encodeIters(3); await g.done(); const t0 = performance.now(); g.encodeIters(20); await g.done(); N.estimate = { path: 'webgpu', sPerIter: (performance.now() - t0) / 1000 / 20 }; } finally { g.destroy(); }
@@ -1117,11 +1192,12 @@ async function runNet() {
   const inp = netInput(t);
   if (!inp) return;
   N.running = true; N.msgs = []; N.ctrl = new AbortController(); N.tick = null; N.result = null;
-  renderStage5();
+  renderStage5(); renderStage6();
   try {
-    const prob = buildStage2Problem(inp.J, inp.grid, inp.kern, { iterations: N.iterations });
-    const p0 = initStage2(S.res.seed, prob.sizes);
-    const topts = { iterations: N.iterations, signal: N.ctrl.signal, onTick: (tk: TrainTick) => { N.tick = tk; renderNetProgress(); } };
+    const lambdaRatio = netLambda(N.iterations);
+    const prob = buildStage2Problem(inp.J, inp.grid, inp.kern, { iterations: N.iterations, lambdaRatio });
+    const p0 = netStart(prob, S.res.seed);
+    const topts = { iterations: N.iterations, signal: N.ctrl.signal, onTick: (tk: TrainTick) => { N.tick = tk; renderNetProgress(); renderTrain(); } };
     let train: TrainResult;
     if (S.gpu) {
       const g = await createGpuStage2(prob, p0, N.iterations);
@@ -1135,8 +1211,9 @@ async function runNet() {
     const used = new Uint8Array(n);
     inp.keep.forEach((k, kk) => { for (let i = 0; i < nr; i++) { const q = k * nr + i, sq = kk * nr + i; Tcf[q] = res.Tcf[sq]; fsCf[q] = res.fsCf[sq]; if (!(t.mask[q] & (M_SAT | M_LOW)) && res.mask[sq]) { T[q] = res.T[sq]; fs[q] = res.fs[sq]; used[q] = 1; } } });
     for (let q = 0; q < n; q++) { t.mask[q] = used[q] ? t.mask[q] | 1 : (t.mask[q] & ~1) | (t.mask[q] & (M_SAT | M_LOW) ? 0 : M_LOW); t.flags[q] = 0; t.chi2rel[q] = NaN; }
+    const gap = netGap(T, fs, Tcf, fsCf, used, p.nz, nr, res.xcheck);
     t.T = T; t.fs = fs;
-    N.result = { xcheck: res.xcheck, bounds: res.bounds, Tcf, fsCf, bestIter: train.bestIter, completed: train.completedIters, planned: train.plannedIters, path: train.path, elapsedS: train.elapsedS, fsRef: inp.kern.fsRef, nTrain: res.meta.nTrain, nMask: res.meta.nMask, rows: inp.keep.length };
+    N.result = { eval: { params: train.params, norm: prob.norm, sizes: prob.sizes, Tlo: prob.Tlo, Thi: prob.Thi, fsRef: prob.fsRef }, xcheck: res.xcheck, bounds: res.bounds, Tcf, fsCf, bestIter: train.bestIter, completed: train.completedIters, planned: train.plannedIters, path: train.path, elapsedS: train.elapsedS, fsRef: inp.kern.fsRef, nTrain: res.meta.nTrain, nMask: res.meta.nMask, rows: inp.keep.length, gap, lambdaRatio };
   } catch (e) { N.msgs.push(netError(e)); S.tfs.out = null; }
   N.running = false; N.ctrl = null;
 }
@@ -1149,6 +1226,8 @@ function usedSorted(v: ArrayLike<number>): number[] {
   return out.sort((a, b) => a - b);
 }
 const pctOf = (s: number[], q: number) => (s.length ? s[Math.min(s.length - 1, Math.max(0, Math.round(q * (s.length - 1))))] : NaN);
+/** Median of a sorted list, the mean of the two central values when the count is even. */
+const medOf = (s: number[]) => (s.length ? (s[(s.length - 1) >> 1] + s[s.length >> 1]) / 2 : NaN);
 /** Colour scales from the zone used (GB3r1-fisico-05, estudiante-18). T from p0,5 to p99,5 rounded to 10 K, f_s to p95. */
 function defaultScales() {
   const t = S.tfs.out;
@@ -1158,21 +1237,125 @@ function defaultScales() {
   const fs = fsShown();
   if (fs) { const v = usedSorted(fs.v).filter((x) => x > 0); S.res.fsMax = v.length ? pctOf(v, 0.95) : 1; }
 }
+/** SAT and the two networks are functions of position. Null for the methods that give values only on the grid, or while the results are out of date. */
+function fineKind(): RefineKind | null {
+  if (!S.tfs.out || S.stale[4] || S.stale[5] || S.stale[6]) return null;
+  if (S.tfs.path === 'net') return S.tfs.net.result?.eval ? 'net' : null;
+  if (S.abel.outMethod === 'sat') return 'sat';
+  if (S.abel.outMethod === 'annabel' && S.abel.annabel.eval) return 'annabel';
+  return null;
+}
+/** Factors within the limit of points. SAT is one fit per height, so only the radius gets more points. */
+function fineFactors(kind: RefineKind): RefineFactor[] {
+  const p = S.flame.prepared!;
+  return ([1, 2, 4] as RefineFactor[]).filter((f) => f === 1 || finePoints(p.nr, p.nz, f, kind === 'sat' ? 1 : f) <= REFINE_MAX_POINTS);
+}
+/** The fine view when it is in force and belongs to the results on screen. */
+function fineView(): (RefineOut & { forT: TfsOut }) | null {
+  const f = S.res.fine;
+  return f && S.res.fineFactor > 1 && f.factor === S.res.fineFactor && f.forT === S.tfs.out ? f : null;
+}
+/** Evaluates the fine view in the Worker, without training again and without touching the base results. */
+async function refreshFine() {
+  const tok = ++fineTok;
+  const kind = fineKind(), t = S.tfs.out, o = S.abel.out;
+  S.res.fine = null; S.res.fineBad = '';
+  // a factor over the limit of points, for instance from a log of another flame, goes back to the base grid
+  if (kind && !fineFactors(kind).includes(S.res.fineFactor)) S.res.fineFactor = 1;
+  if (!kind || !t || !o || S.res.fineFactor === 1) return;
+  // the line says it only while no other work took it, and the last evaluation still running clears it
+  fineRunning++;
+  if (!S.busy) { S.busy = FINE_BUSY(); renderBusy(); }
+  try {
+    const r = await ask<RefineOut>({ type: 'refine.run', kind, factor: S.res.fineFactor, run: { ...abelRun(), method: S.abel.outMethod as AbelRun['method'] }, tfs: tfsRunMsg().opts, psi: psiMsg(), base: { T: t.T, fs: t.fs, mask: t.mask, chem: t.chem, J: o.J }, emission: S.abel.outMethod === 'annabel' ? S.abel.annabel.eval : null, net: kind === 'net' ? S.tfs.net.result!.eval : null });
+    if (tok === fineTok) {
+      const c = r.check;
+      // a view that does not give the base values at the points they share is not shown
+      if (c.mismatch || c.dTK > REFINE_TOL_T_K || c.dFsRel > REFINE_TOL_REL || c.dJRel > REFINE_TOL_REL) S.res.fineBad = 'mismatch';
+      else S.res.fine = { ...r, forT: t };
+    }
+  } catch { if (tok === fineTok) S.res.fineBad = 'failed'; }
+  fineRunning--;
+  if (!fineRunning && S.busy === FINE_BUSY()) { S.busy = ''; renderBusy(); }
+  if (tok === fineTok) keepFocus(renderStage6);
+}
+/** The percentage of the mask as it was typed, never rounded to another number. */
+const pctText = (x: number) => { const r = +x.toFixed(2); return num(r, r === Math.round(r) ? 0 : r * 10 === Math.round(r * 10) ? 1 : 2); };
+const FINE_BUSY = () => L('Evaluando más puntos', 'Evaluating more points');
+function fsMaskNow(fs = fsShown()): FsMask | null {
+  const t = S.tfs.out;
+  return S.res.fsMaskOn && fs && t ? fsMaskOf(fs.v, t.mask, S.res.fsMaskPct) : null;
+}
+/** What step 5 shows, the base grid or the fine one, with the mask by f_s on top. Base results are only read. */
+function viewNow() {
+  const t = S.tfs.out!, p = S.flame.prepared!, fs = fsShown(), fine = fineView(), mk = fsMaskNow(fs);
+  const F = fs ? (fine ? fine.fs.map((x) => x * fs.factor) : fs.v) : null;
+  const pass = mk && F ? (fine ? Uint8Array.from(F, (x) => (x > mk.thr ? 1 : 0)) : mk.pass) : null;
+  return { t, p, fs, fine, mk, F, pass, T: fine ? fine.T : t.T, nz: fine ? fine.nz : p.nz, nr: fine ? fine.nr : p.nr, rMm: fine ? fine.rMm : p.rMm, zMm: fine ? fine.zMm : p.zMm, axisNode: fine ? fine.axisNode : false };
+}
+/** Median of T and f_s under the mask, on the points of the base grid, as the medians of step 4. */
+function maskLine(fs: NonNullable<ReturnType<typeof fsShown>>, mk: FsMask): string {
+  const t = S.tfs.out!;
+  const T: number[] = [], F: number[] = [];
+  for (let q = 0; q < t.T.length; q++) if (t.mask[q] === 1 && mk.pass[q]) { if (fin(t.T[q])) T.push(t.T[q]); if (fin(fs.v[q])) F.push(fs.v[q]); }
+  T.sort((a, b) => a - b); F.sort((a, b) => a - b);
+  const u = fs.unit === 'ppm' ? 'ppm' : L('relativa', 'relative');
+  return L(`Máscara aplicada, f_s > ${pctText(mk.pct)} % de su máximo. T mediana ${num(medOf(T))} K, f_s mediana ${sig(medOf(F), 2)} ${u}. Quedan ${num(mk.nPass)} de ${num(mk.nZone)} puntos.`, `Mask applied, f_s > ${pctText(mk.pct)} % of its maximum. Median T ${num(medOf(T))} K, median f_s ${sig(medOf(F), 2)} ${u}. ${num(mk.nPass)} of ${num(mk.nZone)} points remain.`);
+}
+/** The threshold in its units, shown under the option whether the mask is on or off. */
+function maskInfo(fs: NonNullable<ReturnType<typeof fsShown>>): string {
+  const t = S.tfs.out!, m = fsMaskOf(fs.v, t.mask, S.res.fsMaskPct);
+  if (!m) return L('Ningún punto de la zona usada tiene f_s positiva.', 'No point of the zone used has a positive f_s.');
+  return fs.unit === 'ppm' ? L(`Umbral ${sig(m.thr, 2)} ppm, el ${pctText(m.pct)} % de ${sig(m.max, 3)} ppm.`, `Threshold ${sig(m.thr, 2)} ppm, ${pctText(m.pct)} % of ${sig(m.max, 3)} ppm.`)
+    : L(`Umbral ${sig(m.thr, 2)} en f_s relativa, el ${pctText(m.pct)} % de su máximo.`, `Threshold ${sig(m.thr, 2)} in relative f_s, ${pctText(m.pct)} % of its maximum.`);
+}
+function bandMethodNote(b: BandInfo): string {
+  const parts: string[] = [];
+  if (b.method === 'annabel') parts.push(L('el pelado de cebolla con suavizado, no la red neuronal para la emisión', 'onion peeling with smoothing, not the neural network for the emission'));
+  if ((b.sym === 'right' || b.sym === 'left') && b.method !== 'annabel') parts.push(L('el promedio de las dos mitades, no una sola', 'the mean of the two halves, not one alone'));
+  if (b.path === 'net') parts.push(L('el ajuste directo de T y f_s, no la red neuronal para T y f_s', 'the direct fit of T and f_s, not the neural network for T and f_s'));
+  const others = ` <a data-eq>${L('Otros errores, en Ecuaciones.', 'Other errors, in Equations.')}</a>`;
+  if (!parts.length) return check(true, `${L(`Banda, la zona sombreada, con ${b.n} repeticiones.`, `Band, the shaded zone, with ${b.n} repetitions.`)}${others}`);
+  const net = b.path === 'net' || b.method === 'annabel';
+  const end = net ? L(' No es la incertidumbre de la red.', ' It is not the uncertainty of the network.') : '';
+  const head = net ? L(`Banda del cálculo directo, con ${b.n} repeticiones.`, `Band of the direct calculation, with ${b.n} repetitions.`) : L(`Banda con ${b.n} repeticiones.`, `Band with ${b.n} repetitions.`);
+  return check(false, subs(`${head} ${L(`Usa ${parts.join(' y ')}.`, `It uses ${parts.join(' and ')}.`)}${end}`) + others, 'band_direct');
+}
+/** How the band is computed, from what runBand received. A source that did not enter the band is not named as if it had. */
+function bandHowHtml(b: BandInfo, hasFs: boolean): string {
+  const items = [L('la imagen, según la diferencia entre las dos mitades de la llama', 'the image, by the difference between the two halves of the flame')];
+  if (b.ovenApplied) items.push(L(`temperatura del horno, ±${num(b.sigmaT)} K`, `furnace temperature, ±${num(b.sigmaT)} K`));
+  if (b.kStat) items.push(L('sensibilidad K de cada canal, según su error estadístico', 'sensitivity K of each channel, by its statistical error'));
+  if (hasFs && b.scalePct > 0) items.push(subs(L(`regla, ±${num(b.scalePct)} %, solo en f_s`, `ruler, ±${num(b.scalePct)} %, in f_s only`)));
+  let no: string;
+  if (b.how === 'nocal') no = L('Sin calibración, no incluye ningún error de calibración.', 'Without a calibration, it includes no calibration error.');
+  else if (b.shiftK !== null && b.tNext !== null) no = L(`No incluye la elección de la temperatura de calibración, unos ${Math.round(Math.abs(b.shiftK))} K a ${num(HOT_FLAME_K)} K entre ${num(b.tUsed)} y ${num(b.tNext)} °C.`, `It does not include the choice of calibration temperature, about ${Math.round(Math.abs(b.shiftK))} K at ${num(HOT_FLAME_K)} K between ${num(b.tUsed)} and ${num(b.tNext)} °C.`);
+  else if (b.ovenApplied || b.kStat) no = L('No incluye la elección de la temperatura de calibración.', 'It does not include the choice of calibration temperature.');
+  else no = L('No incluye el error de la calibración.', 'It does not include the calibration error.');
+  return `<details class="wr-fold" id="wr-bandfold"${S.ui.folds['wr-bandfold'] ? ' open' : ''}><summary>${L('Cómo se calcula la banda', 'How the band is computed')}</summary><div class="wr-howband" id="wr-bandhow" data-how="${b.how}">
+    <ol><li>${L(`El cálculo se repite ${b.n} veces. Cada vez cambian al azar:`, `The calculation is repeated ${b.n} times. Each time these change at random:`)}<ul>${items.map((x) => `<li>${x}</li>`).join('')}</ul></li>
+    <li>${L('En cada punto, la banda va del percentil 16 al 84, el 68 % central.', 'At each point, the band goes from the 16th to the 84th percentile, the central 68 %.')}</li></ol>
+    <p id="wr-bandno">${L('La diferencia entre mitades incluye asimetría, no solo ruido, así que la banda sale más ancha que el ruido de la cámara.', 'The difference between halves includes asymmetry, not only noise, so the band comes out wider than the camera noise.')} ${no} <a data-eq>${L('Otros errores, en Ecuaciones.', 'Other errors, in Equations.')}</a></p></div></details>`;
+}
 async function runBandNow() {
   const p = S.flame.prepared;
   if (!p || !S.tfs.out) return;
   S.busy = L(`Banda de incertidumbre, ${S.res.nBand} repeticiones`, `Uncertainty band, ${S.res.nBand} repetitions`);
   renderBusy();
+  S.res.bandMsgs = [];
   try {
     const c = S.flame.calUsed ? S.cal : null;
     const sKrel = (c && c.mode === 'oven' && S.oven.result ? CH.map((ch) => { const x = S.oven.result!.fit.channels[ch]; return fin(x.sKstat / x.K) ? x.sKstat / x.K : 0; }) : [0, 0, 0]) as [number, number, number];
     const scaleRel = fin(S.flame.mmPerPx) && fin(S.flame.scaleUnc) ? S.flame.scaleUnc / 100 : 0;
     S.res.bandHow = c?.mode === 'oven' ? 'oven' : c ? 'noise' : 'nocal';
+    const sigmaT = c && fin(c.sigmaT) ? c.sigmaT : 0;
+    const hot = c?.compare && c.tested !== false ? c.compare : null;
+    S.res.bandInfo = { n: S.res.nBand, how: S.res.bandHow as BandInfo['how'], sigmaT, ovenApplied: !!c && fin(c.Tcal) && sigmaT > 0, kStat: sKrel.some((x) => x > 0), scalePct: scaleRel * 100, method: S.abel.method, sym: S.abel.sym, path: S.tfs.path, shiftK: hot?.shiftK ?? null, tUsed: hot?.tUsed ?? NaN, tNext: hot?.tNext ?? null };
     S.res.band = await ask({ type: 'band.run', n: S.res.nBand, seed: S.res.seed, sigmaT: c && fin(c.sigmaT) ? c.sigmaT : 0, Tcal: c && fin(c.Tcal) ? c.Tcal : NaN, eps: S.eps, sKrel, scaleRel, run: abelRun(), tfs: { path: workerPath(), pair: S.tfs.pair, emLaw: emLaw(), sigFrac: S.tfs.sigFrac, islandFrac: S.tfs.islandFrac, chemBG: calDecision().state !== 'uncalibrated', zCutMm: fin(S.tfs.zCut) ? S.tfs.zCut : null, chemThr: S.tfs.chemThr, fsChannel: S.tfs.fsChannel, refine: false, weights: tfsWeights() }, psi: psiMsg() });
-  } catch (e) { S.flame.msgs.push({ code: (e as { code: string }).code }); }
+  } catch (e) { S.res.bandMsgs = [{ code: (e as { code: string }).code, level: 'error' }]; }
   S.busy = '';
   renderBusy();
-  renderStage6();
+  keepFocus(renderStage6);
 }
 /** f_s as shown, ppm with an absolute calibration, relative to its maximum with a relative one, null otherwise. */
 function fsShown(): { v: Float64Array; unit: string; factor: number; ref?: string } | null {
@@ -1206,7 +1389,8 @@ async function recommended() {
   await runBandNow();
   if (autoFit) { S.flame.msgs.unshift({ code: 'oven_fit_auto', level: 'info' }); renderStage3(); }
   announce(6);
-  document.getElementById('wr-s6')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // the student asked for the three steps at once, so the results are the answer. A student who moved to another step stays there
+  if (S.ui.step === 2) setStep(5, { focus: 'panel' });
 }
 
 // ============================================================================ downloads
@@ -1224,15 +1408,17 @@ function settings() {
   return {
     language: getLang(), grouping: S.group ? '2x2' : '1x1', bayer: S.bayer, centreRB: S.centre, shiftTest: shiftRecord(),
     response: { preset: S.presetId, presetWhy: S.presetWhy, manual: S.presetManual, basis: S.basis, irCut: irCutNow(), shortPass: spNow(), custom: S.custom?.name ?? null },
-    oven: { eps: S.eps, sigmaT: S.sigmaT, emissivityKnown: S.known, darkMode: darkModeNow(), perT: S.perT, calibrateAt: S.calibrateAt, tailCalibration: S.tailOn, plateaus: S.oven.plateaus },
+    oven: { eps: S.eps, sigmaT: S.sigmaT, emissivityKnown: S.known, darkMode: darkModeNow(), perT: S.perT, calibrateAt: S.calibrateAt, plateaus: S.oven.plateaus },
     sphere: { valUnit: S.sphere.valUnit, lamUnit: S.sphere.lamUnit, nd: S.sphere.nd, od: S.sphere.od, fill: S.sphere.fill, tSphUs: S.sphere.tSphUs },
     calPath: S.calPath,
     flame: { burnerConfirmed: S.flame.burnerOk, texpUs: S.flame.texpUs, texpConfirmed: S.flame.texpConfirmed, times: S.flame.times, sensorQ: S.flame.sensorQ, quarter: S.flame.quarter, mirror: S.flame.mirror, fineDeg: S.flame.fineDeg, axisAuto: S.flame.axisAuto, axisManual: S.flame.axisManual, axisUsed: S.flame.prepared?.axis ?? null, halfWidth: S.flame.halfWidth, nr: S.flame.nr, rowTop: S.flame.rowTop, rowBottom: S.flame.rowBottom, rowsPerHeight: S.flame.rowsPerHeight, mmPerPx: S.flame.mmPerPx, scaleConfirmed: S.flame.scaleConfirmed, scaleUncPct: S.flame.scaleUnc, burnerRow: S.flame.burnerRow, zBurner: S.flame.zBurner },
-    abel: { method: S.abel.outMethod || S.abel.method, sym: S.abel.sym, lambdaRel: S.abel.lambdaRel, lambdaAuto: S.abel.lambdaAuto, reg: 'gamma2', segments: S.abel.segments, satLambda: S.abel.satLambda, annabelIterations: S.abel.annabel.iterations, annabelBest: S.abel.annabel.result?.bestIter ?? null },
+    // out of date, these are the settings chosen and not those of the last result, which stays in results.method
+    abel: { method: S.stale[4] ? S.abel.method : S.abel.outMethod || S.abel.method, sym: S.abel.sym, lambdaRel: S.abel.lambdaRel, lambdaAuto: S.abel.lambdaAuto, reg: 'gamma2', segments: S.abel.segments, satLambda: S.abel.satLambda, annabelIterations: S.abel.annabel.iterations, annabelBest: S.abel.annabel.result?.bestIter ?? null },
     tfs: { path: S.tfs.path, pair: S.tfs.pair, sigFrac: S.tfs.sigFrac, islandFrac: S.tfs.islandFrac, zCutMm: S.tfs.zCut, chemThr: S.tfs.chemThr, fsChannel: S.tfs.fsChannel,
            net: S.tfs.path === 'net' ? { method: 'RGB-ANNAbel stage 2 (Magana et al. 2025), annabel_app/core/stage2.py', iterations: S.tfs.net.iterations, bestIter: S.tfs.net.result?.bestIter ?? null, completed: S.tfs.net.result?.completed ?? null, path: S.tfs.net.result?.path ?? null, fsRef: S.tfs.net.result?.fsRef ?? null,
-             config: { hiddenLayers: STAGE2_DEFAULTS.hiddenLayers, width: STAGE2_DEFAULTS.width, zSub: STAGE2_DEFAULTS.zSub, signalThreshold: STAGE2_DEFAULTS.signalThreshold, lambdaRatio: STAGE2_DEFAULTS.lambdaRatio, lr: STAGE2_DEFAULTS.lr, lrMinFrac: STAGE2_DEFAULTS.lrMinFrac }, xcheck: S.tfs.net.result?.xcheck ?? null } : null },
-    results: { Tmin: S.res.Tmin, Tmax: S.res.Tmax, heights: S.res.heights, nBand: S.res.nBand },
+             config: { hiddenLayers: STAGE2_DEFAULTS.hiddenLayers, width: STAGE2_DEFAULTS.width, zSub: STAGE2_DEFAULTS.zSub, signalThreshold: STAGE2_DEFAULTS.signalThreshold, lambdaRatio: netLambda(S.tfs.net.iterations), startAtDirectMedian: true, lr: STAGE2_DEFAULTS.lr, lrMinFrac: STAGE2_DEFAULTS.lrMinFrac }, xcheck: S.tfs.net.result?.xcheck ?? null, gap: S.tfs.net.result?.gap ?? null } : null },
+    // the two keys are written only when in use, so a run with both off gives the record it always gave
+    results: { levels: S.res.levels, Tmin: S.res.Tmin, Tmax: S.res.Tmax, heights: S.res.heights, nBand: S.res.nBand, ...(S.res.fsMaskOn ? { fsMask: { on: true, pct: S.res.fsMaskPct } } : {}), ...(fineView() ? { refineFactor: S.res.fineFactor } : {}) },
   };
 }
 function runRecord() {
@@ -1254,13 +1440,26 @@ function runRecord() {
     settings: settings(), calibration: S.cal, calibrationState: d, emLaw: emLaw(),
     psi: { source: psiNow().name, sha256: psiSha(), basis: S.basis },
     seed: S.res.seed,
-    results: p && t ? { nz: p.nz, nr: p.nr, drMm: p.drMm, zMm: [p.zMm[0], p.zMm[p.nz - 1]], used_pixels: Tu.length, T_median_K: pctOf(Tu, 0.5), T_p5_K: pctOf(Tu, 0.05), T_p95_K: pctOf(Tu, 0.95), fs_median: fs ? pctOf(Fu, 0.5) : null, fs_p95: fs ? pctOf(Fu, 0.95) : null, Tmax_K: Tmax, Tmax_at_z_r_mm: at, fsMax: fs ? fsMax : null, fsUnit: fs ? (fs.unit === 'ppm' ? 'ppm' : 'relative') : null, fsMax_at_z_r_mm: atf, max_note: L('el máximo del campo incluye el ruido amplificado en el eje, lean la mediana y el percentil 95', 'the maximum of the field includes the noise amplified on the axis, read the median and p95'), method: S.abel.outMethod } : null,
+    results: p && t ? { nz: p.nz, nr: p.nr, drMm: p.drMm, zMm: [p.zMm[0], p.zMm[p.nz - 1]], used_pixels: Tu.length, T_median_K: medOf(Tu), T_p5_K: pctOf(Tu, 0.05), T_p95_K: pctOf(Tu, 0.95), fs_median: fs ? medOf(Fu) : null, fs_p95: fs ? pctOf(Fu, 0.95) : null, Tmax_K: Tmax, Tmax_at_z_r_mm: at, fsMax: fs ? fsMax : null, fsUnit: fs ? (fs.unit === 'ppm' ? 'ppm' : 'relative') : null, fsMax_at_z_r_mm: atf, max_note: L('el máximo del campo incluye el ruido amplificado en el eje, lean la mediana y el percentil 95', 'the maximum of the field includes the noise amplified on the axis, read the median and p95'), method: S.abel.outMethod, ...recordExtras(), ...(S.stale[4] || S.stale[5] || S.stale[6] ? { outOfDate: true } : {}) } : null,
     warnings: [...collectCodes()],
   };
 }
+/** What the mask and the fine view add to the record, only when in use. The other results of the record stay those of the base grid. */
+function recordExtras(): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  const t = S.tfs.out!, fs = fsShown(), mk = fsMaskNow(fs), fine = fineView();
+  if (mk && fs) {
+    const T: number[] = [], F: number[] = [];
+    for (let q = 0; q < t.T.length; q++) if (t.mask[q] === 1 && mk.pass[q]) { if (fin(t.T[q])) T.push(t.T[q]); if (fin(fs.v[q])) F.push(fs.v[q]); }
+    T.sort((a, b) => a - b); F.sort((a, b) => a - b);
+    out.fs_mask = { pct: mk.pct, fs_max: mk.max, threshold: mk.thr, unit: fs.unit === 'ppm' ? 'ppm' : 'relative', points_zone: mk.nZone, points_pass: mk.nPass, T_median_K: medOf(T), fs_median: medOf(F) };
+  }
+  if (fine) out.refine = { factor: fine.factor, kind: fine.kind, radius_factor: fine.fr, height_factor: fine.fz, nz: fine.nz, nr: fine.nr, check_on_base_points: fine.check, ms: fine.ms };
+  return out;
+}
 function collectCodes(): Set<string> {
   const s = new Set<string>();
-  for (const m of [...S.loadMsgs, ...S.flame.msgs, ...S.abel.annabel.msgs, ...S.calFileMsgs]) s.add(m.code);
+  for (const m of [...S.loadMsgs, ...S.flame.msgs, ...S.abel.annabel.msgs, ...S.calFileMsgs, ...S.tfs.runMsgs, ...S.res.bandMsgs]) s.add(m.code);
   for (const c of calDecision().codes) s.add(c);
   return s;
 }
@@ -1286,20 +1485,43 @@ function csvText(point = getLang() !== 'es'): string {
   // without a calibration j is not in W m⁻³ sr⁻¹ (GB3r2-adv-19), a provisional f_s says so in its column (adv-04)
   // with a relative calibration K_j carries an unknown common grey factor, j is not in W m⁻³ sr⁻¹ either (GB3r3-adv-08)
   const jU = d.state === 'uncalibrated' || d.fs === 'relative' ? 'rel' : 'W_m3_sr';
-  const head = ['z_mm', 'r_mm', 'T_K', ...(fs ? [fsCol(fs, d)] : []), `jR_${jU}`, `jG_${jU}`, `jB_${jU}`, 'T_los_K', 'mask_bits'];
+  const v = viewNow();
+  const fine = v.fine;
+  // the fine view has no line-of-sight column, and the emission only when the method gives it on the same grid
+  const head = fine
+    ? ['z_mm', 'r_mm', 'T_K', ...(fs ? [fsCol(fs, d)] : []), ...(fine.J ? [`jR_${jU}`, `jG_${jU}`, `jB_${jU}`] : []), 'mask_bits', 'on_base_grid', ...(v.pass ? ['fs_mask_pass'] : [])]
+    : ['z_mm', 'r_mm', 'T_K', ...(fs ? [fsCol(fs, d)] : []), `jR_${jU}`, `jG_${jU}`, `jB_${jU}`, 'T_los_K', 'mask_bits', ...(v.pass ? ['fs_mask_pass'] : [])];
   const rows = [head.join(dec)];
-  for (let k = 0; k < p.nz; k++) for (let i = 0; i < p.nr; i++) {
+  if (fine) {
+    for (let l = 0; l < fine.nz; l++) for (let m = 0; m < fine.nr; m++) {
+      const q = l * fine.nr + m;
+      rows.push([n(fine.zMm[l]), n(fine.rMm[m]), n(fine.T[q]), ...(v.F ? [n(v.F[q])] : []), ...(fine.J ? [n(fine.J[q * 3]), n(fine.J[q * 3 + 1]), n(fine.J[q * 3 + 2])] : []), String(fine.mask[q]), String(fine.onBase[q]), ...(v.pass ? [String(v.pass[q])] : [])].join(dec));
+    }
+  } else for (let k = 0; k < p.nz; k++) for (let i = 0; i < p.nr; i++) {
     const q = k * p.nr + i;
-    rows.push([n(p.zMm[k]), n(p.rMm[i]), n(t.T[q]), ...(fs ? [n(fs.v[q])] : []), n(J[0][k][i]), n(J[1][k][i]), n(J[2][k][i]), n(t.Tlos[q]), String(t.mask[q])].join(dec));
+    rows.push([n(p.zMm[k]), n(p.rMm[i]), n(t.T[q]), ...(fs ? [n(fs.v[q])] : []), n(J[0][k][i]), n(J[1][k][i]), n(J[2][k][i]), n(t.Tlos[q]), String(t.mask[q]), ...(v.pass ? [String(v.pass[q])] : [])].join(dec));
   }
   const notes = [L('mask_bits 1 usado, 2 señal baja, 4 quimioluminiscencia, 8 altura saturada, 16 razón fuera de la tabla, sumados cuando hay varios', 'mask_bits 1 used, 2 low signal, 4 chemiluminescence, 8 saturated height, 16 ratio outside the table, added when several apply')];
   notes.push(stateLabel(d).replace(/f_s/g, 'fs'));
   if (fs && d.provisional) notes.push(L(`fs provisional porque ${provReason()}`, `fs provisional because ${provReason()}`));
   if (fs && fs.unit !== 'ppm') notes.push(L(`fs_rel es fs dividida por ${fs.ref}`, `fs_rel is fs divided by ${fs.ref}`));
   if (jU === 'rel') notes.push(d.state === 'uncalibrated' ? L('sin calibración j queda en unidades relativas', 'without a calibration j is in relative units') : L('con calibración relativa j lleva un factor gris común desconocido y queda en unidades relativas', 'with a relative calibration j carries an unknown common grey factor and is in relative units'));
+  if (fine) notes.push(L(`misma función evaluada con factor ${fine.factor}, ${fine.fz > 1 ? 'en radio y altura' : 'solo en radio'}, sin agregar medición. on_base_grid 1 son los puntos de la malla base`, `same function evaluated with factor ${fine.factor}, ${fine.fz > 1 ? 'in radius and height' : 'in radius only'}, with no added measurement. on_base_grid 1 are the points of the base grid`));
+  if (v.mk && fs) notes.push(L(`fs_mask_pass 1 es fs mayor que ${n(+v.mk.thr.toPrecision(4))} ${fs.unit === 'ppm' ? 'ppm' : 'relativa'}, el ${n(v.mk.pct)} % de su máximo en la zona usada. Las medianas de pantalla cuentan solo mask_bits 1`, `fs_mask_pass 1 is fs above ${n(+v.mk.thr.toPrecision(4))} ${fs.unit === 'ppm' ? 'ppm' : 'relative'}, ${n(v.mk.pct)} % of its maximum in the zone used. The medians on screen count only mask_bits 1`));
   return notes.map((x, i) => `# ${i ? '' : `${TOOL_NAME} ${TOOL_VERSION} ${S.o.commit}. `}${x}`).join('\n') + '\n' + rows.join('\n') + '\n';
 }
 function npyFields(): Record<string, Uint8Array> {
+  const v = viewNow();
+  if (v.fine) {
+    const g = v.fine, d = S.stale[6] && S.tfs.dec ? S.tfs.dec : calDecision();
+    const jr = d.state === 'uncalibrated' || d.fs === 'relative' ? '_rel' : '';
+    const sh = [g.nz, g.nr];
+    const o: Record<string, Uint8Array> = { T_K: npy(Float32Array.from(g.T), sh), mask: npy(g.mask, sh), on_base_grid: npy(g.onBase, sh), r_mm: npy(Float64Array.from(g.rMm), [g.nr]), z_mm: npy(Float64Array.from(g.zMm), [g.nz]) };
+    if (g.J) ['jR', 'jG', 'jB'].forEach((name, c) => { o[`${name}${jr}`] = npy(Float32Array.from({ length: g.nz * g.nr }, (_, q) => g.J![q * 3 + c]), sh); });
+    if (v.fs && v.F) o[fsCol(v.fs, d)] = npy(Float32Array.from(v.F), sh);
+    if (v.pass) o.fs_mask_pass = npy(v.pass, sh);
+    return o;
+  }
   const p = S.flame.prepared!, t = S.tfs.out!, J = S.abel.out!.J;
   const fs = fsShown();
   const plane = (f: (k: number, i: number) => number) => { const a = new Float32Array(p.nz * p.nr); for (let k = 0; k < p.nz; k++) for (let i = 0; i < p.nr; i++) a[k * p.nr + i] = f(k, i); return npy(a, [p.nz, p.nr]); };
@@ -1313,6 +1535,7 @@ function npyFields(): Record<string, Uint8Array> {
   const jr = d.state === 'uncalibrated' || d.fs === 'relative' ? '_rel' : '';
   out[`jR${jr}`] = plane((k, i) => J[0][k][i]); out[`jG${jr}`] = plane((k, i) => J[1][k][i]); out[`jB${jr}`] = plane((k, i) => J[2][k][i]);
   if (fs) out[fsCol(fs, d)] = plane((k, i) => fs.v[k * p.nr + i]);
+  if (v.pass) out.fs_mask_pass = npy(v.pass, [p.nz, p.nr]);
   return out;
 }
 /** Extent of a result map in mm, cell edges, for the axes (director after GB3 r1). */
@@ -1322,19 +1545,46 @@ function mapExtent(p: Prepared): MapExtent & { aspect: number } {
   const zBot = Math.min(p.zMm[0], p.zMm[p.nz - 1]) - Math.abs(dz) / 2, zTop = Math.max(p.zMm[0], p.zMm[p.nz - 1]) + Math.abs(dz) / 2;
   return { rMax, zBot, zTop, aspect: (2 * rMax) / (zTop - zBot) };
 }
+/** Extent of the map on screen. A fine map stops half of a fine cell past the last radius and the first and last height. */
+function viewExtent(v: ReturnType<typeof viewNow>): MapExtent & { aspect: number } {
+  const g = v.fine;
+  if (!g) return mapExtent(v.p);
+  const dr = v.p.drMm / g.fr, dz = v.p.nz > 1 ? (v.p.zMm[1] - v.p.zMm[0]) / g.fz : v.p.drMm;
+  const rMax = g.rMm[g.nr - 1] + dr / 2, zBot = g.zMm[0] - dz / 2, zTop = g.zMm[g.nz - 1] + dz / 2;
+  return { rMax, zBot, zTop, aspect: (2 * rMax) / (zTop - zBot) };
+}
 const tickFmt = (v: number) => (Math.abs(v - Math.round(v)) < 1e-6 ? num(Math.round(v)) : num(v, 1)).replace(/^-/, '−');
+/** Says that r and z are not on the same scale, with the factor the box really has. Empty when they are. */
+const stretchNote = (s: number) => (s > 1 ? L(`Eje r ampliado ${num(s, Number.isInteger(s) ? 0 : 1)} veces.`, `r axis stretched ${num(s, Number.isInteger(s) ? 0 : 1)} times.`) : '');
+/**
+ * Gives a result map its box. The box is wider than the true shape by a factor on r (rStretch), the marks stay true
+ * because they are placed in % of the box from the extent in mm. The caption of its figure says the factor.
+ */
+function fitMap(id: string, ext: MapExtent & { aspect: number }) {
+  const c = document.getElementById(id) as HTMLCanvasElement | null;
+  if (!c) return;
+  const s = rStretch(ext.aspect), shown = ext.aspect * s, w = mapWidthCss(shown);
+  c.style.aspectRatio = `${shown}`;
+  const box = document.getElementById(`${id}-ax`);
+  if (box) { box.style.width = w; box.dataset.rstretch = String(s); mapAxes(box, ext, tickFmt); }
+  const fig = c.closest('figure');
+  fig?.style.setProperty('--wr-mapw', w);
+  const note = fig?.querySelector('.wr-stretch');
+  if (note) note.textContent = stretchNote(s);
+}
 async function pngOf(which: 'T' | 'fs'): Promise<Blob | null> {
   const cv = document.getElementById(which === 'T' ? 'wr-map-T' : 'wr-map-fs') as HTMLCanvasElement | null;
   if (!cv) return null;
   const fs = fsShown();
-  const p = S.flame.prepared!;
   const label = calDecision();
   const lab = stateLabel(label);
+  const v = viewNow(), ext = viewExtent(v), stretch = rStretch(ext.aspect), note = stretchNote(stretch);
+  const tags = `${v.fine ? ` · ${L('resolución', 'resolution')} ×${v.fine.factor}` : ''}${v.mk ? ` · fₛ > ${pctText(v.mk.pct)} % ${L('de su máximo', 'of its maximum')}` : ''}`;
   return mapPng(cv, which === 'T' ? 't' : 'fs', {
-    title: which === 'T' ? `T(r, z) · ${lab}` : `fₛ(r, z) · ${lab}`, unit: which === 'T' ? 'K' : fs?.unit ?? '',
+    title: which === 'T' ? `T(r, z) · ${lab}${tags}` : `fₛ(r, z) · ${lab}${tags}`, ...(tags ? { fitTitle: true } : {}), unit: which === 'T' ? 'K' : fs?.unit ?? '',
     vmin: which === 'T' ? num(S.res.Tmin) : '0', vmax: which === 'T' ? num(S.res.Tmax) : sig(fs ? S.res.fsMax : 1, 2),
-    axes: L(`r de −${num(p.rMm[p.nr - 1] + p.drMm / 2, 2)} a ${num(p.rMm[p.nr - 1] + p.drMm / 2, 2)} mm, z de ${num(p.zMm[0], 1)} a ${num(p.zMm[p.nz - 1], 1)} mm`, `r from −${num(p.rMm[p.nr - 1] + p.drMm / 2, 2)} to ${num(p.rMm[p.nr - 1] + p.drMm / 2, 2)} mm, z from ${num(p.zMm[0], 1)} to ${num(p.zMm[p.nz - 1], 1)} mm`),
-  }, 4, { ...mapExtent(p), fmt: tickFmt });
+    axes: L(`r de −${num(ext.rMax, 2)} a ${num(ext.rMax, 2)} mm, z de ${num(v.zMm[0], 1)} a ${num(v.zMm[v.nz - 1], 1)} mm`, `r from −${num(ext.rMax, 2)} to ${num(ext.rMax, 2)} mm, z from ${num(v.zMm[0], 1)} to ${num(v.zMm[v.nz - 1], 1)} mm`) + (note ? `. ${note}` : ''),
+  }, v.fine ? Math.max(1, Math.round(4 / v.fine.fr)) : 4, { ...ext, aspect: ext.aspect * stretch, fmt: tickFmt });
 }
 async function downloadAll() {
   const enc = new TextEncoder();
@@ -1352,7 +1602,7 @@ async function downloadAll() {
 async function clearTable() {
   await ask({ type: 'forget', ids: S.items.map((it) => it.id) });
   S.items = []; S.oven.series = []; S.oven.result = null; S.cal = S.cal?.mode === 'file' ? S.cal : null; S.flame.prepared = null; S.abel.out = null; S.tfs.out = null;
-  S.crops = {}; S.log = []; S.flame.loaded = false; S.flame.rulerPreview = null; S.flame.rulerId = ''; S.flame.shift = null; S.flame.instant = ''; S.loadMsgs = []; S.flame.msgs = []; S.sphere.result = null; S.stale = {}; S.truth = null;
+  S.crops = {}; S.log = []; S.flame.loaded = false; S.flame.rulerPreview = null; S.flame.rulerId = ''; S.flame.shift = null; S.flame.instant = ''; S.loadMsgs = []; S.flame.msgs = []; S.sphere.result = null; S.stale = {}; S.truth = null; S.ui.scaleOpen = false; S.ui.reconfirm = false; S.tfs.runMsgs = []; S.res.bandMsgs = [];
 }
 
 // ============================================================================ run.json in
@@ -1369,15 +1619,24 @@ async function loadRun(b: Blob, name: string) {
     if (S.centre !== wasCentre) reopts();
     Object.assign(S, { eps: s.oven.eps, sigmaT: s.oven.sigmaT, known: s.oven.emissivityKnown, perT: s.oven.perT, calibrateAt: s.oven.calibrateAt, calPath: s.calPath });
     S.darkMode = s.oven.darkMode as typeof S.darkMode;
-    S.tailOn = (s.oven as { tailCalibration?: boolean }).tailCalibration !== false;
     const f = s.flame;
     Object.assign(S.flame, { burnerOk: f.burnerConfirmed === true, texpUs: f.texpUs ?? NaN, texpConfirmed: f.texpConfirmed, times: f.times, sensorQ: f.sensorQ, quarter: f.quarter, mirror: f.mirror, fineDeg: f.fineDeg, axisAuto: f.axisAuto, axisManual: f.axisManual ?? NaN, halfWidth: f.halfWidth ?? NaN, nr: f.nr ?? NaN, rowTop: f.rowTop ?? NaN, rowBottom: f.rowBottom ?? NaN, rowsPerHeight: f.rowsPerHeight, mmPerPx: f.mmPerPx ?? NaN, scaleConfirmed: f.scaleConfirmed, scaleUnc: f.scaleUncPct, burnerRow: f.burnerRow ?? NaN, zBurner: f.zBurner });
     // a log repeats its own smoothing, with or without the key lambdaAuto (DESIGN §9, C4)
-    Object.assign(S.abel, { method: s.abel.method, sym: s.abel.sym, lambdaRel: s.abel.lambdaRel, lambdaAuto: false, lamFlat: false, segments: s.abel.segments, satLambda: s.abel.satLambda });
+    // only SAT and the network fit both halves, an older log can bring that choice with another method
+    const fitsBoth = s.abel.method === 'sat' || s.abel.method === 'annabel';
+    Object.assign(S.abel, { method: s.abel.method, sym: s.abel.sym === 'both' && !fitsBoth ? 'average' : s.abel.sym, lambdaRel: s.abel.lambdaRel, lambdaAuto: false, lamFlat: false, segments: s.abel.segments, satLambda: s.abel.satLambda });
     S.abel.annabel.iterations = s.abel.annabelIterations ?? ITER_LONG;
     S.tfs.net.iterations = (s.tfs as { net?: { iterations?: number } | null }).net?.iterations ?? NET_ITERATIONS;
     Object.assign(S.tfs, { path: asTfsPath(s.tfs.path), pair: s.tfs.pair, sigFrac: s.tfs.sigFrac, islandFrac: s.tfs.islandFrac ?? 0.05, zCut: s.tfs.zCutMm ?? NaN, chemThr: s.tfs.chemThr, fsChannel: asFsMode(s.tfs.fsChannel) });
-    Object.assign(S.res, { Tmin: s.results.Tmin, Tmax: s.results.Tmax, heights: s.results.heights ?? [], nBand: s.results.nBand ?? 30, seed: j.seed ?? 42 });
+    Object.assign(S.res, { levels: s.results.levels ?? 12, Tmin: s.results.Tmin, Tmax: s.results.Tmax, heights: s.results.heights ?? [], nBand: s.results.nBand ?? 30, seed: j.seed ?? 42 });
+    // a log without these keys opens with the mask off and factor 1
+    const rx = s.results as { fsMask?: { on?: unknown; pct?: unknown }; refineFactor?: unknown };
+    S.res.fsMaskOn = rx.fsMask?.on === true;
+    S.res.fsMaskPct = validMaskPct(rx.fsMask?.pct) ? rx.fsMask!.pct as number : FS_MASK_DEFAULT_PCT;
+    S.res.fineFactor = refineFactor(rx.refineFactor); S.res.fine = null; S.res.fineBad = '';
+    // what is on screen was computed with other settings, it stays marked until it is computed again
+    S.ui.scaleOpen = false; S.ui.reconfirm = false;
+    invalidate(1, 'run');
     S.runRef = { name, inputs: (j.inputs ?? []).filter((x) => x.sha256) };
     S.loadMsgs.push({ code: 'run_loaded', vars: { file: name }, level: 'info' });
     checkRun();
@@ -1402,7 +1661,7 @@ function checkRun() {
 
 // ============================================================================ rendering helpers
 const plots = new Map<string, LinePlot>();
-function plot(id: string, o: { xlabel?: string; ylabel?: string; logy?: boolean; height?: number; legend?: boolean }, series: Series[], lim: { xlim?: [number, number]; ylim?: [number, number] } = {}) {
+function plot(id: string, o: { xlabel?: string; ylabel?: string; logy?: boolean; height?: number; legend?: boolean; emptyNote?: string }, series: Series[], lim: { xlim?: [number, number]; ylim?: [number, number] } = {}) {
   const el = document.getElementById(id);
   if (!el) return;
   let p = plots.get(id);
@@ -1414,6 +1673,7 @@ function plot(id: string, o: { xlabel?: string; ylabel?: string; logy?: boolean;
     if (keep.length === sr.x.length) return sr;
     return { ...sr, x: keep.map((i) => sr.x[i]), y: keep.map((i) => sr.y[i]), y2: sr.y2 ? keep.map((i) => sr.y2![i]) : undefined };
   }).filter((sr) => sr.x.length > 0);
+  if (!clean.length && o.emptyNote) { const m = document.createElement('p'); m.className = 'meta'; m.textContent = o.emptyNote; el.replaceChildren(m); plots.delete(id); return; }
   p.render(clean, lim);
 }
 const chCls = ['s-chR', 's-chG', 's-chB'];
@@ -1432,7 +1692,8 @@ function keepFocus(fn: () => void) {
   const sel = a && (a as HTMLInputElement).selectionStart;
   fn();
   if (!key || !a || a.isConnected) return;
-  const b = document.querySelector(key) as HTMLInputElement | null;
+  // confirming the scale folds the ruler, so the focus goes to the button that opens it again
+  const b = (document.querySelector(key) ?? (key === '#wr-scaleok' ? document.getElementById('wr-scale-edit') : null)) as HTMLInputElement | null;
   if (b && b !== a) { b.focus({ preventScroll: true }); try { if (sel !== null && sel !== undefined && b.setSelectionRange) b.setSelectionRange(sel, sel); } catch { /* not a text field */ } }
 }
 /**
@@ -1456,6 +1717,15 @@ function renderSoon() { if (pointerDown) pendingRender = true; else renderAll();
 function renderBusy() {
   const e = document.getElementById('wr-busy');
   if (e) { e.textContent = S.busy; e.hidden = !S.busy; }
+}
+/** A network trains for minutes, also while the student is on another step. */
+function renderTrain() {
+  const e = document.getElementById('wr-train');
+  if (!e) return;
+  const A = S.abel.annabel, N = S.tfs.net, s = A.running ? 3 : N.running ? 4 : 0, tk = A.running ? A.tick : N.tick;
+  const text = s && S.ui.step !== s ? L(`La red neuronal del paso ${s} está entrenando${tk ? `, iteración ${num(tk.iter)} de ${num(tk.total)}` : ''}.`, `The neural network of step ${s} is training${tk ? `, iteration ${num(tk.iter)} of ${num(tk.total)}` : ''}.`) : '';
+  if (e.textContent !== text) e.textContent = text;
+  e.hidden = !text;
 }
 function renderAll() {
   keepFocus(() => { renderStage0(); renderStage1(); renderStage2(); renderStage3(); renderStage4(); renderStage5(); renderStage6(); renderNav(); });
@@ -1494,11 +1764,13 @@ function stepHead(n: number, title: string, pillId: string, p: Pill, purpose: st
   return `<header class="wr-head"><h2>${n} · ${subs(title)}</h2><p class="wr-pill wr-pill--${p.k}"><span id="${pillId}">${subs(p.t)}</span></p></header>
   <p class="wr-purpose">${subs(purpose)}</p>`;
 }
+const optCount = (nw: number) => (nw ? ` · ${nw} ${nw === 1 ? L('aviso', 'warning') : L('avisos', 'warnings')}` : '');
 /** The one fold of a step. Its open state lives in S.ui.open, so drawing the step again keeps it open. */
 function optsBlock(n: number, parts: string[]): string {
   const body = parts.filter(Boolean).join('');
   if (!body) return '';
-  return `<details class="wr-opts" id="wr-opt-${n}"${S.ui.open[n] ? ' open' : ''}><summary>${L('Opciones', 'Options')}</summary><div class="wr-opts__body">${body}</div></details>`;
+  const nw = (body.match(/class="wr-msg wr-msg--warn"/g) ?? []).length;
+  return `<details class="wr-opts" id="wr-opt-${n}" data-warnings="${nw}"${S.ui.open[n] ? ' open' : ''}><summary>${L('Opciones', 'Options')}<span class="wr-optn">${optCount(nw)}</span></summary><div class="wr-opts__body">${body}</div></details>`;
 }
 const osec = (title: string, body: string, id = '') => (body.trim() ? `<section class="wr-osec"${id ? ` id="${id}"` : ''}><h3>${subs(title)}</h3>${body}</section>` : '');
 const RETAKE = ['saturated', 'plateau_moved', 'dark_clipped', 'dark_clipped_nodark', 'texp_outside_cal', 'quick_zeros'];
@@ -1520,13 +1792,85 @@ const pbtn = (id: string, text: string, disabled: boolean, why = '', extra = '')
 const FILE_CODES = ['not_tiff', 'bigtiff', 'compression', 'predictor', 'sample_type', 'samples', 'truncated', 'u8_gamma', 'float_nosat', 'too_large', 'mixed_bits', 'missing_tag', 'lzw_bad_code', 'ycbcr', 'zip_unsupported', 'zip_bad', 'out_of_memory', 'rewritten', 'series_mismatch', 'response_bad', 'oven_no_aperture'];
 function loadMsgsFor(step: 1 | 3): Msg[] { return S.loadFrom === step ? S.loadMsgs.filter((m) => !/^(example_|run_)/.test(m.code)) : []; }
 
+/** Sections of the five steps, in order. The ids stay as they were (wr-s2 is the result of step 1, inside wr-s1). */
+const STEP_IDS = ['wr-s1', 'wr-s3', 'wr-s4', 'wr-s5', 'wr-s6'];
+const stepHash = (n: number) => `${L('paso', 'step')}-${n}`;
+/** The step a URL points to, in either language, also the old anchors of the sections. */
+function stepFromHash(): number | null {
+  const h = location.hash.slice(1), m = /^(?:paso|step)-([1-5])$/.exec(h);
+  if (m) return +m[1];
+  if (h === 'wr-s2') return 1;
+  const i = STEP_IDS.indexOf(h);
+  return i >= 0 ? i + 1 : null;
+}
+function showStep() {
+  STEP_IDS.forEach((id, i) => { const e = document.getElementById(id); if (e) e.hidden = i + 1 !== S.ui.step; });
+  renderNav();
+}
+/**
+ * Shows step n and draws it again, now that its plots can measure their width. The step goes in the URL with a plain
+ * hash, which also works from file:// and lets the back button walk the steps. Nothing else in the tool moves the
+ * student except loading a new example and «at once», both asked for.
+ */
+function setStep(n: number, o: { focus?: 'tab' | 'panel'; hash?: boolean } = {}) {
+  const changed = n !== S.ui.step;
+  S.ui.step = n;
+  showStep();
+  if (changed && o.hash !== false) location.hash = stepHash(n);
+  const sec = document.getElementById(STEP_IDS[n - 1]);
+  if (changed && sec) {
+    keepFocus([renderStage1, renderStage3, renderStage4, renderStage5, renderStage6][n - 1]);
+    const bar = document.querySelector('.wr-top')?.getBoundingClientRect().bottom ?? 0, top = sec.getBoundingClientRect().top;
+    if (top < bar || top > window.innerHeight * 0.6) sec.scrollIntoView({ block: 'start' });
+  }
+  if (o.focus === 'tab') document.getElementById(`wr-steptab-${n}`)?.focus();
+  if (o.focus === 'panel') sec?.focus({ preventScroll: true });
+}
+/** The bar of steps is updated in place, so a tab keeps the focus while the steps are drawn. */
 function renderNav() {
   const el = document.getElementById('wr-nav');
   if (!el) return;
-  const items: [number, string, string, Pill][] = [[1, 'wr-s1', L('Calibración', 'Calibration'), st1()], [2, 'wr-s3', L('Llama', 'Flame'), st3()], [3, 'wr-s4', 'Abel', st4()], [4, 'wr-s5', L('T y f_s', 'T and f_s'), st5()], [5, 'wr-s6', L('Resultados', 'Results'), st6()]];
-  const word = (k: Kind) => (k === 'ok' ? L('listo', 'done') : k === 'todo' ? L('pendiente', 'to do') : L('con aviso', 'with a notice'));
-  el.innerHTML = `<ol>${items.map(([n, id, name, p]) => `<li><a href="#${id}"><span class="wr-dot wr-dot--${p.k}" aria-hidden="true">${p.k === 'ok' ? '●' : p.k === 'todo' ? '○' : '◐'}</span> ${n}<span class="wr-stepname"> ${subs(name)}</span><span class="sr-only">, ${word(p.k)}</span></a></li>`).join('')}</ol>`;
+  const items: [string, Pill][] = [[L('Calibración', 'Calibration'), st1()], [L('Llama', 'Flame'), st3()], ['Abel', st4()], [L('T y f_s', 'T and f_s'), st5()], [L('Resultados', 'Results'), st6()]];
+  if (!el.querySelector('.wr-step')) el.innerHTML = `<div class="wr-steplist" role="tablist" aria-label="${L('Pasos', 'Steps')}">${items.map(([name], i) => `<button type="button" role="tab" class="wr-step" id="wr-steptab-${i + 1}" aria-controls="${STEP_IDS[i]}"><span class="wr-dot" aria-hidden="true"></span> ${i + 1}<span class="wr-stepname"> ${subs(name)}</span><span class="wr-stepnote" aria-hidden="true"></span><span class="sr-only wr-stepword"></span></button>`).join('')}</div><p class="wr-legend" id="wr-steplegend" hidden></p>`;
+  const mark: Record<Kind | 'busy', string> = { ok: '●', todo: '○', warn: '⚠', stop: '⚠', stale: '↻', busy: '◌' };
+  const legend = new Set<string>();
+  const word: Record<Kind | 'busy', string> = { ok: L('listo', 'done'), todo: L('pendiente', 'to do'), warn: L('con aviso', 'with a warning'), stop: L('detenido', 'stopped'), stale: L('desactualizado', 'out of date'), busy: L('entrenando', 'training') };
+  items.forEach(([name, p], i) => {
+    const t = document.getElementById(`wr-steptab-${i + 1}`)!, on = S.ui.step === i + 1;
+    // a warning in sight inside a step that is not on screen must show in the bar, whatever its state says. The ones in Options are counted on its fold
+    const warned = Array.from(document.getElementById(STEP_IDS[i])?.querySelectorAll('.wr-msg--warn, .wr-msg--error, .wr-check--warn') ?? []).some((m) => !m.closest('details.wr-opts'));
+    const training = (i === 2 && S.abel.annabel.running) || (i === 3 && S.tfs.net.running);
+    const k: Kind | 'busy' = training ? 'busy' : (p.k === 'ok' || p.k === 'todo') && warned ? 'warn' : p.k;
+    // the warnings inside Options do not stop the step, but a student on another step must still see that they are there
+    // counted here and not when the fold is written, a table of step 1 adds its own warnings after that
+    const opt = document.getElementById(`wr-opt-${i + 1}`), nw = opt ? opt.querySelectorAll('.wr-msg--warn').length : 0;
+    if (opt) { opt.dataset.warnings = String(nw); const c = opt.querySelector(':scope > summary .wr-optn'); if (c && c.textContent !== optCount(nw)) c.textContent = optCount(nw); }
+    const inOpts = nw ? L(`${nw} ${nw === 1 ? 'aviso' : 'avisos'} en Opciones`, `${nw} ${nw === 1 ? 'warning' : 'warnings'} in Options`) : '';
+    if (nw || k === 'warn' || k === 'stop') legend.add(`⚠ ${L('con avisos', 'with warnings')}`);
+    if (k === 'stale') legend.add(`↻ ${word.stale}`);
+    if (k === 'busy') legend.add(`◌ ${word.busy}`);
+    t.setAttribute('aria-selected', String(on));
+    t.tabIndex = on ? 0 : -1;
+    t.dataset.state = k;
+    t.title = inOpts ? `${word[k]}, ${inOpts}` : word[k];
+    t.dataset.notes = String(nw);
+    const note = t.querySelector('.wr-stepnote')!, noteText = nw && k !== 'warn' && k !== 'stop' ? ` ⚠${nw}` : '';
+    if (note.textContent !== noteText) note.textContent = noteText;
+    const dot = t.querySelector('.wr-dot')!, sr = t.querySelector('.wr-stepword')!;
+    dot.className = `wr-dot wr-dot--${k}`;
+    if (dot.textContent !== mark[k]) dot.textContent = mark[k];
+    sr.textContent = `, ${word[k]}${inOpts ? `, ${inOpts}` : ''}`;
+    // on a phone only the active tab shows its name, the others keep it for a screen reader
+    t.setAttribute('aria-label', `${i + 1} ${name.replace(/_/g, '')}${sr.textContent}`);
+  });
+  // the marks that are not plain done or to do, said in words under the bar when they appear
+  const lg = document.getElementById('wr-steplegend')!, lgText = Array.from(legend).join(' · ');
+  lg.hidden = !lgText;
+  if (lg.textContent !== lgText) lg.textContent = lgText;
+  renderTrain();
 }
+/** The button at the end of a step. */
+const nextBtn = (n: number) => `<p class="wr-next"><button class="wr-btn wr-btn--box" type="button" data-next="${n + 1}">${L('Siguiente', 'Next')}</button></p>`;
 
 // ============================================================================ top bar (stage 0)
 function browserOk(): boolean { return typeof Worker !== 'undefined' && !!globalThis.crypto?.subtle && typeof DecompressionStream !== 'undefined'; }
@@ -1671,7 +2015,6 @@ function renderStage1() {
     osec(L('Archivos', 'Files'), `${miss.length ? '' : ft.html}${ft.pfs}${S.items.length ? `<p>${btn('wr-clear', L('Vaciar la tabla', 'Clear the table'))}</p>` : ''}`),
     S.oven.series.length && !plView ? osec(L('Zona plana', 'Flat zone'), plateauBlock()) : '',
     S.oven.result ? osec(L('Resultado detallado', 'Detailed result'), '<div id="wr-fit"></div>') : '',
-    S.oven.result?.tail ? osec(L('Corregir la respuesta sobre 700 nm', 'Correct the response above 700 nm'), '<div id="wr-tail-box"></div>') : '',
     osec(L('Supuestos', 'Assumptions'), `<div class="wr-fields">
       ${numIn('wr-dT', S.sigmaT, 'min="0" max="50" step="1"', L('Incertidumbre del termopar (K)', 'Thermocouple uncertainty (K)'))}
       <label class="control"><span class="control__head">${L('Emisividad de la cavidad', 'Cavity emissivity')} <output id="wr-eps-out">${num(S.eps, 2)}</output></span><input type="range" id="wr-eps" aria-label="${L('Emisividad de la cavidad', 'Cavity emissivity')}" min="0.80" max="1" step="0.01" value="${S.eps}"></label>
@@ -1693,7 +2036,8 @@ function renderStage1() {
       <p class="cluster">${fileBtn('wr-q-file', L('Elegir un TIFF', 'Choose a TIFF'), '.tif,.tiff,image/tiff')} ${fileBtn('wr-q-dir', L('Elegir una carpeta', 'Choose a folder'), '', true)}</p><div id="wr-quick"></div>`),
     exOven >= 0 || exSyn >= 0 ? osec(L('Ejemplo', 'Example'), `${exOven >= 0 ? `<p>${btn(`wr-ex-${exOven}`, L('Cargar solo el horno del laboratorio', 'Load only the lab furnace'))} <span class="meta">${kB(S.o.examples[exOven].bytes)}</span></p>` : ''}
       ${exSyn >= 0 ? `<p>${btn(`wr-ex-${exSyn}`, L('Cargar la llama sintética, con su respuesta conocida', 'Load the synthetic flame, with its known answer'))} <span class="meta">${kB(S.o.examples[exSyn].bytes)}</span></p>` : ''}`) : '',
-  ])}`;
+  ])}
+  ${nextBtn(1)}`;
   const ps = psiNow();
   const m = Math.max(...ps.psi.R);
   plot('wr-psi', { xlabel: L('longitud de onda λ (nm)', 'wavelength λ (nm)'), ylabel: L('respuesta', 'response'), height: 220 }, CH.map((c, k) => ({ kind: 'line', x: ps.lamNm, y: Array.from(ps.psi[c], (v) => v / m), cls: chCls[k], label: c })), { xlim: [380, 1000] });
@@ -1759,7 +2103,7 @@ function plateauBlock(): string {
   <div class="wr-grid2"><figure><canvas id="wr-pcv" class="wr-preview" tabindex="0" aria-label="${L('Foto del horno. Un clic pone el centro de la zona plana, las flechas la mueven y más y menos cambian el radio.', 'Furnace photo. A click sets the centre of the flat zone, the arrows move it and plus and minus change the radius.')}"></canvas>
     <figcaption>${L(`${tLabel(s.tC)}, canal ${chName(S.oven.view)}. Círculo continuo, zona plana. Punteado, abertura.`, `${tLabel(s.tC)}, ${chName(S.oven.view)} channel. Solid circle, flat zone. Dotted, aperture.`)}</figcaption></figure>
   <div class="wr-controls">
-    <p class="seg" role="group" aria-label="${L('Canal de la vista previa', 'Preview channel')}">${[0, 1, 2].map((c) => `<button type="button" data-view="${c}" aria-pressed="${S.oven.view === c}">${chName(c)}</button>`).join('')}</p>
+    <p class="wr-tabs" role="group" aria-label="${L('Canal de la vista previa', 'Preview channel')}">${[0, 1, 2].map((c) => `<button type="button" class="wr-tab" data-view="${c}" aria-pressed="${S.oven.view === c}">${chName(c)}</button>`).join('')}</p>
     <label class="control"><span class="control__head">${L('Centro x (píxeles)', 'Centre x (pixels)')} <output>${num(pl.cx, 1)}</output></span><input type="range" id="wr-pcx" aria-label="${L('Centro x', 'Centre x')}" min="0" max="${s.w - 1}" step="0.5" value="${pl.cx}"></label>
     <label class="control"><span class="control__head">${L('Centro y (píxeles)', 'Centre y (pixels)')} <output>${num(pl.cy, 1)}</output></span><input type="range" id="wr-pcy" aria-label="${L('Centro y', 'Centre y')}" min="0" max="${s.h - 1}" step="0.5" value="${pl.cy}"></label>
     <label class="control"><span class="control__head">${L('Radio (píxeles)', 'Radius (pixels)')} <output>${num(pl.radius, 1)}</output></span><input type="range" id="wr-pr" aria-label="${L('Radio', 'Radius')}" min="3" max="${Math.round(s.aperture.r)}" step="0.5" value="${pl.radius}"></label>
@@ -1800,26 +2144,6 @@ function movePlateau(dcx: number, dcy: number, dr: number, abs?: { cx: number; c
     for (const [id, v] of [['wr-pcx', pl.cx], ['wr-pcy', pl.cy], ['wr-pr', pl.radius]] as [string, number][]) { const i = document.getElementById(id) as HTMLInputElement | null; if (i && document.activeElement !== i) i.value = String(v); const o = i?.parentElement?.querySelector('output'); if (o) o.textContent = num(v, 1); }
   }, 180);
 }
-/** Temperature the camera reads at each furnace temperature with the calibration in use (K_R/K_G and ψ of S.cal). */
-let readCache: { cal: unknown; res: unknown; rows: { tC: number; TK: number; Tread: number }[] } | null = null;
-function bisectT(f: (T: number) => number, a = 700, b = 3000): number {
-  let fa = f(a);
-  const fb = f(b);
-  if (!(fa * fb <= 0)) return NaN;
-  for (let i = 0; i < 70; i++) { const m = (a + b) / 2, fm = f(m); if (fa * fm <= 0) b = m; else { a = m; fa = fm; } }
-  return (a + b) / 2;
-}
-function ovenReadings(): { tC: number; TK: number; Tread: number }[] {
-  const r = S.oven.result, c = S.cal;
-  if (!r || !c || c.mode !== 'oven') return [];
-  if (readCache && readCache.cal === c && readCache.res === r) return readCache.rows;
-  const ps = psiNow();
-  const band = makeBand(ps.lamNm, ps.psi, 'gl', emLaw());
-  const q = c.K.R / c.K.G;
-  const rows = r.fit.ratioTest.map((x) => ({ tC: x.tC, TK: x.TK, Tread: bisectT((T) => Math.log((q * bandX(band, 'R', T)) / bandX(band, 'G', T)) - Math.log(x.rMeas)) })).sort((a, b) => a.tC - b.tC);
-  readCache = { cal: c, res: r, rows };
-  return rows;
-}
 /** Result of step 1, the calibration line and its one test (DESIGN §2). Id wr-s2 kept for the tests. */
 function renderStage2() {
   const el = document.getElementById('wr-s2');
@@ -1832,21 +2156,15 @@ function renderStage2() {
     : (c.calibrated ?? []).length === 1 ? L('Solo un canal calibrado. La temperatura necesita dos.', 'Only one channel calibrated. Temperature needs two.')
     : c.tested === false ? L('Calibración sin probar. Carguen al menos dos temperaturas.', 'Calibration not tested. Load at least two temperatures.')
     : !c.consistent ? L('La calibración no pasa la prueba.', 'The calibration does not pass the test.')
-    : c.absolute ? L('Calibración absoluta, da T y f_s en ppm.', 'Absolute calibration, gives T and f_s in ppm.') : L('Calibración relativa. T absoluta y f_s relativa.', 'Relative calibration. Absolute T and relative f_s.');
+    : c.absolute ? L('Calibración absoluta. T en K, f_s en ppm.', 'Absolute calibration. T in K, f_s in ppm.') : L('Calibración relativa. T absoluta y f_s relativa.', 'Relative calibration. Absolute T and relative f_s.');
   const extra: Msg[] = [];
   if (S.flame.sensorMismatch) extra.push({ code: 'sensor_mismatch', vars: { a: `${c.sensor.width} × ${c.sensor.height}`, b: (() => { const f = flameItems()[0]; const s = sensorOf(f); return `${s.width} × ${s.height}`; })() } });
   let test = '';
-  if (c.mode === 'oven' && S.oven.result && c.tested !== false) {
-    const rows = c.tail?.applied ? [] : ovenReadings();
-    const worst = rows.length && rows.every((x) => fin(x.Tread)) ? rows.reduce((a, x) => Math.max(a, Math.abs(x.Tread - x.TK)), 0) : NaN;
-    const four = S.oven.series.length >= 4 && S.tailOn;
-    const tl = c.tail?.applied && S.oven.result.tail?.ok ? S.oven.result.tail : null;
-    const table = tl
-      ? tableHtml([L('Temperatura dejada fuera', 'Temperature left out'), L('Error en una llama a 1800 K', 'Error in a flame at 1800 K')], tl.loo.filter((l) => tl.criterion.from.includes(l.tC)).map((l) => [tLabel(l.tC), `${sgn(l.dToutK, 1)} K`]), 'wr-ratio-t', L('Prueba, se calibra sin cada temperatura y se mira el error en la llama.', 'Test, calibrate without each temperature and look at the error in the flame.'))
-      : tableHtml([L('Horno (termopar)', 'Furnace (thermocouple)'), L('Leída por la cámara', 'Read by the camera'), L('Diferencia', 'Difference')], rows.map((x) => [tLabel(x.tC), fin(x.Tread) ? tLabel(Math.round(x.Tread - T0C)) : '–', fin(x.Tread) ? `${sgn(x.Tread - x.TK)} K` : '–']), 'wr-ratio-t', L('Prueba, la cámara debe leer la temperatura del horno.', 'Test, the camera must read the furnace temperature.'));
-    const w = tl ? tl.ratioTest.afterK : worst;
-    test = `<div id="wr-ratio">${table}
-      ${c.consistent && fin(w) ? check(true, L(`Pasa. La diferencia máxima es ${num(w)} K.`, `Passes. The largest difference is ${num(w)} K.`)) : check(false, esc(msgText({ code: four ? 'ratio_test_fail_all' : 'ratio_test_fail', vars: { a: fin(w) ? Math.round(w) : '–' } }).text), 'ratio_test_fail')}</div>`;
+  if (c.mode === 'oven' && c.compare && c.compare.shiftK !== null && c.tested !== false) {
+    const h = c.compare, big = Math.abs(h.shiftK!) > HOT_SHIFT_WARN_K;
+    const table = tableHtml([L('Horno', 'Furnace'), L('Sensibilidad rojo/verde', 'Red/green sensitivity'), ''], h.rows.map((x) => [tLabel(x.tC), num(x.KRKG, 2), x.tC === h.tUsed ? L('usada', 'used') : '']), 'wr-ratio-t', L('En un horno frío, una parte mayor de la señal viene del infrarrojo, donde la cámara se conoce peor. La llama es mucho más caliente: se usa el horno más caliente, y T podría ser algo mayor.', 'In a cold furnace, a larger part of the signal comes from the infrared, where the camera is less well known. The flame is much hotter, so the hottest furnace is used, and T could be somewhat higher.'));
+    const vars = { a: tLabel(h.tNext!), b: tLabel(h.tUsed), c: Math.round(Math.abs(h.shiftK!)), d: HOT_FLAME_K };
+    test = `<div id="wr-ratio">${table}${big ? check(false, esc(msgText({ code: 'hot_shift_big', vars }).text), 'hot_shift_big') : `<p class="wr-check" data-code="hot_shift">${esc(msgText({ code: 'hot_shift', vars }).text)}</p>`}</div>`;
   } else if (c.mode === 'oven') test = '<div id="wr-ratio"></div>';
   el.innerHTML = `<p class="wr-calline"><span id="wr-st2">${subs(line)}</span></p>${test}${msgBox(extra)}`;
 }
@@ -1858,25 +2176,20 @@ function renderFit() {
     const msgs: Msg[] = [];
     if (f.calibrated.length === 1) msgs.push({ code: 'cal_one_channel', vars: { channel: CH.indexOf(f.calibrated[0]) } });
     if (!f.order.ok) msgs.push({ code: 'bayer_order' });
-    const hitsBy = CH.map((c) => r.tails.filter((t) => t[c] > 0.1).map((t) => Math.round(t.tC + T0C)));
-    if (hitsBy.some((h) => h.length)) msgs.push({ code: r.ratioWorst > 50 || !f.ratio.RG.tested ? 'ir_tail' : 'ir_tail_ok', vars: { a: hitsBy.every((h) => h.length === r.tails.length) ? L('los tres canales', 'the three channels') : hitsBy.map((h, k) => (h.length ? chName(k) : '')).filter(Boolean).join(L(' y ', ' and ')) }, level: 'info' });
     const tempsAll = [...new Set(f.channels.R.perT.map((p) => p.tC))];
-    const rows = tempsAll.map((tC) => [tLabel(tC), ...CH.map((c) => { const p = f.channels[c].perT.find((x) => x.tC === tC); return p ? `${sig(p.K)} ± ${sig(p.sK, 2)}` : '–'; })]);
+    const rows = tempsAll.map((tC) => [tLabel(tC), ...CH.map((c) => { const p = f.channels[c].perT.find((x) => x.tC === tC); return p ? `${sig(p.K)} ± ${sig(p.sK, 2)}` : '–'; }), (() => { const q = r.tails.find((x) => x.tC === tC); return q ? `${pct(q.R, 0)} / ${pct(q.G, 0)}` : '–'; })()]);
     const lin = CH.map((c) => Math.max(...f.channels[c].perT.map((p) => (fin(p.linMaxPct) ? p.linMaxPct : 0)), 0));
     for (const s of S.oven.series) CH.forEach((c, k) => { const p = f.channels[c].perT.find((x) => x.tC === s.tC); if (p && p.linMaxPct > 1) msgs.push({ code: 'nonlinear', vars: { channel: k, a: Math.round(p.linMaxPct * 10) / 10 } }); });
-    const rowsLoo = f.ratioTest.map((x) => [tLabel(x.tC), tLabel(Math.round(x.Tpred - T0C)), `${sgn(x.dT)} K`]);
     const imgRows: string[][] = [];
     for (const s of S.oven.series) s.texpUs.forEach((t, i) => {
       const sg = s.signals[i];
       const idx = f.signals.findIndex((x) => x.tC === s.tC && x.texpUs === t);
       imgRows.push([tLabel(s.tC), num(t), CH.map((c) => pct(sg.S[c] / S.oven.ceil12, 0)).join(' / '), CH.map((c) => (idx >= 0 ? (f.accepted[c][idx] ? L('sí', 'yes') : L('no', 'no')) : '–')).join(' / ')]);
     });
-    const blueOut = !!S.cal?.tail?.applied || !(S.cal?.calibrated ?? []).includes('B');
-    fe.innerHTML = `${tableHtml([L('Temperatura', 'Temperature'), L('Sensibilidad rojo', 'Red sensitivity'), L('Sensibilidad verde', 'Green sensitivity'), L('Sensibilidad azul', 'Blue sensitivity')], rows)}
+    const blueOut = !(S.cal?.calibrated ?? []).includes('B');
+    fe.innerHTML = `${tableHtml([L('Temperatura', 'Temperature'), L('Sensibilidad rojo', 'Red sensitivity'), L('Sensibilidad verde', 'Green sensitivity'), L('Sensibilidad azul', 'Blue sensitivity'), L('Señal sobre 700 nm, R / G', 'Signal above 700 nm, R / G')], rows)}
     ${f.ratio.RG.tested ? `<figure><div id="wr-kt" class="wr-plot"></div><figcaption>${L('Sensibilidad de cada canal en cada temperatura, sobre la que se usa.', 'Sensitivity of each channel at each temperature, over the one used.')}</figcaption></figure>` : ''}
-    <p>${f.ratio.RG.tested ? L(`Dispersión de la razón de sensibilidades rojo/verde entre temperaturas, ${num(f.ratio.RG.dispersion * 100, 2)} %.`, `Scatter of the red/green sensitivity ratio across temperatures, ${num(f.ratio.RG.dispersion * 100, 2)} %.`) : ''}
-    ${L(`Respuesta lineal con el tiempo de exposición. Desviación máxima R ${num(lin[0], 1)} %, G ${num(lin[1], 1)} %, B ${num(lin[2], 1)} %.`, `Linear response with exposure time. Largest departure R ${num(lin[0], 1)} %, G ${num(lin[1], 1)} %, B ${num(lin[2], 1)} %.`)}${blueOut ? ` ${L('El azul no se usa en T ni en f_s.', 'Blue is not used for T or f_s.').replace(/f_s/, 'f<sub>s</sub>')}` : ''}</p>
-    ${rowsLoo.length ? `<h4>${S.cal?.tail?.applied ? L('Dejando fuera cada temperatura, sin corregir sobre 700 nm', 'Leaving each temperature out, without the correction above 700 nm') : L('Dejando fuera cada temperatura', 'Leaving each temperature out')}</h4>${tableHtml([L('Horno', 'Furnace'), L('Leída', 'Read'), L('Diferencia', 'Difference')], rowsLoo)}` : ''}
+    <p>${L(`Respuesta lineal con el tiempo de exposición. Desviación máxima R ${num(lin[0], 1)} %, G ${num(lin[1], 1)} %, B ${num(lin[2], 1)} %.`, `Linear response with exposure time. Largest departure R ${num(lin[0], 1)} %, G ${num(lin[1], 1)} %, B ${num(lin[2], 1)} %.`)}${blueOut ? ` ${L('El azul no se usa en T ni en f_s.', 'Blue is not used for T or f_s.').replace(/f_s/, 'f<sub>s</sub>')}` : ''}</p>
     <h4>${L('Imágenes del horno', 'Furnace images')}</h4>${tableHtml([L('Serie', 'Series'), L('Exposición (µs)', 'Exposure (µs)'), L('Uso de la escala', 'Use of full scale') + ' R / G / B', L('Entra', 'Used') + ' R / G / B'], imgRows)}
     ${msgBox(msgs)}`;
     const kt: Series[] = [];
@@ -1887,31 +2200,6 @@ function renderFit() {
     });
     if (f.ratio.RG.tested) plot('wr-kt', { xlabel: L('horno (°C)', 'furnace (°C)'), ylabel: L('sensibilidad relativa', 'relative sensitivity'), height: 220 }, kt);
   }
-  const tb = document.getElementById('wr-tail-box');
-  if (r && tb) tb.innerHTML = tailBlock(r);
-}
-/** Correction of the camera response above 700 nm with the furnace (tailcal.ts), on by default. */
-function tailBlock(r: OvenResult): string {
-  const t: TailCal | null = r.tail;
-  if (!t) return '';
-  const intro = `${chk('wr-tail-on', S.tailOn, L('Corregir la respuesta sobre 700 nm', 'Correct the response above 700 nm'))}
-  <p>${L('Ajusta la parte infrarroja de la respuesta de la cámara con el horno. Necesita tres temperaturas o más.', 'Fits the infrared part of the camera response with the furnace. It needs three temperatures or more.')}</p>`;
-  if (!t.ok) return `${intro}${msgBox([{ code: 'tail_few', level: 'info' }])}`;
-  const msgs: Msg[] = [];
-  if (!S.tailOn) msgs.push({ code: 'tail_off', level: 'info' });
-  else if (t.criterion.pass) msgs.push({ code: 'tail_ok', level: 'info' });
-  else msgs.push({ code: 'tail_fail', vars: { a: num(t.criterion.worstPct, 1) } });
-  if (t.temps.length === 3) msgs.push({ code: 'tail_three', level: 'info' });
-  const rows = t.temps.map((tC) => {
-    const l = t.loo.find((x) => x.tC === tC)!, q = t.ratio.find((x) => x.tC === tC)!;
-    return [tLabel(tC), `${sgn(q.dTflameNominalK)} K`, `${sgn(l.dToutK, 1)} K`];
-  });
-  const range = S.o.tailRange ? (getLang() === 'es' ? S.o.tailRange.es : S.o.tailRange.en) : '';
-  return `${intro}
-  <p id="wr-tail-fit">${L(`La respuesta del rojo sobre 700 nm se multiplica por ${num(t.s, 3)} ± ${num(t.u.s, 3)}.`, `The red response above 700 nm is multiplied by ${num(t.s, 3)} ± ${num(t.u.s, 3)}.`)}</p>
-  ${tableHtml([L('Temperatura dejada fuera', 'Temperature left out'), L('Error en una llama a 1800 K, antes', 'Error in a flame at 1800 K, before'), L('después', 'after')], rows, 'wr-tail-table')}
-  <p id="wr-tail-crit">${t.criterion.pass ? L(`Pasa, peor diferencia ${num(t.ratioTest.afterK)} K.`, `Passes, worst difference ${num(t.ratioTest.afterK)} K.`) : L(`No pasa, peor diferencia ${num(t.ratioTest.afterK)} K.`, `Does not pass, worst difference ${num(t.ratioTest.afterK)} K.`)}${range && S.tailOn ? ` ${L(`Aun con la corrección, T puede quedar corrida ${range}.`, `Even with the correction, T can be off by ${range}.`)}` : ''}</p>
-  ${msgBox(msgs)}`;
 }
 function renderFlat() {
   const el = document.getElementById('wr-flat');
@@ -2020,32 +2308,42 @@ function renderStage3() {
   const rest = v.filter((m) => !['burner_needed', 'upside_down', 'scale_needed'].includes(m.code));
   const frames = fl.map((it) => `<li class="wr-frame${it.include ? '' : ' wr-off'}"><label><input type="checkbox" data-incl="${it.id}"${it.include ? ' checked' : ''}> <canvas data-thumb="${it.id}" width="1" height="1"></canvas><span class="wr-path">${esc(it.path.split('/').pop()!)}</span>${it.include ? '' : `<span class="meta">${it.why === 'tilted' ? L('fuera, inclinado', 'out, tilted') : it.why === 'axis' ? L('fuera, eje corrido', 'out, axis off') : it.why === 'average' ? L('fuera, en el promedio', 'out, in the average') : it.why && it.why !== 'excluded' ? esc(it.why) : L('fuera', 'out')}</span>`}</label></li>`).join('');
   const halves = p ? median(p.halvesRms) : NaN;
+  // with the scale confirmed the ruler folds to one line, «Cambiar» opens it with its marks
+  const folded = S.flame.scaleConfirmed && fin(S.flame.mmPerPx) && S.flame.mmPerPx > 0 && !S.ui.scaleOpen;
+  const mm = +S.flame.mmPerPx.toFixed(4);
+  const scale = folded ? `<p class="wr-scaleline" id="wr-scale-line">${L('Escala', 'Scale')} ${num(mm, Math.max(0, String(mm).split('.')[1]?.length ?? 0))} mm/px · ${btn('wr-scale-edit', L('Cambiar', 'Change'))}</p>` : `<div class="wr-pair">${numIn('wr-mmpx', S.flame.mmPerPx, 'min="0" step="any"', L('Escala (mm por píxel)', 'Scale (mm per pixel)'))}${chk('wr-scaleok', S.flame.scaleConfirmed, L('Confirmo la escala', 'Scale confirmed'))}${S.flame.scaleConfirmed ? btn('wr-scale-done', L('Cerrar', 'Close')) : ''}</div>
+    ${S.flame.rulerPreview ? `<div class="wr-ruler-box" id="wr-ruler-box"><p class="meta">${S.flame.scaleConfirmed ? L('Para cambiar la escala, hagan clic en dos marcas.', 'To change the scale, click two marks.') : L('Hagan clic en dos marcas de la regla.', 'Click two marks on the ruler.')}</p>
+      <canvas id="wr-rcv" class="wr-preview wr-ruler" tabindex="0" aria-label="${L('Foto de la regla. Hagan clic en dos marcas.', 'Ruler photo. Click two marks.')}"></canvas>
+      <div class="wr-row">${numIn('wr-rmm', S.flame.rulerMm, 'min="0" step="any"', L('Distancia entre las marcas (mm)', 'Distance between the marks (mm)'))} ${btn('wr-rclear', L('Borrar las marcas', 'Clear the marks'))}</div></div>` : ''}`;
+  // before preparing, the first frame with the rotation chosen, so the view does not jump when the crop appears
+  const first = fl.find((it) => it.include && it.thumb) ?? fl.find((it) => it.thumb);
+  const view = p ? `<div class="wr-result"><figure><canvas id="wr-fcv" class="wr-preview" aria-label="${L('Imagen de la llama. Arrastren un rectángulo para recortar.', 'Flame image. Drag a rectangle to crop.')}"></canvas><figcaption>${L('Arrastren para recortar. Línea continua, eje.', 'Drag to crop. Solid line, axis.')}${cropActive() ? ` ${btn('wr-crop-reset', L('Quitar el recorte', 'Remove the crop'))}` : ''}</figcaption></figure>
+    ${chk('wr-burnerok', S.flame.burnerOk, L('El quemador queda abajo', 'The burner is at the bottom'))}
+    ${msgBox(near(['burner_needed', 'upside_down']))}
+    <p>${L(`${p.nz} alturas de ${num(p.zMm[0], 0)} a ${num(p.zMm[p.nz - 1], 0)} mm, ${p.nr} radios.`, `${p.nz} heights from ${num(p.zMm[0], 0)} to ${num(p.zMm[p.nz - 1], 0)} mm, ${p.nr} radii.`)}</p>
+    ${halves > 0.1 ? check(false, L(`Las dos mitades difieren ${num(100 * halves, 0)} %. Revisen el giro, o elijan una mitad en Opciones del paso 3.`, `The two halves differ by ${num(100 * halves, 0)} %. Check the rotation, or pick one half in step 3 Options.`), 'halves') : check(true, L(`Las dos mitades se parecen, diferencia ${num(100 * halves, 0)} %.`, `The two halves look alike, ${num(100 * halves, 0)} % difference.`))}</div>`
+    : first ? `<figure id="wr-fprev"><canvas id="wr-fthumb" class="wr-preview" role="img" aria-label="${L('Primera foto de la llama, con el giro elegido.', 'First flame photo, with the rotation chosen.')}"></canvas><figcaption>${L('Primera foto, con el giro elegido.', 'First photo, with the rotation chosen.')}</figcaption></figure>` : '';
   el.innerHTML = `${stepHead(2, L('Imágenes de la llama', 'Flame images'), 'wr-st3', st3(), L('Prepara las fotos de la llama con su tiempo de exposición, su escala y el quemador abajo.', 'Sets up the flame photos with their exposure time, their scale and the burner at the bottom.'))}
+  <div class="wr-two"><div class="wr-two__set">
   <div class="wr-drop">
     <h3 class="wr-droplab">${L('Fotos de la llama, del fondo y de la regla', 'Flame, background and ruler photos')}</h3>
     <p class="cluster">${fileBtn('wr-f-dir', L('Elegir carpeta', 'Choose folder'), '', true)} ${fileBtn('wr-f-files', L('Elegir archivos o .zip', 'Choose files or .zip'), '.tif,.tiff,.zip,.json')}</p>
   </div>
   ${fl.length ? `<p class="wr-read" id="wr-f-read">${L(`${fl.length} ${fl.length === 1 ? 'cuadro' : 'cuadros'} de llama · ${nb} fondo · ${nru} regla`, `${fl.length} flame ${fl.length === 1 ? 'frame' : 'frames'} · ${nb} background · ${nru} ruler`)}</p>
   <div class="wr-inputs">
+    ${S.ui.reconfirm && !S.flame.scaleConfirmed ? check(false, L('Fotos nuevas. Indiquen su escala y confirmen su tiempo de exposición.', 'New photos. Enter their scale and confirm their exposure time.'), 'new_photos') : ''}
     <div class="wr-pair">${numIn('wr-texp', S.flame.texpUs, 'min="1" step="any"', L('Tiempo de exposición (µs)', 'Exposure time (µs)'))}${chk('wr-texpok', S.flame.texpConfirmed, L('Confirmo que es el de la toma', 'This is the exposure of the photos'))}</div>
-    <div class="wr-pair">${numIn('wr-mmpx', S.flame.mmPerPx, 'min="0" step="any"', L('Escala (mm por píxel)', 'Scale (mm per pixel)'))}${chk('wr-scaleok', S.flame.scaleConfirmed, L('Confirmo la escala', 'Scale confirmed'))}</div>
+    ${scale}
     ${msgBox(near(['scale_needed']))}
-    ${S.flame.rulerPreview ? `<div class="wr-ruler-box"><p class="meta">${L('Hagan clic en dos marcas de la regla.', 'Click two marks on the ruler.')}</p>
-      <canvas id="wr-rcv" class="wr-preview wr-ruler" tabindex="0" aria-label="${L('Foto de la regla. Hagan clic en dos marcas.', 'Ruler photo. Click two marks.')}"></canvas>
-      <div class="wr-row">${numIn('wr-rmm', S.flame.rulerMm, 'min="0" step="any"', L('Distancia entre las marcas (mm)', 'Distance between the marks (mm)'))} ${btn('wr-rclear', L('Borrar las marcas', 'Clear the marks'))}</div></div>` : ''}
     <div class="wr-pair">${numIn('wr-zb', S.flame.zBurner, 'step="any"', L('Altura de la fila de abajo sobre el quemador (mm)', 'Height of the bottom row above the burner (mm)'))}
     ${sel('wr-quarter', [['0', L('como se cargó', 'as loaded')], ['1', L('90° a la derecha', '90° clockwise')], ['3', L('90° a la izquierda', '90° counter-clockwise')], ['2', '180°']], String(S.flame.quarter), L('Girar', 'Rotate'))}</div>
   </div>` : ''}
   ${msgBox(rest)}
   ${pbtn('wr-prep', L('Preparar las imágenes', 'Prepare the images'), !fl.length, L('Primero carguen las fotos de la llama.', 'Load the flame photos first.'))}
-  ${p ? `<div class="wr-result wr-grid2"><figure><canvas id="wr-fcv" class="wr-preview"></canvas><figcaption>${L('Imagen orientada. Línea continua, eje.', 'Oriented image. Solid line, axis.')}</figcaption></figure>
-    <div>${chk('wr-burnerok', S.flame.burnerOk, L('El quemador queda abajo', 'The burner is at the bottom'))}
-    ${msgBox(near(['burner_needed', 'upside_down']))}
-    <p>${L(`${p.nz} alturas de ${num(p.zMm[0], 0)} a ${num(p.zMm[p.nz - 1], 0)} mm, ${p.nr} radios.`, `${p.nz} heights from ${num(p.zMm[0], 0)} to ${num(p.zMm[p.nz - 1], 0)} mm, ${p.nr} radii.`)}</p>
-    ${halves > 0.1 ? check(false, L(`Las dos mitades difieren ${num(100 * halves, 0)} %. Revisen el giro, o elijan una mitad en Opciones del paso 3.`, `The two halves differ by ${num(100 * halves, 0)} %. Check the rotation, or pick one half in step 3 Options.`), 'halves') : check(true, L(`Las dos mitades se parecen, diferencia ${num(100 * halves, 0)} %.`, `The two halves look alike, ${num(100 * halves, 0)} % difference.`))}
-    <p>${btn('wr-reco', L('Calcular los pasos 3, 4 y 5 de una vez', 'Compute steps 3, 4 and 5 at once'))}</p></div></div>` : ''}
+  </div>${view ? `<div class="wr-two__view">${view}</div>` : ''}</div>
   ${optsBlock(2, [
     msgBox(o),
+    p ? osec(L('Calcular de una vez', 'Compute at once'), `<p>${btn('wr-reco', L('Calcular los pasos 3, 4 y 5 de una vez', 'Compute steps 3, 4 and 5 at once'))}</p>`) : '',
     fl.length ? osec(L('Cuadros', 'Frames'), `${timed ? `<div class="wr-row">${sel('wr-times', [['repeat', L('repeticiones, se promedian', 'repeats, averaged')], ['instants', L('instantes distintos, se usa uno', 'different instants, one is used')]], S.flame.times, L('Tiempos en los nombres', 'Times in the names'))}${S.flame.times === 'instants' ? sel('wr-instant', fl.map((it) => [it.id, it.path.split('/').pop()!] as [string, string]), S.flame.instant, L('Instante', 'Instant')) : ''}</div>` : ''}<ul class="wr-frames">${frames}</ul>`) : '',
     osec(L('Archivos', 'Files'), ft.html + ft.pfs),
     fl.length ? osec(L('Geometría', 'Geometry'), `<div class="wr-fields">
@@ -2067,11 +2365,14 @@ function renderStage3() {
       ${S.flame.rulerPreview ? shiftHtml() : ''}`),
     p ? osec(L('Mitades', 'Halves'), `${heightSlider('wr-h3b')}<figure><div id="wr-halves" class="wr-plot"></div><figcaption>${L('Mitad derecha continua y mitad izquierda punteada, a la altura elegida.', 'Right half solid and left half dotted, at the chosen height.')}</figcaption></figure>`) : '',
     p ? osec(L('Descarga', 'Download'), `<p>${btn('wr-npz', L('Descargar las imágenes preparadas (.npz)', 'Download the prepared images (.npz)'))}</p>`) : '',
-  ])}`;
+  ])}
+  ${nextBtn(2)}`;
   for (const it of fl) {
     const c = el.querySelector(`canvas[data-thumb="${it.id}"]`) as HTMLCanvasElement | null;
     if (c && it.thumb) drawThumb(c, it.thumb, S.flame.quarter, S.flame.mirror);
   }
+  const fth = document.getElementById('wr-fthumb') as HTMLCanvasElement | null;
+  if (fth && first?.thumb) drawThumb(fth, first.thumb, S.flame.quarter, S.flame.mirror);
   drawRuler();
   if (p) drawFlame();
   renderNav();
@@ -2127,6 +2428,52 @@ function rulerView(pv: Planes) {
   };
   return { q, W, H, fwd, inv };
 }
+// Crop of the oriented flame image, dragged with the mouse, in pixels of that image. The columns stay symmetric
+// about the axis because the inversion works on radii, and the rows stop at the burner.
+let flameDrag: { x0: number; y0: number; x1: number; y1: number } | null = null;
+function cropBox(d: NonNullable<typeof flameDrag>, p: Prepared) {
+  const nr = Math.max(4, Math.ceil(Math.max(Math.abs(d.x0 - p.axis), Math.abs(d.x1 - p.axis))));
+  let bottom = Math.ceil(Math.max(d.y0, d.y1));
+  if (fin(S.flame.burnerRow)) bottom = Math.min(bottom, S.flame.burnerRow);
+  return { nr, top: Math.max(0, Math.floor(Math.min(d.y0, d.y1))), bottom };
+}
+function cropPoint(cv: HTMLCanvasElement, e: PointerEvent, p: Prepared): [number, number] {
+  // the canvas keeps its proportions inside the element (object-fit: contain), so a narrow image has side bands
+  const r = cv.getBoundingClientRect(), k = Math.min(r.width / cv.width, r.height / cv.height);
+  const u = (e.clientX - r.left - (r.width - cv.width * k) / 2) / k, v = (e.clientY - r.top - (r.height - cv.height * k) / 2) / k;
+  const pv = p.preview;
+  return [Math.min(pv.w, Math.max(0, u)) * pv.step, Math.min(pv.h, Math.max(0, v)) * pv.step];
+}
+function presetRowBottom() { return S.o.examples.find((x) => x.file === S.example)?.preset?.rowBottom ?? NaN; }
+function cropActive() {
+  const base = presetRowBottom(), b = S.flame.rowBottom;
+  return fin(S.flame.nr) || fin(S.flame.rowTop) || (fin(b) ? b !== base : fin(base));
+}
+function cropStart(e: PointerEvent) {
+  const cv = e.target as HTMLCanvasElement, p = S.flame.prepared;
+  if (cv.id !== 'wr-fcv' || !p || S.busy) return;
+  const [x, y] = cropPoint(cv, e, p);
+  flameDrag = { x0: x, y0: y, x1: x, y1: y };
+  cv.setPointerCapture(e.pointerId);
+  e.preventDefault();
+}
+function cropMove(e: PointerEvent) {
+  const cv = e.target as HTMLCanvasElement, p = S.flame.prepared;
+  if (!flameDrag || cv.id !== 'wr-fcv' || !p) return;
+  [flameDrag.x1, flameDrag.y1] = cropPoint(cv, e, p);
+  drawFlame();
+}
+async function cropEnd(e: PointerEvent) {
+  const cv = e.target as HTMLCanvasElement, p = S.flame.prepared, d = flameDrag;
+  if (!d || cv.id !== 'wr-fcv' || !p) return;
+  flameDrag = null;
+  const b = cropBox(d, p), minRows = 8 * Math.max(1, S.flame.rowsPerHeight);
+  // a click, or a box too small to invert, leaves the crop as it was
+  if (Math.abs(d.x1 - d.x0) < 4 || b.bottom - b.top + 1 < minRows) { drawFlame(); return; }
+  S.flame.nr = b.nr; S.flame.rowTop = b.top; S.flame.rowBottom = b.bottom;
+  invalidate(3, 'flame');
+  await prepareFlameNow();
+}
 function drawFlame() {
   const p = S.flame.prepared;
   const cv = document.getElementById('wr-fcv') as HTMLCanvasElement | null;
@@ -2139,6 +2486,14 @@ function drawFlame() {
   line(g, (p.axis + p.nr) / st, 0, (p.axis + p.nr) / st, pv.h, '#f0b000', true);
   line(g, 0, p.rows[0] / st, pv.w, p.rows[0] / st, '#f0b000', true);
   line(g, 0, p.rows[1] / st, pv.w, p.rows[1] / st, '#f0b000', true);
+  if (flameDrag) {
+    const b = cropBox(flameDrag, p);
+    const xa = (p.axis - b.nr) / st, xb = (p.axis + b.nr) / st, ya = b.top / st, yb = (b.bottom + 1) / st;
+    g.fillStyle = 'rgba(255, 255, 255, 0.35)';
+    g.fillRect(0, 0, pv.w, ya); g.fillRect(0, yb, pv.w, pv.h - yb); g.fillRect(0, ya, xa, yb - ya); g.fillRect(xb, ya, pv.w - xb, yb - ya);
+    g.strokeStyle = '#f0b000'; g.lineWidth = 1; g.setLineDash([]); g.strokeRect(xa, ya, xb - xa, yb - ya);
+    return;
+  }
   const k = S.flame.height;
   const nb = Math.max(1, S.flame.rowsPerHeight);
   const yk = p.rows[1] - (k + 0.5) * nb;
@@ -2152,7 +2507,7 @@ function drawFlame() {
 }
 
 // ============================================================================ step 3 · Abel inversion (stage 4)
-const methodLong = (m: string) => ({ onion: L('pelado de cebolla sin suavizado', 'onion peeling without smoothing'), tikhonov: L('pelado de cebolla con Tikhonov', 'onion peeling with Tikhonov'), sat: 'SAT', annabel: L('red neuronal', 'neural network') } as Record<string, string>)[m] ?? m;
+const methodLong = (m: string) => ({ onion: L('pelado de cebolla sin suavizado', 'onion peeling without smoothing'), tikhonov: L('pelado de cebolla con suavizado', 'onion peeling with smoothing'), sat: 'SAT', annabel: L('red neuronal para la emisión', 'neural network for the emission') } as Record<string, string>)[m] ?? m;
 function abelMsgs(): Msg[] {
   const p = S.flame.prepared, o = S.abel.out;
   const msgs: Msg[] = [...S.abel.annabel.msgs];
@@ -2171,9 +2526,9 @@ function abelMsgs(): Msg[] {
 }
 const STEP3_VIEW = ['over_regularised', 'over_regularised_1', 'lcurve_edge', 'rows_saturated', 'rows_saturated_1', 'sat_not_spd', 'tikhonov_not_spd', 'lambda_out_of_range', 'webgpu_lost', 'worker_failed', 'need_stage', 'no_projections'];
 function st4(): Pill {
+  if (S.abel.annabel.running) return pBusy(L('Pendiente, la red neuronal está entrenando', 'To do, the neural network is training'));
   if (S.stale[4]) return pStale();
   if (!S.flame.prepared) return pTodo();
-  if (S.abel.annabel.running) return pBusy(L('Pendiente, la red neuronal está entrenando', 'To do, the neural network is training'));
   if (!S.abel.out) return pTodo();
   if (splitMsgs(abelMsgs(), STEP3_VIEW).v.length) return pWarn();
   return pOk();
@@ -2185,10 +2540,10 @@ function renderStage4() {
   const lr = Math.log10(S.abel.lambdaRel);
   const { v, o: om } = splitMsgs(abelMsgs(), STEP3_VIEW);
   const m = S.abel.method;
-  const smooth = m === 'tikhonov' ? ` · ${S.abel.lambdaAuto ? L('Suavizado automático', 'Automatic smoothing') : S.abel.lamFlat ? L(`Suavizado ${sig(S.abel.lambdaRel, 2)} fijo, la curva L no tiene esquina`, `Smoothing ${sig(S.abel.lambdaRel, 2)} fixed, the L-curve has no corner`) : L(`Suavizado ${sig(S.abel.lambdaRel, 2)}, elegido a mano`, `Smoothing ${sig(S.abel.lambdaRel, 2)}, set by hand`)}` : '';
+  const smooth = m === 'tikhonov' ? ` · ${S.abel.lambdaAuto ? L('Suavizado automático', 'Automatic smoothing') : S.abel.lamFlat ? L(`Suavizado ${sig(S.abel.lambdaRel, 2)} fijo`, `Smoothing ${sig(S.abel.lambdaRel, 2)} fixed`) : L(`Suavizado ${sig(S.abel.lambdaRel, 2)}, elegido a mano`, `Smoothing ${sig(S.abel.lambdaRel, 2)}, set by hand`)}` : '';
   const symOpts: [string, string][] = m === 'sat' || m === 'annabel' ? [['both', L('las dos mitades en el ajuste', 'both halves in the fit')], ['average', L('las dos mitades promediadas', 'both halves averaged')], ['right', L('solo la derecha', 'right only')], ['left', L('solo la izquierda', 'left only')]] : [['average', L('las dos mitades promediadas', 'both halves averaged')], ['right', L('solo la derecha', 'right only')], ['left', L('solo la izquierda', 'left only')]];
   el.innerHTML = `${stepHead(3, L('Inversión de Abel', 'Abel inversion'), 'wr-st4', st4(), L('Pasa de la luz sumada en la línea de visión a la emisión en cada radio.', 'Goes from the light summed along the line of sight to the emission at each radius.'))}
-  ${p ? `<p class="wr-method">${L('Método', 'Method')} ${methodLong(m)}${smooth}</p>` : ''}
+  ${`<div class="wr-method"><div class="wr-tabs" role="group" aria-label="${L('Método', 'Method')}"><span class="label">${L('Método', 'Method')}</span>${(['tikhonov', 'onion', 'sat', 'annabel'] as const).map((x) => `<button type="button" class="wr-tab" data-method="${x}" aria-pressed="${m === x}">${methodLong(x)}</button>`).join('')}</div>${p && smooth ? `<p class="meta">${smooth.replace(/^ · /, '')}</p>` : ''}</div>`}
   ${pbtn('wr-abel', m === 'annabel' ? L('Entrenar la red neuronal', 'Train the neural network') : L('Invertir', 'Invert'), !p || !S.flame.burnerOk || A.running, !p ? L('Primero preparen las imágenes en el paso 2.', 'Prepare the images in step 2 first.') : !S.flame.burnerOk ? L('Primero confirmen el quemador en el paso 2.', 'Confirm the burner in step 2 first.') : '', A.running ? ` ${btn('wr-ann-stop', L('Detener', 'Stop'))}` : '')}
   ${m === 'annabel' && (A.running || A.tick) ? '<p class="meta" id="wr-ann-prog" aria-live="polite"></p>' : ''}
   ${msgBox(v)}
@@ -2202,17 +2557,17 @@ function renderStage4() {
       <p>${L('Cuánto se alisa el perfil al invertir. Más suavizado quita ruido cerca del eje y borra detalles finos. Menos suavizado deja más detalle y más ruido.', 'How much the profile is smoothed when inverting. More smoothing removes noise near the axis and erases fine detail. Less smoothing keeps more detail and more noise.')}</p>
       <p class="cluster">${btn('wr-lc', L('Calcular la curva L', 'Compute the L-curve'), !p)}${S.abel.lcurve ? ` ${btn('wr-lc-use', L(`Volver al automático, ${sig(S.abel.lcurve.lambda, 2)}`, `Back to automatic, ${sig(S.abel.lcurve.lambda, 2)}`))}` : ''}</p>
       ${S.abel.lcurve ? `<figure><div id="wr-lcp" class="wr-plot"></div><figcaption>${L('Cada punto es un suavizado. El punto naranjo es la esquina, el equilibrio que usa el modo automático.', 'Each point is one smoothing value. The orange point is the corner, the balance the automatic mode uses.')}</figcaption></figure>` : ''}`) : '',
-    osec(L('Método', 'Method'), `<p class="seg" role="group" aria-label="${L('Método', 'Method')}">${(['tikhonov', 'onion', 'sat', 'annabel'] as const).map((x) => `<button type="button" data-method="${x}" aria-pressed="${m === x}">${methodLong(x)}</button>`).join('')}</p>
-      ${m === 'sat' ? `<div class="wr-row">${numIn('wr-seg', S.abel.segments, 'min="3" max="60" step="1"', L('Segmentos', 'Segments'))}${numIn('wr-satl', S.abel.satLambda, 'min="0" step="any"', L('Suavizado SAT', 'SAT smoothing'))}</div>` : ''}
-      ${m === 'annabel' ? annabelPanel() : ''}`),
+    m === 'sat' || m === 'annabel' ? osec(L('Ajustes del método', 'Method settings'), `${m === 'sat' ? `<div class="wr-row">${numIn('wr-seg', S.abel.segments, 'min="3" max="60" step="1"', L('Segmentos', 'Segments'))}${numIn('wr-satl', S.abel.satLambda, 'min="0" step="any"', L('Suavizado SAT', 'SAT smoothing'))}</div>` : ''}
+      ${m === 'annabel' ? annabelPanel() : ''}`) : '',
     osec(L('Mitad', 'Half'), sel('wr-sym', symOpts, m === 'annabel' ? 'both' : S.abel.sym === 'both' && m !== 'sat' ? 'average' : S.abel.sym, L('Usar', 'Use'))),
     o && p ? osec(L('Gráficos', 'Plots'), `<div class="wr-grid2"><figure><div id="wr-resid" class="wr-plot"></div><figcaption>${L('Diferencia entre la imagen medida y la reconstruida, en el verde. Punteada, diferencia entre mitades.', 'Difference between the measured and the reconstructed image, on green. Dotted, difference between halves.')}</figcaption></figure>
       <figure><div id="wr-jr" class="wr-plot"></div><figcaption>${L('Emisión por radio a la altura elegida.', 'Emission per radius at the chosen height.')}</figcaption></figure></div>
-      <figure class="wr-maps3">${[0, 1, 2].map((c) => `<div><canvas id="wr-jmap-${c}" class="wr-map"></canvas><span class="meta">${chName(c)}</span></div>`).join('')}<figcaption>${L('Emisión de cada canal en toda la llama.', 'Emission of each channel over the whole flame.')}</figcaption></figure>
+      <figure class="wr-maps">${[0, 1, 2].map((c) => `<div><div class="wr-mapax" id="wr-jmap-${c}-ax"><canvas id="wr-jmap-${c}" class="wr-map"></canvas></div><span class="meta wr-maplab">${chName(c)}</span></div>`).join('')}<figcaption>${L('Emisión de cada canal en toda la llama.', 'Emission of each channel over the whole flame.')} <span class="wr-stretch"></span></figcaption></figure>
       <p class="lab__readout" id="wr-abel-read" aria-live="polite"></p>`) : '',
-    p ? osec(L('Comparar métodos', 'Compare methods'), `<p>${L('Pelado de cebolla, Tikhonov y SAT a la misma altura, en el verde.', 'Onion peeling, Tikhonov and SAT at the same height, on green.')} ${btn('wr-cmp', L('Comparar a esta altura', 'Compare at this height'))}</p>
-      ${S.abel.compare ? `<figure><div id="wr-cmpp" class="wr-plot"></div><figcaption>${L('Gris, pelado de cebolla. Continua, Tikhonov. Punteada, SAT.', 'Grey, onion peeling. Solid, Tikhonov. Dotted, SAT.')}</figcaption></figure>` : ''}`, 'wr-compare') : '',
-  ])}`;
+    p ? osec(L('Comparar métodos', 'Compare methods'), `<p>${L('Pelado de cebolla sin y con suavizado, y SAT, a la misma altura, en el verde.', 'Onion peeling without and with smoothing, and SAT, at the same height, on green.')} ${btn('wr-cmp', L('Comparar a esta altura', 'Compare at this height'))}</p>
+      ${S.abel.compare ? `<figure><div id="wr-cmpp" class="wr-plot"></div><figcaption>${L('Gris, pelado de cebolla sin suavizado. Continua, con suavizado. Punteada, SAT.', 'Grey, onion peeling without smoothing. Solid, with smoothing. Dotted, SAT.')}</figcaption></figure>` : ''}`, 'wr-compare') : '',
+  ])}
+  ${nextBtn(3)}`;
   drawAbel();
   renderAnnabelProgress();
   renderNav();
@@ -2226,7 +2581,7 @@ function minText(sec: number): string {
 function annabelPanel(): string {
   const A = S.abel.annabel;
   const est = A.estimate ? L(`${minText(A.estimate.sPerIter * A.iterations)} para ${num(A.iterations)} iteraciones.`, `${minText(A.estimate.sPerIter * A.iterations)} for ${num(A.iterations)} iterations.`) : '';
-  return `<p>${L('Entrena una red neuronal en este navegador.', 'Trains a neural network in this browser.')}${S.gpu === false ? ` ${L('Este navegador no tiene tarjeta gráfica disponible y será más lento.', 'This browser has no graphics card available and will be slower.')}` : ''}</p>
+  return `<p>${L('Entrena en este navegador una red que halla la emisión de cada punto, en lugar del pelado de cebolla.', 'Trains in this browser a network that finds the emission of each point, instead of onion peeling.')}${S.gpu === false ? ` ${L('Este navegador no tiene tarjeta gráfica disponible y será más lento.', 'This browser has no graphics card available and will be slower.')}` : ''}</p>
   <div class="wr-row">${numIn('wr-ann-it', A.iterations, 'min="100" max="100000" step="100"', L('Iteraciones', 'Iterations'))}${numIn('wr-seed', S.res.seed, 'min="0" step="1"', L('Semilla', 'Seed'))}</div>
   <p>${btn('wr-ann-est', L('Estimar el tiempo', 'Estimate the time'), !S.flame.prepared || A.running)}</p>
   <p class="meta" id="wr-ann-est-t">${est}</p>`;
@@ -2234,7 +2589,7 @@ function annabelPanel(): string {
 function renderAnnabelProgress() {
   const e = document.getElementById('wr-ann-prog');
   const t = S.abel.annabel.tick;
-  if (e && t) e.textContent = L(`Iteración ${num(t.iter)} de ${num(t.total)}${t.etaS !== null ? `, faltan unos ${num(t.etaS / 60, 1)} min` : ''}.`, `Iteration ${num(t.iter)} of ${num(t.total)}${t.etaS !== null ? `, about ${num(t.etaS / 60, 1)} min left` : ''}.`);
+  if (e && t) e.textContent = L(`Iteración ${num(t.iter)} de ${num(t.total)}${t.etaS !== null && t.iter < t.total ? `, faltan unos ${num(Math.max(t.etaS, 0), 0)} s` : ''}.`, `Iteration ${num(t.iter)} of ${num(t.total)}${t.etaS !== null && t.iter < t.total ? `, about ${num(Math.max(t.etaS, 0), 0)} s left` : ''}.`);
 }
 function drawAbel() {
   const p = S.flame.prepared, o = S.abel.out;
@@ -2265,7 +2620,8 @@ function drawAbel() {
     const f = new Float64Array(p.nz * p.nr);
     let mx = 0;
     for (let kk = 0; kk < p.nz; kk++) for (let i = 0; i < p.nr; i++) { const v = o.J[c][kk][i]; f[kk * p.nr + i] = v; if (fin(v) && v > mx) mx = v; }
-    drawMap(cv, f, p.nz, p.nr, (['ch_R', 'ch_G', 'ch_B'] as const)[c], 0, mx || 1);
+    drawMap(cv, f, p.nz, p.nr, (['ch_R', 'ch_G', 'ch_B'] as const)[c], 0, mx || 1, null, false, S.res.levels);
+    fitMap(`wr-jmap-${c}`, mapExtent(p));
   }
   const r = o.resid[1][k];
   const n3 = Math.max(1, Math.floor(p.nr / 5));
@@ -2282,7 +2638,7 @@ function drawAbel() {
 function tfsMsgs(): Msg[] {
   const t = S.tfs.out, p = S.flame.prepared;
   const d = calDecision();
-  const msgs: Msg[] = [];
+  const msgs: Msg[] = [...S.tfs.runMsgs];
   if (d.state === 'uncalibrated' && S.abel.out) msgs.push({ code: 'uncalibrated' });
   if (t) {
     if (t.ambiguous) msgs.push({ code: 'ratio_ambiguous', vars: { n: t.ambiguous } });
@@ -2308,17 +2664,18 @@ function tfsMsgs(): Msg[] {
   if (S.tfs.path === 'net') {
     msgs.push(...S.tfs.net.msgs);
     const r = S.tfs.net.result;
-    if (t && r?.xcheck && !r.xcheck.agrees) msgs.push({ code: 'net_xcheck_bad', vars: { a: xcheckBad(r.xcheck) } });
+    if (t && r?.xcheck && r.gap?.verdict === 'noise') msgs.push({ code: 'net_xcheck_noise', vars: { a: Math.round(r.gap.TMedK), b: Math.round(r.gap.noiseP90K) }, level: 'info' });
+    else if (t && r?.xcheck && r.gap?.verdict !== 'agree') msgs.push({ code: r.completed < NET_FEW_ITERATIONS ? 'net_xcheck_few' : 'net_xcheck_bad', vars: { a: xcheckBad(r.xcheck) } });
     if (t && r?.bounds?.warnT) msgs.push({ code: 'net_bounds_T', level: 'info' });
     if (t && r?.bounds?.warnFs && d.fs === 'ppm') msgs.push({ code: 'net_bounds_fs', level: 'info' });
   }
   return msgs;
 }
-const STEP4_VIEW = ['uncalibrated', 'ratio_ambiguous', 'fs_negative', 'fs_outliers', 'implausible', 'implausible_T', 'fs_provisional', 'fs_provisional_cal', 'net_xcheck_bad', 'net_two_channels', 'net_no_signal', 'webgpu_lost', 'worker_failed', 'no_emission'];
+const STEP4_VIEW = ['uncalibrated', 'ratio_ambiguous', 'fs_negative', 'fs_outliers', 'implausible', 'implausible_T', 'fs_provisional', 'fs_provisional_cal', 'net_xcheck_bad', 'net_xcheck_few', 'net_xcheck_noise', 'net_two_channels', 'net_no_signal', 'webgpu_lost', 'worker_failed', 'no_emission'];
 function st5(): Pill {
+  if (S.tfs.net.running) return pBusy(L('Entrenando la red neuronal', 'Training the neural network'));
   if (S.stale[5]) return pStale();
   if (!S.abel.out) return pTodo();
-  if (S.tfs.net.running) return pBusy(L('Pendiente, la red neuronal está entrenando', 'To do, the neural network is training'));
   if (!S.tfs.out) return pTodo();
   const v = splitMsgs(tfsMsgs(), STEP4_VIEW).v;
   if (v.some((m) => m.code === 'fs_provisional' || m.code === 'fs_provisional_cal') && v.length === 1) return pWarn('f_s provisional', 'f_s provisional');
@@ -2335,22 +2692,22 @@ function renderStage5() {
   if (t && p) {
     const T = usedSorted(t.T), fs = fsShown();
     const F = fs ? usedSorted(fs.v) : [];
-    const fsLine = !fs ? L('Sin f_s con esta calibración.', 'No f_s with this calibration.') : fs.unit === 'ppm' ? L(`f_s mediana ${sig(pctOf(F, 0.5), 2)} ppm, percentil 95 de ${sig(pctOf(F, 0.95), 2)} ppm.`, `Median f_s ${sig(pctOf(F, 0.5), 2)} ppm, 95th percentile ${sig(pctOf(F, 0.95), 2)} ppm.`) : L('f_s relativa, sin ppm con esta calibración.', 'Relative f_s, no ppm with this calibration.');
-    result = `<div class="wr-result"><p class="wr-big">${L(`T mediana ${num(pctOf(T, 0.5))} K, entre ${num(pctOf(T, 0.05))} y ${num(pctOf(T, 0.95))} K.`, `Median T ${num(pctOf(T, 0.5))} K, between ${num(pctOf(T, 0.05))} and ${num(pctOf(T, 0.95))} K.`)}<br>${subs(fsLine)}</p>
+    const fsLine = !fs ? L('Sin f_s con esta calibración.', 'No f_s with this calibration.') : fs.unit === 'ppm' ? L(`f_s mediana ${sig(medOf(F), 2)} ppm, percentil 95 de ${sig(pctOf(F, 0.95), 2)} ppm.`, `Median f_s ${sig(medOf(F), 2)} ppm, 95th percentile ${sig(pctOf(F, 0.95), 2)} ppm.`) : L('f_s relativa, sin ppm con esta calibración.', 'Relative f_s, no ppm with this calibration.');
+    result = `<div class="wr-result"><p class="wr-big">${L(`T mediana ${num(medOf(T))} K, el 90 % de los puntos entre ${num(pctOf(T, 0.05))} y ${num(pctOf(T, 0.95))} K.`, `Median T ${num(medOf(T))} K, 90 % of the points between ${num(pctOf(T, 0.05))} and ${num(pctOf(T, 0.95))} K.`)}<br>${subs(fsLine)}</p>
     ${v.length ? '' : check(true, L('Valores dentro de lo esperado para una llama con hollín.', 'Values within what is expected for a sooting flame.'))}</div>`;
   }
   const isNet = S.tfs.path === 'net';
-  el.innerHTML = `${stepHead(4, L('T y f_s', 'T and f_s'), 'wr-st5', st5(), L('Calcula la temperatura T con la razón rojo/verde y la fracción de volumen de hollín f_s con la intensidad.', 'Computes the temperature T from the red/green ratio and the soot volume fraction f_s from the intensity.'))}
+  el.innerHTML = `${stepHead(4, L('T y f_s', 'T and f_s'), 'wr-st5', st5(), isNet ? L('Calcula la temperatura T y la fracción de volumen de hollín f_s con una red neuronal, desde la emisión.', 'Computes the temperature T and the soot volume fraction f_s with a neural network, from the emission.') : L('Calcula la temperatura T con la razón rojo/verde y la fracción de volumen de hollín f_s con la intensidad.', 'Computes the temperature T from the red/green ratio and the soot volume fraction f_s from the intensity.'))}
   ${pbtn('wr-tfs', isNet ? L('Calcular T y f_s con la red neuronal', 'Compute T and f_s with the neural network') : L('Calcular T y f_s', 'Compute T and f_s'), !S.abel.out || N.running, !S.abel.out ? L('Primero inviertan en el paso 3.', 'Invert in step 3 first.') : '', N.running ? ` ${btn('wr-net-stop', L('Detener', 'Stop'))}` : '')}
   ${isNet && (N.running || N.tick) ? `<progress id="wr-net-bar" class="wr-progress" max="${N.tick ? N.tick.total : N.iterations}" value="${N.tick ? N.tick.iter : 0}" aria-label="${L('Avance del entrenamiento', 'Training progress')}"></progress><p class="meta" id="wr-net-prog" aria-live="polite">${N.tick ? netProgressText() : ''}</p>` : ''}
   ${msgBox(v)}
   ${result}
   ${optsBlock(4, [
     msgBox(o),
-    osec(L('Camino', 'Path'), `${sel('wr-path', [['ratio', L('razón rojo/verde', 'red/green ratio')], ['fit3', L('ajuste con los tres canales', 'fit with the three channels')], ['net', L('red neuronal', 'neural network')]], S.tfs.path, L('Cómo se calculan T y f_s', 'How T and f_s are computed').replace(/f_s/, 'f<sub>s</sub>'))}
+    osec(L('Camino', 'Path'), `${sel('wr-path', [['ratio', L('razón rojo/verde', 'red/green ratio')], ['fit3', L('ajuste con los tres canales', 'fit with the three channels')], ['net', L('red neuronal para T y fₛ', 'neural network for T and fₛ')]], S.tfs.path, L('Cómo se calculan T y f_s', 'How T and f_s are computed').replace(/f_s/, 'f<sub>s</sub>'))}
       ${isNet ? netPanel() : ''}
       ${isNet && t && N.result ? `<p class="lab__readout" id="wr-net-xc">${netReading(N.result)}</p>` : ''}
-      ${t && isNet && N.result ? `<figure class="wr-maps3 wr-netmaps"><div><canvas id="wr-net-tcf" class="wr-map"></canvas><span class="meta">${L('T directa', 'direct T')}</span></div><div><canvas id="wr-net-dt" class="wr-map"></canvas><span class="meta">${L('diferencia', 'difference')}</span></div><figcaption>${L(`T del cálculo directo y su diferencia con la red, de 0 a ${num(netDiff().max)} K.`, `T of the direct calculation and its difference with the network, from 0 to ${num(netDiff().max)} K.`)}</figcaption></figure>` : ''}`),
+      ${t && isNet && N.result ? `<figure class="wr-maps wr-netmaps"><div><div class="wr-mapax" id="wr-net-tcf-ax"><canvas id="wr-net-tcf" class="wr-map"></canvas></div><span class="meta wr-maplab">${L('T directa', 'direct T')}</span></div><div><div class="wr-mapax" id="wr-net-dt-ax"><canvas id="wr-net-dt" class="wr-map"></canvas></div><span class="meta wr-maplab">${L('diferencia', 'difference')}</span></div><figcaption>${L(`T del cálculo directo y su diferencia con la red, de 0 a ${num(netDiff().max)} K.`, `T of the direct calculation and its difference with the network, from 0 to ${num(netDiff().max)} K.`)} <span class="wr-stretch"></span></figcaption></figure>` : ''}`),
     osec(L('Canales', 'Channels'), `<div class="wr-fields">${S.tfs.path === 'ratio' ? sel('wr-pair', [['RG', L('rojo/verde', 'red/green')], ['BG', L('azul/verde', 'blue/green')], ['BR', L('azul/rojo', 'blue/red')]], S.tfs.pair, L('Par de canales para T', 'Channel pair for T')) : ''}
       ${S.tfs.path === 'ratio' ? sel('wr-fsch', [['RG', L('rojo y verde', 'red and green')], ['R', L('solo rojo', 'red only')], ['G', L('solo verde', 'green only')], ['RGB', L('rojo, verde y azul', 'red, green and blue')], ['B', L('solo azul', 'blue only')]], S.tfs.fsChannel, L('Canales para f<sub>s</sub>', 'Channels for f<sub>s</sub>')) : ''}</div>
       <p>${L('El azul se usa solo con una calibración que lo valide, por ejemplo con la esfera integradora.', 'Blue is used only with a calibration that validates it, for example with the integrating sphere.')}</p>`),
@@ -2363,24 +2720,29 @@ function renderStage5() {
       ${numIn('wr-zcut', S.tfs.zCut, 'step="any"', L('Quitar la quimioluminiscencia bajo la altura (mm)', 'Remove chemiluminescence below the height (mm)'))}
       ${numIn('wr-chem', S.tfs.chemThr * 100, 'min="0" max="200" step="1"', L('Umbral de quimioluminiscencia (%)', 'Chemiluminescence threshold (%)'))}</div>`),
     osec(L('Gráficos', 'Plots'), `<figure><div id="wr-tab" class="wr-plot"></div><figcaption>${L('Tabla de temperatura contra la razón de canales.', 'Table of temperature against the channel ratio.')}</figcaption></figure>
-      ${t && S.tfs.path === 'fit3' ? `<figure><canvas id="wr-chi" class="wr-map"></canvas><figcaption>${L('Calidad del ajuste con tres canales.', 'Quality of the three-channel fit.')}</figcaption></figure>` : ''}
+      ${t && S.tfs.path === 'fit3' ? `<figure><div class="wr-mapax" id="wr-chi-ax"><canvas id="wr-chi" class="wr-map"></canvas></div><figcaption>${L('Calidad del ajuste con tres canales.', 'Quality of the three-channel fit.')} <span class="wr-stretch"></span></figcaption></figure>` : ''}
       ${t && p ? `<p class="lab__readout">${losReading(t, p)}</p>` : ''}`),
-  ])}`;
+  ])}
+  ${nextBtn(4)}`;
   drawTable();
-  const nr = N.result;
+  drawTfsMaps();
+  renderNav();
+}
+/** The maps inside Options of step 4, which also follow the theme. */
+function drawTfsMaps() {
+  const t = S.tfs.out, p = S.flame.prepared, nr = S.tfs.net.result, isNet = S.tfs.path === 'net';
   if (t && p && isNet && nr) {
     const a = document.getElementById('wr-net-tcf') as HTMLCanvasElement | null, b = document.getElementById('wr-net-dt') as HTMLCanvasElement | null;
     const { d, max } = netDiff();
     const ext = mapExtent(p);
-    if (a) { drawMap(a, nr.Tcf, p.nz, p.nr, 't', S.res.Tmin, S.res.Tmax); a.style.aspectRatio = `${ext.aspect}`; }
-    if (b) { drawMap(b, d, p.nz, p.nr, 'fs', 0, max); b.style.aspectRatio = `${ext.aspect}`; }
+    if (a) { drawMap(a, nr.Tcf, p.nz, p.nr, 't', S.res.Tmin, S.res.Tmax, null, false, S.res.levels); fitMap('wr-net-tcf', ext); }
+    if (b) { drawMap(b, d, p.nz, p.nr, 'fs', 0, max, null, false, S.res.levels); fitMap('wr-net-dt', ext); }
   }
   if (t && S.tfs.path === 'fit3') {
     const cv = document.getElementById('wr-chi') as HTMLCanvasElement | null;
     const vv = Array.from(t.chi2rel).filter(fin).sort((x, y) => x - y);
-    if (cv && p) drawMap(cv, t.chi2rel, p.nz, p.nr, 'fs', 0, vv.length ? vv[Math.floor(0.99 * (vv.length - 1))] : 1);
+    if (cv && p) { drawMap(cv, t.chi2rel, p.nz, p.nr, 'fs', 0, vv.length ? vv[Math.floor(0.99 * (vv.length - 1))] : 1); fitMap('wr-chi', mapExtent(p)); }
   }
-  renderNav();
 }
 /** |T direct − T network| per pixel and the top of its scale, the 95th percentile and never under the warning limit. */
 function netDiff(): { d: Float64Array; max: number } {
@@ -2395,7 +2757,7 @@ function netDiff(): { d: Float64Array; max: number } {
 function netPanel(): string {
   const N = S.tfs.net, e = N.estimate;
   const est = e ? L(`${minText(e.sPerIter * N.iterations)} para ${num(N.iterations)} iteraciones.`, `${minText(e.sPerIter * N.iterations)} for ${num(N.iterations)} iterations.`) : '';
-  return `<p>${L('Entrena una red neuronal en este navegador.', 'Trains a neural network in this browser.')}${S.gpu === false ? ` ${L('Este navegador no tiene tarjeta gráfica disponible y será más lento.', 'This browser has no graphics card available and will be slower.')}` : ''}</p>
+  return `<p>${subs(L('Entrena en este navegador una red que halla T y f_s desde la emisión del paso 3. Da mapas más lisos.', 'Trains in this browser a network that finds T and f_s from the emission of step 3. It gives smoother maps.'))}${S.gpu === false ? ` ${L('Este navegador no tiene tarjeta gráfica disponible y será más lento.', 'This browser has no graphics card available and will be slower.')}` : ''}</p>
   ${numIn('wr-net-it', N.iterations, 'min="10" max="100000" step="100"', L('Iteraciones', 'Iterations'))}
   <p>${btn('wr-net-est', L('Estimar el tiempo', 'Estimate the time'), !S.abel.out || N.running)}</p>
   <p class="meta" id="wr-net-est-t">${est}</p>`;
@@ -2424,7 +2786,7 @@ function netReading(r: NetOut): string {
   const tr = L(`La red se entrenó ${num(r.completed)} de ${num(r.planned)} iteraciones en ${num(r.elapsedS, 1)} s. Mejor resultado en la iteración ${num(r.bestIter)}.`, `The network trained ${num(r.completed)} of ${num(r.planned)} iterations in ${num(r.elapsedS, 1)} s. Best result at iteration ${num(r.bestIter)}.`);
   const x = r.xcheck;
   if (!x) return `${tr} ${L('Ningún píxel sirve para comparar con el cálculo directo.', 'No pixel is suitable for comparing with the direct calculation.')}`;
-  return `${tr} ${L(`Comparada con el cálculo directo en ${num(x.nPixels)} píxeles, T difiere ${num(x.TMedianAbsDiffK)} K en la mediana y ${num(x.TP90AbsDiffK)} K en el percentil 90. ${x.agrees ? 'Coinciden.' : ''}`, `Compared with the direct calculation on ${num(x.nPixels)} pixels, T differs by ${num(x.TMedianAbsDiffK)} K in the median and ${num(x.TP90AbsDiffK)} K at the 90th percentile. ${x.agrees ? 'They agree.' : ''}`)}`;
+  return `${tr} ${L(`Comparada con el cálculo directo en ${num(x.nPixels)} píxeles, T difiere ${num(x.TMedianAbsDiffK)} K en la mediana y ${num(x.TP90AbsDiffK)} K en el percentil 90. ${x.agrees ? 'Coinciden.' : ''}${r.gap && !x.agrees ? ` Con el mapa directo suavizado la diferencia es ${num(r.gap.TMedK)} K en la mediana y ${num(r.gap.TP90K)} K en el percentil 90. El ruido del mapa directo llega a ${num(r.gap.noiseP90K)} K.` : ''}`, `Compared with the direct calculation on ${num(x.nPixels)} pixels, T differs by ${num(x.TMedianAbsDiffK)} K in the median and ${num(x.TP90AbsDiffK)} K at the 90th percentile. ${x.agrees ? 'They agree.' : ''}${r.gap && !x.agrees ? ` Against the smoothed direct map the gap is ${num(r.gap.TMedK)} K in the median and ${num(r.gap.TP90K)} K at the 90th percentile. The noise of the direct map reaches ${num(r.gap.noiseP90K)} K.` : ''}`)}`;
 }
 function losReading(t: TfsOut, p: Prepared): string {
   let a = 0, b = 0, n = 0;
@@ -2432,6 +2794,7 @@ function losReading(t: TfsOut, p: Prepared): string {
   void p;
   if (!n) return '';
   const d = (b - a) / n;
+  if (Math.abs(d) < 0.5) return L('La razón sin invertir da en promedio casi lo mismo.', 'The ratio without inversion gives almost the same on average.');
   return d >= 0 ? L(`La razón sin invertir da en promedio ${num(d)} K más.`, `The ratio without inversion gives ${num(d)} K more on average.`) : L(`La razón sin invertir da en promedio ${num(-d)} K menos.`, `The ratio without inversion gives ${num(-d)} K less on average.`);
 }
 function drawTable() {
@@ -2478,9 +2841,16 @@ function truthLine(): string {
 function st6(): Pill {
   if (S.stale[6]) return pStale();
   if (!(S.tfs.out && S.flame.prepared && S.abel.out)) return pTodo();
-  const x = S.tfs.path === 'net' ? S.tfs.net.result?.xcheck : null;
-  if (x && !x.agrees) return pWarn('la red no coincide, vean el paso 4', 'the network does not match, see step 4');
-  return S.res.band ? pOk() : pTodo();
+  const x = S.tfs.path === 'net' ? S.tfs.net.result : null;
+  if (x?.xcheck && x.gap?.verdict !== 'agree' && x.gap?.verdict !== 'noise') return pWarn('la red no coincide, vean el paso 4', 'the network does not match, see step 4');
+  if (S.res.bandMsgs.length) return pWarn('falló la banda', 'the band failed');
+  return S.res.band ? pOk() : { k: 'todo', t: L('Pendiente, falta la banda', 'To do, the band is missing') };
+}
+/** The medians of step 4, next to the maps. */
+function resSummary(fs: ReturnType<typeof fsShown>): string {
+  const t = S.tfs.out!, T = usedSorted(t.T), head = L(`T mediana ${num(medOf(T))} K`, `Median T ${num(medOf(T))} K`);
+  if (!fs) return `${head}.`;
+  return `${head} · ${fs.unit === 'ppm' ? L(`f_s mediana ${sig(medOf(usedSorted(fs.v)), 2)} ppm`, `median f_s ${sig(medOf(usedSorted(fs.v)), 2)} ppm`) : L('f_s relativa', 'relative f_s')}.`;
 }
 function renderStage6() {
   const el = document.getElementById('wr-s6');
@@ -2489,76 +2859,111 @@ function renderStage6() {
   const fs = fsShown();
   const ok = !!(t && p && S.abel.out);
   const band = !!S.res.band;
+  // the band is computed from the current settings, so it waits for the maps to match them
+  const bandStale = !!(S.stale[4] || S.stale[5] || S.stale[6]);
   const runMsgs = S.loadMsgs.filter((m) => /^run_/.test(m.code));
+  const mk = ok ? fsMaskNow(fs) : null;
+  const fine = ok ? fineView() : null;
+  const kind = ok ? fineKind() : null;
+  // a file leaves the page without the marks of the bar, so it waits for the maps to match the settings
+  const training = S.abel.annabel.running || S.tfs.net.running;
+  const noFile = bandStale || training;
+  const fineNote = L('Dibuja la misma función con más puntos. No agrega medición ni mejora la resolución espacial, que sigue limitada por los píxeles de la cámara.', 'It draws the same function with more points. It adds no measurement and does not improve the spatial resolution, which stays limited by the camera pixels.');
   const eqHref = location.protocol === 'file:' ? new URL('../equations/#budget', S.o.pageUrl).href : '../equations/#budget';
-  el.innerHTML = `${stepHead(5, L('Resultados', 'Results'), 'wr-st6', st6(), L('Mapas y perfiles de T y f_s, con su banda de ruido, para el informe.', 'Maps and profiles of T and f_s, with their noise band, for the report.'))}
+  el.innerHTML = `${stepHead(5, L('Resultados', 'Results'), 'wr-st6', st6(), L('Mapas y perfiles de T y f_s, con su banda.', 'Maps and profiles of T and f_s, with their band.'))}
   ${ok && p ? `<div class="wr-maps">
-    <figure><div class="wr-mapax" id="wr-map-T-ax"><canvas id="wr-map-T" class="wr-map"></canvas></div><canvas id="wr-bar-T" class="wr-cbar"></canvas><p class="wr-barlab"><span>${num(S.res.Tmin)}</span><span>T (K)</span><span>${num(S.res.Tmax)}</span></p><figcaption>${L(`T(r, z) en K. Altura sobre el quemador ${num(p.zMm[0], 0)} a ${num(p.zMm[p.nz - 1], 0)} mm.`, `T(r, z) in K. Height above the burner ${num(p.zMm[0], 0)} to ${num(p.zMm[p.nz - 1], 0)} mm.`)}</figcaption></figure>
-    ${fs ? `<figure><div class="wr-mapax" id="wr-map-fs-ax"><canvas id="wr-map-fs" class="wr-map"></canvas></div><canvas id="wr-bar-fs" class="wr-cbar"></canvas><p class="wr-barlab"><span>0</span><span>f<sub>s</sub> (${fs.unit})</span><span>${sig(S.res.fsMax, 2)}</span></p><figcaption>${fs.unit === 'ppm' ? L('f<sub>s</sub>(r, z) en ppm.', 'f<sub>s</sub>(r, z) in ppm.') : L('f<sub>s</sub>(r, z) relativa.', 'Relative f<sub>s</sub>(r, z).')}</figcaption></figure>` : ''}
+    <figure><div class="wr-mapax" id="wr-map-T-ax"><canvas id="wr-map-T" class="wr-map"></canvas></div><canvas id="wr-bar-T" class="wr-cbar"></canvas><p class="wr-barlab"><span>${num(S.res.Tmin)}</span><span>T (K)</span><span>${num(S.res.Tmax)}</span></p><figcaption>${L(`T(r, z) en K. Altura sobre el quemador ${num(p.zMm[0], 0)} a ${num(p.zMm[p.nz - 1], 0)} mm.`, `T(r, z) in K. Height above the burner ${num(p.zMm[0], 0)} to ${num(p.zMm[p.nz - 1], 0)} mm.`)} <span class="wr-stretch"></span> ${S.tfs.path === 'net' || S.abel.outMethod === 'annabel' ? L('El borde y la parte baja tienen poca señal, no los lean como estructura.', 'The edge and the low part have little signal, do not read them as structure.') : L('Las manchas cerca del eje son ruido.', 'The spots near the axis are noise.')} ${L('La escala de color cambia con cada cálculo. Se fija en Opciones.', 'The colour scale changes with each calculation. It is set in Options.')}</figcaption></figure>
+    ${fs ? `<figure><div class="wr-mapax" id="wr-map-fs-ax"><canvas id="wr-map-fs" class="wr-map"></canvas></div><canvas id="wr-bar-fs" class="wr-cbar"></canvas><p class="wr-barlab"><span>0</span><span>f<sub>s</sub> (${fs.unit})</span><span>${sig(S.res.fsMax, 2)}</span></p><figcaption>${fs.unit === 'ppm' ? L('f<sub>s</sub>(r, z) en ppm.', 'f<sub>s</sub>(r, z) in ppm.') : L('f<sub>s</sub>(r, z) relativa.', 'Relative f<sub>s</sub>(r, z).')} <span class="wr-stretch"></span></figcaption></figure>` : ''}
   </div>
-  <div class="wr-row">${[0, 1, 2].map((i) => numIn(`wr-hz${i}`, fin(S.res.heights[i]) ? +p.zMm[S.res.heights[i]].toFixed(1) : NaN, 'step="any"', i === 0 ? L('Alturas de los perfiles (mm)', 'Profile heights (mm)') : `<span class="sr-only">${L(`Altura ${i + 1} (mm)`, `Height ${i + 1} (mm)`)}</span>`)).join('')}</div>` : ''}
-  ${pbtn('wr-band', L('Calcular perfiles con banda de ruido', 'Compute profiles with noise band'), !ok, L('Primero calculen T y f_s en el paso 4.', 'Compute T and f_s in step 4 first.').replace(/f_s/, 'f<sub>s</sub>')).replace('wr-btn--primary', band ? 'wr-btn--box' : 'wr-btn--primary')}
+  ${kind ? `<div class="wr-row">${sel('wr-morepts', fineFactors(kind).map((f) => [String(f), f === 1 ? L('×1, la malla del cálculo', '×1, the grid of the calculation') : `×${f}`] as [string, string]), String(S.res.fineFactor), L('Resolución de los mapas', 'Map resolution'))}</div>
+  <p class="meta" id="wr-fine-dir">${kind === 'sat' ? L('Afina solo el radio, porque cada altura se ajusta por separado.', 'It refines the radius only, because each height is fitted separately.') : L('Afina el radio y la altura.', 'It refines the radius and the height.')}</p>
+  ${S.res.fineBad === 'mismatch' ? check(false, L('Los puntos de la malla no coinciden con el cálculo, así que no se muestran más puntos.', 'The points of the grid do not match the calculation, so no more points are shown.'), 'fine_mismatch') : S.res.fineBad === 'failed' ? check(false, L('No se pudo evaluar con más puntos.', 'More points could not be evaluated.'), 'fine_failed') : ''}` : ok && !bandStale ? `<p class="meta" id="wr-fine-hint">${L('Para más resolución, elijan SAT o una red neuronal en el paso 3 o 4.', 'For more resolution, choose SAT or a neural network in step 3 or 4.')}</p>` : ''}
+  ${fine ? `<p class="meta" id="wr-fine-cap" data-factor="${fine.factor}" data-kind="${fine.kind}" data-nr="${fine.nr}" data-nz="${fine.nz}" data-ms="${Math.round(fine.ms)}" data-dt="${fine.check.dTK}" data-dfs="${fine.check.dFsRel}" data-dj="${fine.check.dJRel}" data-mismatch="${fine.check.mismatch}" data-nbase="${fine.check.nBase}">${fineNote} ${L('Solo dentro de la zona válida.', 'Only inside the valid zone.')}</p>` : ''}
+  <div class="wr-result"><p class="wr-big" id="wr-res-sum">${subs(resSummary(fs))}</p>
+  ${mk && fs ? `<p class="wr-big" id="wr-mask-res">${subs(maskLine(fs, mk))}</p>` : ''}
+  ${truthLine()}</div>` : ''}
+  ${osec(L('Perfiles', 'Profiles'), `${ok && p ? `<div class="wr-row">${[0, 1, 2].map((i) => numIn(`wr-hz${i}`, fin(S.res.heights[i]) && S.res.heights[i] < p.nz ? +p.zMm[S.res.heights[i]].toFixed(1) : NaN, 'step="any"', i === 0 ? L('Alturas de los perfiles (mm)', 'Profile heights (mm)') : `<span class="sr-only">${L(`Altura ${i + 1} (mm)`, `Height ${i + 1} (mm)`)}</span>`)).join('')}</div>` : ''}
+  ${pbtn('wr-band', L('Calcular perfiles con banda', 'Compute profiles with band'), !ok || bandStale || S.tfs.net.running, ok && bandStale ? L('Primero vuelvan a calcular los pasos marcados.', 'Compute the marked steps again first.') : ok ? '' : L('Primero calculen T y f_s en el paso 4.', 'Compute T and f_s in step 4 first.').replace(/f_s/, 'f<sub>s</sub>')).replace('wr-btn--primary', band ? 'wr-btn--box' : 'wr-btn--primary')}
+  ${msgBox(S.res.bandMsgs)}
   ${ok ? `<div class="wr-grid2"><figure><div id="wr-profT" class="wr-plot"></div><figcaption>${L('T(r) a las alturas elegidas.', 'T(r) at the chosen heights.')}</figcaption></figure>
     ${fs ? `<figure><div id="wr-profF" class="wr-plot"></div><figcaption>${L('f<sub>s</sub>(r) a las mismas alturas.', 'f<sub>s</sub>(r) at the same heights.')}</figcaption></figure>` : ''}</div>
-    ${band ? check(true, L(`Banda calculada con ${S.res.nBand} repeticiones.`, `Band computed with ${S.res.nBand} repetitions.`)) : ''}
-    ${truthLine()}
-    <p class="wr-act"><button class="wr-btn ${band ? 'wr-btn--primary' : 'wr-btn--box'}" type="button" id="wr-dl-zip">${L('Descargar todo (.zip)', 'Download all (.zip)')}</button> ${btn('wr-dl-csv', 'CSV')} ${btn('wr-dl-png-T', L('PNG de T', 'T PNG'))} ${btn('wr-dl-png-fs', L('PNG de f<sub>s</sub>', 'f<sub>s</sub> PNG'), !fs)}</p>
-    <p class="meta">${L('CSV, PNG y registro para el informe.', 'CSV, PNGs and log for the report.')}</p>` : ''}
+    ${band && S.res.bandInfo ? `${bandMethodNote(S.res.bandInfo)}${bandHowHtml(S.res.bandInfo, !!fs)}` : ''}` : ''}`, 'wr-prof')}
+  ${ok ? osec(L('Descargas', 'Downloads'), `<p class="wr-act"><button class="wr-btn ${band ? 'wr-btn--primary' : 'wr-btn--box'}" type="button" id="wr-dl-zip"${noFile ? ' disabled' : ''}>${L('Descargar todo (.zip)', 'Download all (.zip)')}</button> ${btn('wr-dl-csv', 'CSV', noFile)} ${btn('wr-dl-png-T', L('PNG de T', 'T PNG'), noFile)} ${btn('wr-dl-png-fs', L('PNG de f<sub>s</sub>', 'f<sub>s</sub> PNG'), !fs || noFile)}${noFile ? `<span class="wr-why" id="wr-dl-why">${training ? L('Esperen a que termine la red neuronal.', 'Wait for the neural network to finish.') : L('Primero vuelvan a calcular los pasos marcados.', 'Compute the marked steps again first.')}</span>` : ''}</p>
+    <p class="meta">${L('CSV, PNG y registro para el informe.', 'CSV, PNGs and log for the report.')}</p>`, 'wr-dl') : ''}
   ${optsBlock(5, [
-    ok ? osec(L('Escala de los mapas', 'Map scale'), `<div class="wr-row">${numIn('wr-tmin', S.res.Tmin, 'step="10"', L('T mínima (K)', 'Minimum T (K)'))}${numIn('wr-tmax', S.res.Tmax, 'step="10"', L('T máxima (K)', 'Maximum T (K)'))}${fs ? numIn('wr-fsmax', +S.res.fsMax.toPrecision(3), 'min="0" step="any"', L(`f<sub>s</sub> máxima (${fs.unit})`, `Maximum f<sub>s</sub> (${fs.unit})`)) : ''}</div>`) : '',
+    ok ? osec(L('Escala de los mapas', 'Map scale'), `<div class="wr-row">${numIn('wr-levels', S.res.levels, 'min="3" max="64" step="1"', L('Niveles de color', 'Colour levels'))}${numIn('wr-tmin', S.res.Tmin, 'step="10"', L('T mínima (K)', 'Minimum T (K)'))}${numIn('wr-tmax', S.res.Tmax, 'step="10"', L('T máxima (K)', 'Maximum T (K)'))}${fs ? numIn('wr-fsmax', +S.res.fsMax.toPrecision(3), 'min="0" step="any"', L(`f<sub>s</sub> máxima (${fs.unit})`, `Maximum f<sub>s</sub> (${fs.unit})`)) : ''}</div>`) : '',
+    ok ? osec(L('Máscara por f_s', 'Mask by f_s'), fs ? `<label class="wr-chk wr-chk--num"><input type="checkbox" id="wr-fsmask"${S.res.fsMaskOn ? ' checked' : ''}> <span>${L('Mostrar donde', 'Show where')} f<sub>s</sub> &gt; <input type="number" id="wr-fsmask-pct" value="${S.res.fsMaskPct}" min="0.1" max="100" step="any" aria-label="${L('Porcentaje del máximo', 'Percentage of the maximum')}"> % ${L('de su máximo', 'of its maximum')}</span></label><p class="meta" id="wr-fsmask-info">${subs(maskInfo(fs))}</p>` : `<label class="wr-chk"><input type="checkbox" id="wr-fsmask" disabled> <span>${L('Mostrar donde', 'Show where')} f<sub>s</sub> &gt; ${pctText(S.res.fsMaskPct)} % ${L('de su máximo', 'of its maximum')}</span></label><p class="meta" id="wr-fsmask-info">${subs(L('Sin f_s con esta calibración.', 'No f_s with this calibration.'))}</p>`) : '',
     osec(L('Banda', 'Band'), `<div class="wr-row">${numIn('wr-nband', S.res.nBand, 'min="5" max="200" step="1"', L('Repeticiones', 'Repetitions'))}${numIn('wr-seed6', S.res.seed, 'min="0" step="1"', L('Semilla', 'Seed'))}</div>`),
-    ok ? osec(L('Mapa de línea de visión', 'Line-of-sight map'), `<figure><div class="wr-mapax" id="wr-map-los-ax"><canvas id="wr-map-los" class="wr-map"></canvas></div><figcaption>${L('T sin invertir. Muestra lo que se leería sin la inversión de Abel.', 'T without inversion. It shows what would be read without the Abel inversion.')}</figcaption></figure>`) : '',
-    osec(L('Más descargas', 'More downloads'), `<p class="cluster">${getLang() === 'es' ? `${btn('wr-dl-csvpt', 'CSV con punto decimal', !ok)} ` : ''}${btn('wr-dl-run', L('Registro del cálculo (.json)', 'Log of the calculation (.json)'), !S.items.length)}</p>
-      ${ok ? `<p class="cluster wr-npy">${L('Mapas sueltos (.npy)', 'Single maps (.npy)')} ${Object.keys(npyFields()).map((k) => `<button class="wr-btn wr-btn--quiet" type="button" data-npy="${k}">${k}</button>`).join(' ')}</p>` : ''}`),
+    ok ? osec(L('Mapa de línea de visión', 'Line-of-sight map'), `<figure><div class="wr-mapax" id="wr-map-los-ax"><canvas id="wr-map-los" class="wr-map"></canvas></div><figcaption>${L('T sin invertir. Muestra lo que se leería sin la inversión de Abel.', 'T without inversion. It shows what would be read without the Abel inversion.')} <span class="wr-stretch"></span></figcaption></figure>`) : '',
+    osec(L('Más descargas', 'More downloads'), `<p class="cluster">${getLang() === 'es' ? `${btn('wr-dl-csvpt', 'CSV con punto decimal', !ok || noFile)} ` : ''}${btn('wr-dl-run', L('Registro del cálculo (.json)', 'Log of the calculation (.json)'), !S.items.length)}</p>
+      ${ok ? `<p class="cluster wr-npy">${L('Mapas sueltos (.npy)', 'Single maps (.npy)')} ${Object.keys(npyFields()).map((k) => `<button class="wr-btn wr-btn--quiet" type="button" data-npy="${k}"${noFile ? ' disabled' : ''}>${k}</button>`).join(' ')}</p>` : ''}`),
     osec(L('Retomar un cálculo guardado', 'Resume a saved calculation'), `<p>${L('Rearma los ajustes de un registro .json y comprueba que los archivos sean los mismos.', 'Restores the settings of a .json log and checks that the files are the same.')}</p><p>${fileBtn('wr-run-in', L('Elegir el registro .json', 'Choose the .json log'), '.json,application/json')}</p>${msgBox(runMsgs)}`),
     osec(L('Límites del método', 'Limits of the method'), `<p>${L('Hay errores que la banda no incluye.', 'There are errors the band does not include.')} <a data-eq>${L('Están en Ecuaciones.', 'They are in Equations.')}</a></p>`),
   ])}`;
-  const eq = el.querySelector('a[data-eq]') as HTMLAnchorElement | null;
-  if (eq) eq.href = eqHref;
+  el.querySelectorAll<HTMLAnchorElement>('a[data-eq]').forEach((eq) => { eq.href = eqHref; });
   if (ok) drawResults();
   renderNav();
 }
 
+/** The percentage changed: the text and the maps follow at once, with no calculation and without drawing the step again, so the field keeps its caret. */
+function maskLive() {
+  const fs = fsShown();
+  if (!S.tfs.out || !S.flame.prepared || !fs) return;
+  const info = document.getElementById('wr-fsmask-info');
+  if (info) info.innerHTML = subs(maskInfo(fs));
+  const mk = fsMaskNow(fs), res = document.getElementById('wr-mask-res');
+  if (res && mk) res.innerHTML = subs(maskLine(fs, mk));
+  drawResults();
+}
 function drawResults() {
   const t = S.tfs.out!, p = S.flame.prepared!;
   const fs = fsShown();
+  const v = viewNow();
   const T = document.getElementById('wr-map-T') as HTMLCanvasElement | null;
-  if (T) drawMap(T, t.T, p.nz, p.nr, 't', S.res.Tmin, S.res.Tmax);
+  if (T) drawMap(T, v.T, v.nz, v.nr, 't', S.res.Tmin, S.res.Tmax, v.pass, v.axisNode, S.res.levels);
   let out = 0;
   for (let q = 0; q < t.T.length; q++) if (t.mask[q] === 1 && fin(t.T[q]) && (t.T[q] < S.res.Tmin || t.T[q] > S.res.Tmax)) out++;
   S.res.Tout = out;
-  const bt = document.getElementById('wr-bar-T') as HTMLCanvasElement | null; if (bt) drawBar(bt, 't');
+  const bt = document.getElementById('wr-bar-T') as HTMLCanvasElement | null; if (bt) drawBar(bt, 't', 256, 12, S.res.levels);
   const los = document.getElementById('wr-map-los') as HTMLCanvasElement | null;
-  if (los) drawMap(los, t.Tlos, p.nz, p.nr, 't', S.res.Tmin, S.res.Tmax);
+  if (los) drawMap(los, t.Tlos, p.nz, p.nr, 't', S.res.Tmin, S.res.Tmax, null, false, S.res.levels);
   if (fs) {
     const F = document.getElementById('wr-map-fs') as HTMLCanvasElement | null;
-    if (F) drawMap(F, fs.v, p.nz, p.nr, 'fs', 0, S.res.fsMax);
-    const bf = document.getElementById('wr-bar-fs') as HTMLCanvasElement | null; if (bf) drawBar(bf, 'fs');
+    if (F) drawMap(F, v.F!, v.nz, v.nr, 'fs', 0, S.res.fsMax, v.pass, v.axisNode, S.res.levels);
+    const bf = document.getElementById('wr-bar-fs') as HTMLCanvasElement | null; if (bf) drawBar(bf, 'fs', 256, 12, S.res.levels);
   }
-  const ext = mapExtent(p);
-  for (const id of ['wr-map-T', 'wr-map-fs', 'wr-map-los']) {
-    const c = document.getElementById(id) as HTMLCanvasElement | null;
-    if (c) c.style.aspectRatio = `${ext.aspect}`;
-    const box = document.getElementById(`${id}-ax`);
-    // a tall narrow flame stays under 30rem high, a wide one under 15rem wide
-    if (box) { box.style.width = `min(100% - 3.5rem, 15rem, ${(30 * ext.aspect).toFixed(3)}rem)`; mapAxes(box, ext, tickFmt); }
-  }
+  // the line-of-sight map stays on the base grid
+  for (const id of ['wr-map-T', 'wr-map-fs', 'wr-map-los']) fitMap(id, id === 'wr-map-los' ? mapExtent(p) : viewExtent(v));
   const b = S.res.band;
   const sT: Series[] = [], sF: Series[] = [];
   const dash = [false, true, false];
   S.res.heights.forEach((k, j) => {
     if (!fin(k) || k < 0 || k >= p.nz) return;
     const sl = (a: ArrayLike<number>) => Array.from({ length: p.nr }, (_, i) => a[k * p.nr + i]);
+    // a height of the profile is a height of the base grid, in the fine view too. The band stays on the base grid.
+    const row = v.fine ? k * v.fine.fz : k;
+    const vl = (a: ArrayLike<number>) => Array.from({ length: v.nr }, (_, i) => a[row * v.nr + i]);
     const cls = ['s-data', 's-physics', 's-learned'][j] ?? 's-data';
-    if (b) sT.push({ kind: 'band', x: p.rMm, y: sl(b.Tlo), y2: sl(b.Thi), cls: 's-muted' });
-    sT.push({ kind: 'line', x: p.rMm, y: sl(t.T), cls, dash: dash[j], label: `${num(p.zMm[k], 1)} mm` });
+    const label = `${num(p.zMm[k], 1)} mm`;
+    const addBand = (to: Series[], lo: number[], hi: number[]) => {
+      if (!v.mk) { to.push({ kind: 'band', x: p.rMm, y: lo, y2: hi, cls }); return; }
+      for (const [a, e] of runsOf(p.nr, (i) => !!v.mk!.pass[k * p.nr + i] && fin(lo[i]) && fin(hi[i]))) to.push({ kind: 'band', x: Array.from(p.rMm).slice(a, e), y: lo.slice(a, e), y2: hi.slice(a, e), cls });
+    };
+    const addLine = (to: Series[], y: number[]) => {
+      if (!v.pass) { to.push({ kind: 'line', x: v.rMm, y, cls, dash: dash[j], label }); return; }
+      // under the mask a line does not cross a hole, the legend keeps one entry per height
+      runsOf(v.nr, (i) => !!v.pass![row * v.nr + i] && fin(y[i])).forEach(([a, e], n) => to.push({ kind: 'line', x: Array.from(v.rMm).slice(a, e), y: y.slice(a, e), cls, dash: dash[j], label: n ? undefined : label }));
+    };
+    if (b) addBand(sT, sl(b.Tlo), sl(b.Thi));
+    addLine(sT, vl(v.T));
     if (fs) {
-      if (b) sF.push({ kind: 'band', x: p.rMm, y: sl(b.fslo).map((v) => v * fs.factor), y2: sl(b.fshi).map((v) => v * fs.factor), cls: 's-muted' });
-      sF.push({ kind: 'line', x: p.rMm, y: sl(fs.v), cls, dash: dash[j], label: `${num(p.zMm[k], 1)} mm` });
+      if (b) addBand(sF, sl(b.fslo).map((x) => x * fs.factor), sl(b.fshi).map((x) => x * fs.factor));
+      addLine(sF, vl(v.F!));
     }
   });
-  plot('wr-profT', { xlabel: 'r (mm)', ylabel: 'T (K)', height: 240, legend: true }, sT);
-  if (fs) plot('wr-profF', { xlabel: 'r (mm)', ylabel: `fₛ (${fs.unit})`, height: 240, legend: true }, sF, fin(S.res.fsMax) && S.res.fsMax > 0 ? { ylim: [0, 2 * S.res.fsMax] } : {});
+  const noPts = L('No quedan puntos a estas alturas.', 'No points remain at these heights.');
+  plot('wr-profT', { xlabel: 'r (mm)', ylabel: 'T (K)', height: 240, legend: true, emptyNote: noPts }, sT);
+  if (fs) plot('wr-profF', { xlabel: 'r (mm)', ylabel: `fₛ (${fs.unit})`, height: 240, legend: true, emptyNote: noPts }, sF, fin(S.res.fsMax) && S.res.fsMax > 0 ? { ylim: [0, 2 * S.res.fsMax] } : {});
 }
 
 // ============================================================================ events
@@ -2616,7 +3021,6 @@ function onInput(e: Event) {
     'wr-irw': () => { if (fin(val)) { S.irWidthNm = val; invalidate(1, 'psi'); } },
     'wr-dT': () => { if (fin(val)) { S.sigmaT = Math.min(50, Math.max(0, val)); invalidate(1, 'oven'); } },
     'wr-eps': () => { S.eps = val; const o = document.getElementById('wr-eps-out'); if (o) o.textContent = num(val, 2); invalidate(1, 'oven'); },
-    'wr-tail-on': () => { S.tailOn = (t as HTMLInputElement).checked; if (S.oven.result) setCalFromOven(); renderAll(); },
     'wr-known': () => { S.known = (t as HTMLInputElement).checked; if (S.cal?.mode === 'oven') { S.cal.emissivityKnown = S.known; S.cal.absolute = S.known; } invalidate(5, 'cal'); },
     'wr-darkmode': () => { S.darkMode = v as typeof S.darkMode; invalidate(1, 'oven'); },
     'wr-pcx': () => movePlateau(0, 0, 0, { cx: val, cy: S.oven.plateaus[String(S.oven.series[S.oven.cur].tC)].cy }),
@@ -2651,7 +3055,7 @@ function onInput(e: Event) {
     'wr-zb': () => { S.flame.zBurner = fin(val) ? val : 0; invalidate(3, 'flame'); },
     'wr-mmpx': () => { S.flame.mmPerPx = val; invalidate(3, 'flame'); },
     'wr-sunc': () => { S.flame.scaleUnc = val; },
-    'wr-scaleok': () => { S.flame.scaleConfirmed = (t as HTMLInputElement).checked; invalidate(5, 'cal'); },
+    'wr-scaleok': () => { S.flame.scaleConfirmed = (t as HTMLInputElement).checked; if (S.flame.scaleConfirmed) S.ui.scaleOpen = false; invalidate(5, 'cal'); },
     'wr-rmm': () => { S.flame.rulerMm = val; rulerScale(); },
     'wr-sym': () => { S.abel.sym = v as Sym; invalidate(4, 'abel'); },
     // a value set by the student turns the automatic smoothing off (DESIGN §4, C4), drawing never fires this
@@ -2672,9 +3076,13 @@ function onInput(e: Event) {
     'wr-zcut': () => { S.tfs.zCut = val; invalidate(5, 'tfs'); },
     'wr-chem': () => { if (fin(val)) { S.tfs.chemThr = val / 100; invalidate(5, 'tfs'); } },
     'wr-fsch': () => { S.tfs.fsChannel = asFsMode(v); invalidate(5, 'tfs'); },
+    'wr-levels': () => { if (fin(val) && val >= 3) { S.res.levels = Math.min(64, Math.round(val)); renderAll(); } },
     'wr-tmin': () => { if (fin(val)) { S.res.Tmin = val; S.res.Tmanual = true; drawResults(); } },
     'wr-tmax': () => { if (fin(val)) { S.res.Tmax = val; S.res.Tmanual = true; drawResults(); } },
     'wr-fsmax': () => { if (fin(val) && val > 0) { S.res.fsMax = val; drawResults(); } },
+    'wr-fsmask': () => { S.res.fsMaskOn = (t as HTMLInputElement).checked; },
+    'wr-fsmask-pct': () => { if (validMaskPct(val)) { S.res.fsMaskPct = val; maskLive(); } else { const m = document.getElementById('wr-fsmask-info'); if (m) m.textContent = L('Escriban un porcentaje mayor que 0, hasta 100.', 'Type a percentage above 0, up to 100.'); } },
+    'wr-morepts': () => { const f = refineFactor(+v); if (f !== S.res.fineFactor) { S.res.fineFactor = f; void refreshFine(); } },
     'wr-nband': () => { if (fin(val)) S.res.nBand = Math.max(5, Math.min(200, Math.round(val))); },
   };
   if (/^wr-hz\d$/.test(id) && S.flame.prepared) {
@@ -2713,11 +3121,15 @@ async function onClick(e: MouseEvent) {
   const t = (e.target as HTMLElement).closest('button, canvas') as HTMLElement | null;
   if (!t) return;
   const id = t.id;
+  if (t.classList.contains('wr-step')) { setStep(+id.replace('wr-steptab-', '')); return; }
+  if (t.dataset.next) { setStep(+t.dataset.next, { focus: 'panel' }); return; }
   // the buttons of a group keep the focus after their section is drawn again (GB3r1-web-01)
   if (t.dataset.calpath) { S.calPath = t.dataset.calpath as typeof S.calPath; keepFocus(renderStage1); return; }
   if (t.dataset.series !== undefined) { S.oven.cur = +t.dataset.series; keepFocus(() => { renderPlateau(); renderFit(); }); return; }
   if (t.dataset.view !== undefined) { S.oven.view = +t.dataset.view; keepFocus(renderPlateau); return; }
-  if (t.dataset.method) { S.abel.method = t.dataset.method as typeof S.abel.method; if (S.abel.method === 'annabel' || S.abel.method === 'sat') S.abel.sym = 'both'; else if (S.abel.sym === 'both') S.abel.sym = 'average'; keepFocus(renderStage4);
+  if (t.dataset.method) { const was = S.abel.method; S.abel.method = t.dataset.method as typeof S.abel.method; if (S.abel.method === 'annabel' || S.abel.method === 'sat') S.abel.sym = 'both'; else if (S.abel.sym === 'both') S.abel.sym = 'average';
+    // the results on screen are of the method that ran, so another method marks them out of date at once
+    if (was !== S.abel.method && S.abel.out) { invalidate(4, 'abel'); keepFocus(renderAll); } else keepFocus(renderStage4);
     // without a graphics card the time is measured at once, so it is in sight before training (GB1 decision, GB3r3-adv-13)
     if (S.abel.method === 'annabel' && !S.gpu && !S.abel.annabel.estimate && S.flame.prepared && !S.abel.annabel.running) void estimateAnnabel();
     return; }
@@ -2741,6 +3153,9 @@ async function onClick(e: MouseEvent) {
   }
   const actions: Record<string, () => unknown> = {
     'wr-reco': recommended,
+    'wr-scale-edit': () => { S.ui.scaleOpen = true; renderStage3(); document.getElementById('wr-mmpx')?.focus(); },
+    'wr-scale-done': () => { S.ui.scaleOpen = false; renderStage3(); document.getElementById('wr-scale-edit')?.focus(); },
+    'wr-crop-reset': async () => { S.flame.nr = NaN; S.flame.rowTop = NaN; S.flame.rowBottom = presetRowBottom(); invalidate(3, 'flame'); await prepareFlameNow(); },
     'wr-clear': async () => { await clearTable(); renderAll(); },
     'wr-resp-clear': () => { S.custom = null; invalidate(1, 'psi'); renderAll(); },
     'wr-preset-pl': () => { const s = S.oven.series[S.oven.cur]; S.oven.plateaus[String(s.tC)] = { cy: s.plateau.cy, cx: s.plateau.cx, radius: s.plateau.radius }; s.prof = undefined; invalidate(1, 'oven'); renderPlateau(); },
@@ -2789,6 +3204,13 @@ async function onFiles(e: Event) {
 }
 function onKey(e: KeyboardEvent) {
   const t = e.target as HTMLElement;
+  if (t.classList.contains('wr-step')) {
+    // the keys of a tab bar, the step follows the focus
+    const n = STEP_IDS.length, cur = +t.id.replace('wr-steptab-', '');
+    const to = e.key === 'ArrowRight' ? (cur % n) + 1 : e.key === 'ArrowLeft' ? ((cur + n - 2) % n) + 1 : e.key === 'Home' ? 1 : e.key === 'End' ? n : 0;
+    if (to) { e.preventDefault(); setStep(to, { focus: 'tab' }); }
+    return;
+  }
   if (t.id === 'wr-pcv') {
     const step = e.shiftKey ? 5 : 1;
     const m: Record<string, [number, number, number]> = { ArrowLeft: [-step, 0, 0], ArrowRight: [step, 0, 0], ArrowUp: [0, -step, 0], ArrowDown: [0, step, 0], '+': [0, 0, 0.5], '=': [0, 0, 0.5], '-': [0, 0, -0.5] };
@@ -2813,18 +3235,25 @@ export function mount(root: HTMLElement, o: MountOptions) {
   // helper Workers for ANNAbel on the CPU, created now and idle until used (§11.5)
   try { helpers = Array.from({ length: helperCount() }, () => defaultHelperFactory()); } catch { helpers = []; }
   ask({ type: 'opts', group: S.group, bayer: S.bayer, centre: S.centre });
-  // five steps, the result of step 1 keeps id wr-s2 inside wr-s1 (DESIGN, correspondence table)
-  root.innerHTML = `<div class="wr-top"><nav class="wr-steps" id="wr-nav" aria-label="${L('Pasos', 'Steps')}"></nav><p class="wr-busy" id="wr-busy" role="status" aria-live="polite" hidden></p></div>
+  // five steps, one on screen, the result of step 1 keeps id wr-s2 inside wr-s1 (DESIGN, correspondence table)
+  S.ui.step = stepFromHash() ?? 1;
+  root.innerHTML = `<div class="wr-top"><nav class="wr-steps" id="wr-nav" aria-label="${L('Pasos', 'Steps')}"></nav><p class="wr-busy" id="wr-busy" role="status" aria-live="polite" hidden></p><p class="wr-busy" id="wr-train" hidden></p></div>
   <p class="sr-only" id="wr-announce" role="status" aria-live="polite"></p><p class="sr-only" id="wr-alert" role="alert"></p>
   <section class="wr-bar" id="wr-s0"></section>
-  ${[1, 3, 4, 5, 6].map((k) => `<section class="wr-stage" id="wr-s${k}"></section>`).join('')}`;
+  ${STEP_IDS.map((id, i) => `<section class="wr-stage" id="${id}" role="tabpanel" aria-labelledby="wr-steptab-${i + 1}" tabindex="-1" hidden></section>`).join('')}`;
+  showStep();
+  // a hash that is not a step, such as the link to skip to the content, leaves the student where they are
+  window.addEventListener('hashchange', () => { const n = location.hash.length > 1 ? stepFromHash() : 1; if (n) setStep(n, { hash: false }); });
   // the Options fold keeps its state when a step is drawn again (toggle does not bubble, so capture)
-  root.addEventListener('toggle', (e) => { const d = e.target as HTMLDetailsElement; if (d?.classList?.contains('wr-opts')) S.ui.open[+d.id.replace('wr-opt-', '')] = d.open; }, true);
+  root.addEventListener('toggle', (e) => { const d = e.target as HTMLDetailsElement; if (d?.classList?.contains('wr-opts')) S.ui.open[+d.id.replace('wr-opt-', '')] = d.open; else if (d?.classList?.contains('wr-fold')) S.ui.folds[d.id] = d.open; }, true);
   root.addEventListener('input', onInput);
   root.addEventListener('change', (e) => { const t = e.target as HTMLInputElement; if (t.type === 'file') onFiles(e); else onInput(e); });
   root.addEventListener('click', (e) => { onClick(e as MouseEvent); });
   root.addEventListener('keydown', onKey);
   root.addEventListener('pointerdown', () => { pointerDown = true; });
+  root.addEventListener('pointerdown', (e) => cropStart(e as PointerEvent));
+  root.addEventListener('pointermove', (e) => cropMove(e as PointerEvent));
+  root.addEventListener('pointerup', (e) => { void cropEnd(e as PointerEvent); });
   window.addEventListener('pointerup', () => { pointerDown = false; if (pendingRender) setTimeout(() => { if (pendingRender && !pointerDown) { pendingRender = false; renderAll(); } }, 0); });
   root.addEventListener('dragover', (e) => { const d = (e.target as HTMLElement).closest('.wr-drop'); if (d) { e.preventDefault(); d.classList.add('wr-over'); S.loadFrom = d.closest('#wr-s3') ? 3 : 1; } });
   root.addEventListener('dragleave', (e) => { (e.target as HTMLElement).closest('.wr-drop')?.classList.remove('wr-over'); });
@@ -2839,8 +3268,9 @@ export function mount(root: HTMLElement, o: MountOptions) {
     else for (const f of Array.from(e.dataTransfer?.files ?? [])) out.push({ path: f.name, blob: f });
     await loadFiles(out, out.length === 1 ? out[0].path : L(`${out.length} archivos`, `${out.length} files`));
   });
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (S.tfs.out) drawResults(); drawAbel(); });
-  new MutationObserver(() => { if (S.tfs.out) drawResults(); drawAbel(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  const redraw = () => { if (S.tfs.out) { drawResults(); drawTfsMaps(); } drawAbel(); };
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redraw);
+  new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   renderAll();
   webgpuAvailable().then((g) => { S.gpu = g; renderStage0(); });
   void cssVar; void msgText;

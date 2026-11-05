@@ -53,353 +53,618 @@
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s00_e7f36298dab0cf07bec79f2d1e652dc7d0ba922ea43cb62f511baf8aedff9bfe.mp4"
+          data-background-video="workshop_rgb_en_assets/s00_eaa5f7390117ad6c5937a7827a6950a735b70eaa96a7d8304c310907e40471d7.mp4"
           data-background-video-muted
           >
-            <aside class="notes" data-markdown>Today we measure the temperature and the soot of a flame with an ordinary colour camera, without touching it. On the right is the laboratory flame. It glows yellow because of soot, tiny carbon particles. Then you photograph a furnace of known temperature and a flame, and you process the photos on a web page. A drawing without real data says sketch in a corner. We start with the plan.</aside>
+            <aside class="notes" data-markdown>- Today we measure the temperature and the soot of a flame with an ordinary colour camera, without touching it.
+- On the right is the laboratory flame.
+- It glows yellow because of soot, tiny carbon particles.
+- Then you photograph a furnace of known temperature and a flame, and you process the photos on a web page.
+- A drawing without real data says sketch in a corner.
+- We start with the plan.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s01_b1abfabaf7abaf3162e4757462ac92476083835f18b6d5acce10072863efefde.mp4"
+          data-background-video="workshop_rgb_en_assets/s01_e1422f668ef85b60e4828cd93c75853113cbf59269b114ee5982064974d1b2fe.mp4"
           >
-            <aside class="notes" data-markdown>The workshop has three parts, this theory session, the laboratory and the processing on the web page. Below is the measurement chain. The top row goes from the flame to the image, down to the signal of each channel, one of the three camera colours. The bottom row goes back the other way. The calibration K_j turns pixels into physical light. The Abel inversion recovers what each point emits. The red to green ratio gives the temperature, and the amount of light gives the soot. We start with a real flame.</aside>
+            <aside class="notes" data-markdown>- The workshop has three parts, this theory session, the laboratory and the processing on the web page.
+- Below is the measurement chain.
+- The top row goes from the flame to the image, down to the signal of each channel, one of the three camera colours.
+- The bottom row goes back the other way.
+- The calibration K\_j turns pixels into physical light.
+- The Abel inversion recovers what each point emits.
+- The red to green ratio gives the temperature, and the amount of light gives the soot.
+- We start with a real flame.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s02_66f4643d9b2265bc14b19c2bf9e639a3811329d31f522e85acf55d3a843cbe89.mp4"
+          data-background-video="workshop_rgb_en_assets/s02_8a3660e4dd0ad7b225078500da85bdd0a9761ae7876424bb0179f168833b3484.mp4"
           >
-            <aside class="notes" data-markdown>This is the laboratory flame we are going to measure. We photographed it with the same camera and the same settings as the furnace, so its calibration applies to it. The photo is brightened with a gamma correction so you can see it. For measuring we use the linear image, where each pixel is proportional to the light it received. The camera compares its red, green and blue channels, calibrated with the furnace. Next, where the light comes from.</aside>
+            <aside class="notes" data-markdown>- This is the laboratory propane flame we are going to measure.
+- We photographed it with the same camera and the same settings as the furnace, so its calibration applies to it.
+- The photo is brightened with a gamma correction so you can see it.
+- For measuring we use the linear image, where each pixel is proportional to the light it received.
+- The camera compares its red, green and blue channels, calibrated with the furnace.
+- Next, where the light comes from.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s02_161dfa5dd24ada19606c780f4506e3b59641c473f3c57f88306dd0919bae827e.mp4"
+          data-background-video="workshop_rgb_en_assets/s02_ea31e44438b19e939817c763246ca29071e6c22014dabb116e61635841668be5.mp4"
           >
-            <aside class="notes" data-markdown>The graph is a sketch of the spectrum. This flame is yellow because it forms soot, solid carbon particles at the gas temperature. They glow at every colour. That is incandescence, the curve that rises towards the red. A Bunsen burner forms almost no soot. Its light comes from molecules with extra energy, marked with a star, that emit fixed colours. The blue comes mostly from CH*. The narrow peaks of C2* are called the Swan bands. CO2* adds a weak, broad glow. That is chemiluminescence. We measure only the incandescence, because its colour depends on temperature. Next, the maps.</aside>
+            <aside class="notes" data-markdown>- The graph is a sketch of the spectrum.
+- The bar under the axis shows the colour of each wavelength, violet near 400 nanometres, then blue, green, yellow, orange and red.
+- This flame is yellow because it forms soot, solid carbon particles at the gas temperature.
+- They glow at every colour.
+- That is incandescence, the curve that rises towards the red.
+- A Bunsen burner forms almost no soot.
+- Its light comes from molecules with extra energy, marked with a star, that emit fixed colours.
+- The blue comes mostly from CH\*.
+- The narrow peaks of C2\* are called the Swan bands.
+- CO2\* adds a weak, broad glow.
+- That is chemiluminescence.
+- We measure only the incandescence, because its colour depends on temperature.
+- Next, the maps.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s02_b449994766243f7be2ab391fd12ff15fd7832f1fb533a6beaf38a44a95153f44.mp4"
+          data-background-video="workshop_rgb_en_assets/s02_1a0ea0122fe7ec5b598cd29f0ca95b70d8487931552522ade1dff43f1e64dce5.mp4"
           >
-            <aside class="notes" data-markdown>From that light we want two maps. They are the temperature T, in kelvin, and the soot volume fraction f_s, the share of the volume taken up by soot, in parts per million. To test every step we use an ethylene flame simulated with CoFlame. It is the Gülder flame, a reference case with a known answer. The flame is the same all around its axis, so each map shows one half, with the radius drawn 3 times wider. On the left is the flame as a volume, coloured by T. Next, the steps between these maps and the image.</aside>
+            <aside class="notes" data-markdown>- From that light we want two maps.
+- They are the temperature T, in kelvin, and the soot volume fraction f\_s, the share of the volume taken up by soot, in parts per million.
+- To test every step we use an ethylene flame simulated with CoFlame.
+- It is the Gülder flame, a reference case with a known answer.
+- The flame is the same all around its axis, so each map shows one half, with the radius drawn 3 times wider.
+- On the left is the flame as a volume, coloured by T.
+- Next, the steps between these maps and the image.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s03_680e0ac9aa542b437cd8d2f3514a7cd9e6f7c8e8a6e3f350c18a3e10b1b73413.mp4"
+          data-background-video="workshop_rgb_en_assets/s03_9ad8e9c66c14a7c1bec3f5fa5c05c35ff3ece8234a08ccef4814e39aa42d2932.mp4"
           >
-            <aside class="notes" data-markdown>We have the two fields we are after. Now we fill the first block, the soot emission. Its equation says each point emits according to the amount of soot, what each particle absorbs and the Planck curve. We start with Planck.</aside>
+            <aside class="notes" data-markdown>- We have the two fields we are after.
+- Now we fill the first block, the soot emission.
+- Its equation says each point emits according to the amount of soot, what each particle absorbs and the Planck curve.
+- We start with Planck.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s04_c70330c410d94f9d7c502971b3be069e76228392018d387f0e30cfa78ebfc732.mp4"
+          data-background-video="workshop_rgb_en_assets/s04_844d40ee2a59b1ed83002718186e4d93c5b1fad4d86db4f2f5ae172b5d8ef3fe.mp4"
           >
-            <aside class="notes" data-markdown>The emission block starts with Planck's law. At the top, the furnace at 1073 kelvin and 1323 kelvin, each photo divided by its exposure so they share one scale. Planck's law gives how much light a blackbody emits at each wavelength. A blackbody absorbs all the light that reaches it, and the furnace almost is one. C1 and C2 are constants. As T rises the peak moves to shorter wavelengths. At 1800 kelvin it sits at 1.61 micrometres, in the infrared. The camera sees only the visible strip. The inset divides the curve by its value at 650 nanometres. As it heats up, that curve rises less towards the red and gains blue. That shape is what the camera reads. Now, soot.</aside>
+            <aside class="notes" data-markdown>- The emission block starts with Planck's law.
+- At the top, the furnace at 1073 kelvin and 1323 kelvin, each photo divided by its exposure so they share one scale.
+- Planck's law gives how much light a blackbody emits at each wavelength.
+- A blackbody absorbs all the light that reaches it, and the furnace almost is one.
+- C1 and C2 are constants.
+- As T rises the peak moves to shorter wavelengths.
+- At the temperature of a flame it sits in the infrared.
+- The camera sees only the visible strip.
+- The inset divides the curve by its value at 650 nanometres.
+- As it heats up, that curve rises less towards the red and gains blue.
+- That shape is what the camera reads.
+- Now, soot.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s05_e2fea33b14591fc236ee1ae9500335229a6bb2001c1b19d6dd206abdc6fe2508.mp4"
+          data-background-video="workshop_rgb_en_assets/s05_3b5f598351b88b60759b0df828a7c6e2fc302af91406d1373ef9363cedd60f1e.mp4"
           >
-            <aside class="notes" data-markdown>By Kirchhoff's law soot emits at each colour what it absorbs, so we start with absorption. It is made of spheres, the primaries, 15 to 40 nanometres across. x_p compares their size with the wave and lies between 0.07 and 0.19. In the Rayleigh regime each primary absorbs according to its volume. C abs, its absorption cross section, is the area of shadow it casts. E(m) comes from the refractive index m. Kappa, the absorption per metre, is primaries per cubic metre times that area. f_s is that number times the volume of one sphere. Our group uses an E(m) of 0.297, measured at 650 nanometres. Other authors use 0.4 plus or minus 0.1. Next, aggregates.</aside>
+            <aside class="notes" data-markdown>- By Kirchhoff's law soot emits at each colour what it absorbs, so we start with absorption.
+- It consists of spheres, the primaries, very small.
+- x\_p compares their size with the wavelength and stays well below one.
+- In the Rayleigh regime each primary absorbs according to its volume.
+- C abs, the cross section, is its shadow area.
+- E(m) comes from the refractive index m.
+- Kappa, the absorption per metre, is primaries per cubic metre times that area.
+- f\_s is that number times the volume of one sphere.
+- There are different models of E(m).
+- One is by Yon and co-authors, and other authors use 0.4 plus or minus 0.1.
+- Next, aggregates.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s05_6815174e1a68f4ad543b878ba2d818f53d3cac4889ba5454ce05fbd57bcab824.mp4"
+          data-background-video="workshop_rgb_en_assets/s05_a55eaa44afa3040ddb4fe4f4496ebe61a6af54712e78061824190740d7dc515a.mp4"
           >
-            <aside class="notes" data-markdown>The primaries stick together in open clusters, the aggregates. The one on the left grows to 60 primaries, and N_p is that number. We use RDG-FA, the approximation of Rayleigh, Debye and Gans for fractal aggregates, branched clusters that look alike at every scale. Each primary absorbs as if it were alone, so the aggregate absorbs N_p times more, the line of slope one in the graph. Exact calculations give 10 to 30 percent more for large aggregates. Kappa is still primaries times shadow area, and writing it with f_s cancels the diameter. That gives the equation in the box. Scattering, light deflected without emission, grows with a slope up to two and matters little. With this kappa we write the emission.</aside>
+            <aside class="notes" data-markdown>- The primaries stick together in open clusters, the aggregates.
+- The one on the left grows to 60 primaries, and N\_p is that number.
+- We use RDG-FA, the approximation of Rayleigh, Debye and Gans for fractal aggregates, branched clusters that look alike at every scale.
+- Each primary absorbs as if it were alone, so the aggregate absorbs N\_p times more, the line of slope one in the graph.
+- Kappa is still primaries times shadow area, and writing it with f\_s cancels the diameter.
+- That gives the equation in the box.
+- Scattering, light deflected without emission, grows with a slope up to two and matters little.
+- With this kappa we write the emission.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s06_504e151cb158f9f0271816aeb1d997d7fcc4ff865d92bd84c18659822a144eb2.mp4"
+          data-background-video="workshop_rgb_en_assets/s06_8473adf2ef0200afb737c5f2476464ee71e087bf11208cc61bed68c1c9e8ec22.mp4"
           >
-            <aside class="notes" data-markdown>With kappa, the absorption per metre, we write the emission. Each ring of radius r and width dr has one T and one f_s. If the soot is at the gas temperature, the local emission j_lambda is kappa times Planck at the ring temperature. Its unit includes the steradian, which measures solid angle. Hot gas emits in the infrared, so the visible light comes from the soot. The graph is the spectrum of the ring, and the dashed line is that curve divided by its value at 650 nanometres. More soot raises the curve and the dashed line stays. More temperature raises it and tilts it. So the shape gives T without knowing the soot. Now we follow it to the camera.</aside>
+            <aside class="notes" data-markdown>- With kappa, the absorption per metre, we write the emission.
+- Each ring of radius r and width dr has one T and one f\_s.
+- If the soot is at the gas temperature, the local emission j\_lambda is kappa times Planck at the ring temperature.
+- Its unit includes the steradian, which measures solid angle.
+- Hot gas emits in the infrared, so the visible light comes from the soot.
+- The graph is the spectrum of the ring, and the dashed line is that curve divided by its value at 650 nanometres.
+- More soot raises the curve and the dashed line stays.
+- More temperature raises it and tilts it.
+- So the shape gives T without knowing the soot.
+- Now we follow it to the camera.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s07_cb5ff1304e24d5933bc6ff180a051c59bf3b18da9eb11e2d542bfc4c3d8cb1f9.mp4"
+          data-background-video="workshop_rgb_en_assets/s07_090060eeb5048563659a32c06343f2849f7f60f15786e892aea875d7dd270c1f.mp4"
           >
-            <aside class="notes" data-markdown>Now we follow the light of each point to the camera, in two blocks. Each pixel looks along a straight line through the flame, its line of sight. Then each channel responds to the colours according to its curve psi_j. We start with the line of sight.</aside>
+            <aside class="notes" data-markdown>- We follow the light.
+- In the cross-section from above, a pixel looks along the white line, the chord, at a distance y from the axis.
+- Ell is the chord length.
+- If kappa times ell is small, the flame is optically thin and almost all the light escapes.
+- Then the radiance L\_lambda, the light reaching the pixel, is the sum of j\_lambda along the chord.
+- The graph gives the fraction that escapes.
+- In the simulated flame kappa times ell is 0.20, and in the propane flame 0.15.
+- Kappa grows at shorter lambda, so green loses more than red.
+- More red arrives, and T comes out about 10 kelvin low on the axis.
+- That is self-absorption.
+- We do not correct it with LOSA, we report it.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s08_615987f930288fe483649478e03f34c7aa6c7bd74e89fae354f3f43bc220e9c8.mp4"
+          data-background-video="workshop_rgb_en_assets/s08_22b37b88792fe4d7d3c737373064ad8da796b1ba818eae28194c0c1e4ecebac6.mp4"
           >
-            <aside class="notes" data-markdown>In the cross-section seen from above, a pixel looks along the white line, the chord, at a distance y from the axis. Ell is the chord length. If kappa times ell is small, the flame is optically thin and almost all the light escapes. Then the radiance L_lambda, the light reaching the pixel, is the sum of j_lambda along the chord. The graph gives the fraction that escapes. In the simulated flame kappa times ell is 0.20. Kappa grows at shorter lambda, so green loses more than red. More red arrives, and T comes out about 10 kelvin low on the axis. That is self-absorption. We do not correct it with a method such as LOSA, we report it. Now, the camera.</aside>
+            <aside class="notes" data-markdown>- The light crosses the lens.
+- The sensor, a Sony IMX392, has a red, green or blue filter over each pixel, the Bayer mosaic.
+- Its curve eta\_j is the quantum efficiency, the fraction of photons that becomes signal.
+- We assume the Sony curve counts photons, and a watt of red carries more photons than a watt of blue.
+- So we multiply each colour by its wavelength, relative to a reference wavelength.
+- Tau, the share the lens lets through, is set to one.
+- That gives psi\_j, the response per watt.
+- The response above 700 nanometres matters in the colder furnace, which emits more infrared.
+- Next, the signal.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s09_7d8abeda0923089a1e97641f9fd261dce4c979d30418ee0e6e44ac644a3bca77.mp4"
+          data-background-video="workshop_rgb_en_assets/s08_a31484f1044c6ca793e1fc4b8471bb9075cc7a8128d07ec6bea268b9053006e0.mp4"
           >
-            <aside class="notes" data-markdown>The light crosses the lens and the infrared filter. The sensor, a Sony IMX392, has a red, green or blue filter over each pixel, the Bayer mosaic. Its curve eta_j is the quantum efficiency, the fraction of photons that becomes signal. It includes the infrared filter, which passes half at 645 nanometres. We assume the Sony curve counts photons, and a watt of red carries more photons than a watt of blue. So we multiply each colour by its wavelength, relative to a reference wavelength. Tau, the share the lens lets through, is set to one. That gives psi_j, the response per watt. The tails above 700 nanometres matter in the colder furnace, which emits more infrared. Next, the signal.</aside>
+            <aside class="notes" data-markdown>- From the raw signal S\_j we subtract the dark frame D\_j, taken with the lens covered.
+- What is left is proportional to the exposure time and to the light the channel lets through.
+- So we use the linear image and not a JPEG.
+- The constant is K\_j.
+- It gathers aperture, magnification, pixel area and gain, and the furnace measures it.
+- The histogram of one red pixel grows with the exposure up to 4095 digital counts, the sensor maximum, and then it saturates.
+- Its width is noise, so we average frames.
+- Pylon stores each value times 16, and the web tool divides it back.
+- Since the light adds up what each point of the chord emits, the integrals swap order and j\_j appears, the local emission of the channel.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s09_7c04f1a8c7d972ec6cefc2039afc036c6dec75329aef17b061eeac2758b027a7.mp4"
+          data-background-video="workshop_rgb_en_assets/s09_e32e008ab11d5ad00c2334b03e7f4ad2a0167431d64d9e0166c1bb1b26680082.mp4"
           >
-            <aside class="notes" data-markdown>From the raw signal S_j we subtract the dark frame D_j, taken with the lens covered. What is left is proportional to the exposure time and to the light the channel lets through. The constant is K_j. It gathers aperture, magnification, pixel area and gain, the amplification, and the furnace measures it. The histogram of one red pixel grows with the exposure up to 4095 digital counts, the sensor maximum, and then it saturates. Its width is noise, so we average frames. The pylon software stores each value times 16, and the web tool divides it back. Since the light adds up what each point of the chord emits, the integrals swap order and j_j appears, the local emission of the channel. Next, three mistakes.</aside>
+            <aside class="notes" data-markdown>- The top row is complete, and the bottom row undoes that path.
+- The dotted line shows that Abel is the inverse of the line of sight.
+- From the calibrated image P\_j, Abel recovers what each point emits, channel by channel.
+- We start with the projection.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s10_089e0145f01f4c848b7c8125a49faf810b0debaaaf2b6dcbc250c6c33782c58d.mp4"
+          data-background-video="workshop_rgb_en_assets/s10_e41ad02554bce695b93c619b4c2075552298eb0288b89321f4d17a89d7ca804a.mp4"
           >
-            <aside class="notes" data-markdown>With the signal written down, three mistakes. The first is forgetting the lambda factor when the curve counts photons. At 1800 kelvin the temperature comes out about 40 kelvin low. The furnace calibration makes it smaller without removing it, because the error changes with T. The second is using the JPEG. Its gamma is not linear, and white balance scales each colour. Both change the red to green ratio. The third is the sensor curve without the infrared filter, where the channels see the same infrared and the ratio hardly changes with temperature. An 850 nanometre LED measures the leak, which should be a few thousandths of the peak. If it is larger, the furnace corrects the tail in section 7. Abel comes next.</aside>
+            <aside class="notes" data-markdown>- From above, the flame at one height is a set of rings.
+- The line is a chord, the path of the light to one pixel, which adds up what the rings it crosses emit.
+- That gives one point of P\_j(y), what one row of pixels sees.
+- There are two peaks because at this height the soot forms a ring near the edge, and the chords that graze it run along it.
+- This assumes three things.
+- The flame is symmetric about its axis and steady on average.
+- The camera is far away, so the rays arrive nearly parallel.
+- The whole flame is in focus.
+- Next we write this sum down.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s11_7cee980231e067a3a78649490d251323a105802a75f6b92b330b90757925b126.mp4"
+          data-background-video="workshop_rgb_en_assets/s10_ef285372c820a0c034ecac567f4dd7e27ac2a96410b14b84df9a8192fbc01147.mp4"
           >
-            <aside class="notes" data-markdown>The top row is complete, and the bottom row undoes that path. The dotted line shows that Abel is the inverse of the line of sight. From the calibrated image P_j, Abel recovers what each point emits, channel by channel. We start with the projection.</aside>
+            <aside class="notes" data-markdown>- The flame flattens into an image with three channels, each scaled to its own maximum.
+- At the top is the calibrated signal P\_j, the signal minus the dark level, divided by K\_j and the exposure.
+- P\_j adds up j\_j, the local emission, along the chord.
+- The middle integral writes that sum with the radius, and the one below is the inverse.
+- Abel works with sums, and the ratio of two sums is not the sum of the ratios.
+- So Abel runs per channel, and the division between channels comes last.
+- The inverse uses the derivative of P\_j, which subtracts nearly equal neighbouring pixels and amplifies the noise.
+- So we move to rings.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s12_2af4c9539321d3704e5f64034bddd98d0a3663dcc834e7c7072b9f1dfa4df5c7.mp4"
+          data-background-video="workshop_rgb_en_assets/s11_8118fe018336cdf286fec432d98ae860053406cbc050cac10e59a24637f30835.mp4"
           >
-            <aside class="notes" data-markdown>From above, the flame at one height is a set of rings. The line is a chord, the path of the light to one pixel, which adds up what the rings it crosses emit. That gives one point of P_j(y), what one row of pixels sees. There are two peaks because at this height the soot forms a ring near the edge, and the chords that graze it run along it. This assumes three things. The flame is symmetric about its axis and steady on average. The camera is 0.4 metres away, so the rays arrive nearly parallel. The whole flame is in focus. At f/8 or more closed, the sharp zone is about 23 millimetres deep. Next we write this sum down.</aside>
+            <aside class="notes" data-markdown>- To avoid the derivative, we cut the flame into rings, with j\_j constant inside each one.
+- The row of the image becomes the column P\_j, one value per chord.
+- The matrix A has one row per chord and one column per ring.
+- Each cell is the length of that chord inside that ring, in pixels times delta y, the size of one pixel in the flame.
+- So the image is A times j\_j.
+- On the right are the rings seen from above.
+- The outer chord crosses one ring, the next one two, and so on towards the axis.
+- That is why half the matrix is zeros, and A is called triangular.
+- This shape tells us where to start.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s12_0588f03bd0ed8df86ce55409d44e2b58bb2385ac559283fc488354418d68e076.mp4"
+          data-background-video="workshop_rgb_en_assets/s11_15d3040701aa3a7db2fa331f35e5e378103b45a46536574325fcdb29d32fe5c0.mp4"
           >
-            <aside class="notes" data-markdown>The flame flattens into an image with three channels, each scaled to its own maximum. At the top is the calibrated signal P_j, the signal minus the dark level, divided by K_j and the exposure. P_j adds up j_j, the local emission, along the chord. The middle integral writes that sum with the radius, and the one below is the inverse. Abel works with sums, and the ratio of two sums is not the sum of the ratios. So Abel runs per channel, and the division between channels comes last. The inverse uses the derivative of P_j, which subtracts nearly equal neighbouring pixels and amplifies the noise. So we move to rings.</aside>
+            <aside class="notes" data-markdown>- The first ring to compute is the outer one, because its chord crosses only that ring.
+- The box marks the first row of the matrix, with a single unknown, and we solve for it.
+- With that ring known, the second chord has only one new unknown.
+- We go on row by row towards the axis.
+- This is onion peeling.
+- It is the same as j\_j equals A inverse times P\_j, the equation at the top.
+- The column on the right fills with the values, and in the top view the purple shows the emission of each ring.
+- Now we add the noise of a real image.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s13_8ad2f03fc36ed667b0f3005f2c04754f3c5299715c33b80529984339b8d448e3.mp4"
+          data-background-video="workshop_rgb_en_assets/s11_f47d8d9f01548f5adf77fd342fc06d98d73608c4a0977e076f2890d52c4f6994.mp4"
           >
-            <aside class="notes" data-markdown>To avoid the derivative, we cut the flame into rings, with j_j constant inside each one. The row of the image becomes the column P_j, one value per chord. The table A has one row per chord and one column per ring. Each cell is the length of that chord inside that ring, in pixels times delta y, the size of one pixel in the flame. So the image is A times j_j. On the right are the 8 rings seen from above. The outer chord crosses one ring, the next one two, and so on towards the axis. That is why half the table is zeros, and A is called triangular. This shape tells us where to start.</aside>
+            <aside class="notes" data-markdown>- The graph shows j\_j along the radius, and the dashed curve is the true profile.
+- We raise the noise sigma from zero.
+- With noise we repeat the calculation many times, and the wide band shows how much it changes.
+- It grows towards the axis, because each ring carries the error of the outer rings.
+- To reduce it we use Tikhonov regularisation, which smooths the profile.
+- Its first term asks it to reproduce the image.
+- The second penalises zigzags between rings, with the weight alpha.
+- For each alpha we measure the misfit and the zigzag, and against each other they form an L.
+- Its corner is the best compromise.
+- Another way, pySAT, uses splines, smooth curves made of pieces.
+- ANNAbel uses a neural network, a flexible function fitted to the image.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s13_fbf91c65ea16c4e57f10dac00e1174638ba43c07fe6d5896ee25eb01006ea18e.mp4"
+          data-background-video="workshop_rgb_en_assets/s12_0da5a1af42ab2df02fc2507950cec8d9022e372412ad630092c3cd62116982e6.mp4"
           >
-            <aside class="notes" data-markdown>The first ring to compute is the outer one, because its chord crosses only that ring. The box marks the first row of the table, with a single unknown, and we solve for it. With that ring known, the second chord has only one new unknown. We go on row by row towards the axis. This is onion peeling. It is the same as j_j equals A inverse times P_j, the equation at the top. The column on the right fills with the values, and in the top view the purple shows the emission of each ring. Now we add the noise of a real image.</aside>
+            <aside class="notes" data-markdown>- The steps in order, one line per channel.
+- We average N frames to bring the noise down.
+- Averaging is adding, which keeps Abel valid.
+- We subtract a frame without the flame, which removes the dark level and room light.
+- We divide by the exposure and by each pixel's K\_j, which drops towards the edges because of vignetting.
+- Step 3 rotates and scales with the ruler.
+- Step 4 is Abel.
+- Blue stops here, for lack of signal.
+- In step 5 red and green give T.
+- T is read after inverting and not on the image, because each pixel mixes the light of the whole chord.
+- Step 6 gives f\_s.
+- The exposure and the scale cancel in the ratio, so they only affect f\_s.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s13_d9f52df1821be16943bd0c313a8fee7763db88ecf205dcca1d121a719b77fb77.mp4"
+          data-background-video="workshop_rgb_en_assets/s13_c64aa781ab4b5bce66d28bccd00198b813da46cd0cc9210a096e31e0d3cdc382.mp4"
           >
-            <aside class="notes" data-markdown>The graph shows j_j along the radius, and the dashed curve is the true profile. We raise the noise sigma from zero. With noise we repeat the calculation many times, and the wide band shows how much it changes. It grows towards the axis, because each ring carries the error of the rings outside it. To reduce it we use Tikhonov regularisation. Its first term asks the profile to reproduce the image. The second penalises zigzags between rings, with the weight alpha. For each alpha we measure the misfit and the zigzag left, and plotted against each other they form an L. Its corner is the best compromise and gives the narrow band.</aside>
+            <aside class="notes" data-markdown>- We now have, in each ring, the emission of red, green and blue.
+- This block turns them into a temperature.
+- The ratio of red to green reads the shape of the spectrum, and the soot cancels.
+- We start with Planck in each channel.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s13_f903d56d605dc97a56210d2df2fc73af9443fc1b4772c4e562bb934f1633f6f8.mp4"
+          data-background-video="workshop_rgb_en_assets/s14_5bfea76c33d05131832adb9272ab8628bc703061d759b4e3f66101b08e683f6f.mp4"
           >
-            <aside class="notes" data-markdown>Before inverting, we must find the axis. It is a separate step, needed with any method. The vertical line is the assumed centre in one row. Below are the two halves, each inverted on its own. If the centre is off by half a pixel, they split and the value on the axis changes by about 5 percent. So the axis goes where the two halves look most alike. What still differs is real asymmetry, and averaging the halves, or symmetrising, hides it. There are three ways to invert. This talk uses onion peeling with Tikhonov. pySAT, from 2024, uses splines, smooth curves made of pieces. ANNAbel uses a neural network, a flexible function adjusted until it reproduces the image. Next, the steps in order.</aside>
+            <aside class="notes" data-markdown>- We start with the temperature.
+- The psi\_j curves come back.
+- On top goes Planck, scaled.
+- The thin curves are at 1500, 1900 and 2300 kelvin, and the thick one follows the temperature on the readout.
+- The coloured area of each channel is G\_j, what that channel receives per unit of f\_s.
+- As T rises, Planck tilts towards the blue.
+- The green area grows faster than the red one, and the blue faster still.
+- The bars show G\_j relative to red.
+- So the ratio G\_R over G\_G always falls as T rises, and each ratio gives a single temperature.
+- This is ratio pyrometry.
+- Next we write it as an equation.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s14_f8112a8aae83d4c567a03190e39d622a4f77a078df16163602632dae9d53e606.mp4"
+          data-background-video="workshop_rgb_en_assets/s14_289445689a7f089a5dfe2aca627d6e97ba421c6512d6ecc56bf31c1e8561c023.mp4"
           >
-            <aside class="notes" data-markdown>The steps in order, one line per channel. We average 128 frames to bring the noise down. Averaging is adding, which keeps Abel valid. We subtract a frame without the flame, at the same exposure and gain, which removes the dark level and room light. We divide by the exposure and by each pixel's K_j, which drops towards the edges because of vignetting. Step 3 rotates, centres and scales with the ruler. Step 4 is Abel. Blue stops here, for lack of signal. In step 5 red and green give T, and step 6 gives f_s. The exposure and the scale cancel in the ratio, so they only affect f_s. Step 5 comes next.</aside>
+            <aside class="notes" data-markdown>- In the equation, each j\_j is f\_s times G\_j, and when we divide red by green, f\_s cancels.
+- The exposure cancels too, and only K\_R over K\_G is left from the furnace.
+- The table depends on how E(m) changes with colour.
+- At the base, the C\_2\* molecule emits green light, the ratio drops and T reads high, so we mask that zone.
+- Each ring reads the table backwards, from ratio to temperature.
+- We now have the temperature, the first of the two things we set out to measure.
+- Next we look at it in the two-colour case.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s15_8736842d88b34f1ef8b95134c030c04d35090c873f8d8760e8b6f7220f7b2bda.mp4"
+          data-background-video="workshop_rgb_en_assets/s15_97e19fa0d4a08a154e2ea2523e040f41dc7b0a1f287069378fdfaf7057e8f47a.mp4"
           >
-            <aside class="notes" data-markdown>We now have, in each ring, the emission of red, green and blue. This block turns them into a temperature. The ratio of red to green reads the shape of the spectrum, and the soot cancels. We start with Planck in each channel.</aside>
+            <aside class="notes" data-markdown>- With one colour per channel, lambda R and lambda G, each integral is the value at that colour.
+- At these temperatures the minus one in Planck can be dropped, Wien's approximation, and T comes out with a logarithm.
+- This is the classical formula, two-colour pyrometry, with E(m) at those two colours.
+- Planck brings lambda to the minus 5, and soot absorption adds one more lambda below, so energy gives 6.
+- The camera counts photons, which multiplies by lambda, and 5 is left.
+- With broad channels, the dashed line is the effective wavelength of red, the average of the colours it sees.
+- It drops as T rises.
+- So we use the table.
+- Now, the soot.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s16_d6e16d739efcd2d5d053cb3ed5bc17114bbdf2c551f8aaef3cc429fee0a2e7c8.mp4"
+          data-background-video="workshop_rgb_en_assets/s16_b1b5bf4349f83eb568dbfac74c57296544e5b110a845ec963a840acc56aa67b0.mp4"
           >
-            <aside class="notes" data-markdown>We start with the temperature. The psi_j curves come back, and the dashed line is the cut-off of the infrared filter. On top goes Planck, scaled. The thin curves are at 1500, 1900 and 2300 kelvin, and the thick one follows the temperature on the readout. The coloured area of each channel is G_j, what that channel receives per unit of f_s. As T rises, Planck tilts towards the blue. The green area grows faster than the red one, and the blue faster still. The bars show G_j relative to red. So the ratio G_R over G_G always falls as T rises, and each ratio gives a single temperature. This is ratio pyrometry. Next we write it as an equation.</aside>
+            <aside class="notes" data-markdown>- With T in each ring, we move to the last block, the soot.
+- Each j\_j is f\_s times G\_j(T), so f\_s is j\_j divided by G\_j.
+- Here nothing cancels, so j\_j needs real units.
+- The calibrated image P\_j is a radiance, and for that it needs the absolute K\_j and the exposure time.
+- Abel turns it into emission per cubic metre, with A in metres through delta y.
+- The level of E(m) changes the soot, and its change with colour changes T.
+- f\_s depends strongly on T, because in the visible Planck grows fast with T.
+- RGB-ANNAbel starts with ANNAbel, and a second network gives T and f\_s per point, without the table.
+- The tool offers it, with red and green.
+- Then the calibration.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s16_fce0442999b8468ae5b75a5e6e1ae3512be5d241244910ba1e09147aaea7ed31.mp4"
+          data-background-video="workshop_rgb_en_assets/s17_021c132db083a2076be72965090edec08be598d450bc793789f134084767c538.mp4"
           >
-            <aside class="notes" data-markdown>In the equation, each j_j is f_s times G_j, and when we divide red by green, f_s cancels. The exposure cancels too, and only K_R over K_G is left from the furnace. The table depends on how E(m) changes with colour. If E(m) were the same at every colour, T would move by about 61 kelvin at 1800 kelvin. At the base, the C_2* molecule emits green light, the ratio drops and T reads high, so we mask that zone. Each ring reads the table backwards, from ratio to temperature. We now have the temperature, the first of the two things we set out to measure.</aside>
+            <aside class="notes" data-markdown>- The calibration is left.
+- K\_j is one number per channel that turns camera counts into physical light.
+- It is measured with a blackbody furnace of known temperature.
+- The furnace tells how much more sensitive red is than green, and the absolute scale.
+- We start with its photos.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s17_685b3496342abe57f80bd5b953f566e333e39a1e48eb665dbe47a39714f36b78.mp4"
+          data-background-video="workshop_rgb_en_assets/s18_2c22accaaeeacc13b58f8b46273d18108a59669b8d89bb2aefd3d37eb27f55d2.mp4"
           >
-            <aside class="notes" data-markdown>With one colour per channel, lambda R and lambda G, each integral is the value at that colour. At these temperatures the minus one in Planck can be dropped, Wien's approximation, and T comes out with a logarithm. This is the classical formula, two-colour pyrometry, with E(m) at those two colours. Planck brings lambda to the minus 5, and soot absorption adds one more lambda below, so energy gives 6. The camera counts photons, which multiplies by lambda, and 5 is left. With broad channels, the dashed line is the effective wavelength of red, the average of the colours it sees. From 1500 to 2300 kelvin it drops from 641 to 622 nanometres. So we use the table. The common mistakes come next.</aside>
+            <aside class="notes" data-markdown>- These are real photos of the group's furnace, taken with the laboratory camera.
+- Each row is one temperature, from 800 to 1050 degrees Celsius.
+- Along each row the exposure time changes, the time the sensor collects light.
+- In the drawing, light entering the hole bounces inside until it is absorbed, so the hole emits almost like a blackbody.
+- Its emissivity, the share it emits of what a blackbody would, is close to 1.
+- A thermocouple, an electrical sensor, measures its temperature.
+- As the exposure grows, red reaches the sensor maximum first.
+- We now look at it channel by channel.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s18_a58a2bec91192fcba0006be243e8cbe52be3b61096b62ac6d6746b7d90f2776f.mp4"
+          data-background-video="workshop_rgb_en_assets/s18_f2c0e8ec522ef02007e77c0e270728711dbaaadf1c9fa2d5de5d17f2eb0367d1.mp4"
           >
-            <aside class="notes" data-markdown>Before the soot, four common mistakes with T. The first is reading T from the ratio of the images, without inverting. In the example profile, the dashed curve is the true T, and the coloured one comes from the image ratio. They separate at the centre, because that pixel mixes the light of the edge with that of the axis. The second is treating each channel as a single colour, when its effective wavelength moves with T. The third is believing that T depends on f_s, which cancels. The fourth is believing that T needs no calibration. The channels differ in sensitivity, so the ratio is corrected with K_R over K_G. Now, the soot.</aside>
+            <aside class="notes" data-markdown>- The 1000 degree row splits into three channels.
+- Red reaches the ceiling, 4095 counts, because the furnace emits more in the red.
+- The little blue comes largely from the infrared, above 700 nanometres.
+- We use the plateau, the flat, uniform centre of the hole, minus the dark level D\_j.
+- These photos have no dark frame, so we estimate it outside the hole.
+- The camera has already removed its black level, and the gain stays fixed.
+- The signal grows in proportion to time.
+- K\_j is fitted between 50 and 70 percent of the maximum.
+- We cross out points that are saturated, nearly empty or under 100 microseconds.
+- Blue never reaches that band and is fitted over its whole range.
+- Now we put the temperatures together.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s19_67e373748e0c4da4126d6069fdbba89f1c3b3fee24b1f5fd8977705d3fd2628f.mp4"
+          data-background-video="workshop_rgb_en_assets/s19_f4d88afb5467f22bc90d88ec34185b2402f297587bb479b2caa46dc6b4026562.mp4"
           >
-            <aside class="notes" data-markdown>With the temperature in each ring, the last block is the soot. It needs the emission in physical units, and the calibration gives that scale. The soot is the emission divided by what one unit of soot emits at that temperature. We start with that division.</aside>
+            <aside class="notes" data-markdown>- We put the four temperatures on one graph.
+- The vertical axis is the plateau signal, without the dark level and divided by the exposure.
+- The horizontal axis is the light the channel should receive, computed from its psi\_j curve and from Planck at the thermocouple temperature.
+- If the camera follows the model, each channel falls on a line of slope K\_j, its sensitivity.
+- On a log scale all four temperatures fit, and K\_j is the height of the line.
+- We compute K\_j at 1050 degrees, the highest temperature.
+- Blue is left out, because its signal is largely infrared.
+- The other three temperatures are there to compare.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s20_37143ebde6b849fa568ba660fb26bbaf1a3ecda42d1accd5411a86693186149b.mp4"
+          data-background-video="workshop_rgb_en_assets/s19_c74df21c65527c9efd4d664b5b1f1d80a6d6d676da9454db5dca3686a3b27a23.mp4"
           >
-            <aside class="notes" data-markdown>With T in each ring, we move to the soot. Each j_j is f_s times G_j(T), so f_s is j_j divided by G_j. Here nothing cancels, so j_j needs real units. The calibrated image P_j is a radiance, in watts per square metre and steradian, and for that it needs the absolute K_j and the exposure time. Abel turns it into emission per cubic metre, with A in metres through delta y. G_j has those units per unit of f_s. Red and green give T, so their two values of f_s always agree. Blue could check them. Its K_B does not hold in the flame, because its furnace signal is mostly infrared. Below is an example, E(m) 20 percent larger at every colour.</aside>
+            <aside class="notes" data-markdown>- Now we compare red and green.
+- K\_R over K\_G says how much more sensitive red is than green.
+- It belongs to the camera, so with exact psi\_j curves it would not change with temperature.
+- In these photos it rises from 0.70 at 800 degrees to 0.89 at 1050 degrees.
+- We rule out simple causes.
+- A thermocouple error moves the ratio very little.
+- The pylon colour matrix, which mixes the channels, was off.
+- The signal grows in proportion to the exposure.
+- What is left is the camera response in the infrared, and we look at that now.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s20_92a6339e956c953567a2ec0356029531d6531e53f5a9e5720f66da7f6b76d6e6.mp4"
+          data-background-video="workshop_rgb_en_assets/s19_5e77598137f007dcd25ddc58709fcdfd4334a810ce766c57ba4d7eefa410d8d8.mp4"
           >
-            <aside class="notes" data-markdown>In the example we multiply E(m) by 1.2 at every colour. In the ratio the factor cancels, so T does not change. In f_s it is only in the denominator, and f_s drops by 17 percent. The level of E(m) affects the soot, and its change with colour affects T. f_s depends strongly on T, because in the visible Planck grows fast with T. A 1 percent error in T changes f_s by about 12 percent. RGB-ANNAbel uses the three channels and starts with ANNAbel. A second network gives T and f_s per point, so that f_s times G_j(T) equals each j_j, without the table. The tool offers that network, with red and green, because K_B does not hold in the flame. Then the calibration.</aside>
+            <aside class="notes" data-markdown>- This graph explains that change.
+- The curves are psi\_j on a log scale, and the dashed line is Planck.
+- Above 700 nanometres, in the near infrared, the red curve stays at about one hundredth of the peak.
+- The furnace, much colder than the flame, emits much more there than in the visible, so that small part receives a lot of light.
+- The bars give its share of the signal, larger in a colder body.
+- That part is poorly known, and K\_j is the signal divided by the light the curve predicts.
+- So the error goes into K\_j.
+- That is why K\_R over K\_G changes with temperature.
+- So we compute K\_j with the hottest furnace temperature, the closest to the flame.
+- Next, how the furnace faces the camera.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s21_0eec5579aed7d4372ce5aae2cccc1a67252bccc2885c8cdbcebe2d50f128cc1e.mp4"
+          data-background-video="workshop_rgb_en_assets/s20_9b2b290ffac167e7f4c2d3172bb5fb2cb3c7f62514f76894b9bc59e62a538116.mp4"
           >
-            <aside class="notes" data-markdown>The calibration is left. K_j is one number per channel that turns camera counts into physical light. It is measured with a blackbody furnace of known temperature. The furnace tells how much more sensitive red is than green, and the absolute scale. We start with its photos.</aside>
+            <aside class="notes" data-markdown>- The calibration holds if the camera sees the furnace the way it will see the flame.
+- The camera stays fixed and focused where the flame goes, and the furnace goes in front.
+- Focus, aperture and gain stay the same for both.
+- Refocusing changes the signal by the factor (1 + M) squared, with M the magnification.
+- As the furnace moves back, the image of the hole shrinks and its edge blurs.
+- Less light reaches a smaller image, so the plateau keeps its level and only narrows.
+- The flame is taller than the furnace hole, and the lens darkens the edges, the vignetting.
+- It is corrected with a flat field, a photo of something equally bright everywhere, such as a diffuser or an integrating sphere.
+- Next, what each calibration gives.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s22_678a5d66c61d7feb236f301e160821116c611cab0018f33bdb9be85eff9ba9ec.mp4"
+          data-background-video="workshop_rgb_en_assets/s21_926275d1a09ed39cd98254c130df3ceeb2df87694e25a67ed54c1e90b028fcfe.mp4"
           >
-            <aside class="notes" data-markdown>These are real photos of the group's furnace, taken with the laboratory camera. Each row is one temperature, from 800 to 1050 degrees Celsius. Along each row the exposure time changes, the time the sensor collects light. In the drawing, light entering the hole bounces inside until it is absorbed, so the hole emits almost like a blackbody. Its emissivity, the share it emits of what a blackbody would, is close to 1. A thermocouple, an electrical sensor, measures its temperature. As the exposure grows, red reaches the sensor maximum first. We now look at it channel by channel.</aside>
+            <aside class="notes" data-markdown>- What comes out of the chain depends on how much was calibrated.
+- The absolute one knows K\_R and K\_G, the sensitivities of red and green.
+- It gives T and the soot in parts per million.
+- The relative one knows only K\_R over K\_G.
+- It gives T, because T depends only on the ratio, and a relative soot, which compares points of the flame without giving parts per million.
+- Uncalibrated, T is only a guide and there is no f\_s.
+- One more case.
+- If the exposure or the millimetres per pixel are not confirmed, f\_s stays provisional, because it depends on those values.
+- T does not change, because the ratio does not use them.
+- With these photos we use the absolute one.
+- Next, we test the whole chain.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s22_f364bfff9a34c67c928021da5bd601d2d225373f286aa2b0de97eba2c9b2533a.mp4"
+          data-background-video="workshop_rgb_en_assets/s22_e7c09f7d26db0804aafacf89b94efba25aed43fe940afe59a3991a41406e0b4e.mp4"
           >
-            <aside class="notes" data-markdown>The 1000 degree row splits into three channels. Red reaches the ceiling, 4095 counts, because the furnace emits more in the red. The little blue comes from the infrared, above 700 nanometres. We use the plateau, the flat, uniform centre of the hole, minus the dark level D_j. These photos have no dark frame, so we estimate it outside the hole. The signal grows in proportion to time. K_j is fitted between 50 and 70 percent of the maximum. We cross out points that are saturated, nearly empty or under 100 microseconds. Blue never reaches that band and is fitted over its whole range. Now we put the temperatures together.</aside>
+            <aside class="notes" data-markdown>- With the calibration the chain is complete.
+- Before using it on a real flame we test it on the simulated flame from the start.
+- The top row makes the photos and the bottom row processes them.
+- Since we know the answer, we can measure how wrong the method is.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s23_d44aedf935c8544200632c3a38844e0fd5cb1cc76562b2b81a0bbd12ffc237d2.mp4"
+          data-background-video="workshop_rgb_en_assets/s23_4021e55a46312185fdd1506e7396077e87ff99638a5a5d92b5f2ba5871c89e59.mp4"
           >
-            <aside class="notes" data-markdown>We put the four temperatures on one graph. The vertical axis is the plateau signal, without the dark level and divided by the exposure. The horizontal axis is the light the channel should receive, computed from its psi_j curve and from Planck at the thermocouple temperature. If the camera follows the model, each channel falls on a line of slope K_j. On a log scale all four temperatures fit, and K_j is the height of the line. We compute K_j at 1050 degrees, the highest temperature. Blue is left out, because its signal is almost all infrared. The other three temperatures test the calibration.</aside>
+            <aside class="notes" data-markdown>- In the simulated flame we know the temperature and the soot at every point.
+- The emission of each channel is j\_j equal to f\_s times G\_j(T).
+- We add up the light along each line of sight, with self-absorption, the light the soot absorbs on the way.
+- The inversion does not correct it, which makes the test more realistic.
+- Then comes the camera, with its psi\_j, the furnace K\_j scaled to the aperture of the simulation, and its noise.
+- Each channel is scaled to its own maximum.
+- Out come three images like the ones you will take.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s23_c818fb36d45cf119154b7323207e7aad0de0e5c6271a9db1f8a28c30d20e7df6.mp4"
+          data-background-video="workshop_rgb_en_assets/s23_5ebc422ed383bbec7b15883a9cac69d31e68f063f61da80b9b824142d5b3e30f.mp4"
           >
-            <aside class="notes" data-markdown>The test looks at K_R over K_G, how much more sensitive red is than green. It belongs to the camera and should not change with temperature. This is the ratio test, and it passes if the ratio changes by less than 1 percent. With these photos it changes by 27 percent, and three temperatures fall outside. We rule out the causes one by one. A 5 kelvin thermocouple error moves each K_j by 6.6 percent, and the ratio by only 0.35 percent, because red and green shift almost together. The pylon colour matrix, which mixes the channels, was off. The signal grows in proportion to the exposure. What is left are the psi_j curves, and that is where we look.</aside>
+            <aside class="notes" data-markdown>- The bottom row processes those images as if they were real.
+- Once calibrated, they give P\_j.
+- Abel recovers the emission of each channel in each ring.
+- The red to green ratio gives T, and T gives the soot.
+- Each image averages N photos, and more photos bring the T noise down.
+- The largest T error is on the axis and in the interior, and we see why shortly.
+- Next, the maps.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s23_8986d6fd1c8654686d64a4be9fa7fbee0563978748a8321dec88c4f1c5a54efc.mp4"
+          data-background-video="workshop_rgb_en_assets/s23_3533098960a4f868fdedb6c8c87be3cf7dbe40e99ea889885fa2170475d5815d.mp4"
           >
-            <aside class="notes" data-markdown>On a log scale, above 700 nanometres, the Sony red curve stays at about one hundredth of the peak. The dashed line is Planck, and the furnace emits a lot in that infrared. The bars give the share of signal from that tail, outline for the furnace and fill for the flame. In red it is 20 percent in the furnace and 6 percent in the flame. If the tail is wrong, the furnace K_R fails in the flame. So we scale the red tail by the factor that keeps K_R over K_G equal at the four temperatures. Green stays as Sony gives it. The factor comes out at 0.12 plus or minus 0.02, a much smaller red tail. It must be tested.</aside>
+            <aside class="notes" data-markdown>- Here are the true fields, the recovered ones and the difference.
+- Each error map is recovered minus true.
+- Purple is colder or less soot, and orange the opposite.
+- The dots mark the axis, the interior and the edge, and the mask removes the points with little signal.
+- In the profile, the recovered curve sits below the true one.
+- The RMS error, an average error size, is 28 kelvin in T and 13 percent in the soot.
+- The test uses the same E(m), psi\_j and K\_j to make and process the images, and misses their errors.
+- So the real error will be larger.
+- Next, which zones of these maps can be trusted.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s23_9006afe8d76cb63798e45c54f7e6de79c36f386f6fdb1fa87ca3289e3384f182.mp4"
+          data-background-video="workshop_rgb_en_assets/s24_6fcd8b243974e3b4c4ee0358b2f0e10231c5b2b06d21e3f242e72258d5a8d098.mp4"
           >
-            <aside class="notes" data-markdown>With the corrected tail we repeat the ratio test. We leave one temperature out, fit the tail with the other three, and check the one left out. The circles use the Sony curve and the dots the fitted tail. Now the ratio changes by at most 0.4 percent, and the calibration passes. We also tried other tail shapes, flat, cut off or scaled. All of them fit the furnace equally well and give a different T in the flame. With the thermocouple and the readout, T carries a fixed error, a bias of minus 31 to plus 49 kelvin, reported and not subtracted. Without the tail correction it would be minus 180 to minus 200 kelvin. Next, how the furnace faces the camera.</aside>
+            <aside class="notes" data-markdown>- The T error map tells where to trust the maps.
+- On the axis, the noise weighs, and Abel amplifies it.
+- In the interior, self-absorption weighs.
+- It takes more green than red, so T reads colder.
+- In the orange patch, next to the axis, a ring of soot surrounds that zone, so T reads higher.
+- At the edge and in the cold base there is little signal, and the mask cuts those points in grey.
+- T is read with its uncertainty, and this map gives only the part the test sees.
+- In a real flame, the blue base is chemiluminescence and not soot, so that zone is masked.
+- A blue flame without soot gives no signal for f\_s.
+- Next, the propane flame.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s24_effca14c9eaed2c4aded666ba0234dfc7084937e82b8dad65ac6a9850cfd8043.mp4"
+          data-background-video="workshop_rgb_en_assets/s25_751a2688ae71dd21e3a64de60e58a19b2fb6c08c82a741a3d99ef5e1e1b649f3.mp4"
           >
-            <aside class="notes" data-markdown>The calibration holds if the camera sees the furnace the way it will see the candle. The camera stays fixed and focused where the candle goes, and the furnace goes in front. Another aperture lets in a different amount of light. Refocusing changes the magnification M, how much the image grows on the sensor, and the signal changes by the factor (1 + M) squared. So we do not refocus. As the furnace moves back, the image of the hole shrinks and its edge blurs, the blur circle. Less light arrives, spread over a smaller image. So the plateau keeps its level and only gets narrower.</aside>
+            <aside class="notes" data-markdown>- This is the propane flame.
+- The rectangle marks the zone with signal.
+- The maps come from the neural network, and the previous test, with the table, does not cover it.
+- The network gives more continuous maps, and more points add no measurement, because they evaluate the same function.
+- It still has to be tested in the laboratory.
+- We show only where f\_s is above 5 percent of its maximum, because T is measured where there is soot.
+- In the drawn zone, the medians are 1825 kelvin and 1.30 parts per million.
+- The median depends on the mask.
+- K\_R over K\_G keeps rising with furnace temperature, which does not reach the flame temperature.
+- So the true T could be somewhat higher, with less soot.
+- Next, how you measure it.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s24_20038f3c220612f5c2fc305bc64d2e34046d931718932f3f39a46de2fcabf188.mp4"
+          data-background-video="workshop_rgb_en_assets/s26_187e101fbb7a0a8300e2ef8f250a06686f74d07fe653d5a2f613bfe52c477cff.mp4"
           >
-            <aside class="notes" data-markdown>The last issue is height. The flame is taller than the furnace hole, and the lens darkens the edges of the photo a little, the vignetting. It is corrected with a flat field, a photo of something equally bright everywhere, such as a diffuser or an integrating sphere. The colour of that lamp is that of a blackbody at 2954 kelvin, hotter than the flame, and the furnace is colder. If both sources give the same ratio K_R over K_G, that value holds for the flame, which lies between them. The crossed-out mistake sums up the rule, nothing changes between furnace and flame. Next, what each level of calibration delivers.</aside>
+            <aside class="notes" data-markdown>- In the laboratory you follow this list, in order.
+- One, in pylon record 16 bit RGB, gamma 1, no colour matrix and no automatic settings, because the image must be linear.
+- Two, focus, aperture and gain stay fixed.
+- Three, the furnace at several temperatures and times, with dark frames.
+- Four, the tool computes K\_j with the hottest one.
+- Five, a flat field and a ruler in the flame plane.
+- Six, the flame, N frames, and its background.
+- Seven, folders and files with the names the page asks for, because it reads the temperature and the time from them.
+- A filter that cuts the infrared would improve the result, and it is not mandatory.
+- Careful, the furnace and the flame are hot.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s25_f385bdd7a0bbd57673958aa5e172ac8211e70ba707c504639fdf9fc751c1c00f.mp4"
+          data-background-video="workshop_rgb_en_assets/s26_1a00a1faea53eddfdef48e6a3da7d75f5719c2f7184d510f1bbb20d46b9ed88e.mp4"
           >
-            <aside class="notes" data-markdown>The absolute calibration knows K_R and K_G and gives T and the soot in parts per million. Blue is not used, because K_B failed the test. The relative one knows only K_R over K_G, and it serves if the furnace emissivity is uncertain, because emissivity multiplies every channel alike and cancels. It gives T and a relative soot. Uncalibrated, with the nominal psi_j, it gives a T and no soot. That T can carry a large bias and is only a guide. Without a confirmed exposure time or millimetres per pixel, the soot is provisional. With these photos the test passes once the tail is corrected. So the camera does measure the temperature and the soot of the flame. The chain still has to be tested.</aside>
+            <aside class="notes" data-markdown>- You process the photos on the web page, with its address below.
+- The capture shows step 1 with the example.
+- The red to green sensitivity is K\_R over K\_G, with the row used marked.
+- Below, it says how much the computed T of a flame changes between the two hottest furnace temperatures.
+- If it changes too much, the page warns you.
+- The flame flickers, and the bright frames weigh more in the average, which biases T and the soot.
+- Shield it from draughts.
+- To close, the assumptions of the whole chain.</aside>
         </section>
         <section
           data-background-size='contain'
           data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s26_9479577dd9574079177fdd2c995023c5bdb8524c442a5b9a227167bc0a058154.mp4"
+          data-background-video="workshop_rgb_en_assets/s27_5c74797cdf0ff9f430a2db7d2279824bd19a11a36b250805aceb5b68f2eaaf85.mp4"
           >
-            <aside class="notes" data-markdown>With the calibration the chain is complete. Before using it on a real flame we test it on the simulated flame from the start. The top row makes the photos and the bottom row processes them. Since we know the answer, we can measure how wrong the method is.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s27_a456c913e34fd0093357f346918c449875e3fd242529b1ee6f2a3b993e1a0e9b.mp4"
-          >
-            <aside class="notes" data-markdown>In the simulated flame we know the temperature and the soot at every point. The emission of each channel is j_j equal to f_s times G_j(T). We add up the light along each line of sight, with self-absorption, the light the soot absorbs on the way. The inversion does not correct it, which makes the test more realistic. Then comes the camera, with the real psi_j, the furnace K_j and its noise. At f 11, with K_j scaled to that aperture, the exposure is 208 microseconds. Each channel is scaled to its own maximum. Out come three images like the ones you will take.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s27_d647b4ba7710e67fc6ad651cabc8daa03c9ca2351da080e9d6db7eba53964cb6.mp4"
-          >
-            <aside class="notes" data-markdown>The bottom row processes those images as if they were real. Once calibrated, they give P_j. Abel recovers the emission of each channel in each ring. The red to green ratio gives T, and T gives the soot. Each image averages 128 photos, the fewest that keep the T noise under 10 kelvin at a height of 30 millimetres. The largest T error is on the axis and in the interior. Abel amplifies the noise towards the axis, and light from the centre loses more green than red on its way out, so it reads colder. Next, the maps.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s27_25fa197c72eeed930755b2d475e7334a125290224e4b99f4d2a0c8a96ec34555.mp4"
-          >
-            <aside class="notes" data-markdown>Here are the true fields, the recovered ones and the difference. Each error map is recovered minus true. Purple is colder or less soot, and orange the opposite. In the profile at 30 millimetres, the recovered curve sits below the true one near the axis. The RMS error, an average error size, is 28 kelvin in T and 13 percent in the soot. The limit set before the test was 50 kelvin and 25 percent, so it passes. Without self-absorption it would be 8 kelvin. The test uses the same E(m), psi_j and K_j to make and process the images, and misses their errors. So 28 kelvin is a lower bound on the error. Next, where it fails.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s28_fc38664e6dca86510dd6ce1c170e2c1619cac6cc0dd04bb92a49d0bc21afc689.mp4"
-          >
-            <aside class="notes" data-markdown>The T error map stands alone. On the axis and in the interior, Abel noise and self-absorption dominate. The edge and the cold base have little signal. The mask removes the points where the sum of the channels falls below 2 percent of its maximum. The first common mistake is giving T at the edge or on the axis without its uncertainty, which you read from this map. The second is measuring in the blue zone at the base, where the light is chemiluminescence. The third is looking for soot in a blue Bunsen flame, which has none. You enrich the mixture or use the candle. Now, the laboratory flame.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s29_95c70b69cbae2ed4349bb4ab21d2f9e9ab44b967e13a5a8016930fcc39666739.mp4"
-          >
-            <aside class="notes" data-markdown>This is the laboratory flame, processed on the web page. We use the 200 microseconds shot, the longest one without saturation. The rectangle marks the zone with signal, with its maps on the right. The median temperature is 2110 kelvin, and nine points in ten lie from 1990 to 2240 kelvin. That is high for a sooting flame, and it depends on the infrared tail calibrated with the furnace. Without that correction it would be 1830 kelvin. The median soot volume fraction is 0.13 parts per million. Next, how you measure it.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s30_bdda596421b1105cb6b3a92251ef0324a06aa1b908d14e7b4c2799ea46a1f82f.mp4"
-          >
-            <aside class="notes" data-markdown>In the laboratory you follow this list, in order. One, in pylon record 16 bit RGB, gamma 1, no colour matrix and no automatic settings. Two, focus, aperture and gain stay fixed, starting at f 11 and about 220 microseconds. Three, an 850 nanometre LED checks the infrared tail, and you should see a few thousandths of the peak of the signal. Four, the furnace at several temperatures and times, with dark frames. Five, the tool fits the tail and runs the test. Six, a flat field and a ruler in the flame plane. Seven, the candle, 128 frames, and its background. Eight, folders and files named as in the example, because the page reads the temperature and the time from them. Careful, the furnace and the flame are hot.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s30_dc65dbe08f70574f94948d8bd38a33ccf9696f5e427db27dcebdd7b174d03409.mp4"
-          >
-            <aside class="notes" data-markdown>You process the photos on the web page, with its address below. The capture shows the ratio test, with each temperature left out, in percent. It passes if all stay under 1 percent, and here the worst is 0.4 percent. With T you report its bias, minus 31 to plus 49 kelvin. The candle flickers, and the bright frames weigh more in the average, which biases T and the soot. Shield it from draughts. To close, the assumptions of the whole chain.</aside>
-        </section>
-        <section
-          data-background-size='contain'
-          data-background-color="#0d1117"
-          data-background-video="workshop_rgb_en_assets/s31_287b38da176cdab3af1da635ff293c8e06cb90bf430ccac74f26c187a6b1474a.mp4"
-          >
-            <aside class="notes" data-markdown>Each block shows what it assumes. The flame is symmetric and steady on average. The soot is at the gas temperature and its particles are small, as Rayleigh and RDG-FA require. The flame lets almost all its light escape, with a cold bias that we report, and scattered light is neglected. The sensor is linear. The calibration fixes focus, aperture, gain and a tail shape. Abel needs a centred axis and the flame in focus. The temperature assumes one shape of E(m) and no chemiluminescence, and the soot also assumes the value of E(m). So an ordinary colour camera can measure the temperature and the soot, as long as the calibration passes the ratio test. See you in the laboratory.</aside>
+            <aside class="notes" data-markdown>- Each block shows what it assumes.
+- The flame is steady on average.
+- The soot is at the gas temperature and its particles are small, as Rayleigh and RDG-FA require.
+- Almost all the light escapes, with a reported cold bias, and scattered light is neglected.
+- The sensor is linear.
+- The calibration fixes focus, aperture and gain, and the furnace K\_j holds in the flame.
+- Abel assumes an axisymmetric and centred flame, in focus and with parallel rays.
+- The temperature assumes one shape of E(m) and no chemiluminescence, and the soot also assumes the value of E(m).
+- If these assumptions hold, a colour camera can measure the temperature and the soot.
+- See you in the laboratory.</aside>
         </section>
       </div>
     </div>

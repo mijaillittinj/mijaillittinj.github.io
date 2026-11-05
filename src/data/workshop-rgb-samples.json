@@ -3,15 +3,15 @@
  "sets": [
   {
    "file": "horno_ejemplo.zip",
-   "bytes": 14230347,
-   "sha256": "f19393e9a45be9270803acb8363bb9f97ab72a52805c8f8e4aeb7715548c268e",
+   "bytes": 14230277,
+   "sha256": "4904249dd41ce91229fe7befbe46b21443cd85bfb19de98103b2c9e15533a0e6",
    "images": 20,
    "camera": "a2A1920-160ucPRO"
   },
   {
    "file": "llama_laboratorio.zip",
-   "bytes": 1761269,
-   "sha256": "644dda118073e4ace762fb910c6aaf5b015dd5230449e946eef7c636b0d4a5ba",
+   "bytes": 1674879,
+   "sha256": "4aba8300a2ced50c38a57d9a7cbd9f85dd0cc6b9ea95beb697cfde712e6f6fe6",
    "images": 2,
    "camera": "a2A1920-160ucPRO",
    "preset": {
@@ -41,5 +41,5 @@
    }
   }
  ],
- "total_bytes": 22617409
+ "total_bytes": 22530949
 }

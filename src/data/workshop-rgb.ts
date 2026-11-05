@@ -106,13 +106,15 @@ export function tx(s: string): string {
 }
 
 /** Share of the signal above 700 nm per channel at the oven and at a flame, as a small table (GB3r1-estudiante-32). */
+/** Share of the signal above 700 nm with the nominal ψ_j (qa/hottest/py_check.json, the same as the column of step 1 Options). */
 export function tailTable(lang: Lang): { head: string[]; rows: string[][] } {
   const es = lang === 'es';
   return {
     head: [es ? 'Cuerpo negro a' : 'Blackbody at', 'R', 'G', 'B'],
     rows: [
-      [es ? '1273 K, horno' : '1273 K, oven', ck('tail700_R_1273', lang), ck('tail700_G_1273', lang), ck('tail700_B_1273', lang)],
-      [es ? '1800 K, llama' : '1800 K, flame', ck('tail700_R_1800', lang), ck('tail700_G_1800', lang), ck('tail700_B_1800', lang)],
+      [es ? '1073 K, horno' : '1073 K, oven', '38 %', '36 %', '78 %'],
+      [es ? '1323 K, horno' : '1323 K, oven', '17 %', '14 %', '49 %'],
+      [es ? '1800 K, llama' : '1800 K, flame', '6 %', '4 %', '15 %'],
     ],
   };
 }

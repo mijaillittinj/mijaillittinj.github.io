@@ -9,7 +9,7 @@
 import type { ToWorker, FromWorker, PsiMsg } from './protocol.ts';
 import {
   loadFrame, thumbnail, previewPlanes, seriesHot, ovenFrameOf, analyseSeries, plateauAt, runOvenFit, frameSignal, fitDarkLine, darkLevel,
-  buildVignette, runSphere, frameAsym, prepareFlame, applyHot, runAbel, runLcurve, runTfs, runBand, bandFor, rulerShift, tailGrid, readTailSignals,
+  buildVignette, runSphere, frameAsym, prepareFlame, applyHot, runAbel, runLcurve, runTfs, runBand, runRefine, bandFor, rulerShift,
   type Frame, type FrameInfo, type LoadOptions, type Prepared, type AbelOut, type AbelRun, type EncOverride,
 } from './engine.ts';
 import { sha256Hex } from './sha256.ts';
@@ -167,13 +167,6 @@ async function handle(m: ToWorker, progress: (d: number, t: number) => void): Pr
           progress(++k, total);
         }
       }
-      // IR tail, read again at the sensor grid as calibration.py (ovenread.ts), one frame at a time and not cached
-      const full = async (id: string) => { const it = items.get(id); if (!it) throw new Error('missing_item'); return loadFrame(await it.blob.arrayBuffer(), { ...opts, group: false }, it.enc); };
-      const strips = new Map(signals.map((sg) => [`${sg.tC}|${sg.texpUs}`, sg.strip]));
-      let tailIn: Awaited<ReturnType<typeof readTailSignals>> | null = null;
-      try {
-        tailIn = await readTailSignals(series.map((s) => ({ tC: s.tC, texpUs: s.ids.map((f) => f.texpUs), max12: s.ids.map((f) => max12[f.id]), load: (i: number) => full(s.ids[i].id) })), ceil12, strips, () => progress(++k, total));
-      } catch { tailIn = null; }
       let darkLine: Rgb<{ a: number; b: number }> | undefined;
       if (m.darkMode === 'files' && darks.length) {
         const lv = [];
@@ -183,7 +176,7 @@ async function handle(m: ToWorker, progress: (d: number, t: number) => void): Pr
       const p = psiOf(m.psi);
       const band = bandFor(p.lamNm, p.psi, m.emLaw);
       const pe = m.psiEnergy ? psiOf(m.psiEnergy) : null;
-      const res = runOvenFit({ signals, band, bandEnergy: pe ? bandFor(pe.lamNm, pe.psi, m.emLaw) : null, eps: m.eps, sigmaT: m.sigmaT, ceil12, darkMode: m.darkMode, darkLine, perT: m.perT, calibrateAt: m.calibrateAt, tailGrid: tailGrid(p.lamNm, p.psi, m.emLaw), tailSignals: tailIn?.signals ?? null, tailRead: tailIn?.read ?? null });
+      const res = runOvenFit({ signals, band, bandEnergy: pe ? bandFor(pe.lamNm, pe.psi, m.emLaw) : null, eps: m.eps, sigmaT: m.sigmaT, ceil12, darkMode: m.darkMode, darkLine, perT: m.perT, calibrateAt: m.calibrateAt });
       // hot pixels of the calibration, as working pixel index·3 + channel of the top series grid
       const top = series.find((s) => s.tC === res.fit.Ttop - 273.15) ?? series[series.length - 1];
       const hot: number[] = [];
@@ -320,6 +313,11 @@ async function handle(m: ToWorker, progress: (d: number, t: number) => void): Pr
       const p = psiOf(m.psi);
       const band = bandFor(p.lamNm, p.psi, m.tfs.emLaw);
       return runBand(prepared, band, { n: m.n, seed: m.seed, sigmaT: m.sigmaT, Tcal: m.Tcal, eps: m.eps, run: m.run as AbelRun, tfs: m.tfs, absolute: true, sKrel: m.sKrel, scaleRel: m.scaleRel });
+    }
+    case 'refine.run': {
+      if (!prepared) throw new Error('no_projections');
+      const p = psiOf(m.psi);
+      return runRefine(prepared, bandFor(p.lamNm, p.psi, m.tfs.emLaw), m, progress);
     }
   }
 }

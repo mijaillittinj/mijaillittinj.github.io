@@ -1,7 +1,7 @@
 ---
 /**
  * Printable lab guide of the RGB pyrometry workshop. Spec: manim/WEB_SPEC.md §3.3, with the director's
- * decisions in manim/AGENT_BRIEF.md (pylon 16-bit RGB format, oven calibration, infrared tail calibrated with the oven, no short-pass filter).
+ * decisions in manim/AGENT_BRIEF.md (pylon 16-bit RGB format, oven calibration with K_j of the hottest temperature, no short-pass filter).
  * Figures come from data/checks.json through src/data/workshop-rgb-checks.json.
  * The PDF in files/ is printed from this page by scripts/make-workshop-rgb-guide-pdf.sh.
  */
@@ -27,7 +27,7 @@ const T = es
       planText: 'El orden es seguridad, montaje, foco, ajustes de la cámara, prueba de exposición con la llama, horno de la temperatura más baja a la más alta, oscuros, llama, regla y revisión. El horno se sube de temperatura y no se baja, porque calentar es más rápido que enfriar. La duración de cada paso está al lado de su título y no cuenta el tiempo que tarda el horno en estabilizarse.',
       minimum: 'Si el tiempo no alcanza, esto basta para medir',
       minimumList: [
-        'el horno a tres temperaturas, hasta la más alta, para calibrar la cola,',
+        'el horno a dos temperaturas o más, con la más alta posible, para calibrar y comparar,',
         'oscuros con el t_exp de la llama,',
         'diez cuadros de la llama y su fondo,',
         'la imagen de la regla.',
@@ -44,7 +44,7 @@ const T = es
       planText: 'The order is safety, setup, focus, camera settings, exposure test on the flame, oven from the lowest to the highest temperature, dark frames, flame, ruler and check. The oven goes up in temperature and never down, because heating is faster than cooling. The duration of each step is next to its title and does not include the time the oven needs to settle.',
       minimum: 'If time runs short, this is enough to measure',
       minimumList: [
-        'the oven at three temperatures, up to the highest, to calibrate the tail,',
+        'the oven at two temperatures or more, with the highest possible, to calibrate and compare,',
         'dark frames at the flame t_exp,',
         'ten flame frames and their background,',
         'the ruler image.',
@@ -125,13 +125,12 @@ const steps: Step[] = es
           'Anoten en la tabla de abajo la distancia de trabajo, el número f, la ganancia y el filtro que usen.',
         ] },
       ] },
-      { id: 'cola', h: 'Cola infrarroja de la cámara y prueba de la razón', blocks: [
-        { p: `El motivo es la respuesta de la cámara sobre 700 nm. En las curvas del fabricante esa cola es pequeña. Un cuerpo a 1273 K emite sobre todo en el infrarrojo, así que a la temperatura del horno esa cola pequeña lleva una parte grande de la señal. La tabla da, con las curvas nominales, la parte de la señal de cada canal que viene de sobre 700 nm. El horno y la llama ven entonces bandas distintas, y la calibración del horno no se traslada a la llama.` },
+      { id: 'cola', h: 'Temperatura del horno usada en la calibración', blocks: [
+        { p: 'El horno es mucho más frío que la llama. En un cuerpo frío una parte grande de la señal viene del infrarrojo cercano, sobre 700 nm. La tabla da esa parte con las curvas nominales de la cámara, no es una medición. Esa parte de la curva de Sony se conoce mal. K_j es la señal medida dividida por la luz que predice la curva, así que el error de la curva pasa a K_j, y pesa más en un cuerpo frío. Por eso K_R/K_G medido cambia con la temperatura del horno, y se usa la temperatura más caliente, la más parecida a la llama.' },
         { table: tailTable('es') },
-        { p: `Las fotos del horno del grupo muestran ese efecto. Con las curvas nominales, K_R/K_G cambia ${k('oven_KRKG_drift')} entre 800 y 1050 °C, y llevado a una llama de 1800 K el error de T sin corregir queda en ${k('oven_dT_flame_top')}. La matriz de color de pylon estaba apagada en esas fotos, así que la causa está en la respuesta espectral.` },
-        { p: 'En el laboratorio no hay filtro de paso corto, y no se pone otro filtro delante del lente. La cola se calibra con el horno. Con tres o más temperaturas la herramienta ajusta un factor sobre la cola de ψ_R sobre 700 nm, calcula K_j con esa curva y muestra la prueba de la razón dejando fuera una temperatura cada vez. La calibración pasa si K_R/K_G deriva menos de 1 % en la temperatura que queda fuera. La prueba más exigente es dejar fuera la más fría.' },
-        { p: `En la herramienta la corrección está en la etapa 1a.7, bajo la prueba de la razón, y viene encendida. Con las fotos del grupo el factor da s_R = ${k('oven_tail_scale_R')} ${ckCond('oven_tail_scale_R', 'es')}${sk('oven_tail_scale_R')}, K_R/K_G cambia ${k('oven_tailcal_loo_KRKG')} como máximo en la temperatura que queda fuera, y la prueba de la razón llevada a una llama de 1800 K baja de cientos de kelvin a ${k('oven_tailcal_ratio_test_loo_dT')}. Con otra óptica, un filtro de paso corto de 700 nm delante del lente también resolvería el problema.` },
-        { p: 'Por eso fotografíen el horno a tres temperaturas o más, hasta la más alta. Si la prueba pasa, informen T con el sesgo residual que da la herramienta, que depende de la forma de la cola y no se resta. El canal azul no pasa la prueba y queda fuera de T y de f_s. Anoten en el registro el factor de la cola y el resultado de la prueba.' },
+        { p: 'Con las fotos del grupo, K_R/K_G da 0,70, 0,80, 0,87 y 0,89 a 800, 900, 1000 y 1050 °C. La matriz de color de pylon estaba apagada en esas fotos.' },
+        { p: 'La herramienta calcula K_R, K_G y K_B a la temperatura más caliente, muestra K_R/K_G a cada temperatura y dice cuánto cambia una llama a 1800 K entre las dos más calientes. Con las fotos del grupo son unos 37 K. Si pasa de 100 K, avisa y conviene revisar la zona plana. K_R/K_G sigue subiendo con la temperatura, y el horno no llega a la temperatura de la llama, así que la T real podría ser algo mayor, y entonces f_s sería menor.' },
+        { p: 'Por eso fotografíen el horno a dos temperaturas o más, con la más alta posible. En el laboratorio no hay filtro de paso corto, y no se pone otro filtro delante del lente. T y f_s usan el rojo y el verde. Anoten en el registro la temperatura usada y el cambio de la llama a 1800 K.' },
       ] },
       { id: 'foco', h: 'Foco y diafragma', min: '5', blocks: [
         { p: 'Enfoquen sobre la llama, o sobre una aguja puesta en el eje del quemador, y fijen el anillo de foco y el de diafragma con cinta. No se tocan desde ese momento hasta terminar la llama. Cambiar el diafragma invalida la calibración, y reenfocar la cambia en unos pocos por ciento.' },
@@ -169,7 +168,7 @@ const steps: Step[] = es
       ] },
       { id: 'regla', h: 'Regla en el plano de la llama', min: '5', blocks: [
         { p: 'Con la llama apagada y el quemador frío, pongan una regla en el eje de la llama, en el plano que contiene el eje y mira a la cámara. Iluminen con la luz de la sala y usen un t_exp más largo, sin tocar foco ni diafragma. Las marcas que se usen para medir deben estar separadas al menos 10 mm. Guárdenla como regla.tiff en la carpeta de la sesión. Esta imagen da los milímetros por píxel.' },
-        { p: 'La regla tiene bordes nítidos, y con ella la etapa 3 de la herramienta prueba el corrimiento de R y B respecto del verde. Enfoquen bien, eviten que sature y dejen marcas a la vista en las dos direcciones. Si la prueba dice que conviene, marquen «Centrar R y B» en la etapa 3. Si dice que no o no decide, déjenlo apagado.' },
+        { p: 'La regla tiene bordes nítidos, y con ella el paso 2 de la herramienta prueba el corrimiento de R y B respecto del verde. Enfoquen bien, eviten que sature y dejen marcas a la vista en las dos direcciones. Si la prueba dice que conviene, marquen «Centrar los canales rojo y azul» en Opciones del paso 2. Si dice que no o no decide, déjenlo apagado. Con la escala confirmada, la regla queda en una línea, y «Cambiar» la abre con sus marcas.' },
       ] },
       { id: 'nombres', h: 'Nombres de archivo y registro', blocks: [
         { p: 'La herramienta lee la temperatura del horno y el tiempo de exposición desde los nombres, así que no hay que escribirlos a mano. El nombre de la carpeta <T>C/ lleva la temperatura del termopar en °C y el del archivo <t_exp>exp.tiff el tiempo de exposición en microsegundos. Creen la carpeta antes de cada serie y fijen en pylon la carpeta de destino.' },
@@ -179,7 +178,7 @@ const steps: Step[] = es
         { table: { head: ['carpeta', 'T_termopar_C', 'texp_us', 'ganancia_dB', 'numero_f', 'hora', 'nota'], rows: [['horno/800C', '801', '20000', '0', '', '10:42', ''], ['', '', '', '', '', '', ''], ['', '', '', '', '', '', ''], ['', '', '', '', '', '', '']] } },
       ] },
       { id: 'revision', h: 'Revisión rápida en el laboratorio', min: '2 min por serie', blocks: [
-        { p: 'Después de cada serie, carguen la carpeta en la revisión rápida de la herramienta. En segundos muestra por canal el porcentaje de la escala, los píxeles saturados y los oscuros que valen 0, y si los nombres se entienden.' },
+        { p: 'Después de cada serie, carguen la carpeta en «Revisar una imagen suelta», en Opciones del paso 1 de la herramienta. En segundos muestra por canal el porcentaje de la escala, los píxeles saturados y los oscuros que valen 0, y si los nombres se entienden.' },
         { ul: [
           'Si hay saturados en la zona central de la abertura o en la llama, bajen t_exp y repitan esa toma.',
           'Si muchos píxeles del oscuro valen 0, suban BlackLevel y repitan los oscuros.',
@@ -219,13 +218,12 @@ const steps: Step[] = es
           'Write the working distance, f-number, gain and filter you use in the table below.',
         ] },
       ] },
-      { id: 'cola', h: 'Infrared tail of the camera and ratio test', blocks: [
-        { p: `The reason is the camera response above 700 nm. In the manufacturer’s curves that tail is small. A body at 1273 K emits mostly in the infrared, so at oven temperature this small tail carries a large share of the signal. The table gives, with the nominal curves, the share of the signal of each channel that comes from above 700 nm. The oven and the flame then see different bands, and the oven calibration does not carry over to the flame.` },
+      { id: 'cola', h: 'Oven temperature used in the calibration', blocks: [
+        { p: 'The oven is much colder than the flame. In a cold body a large part of the signal comes from the near infrared, above 700 nm. The table gives that part with the nominal camera curves, it is not a measurement. That part of the Sony curve is poorly known. K_j is the measured signal divided by the light the curve predicts, so the error of the curve goes into K_j, and it weighs more in a cold body. That is why the measured K_R/K_G changes with the oven temperature, and the hottest temperature, the closest to the flame, is used.' },
         { table: tailTable('en') },
-        { p: `The group’s oven photographs show this effect. With the nominal curves, K_R/K_G changes by ${k('oven_KRKG_drift')} between 800 and 1050 °C, and carried to a flame at 1800 K the uncorrected error in T is ${k('oven_dT_flame_top')}. The pylon colour matrix was off in those photographs, so the cause lies in the spectral response.` },
-        { p: 'The laboratory has no short-pass filter, and no other filter goes in front of the lens. The tail is calibrated with the oven. With three or more temperatures the tool fits one factor on the tail of ψ_R above 700 nm, computes K_j with that curve and shows the ratio test leaving one temperature out at a time. The calibration passes if K_R/K_G drifts less than 1 % at the temperature left out. The hardest test is leaving out the coldest one.' },
-        { p: `In the tool the correction is in stage 1a.7, under the ratio test, and it is on by default. With the group’s photographs the factor gives s_R = ${k('oven_tail_scale_R')} ${ckCond('oven_tail_scale_R', 'en')}${sk('oven_tail_scale_R')}, K_R/K_G changes by ${k('oven_tailcal_loo_KRKG')} at most at the temperature left out, and the ratio test carried to a flame at 1800 K drops from hundreds of kelvin to ${k('oven_tailcal_ratio_test_loo_dT')}. With other optics, a 700 nm short-pass filter in front of the lens would also solve the problem.` },
-        { p: 'So photograph the oven at three temperatures or more, up to the highest. If the test passes, report T with the residual bias the tool gives, which depends on the tail shape and is not subtracted. The blue channel fails the test and is left out of T and f_s. Write the tail factor and the test result in the log.' },
+        { p: 'With the group’s photographs, K_R/K_G is 0.70, 0.80, 0.87 and 0.89 at 800, 900, 1000 and 1050 °C. The pylon colour matrix was off in those photographs.' },
+        { p: 'The tool computes K_R, K_G and K_B at the hottest temperature, shows K_R/K_G at each temperature and says how much a flame at 1800 K changes between the two hottest. With the group’s photographs that is about 37 K. Over 100 K it warns, and the flat zone should be checked. K_R/K_G keeps rising with temperature, and the oven does not reach the flame temperature, so the real T could be somewhat higher, and then f_s would be lower.' },
+        { p: 'So photograph the oven at two temperatures or more, with the highest possible. The laboratory has no short-pass filter, and no other filter goes in front of the lens. T and f_s use red and green. Write the temperature used and the change of the flame at 1800 K in the log.' },
       ] },
       { id: 'foco', h: 'Focus and aperture', min: '5', blocks: [
         { p: 'Focus on the flame, or on a needle placed on the burner axis, and tape the focus ring and the aperture ring. Leave them alone until the flame series is done. Changing the aperture invalidates the calibration, and refocusing changes it by a few per cent.' },
@@ -263,7 +261,7 @@ const steps: Step[] = es
       ] },
       { id: 'regla', h: 'Ruler in the flame plane', min: '5', blocks: [
         { p: 'With the flame out and the burner cold, place a ruler on the flame axis, in the plane that contains the axis and faces the camera. Light it with the room lights and use a longer t_exp, without touching focus or aperture. The marks used for measuring must be at least 10 mm apart. Save it as regla.tiff in the session folder. This image gives the millimetres per pixel.' },
-        { p: 'The ruler has sharp edges, and with it stage 3 of the tool tests the shift of R and B against the green. Focus well, keep it unsaturated and show marks in both directions. If the test says it helps, tick «Centre R and B» in stage 3. If it says no or does not decide, leave it off.' },
+        { p: 'The ruler has sharp edges, and with it step 2 of the tool tests the shift of R and B against the green. Focus well, keep it unsaturated and show marks in both directions. If the test says it helps, tick «Centre the red and blue channels» in step 2 Options. If it says no or does not decide, leave it off. With the scale confirmed, the ruler stays in one line, and «Change» opens it with its marks.' },
       ] },
       { id: 'nombres', h: 'File names and log', blocks: [
         { p: 'The tool reads the oven temperature and the exposure time from the names, so nothing has to be typed by hand. The folder name <T>C/ holds the thermocouple temperature in °C and the file name <t_exp>exp.tiff the exposure time in microseconds. Create the folder before each series and set it as the destination in pylon. Folder names and the column names of registro.csv stay in Spanish, as in the tree and the template (horno is the oven, llama the flame, fondo the background, oscuro the dark frames, regla the ruler). The tool also accepts flame, background, dark, sphere and flat as folder names.' },
@@ -273,7 +271,7 @@ const steps: Step[] = es
         { table: { head: ['carpeta', 'T_termopar_C', 'texp_us', 'ganancia_dB', 'numero_f', 'hora', 'nota'], rows: [['horno/800C', '801', '20000', '0', '', '10:42', ''], ['', '', '', '', '', '', ''], ['', '', '', '', '', '', ''], ['', '', '', '', '', '', '']] } },
       ] },
       { id: 'revision', h: 'Quick check in the lab', min: '2 min per series', blocks: [
-        { p: 'After each series, load the folder into the quick check of the tool. Within seconds it shows for each channel the percentage of full scale, the saturated pixels and the dark pixels at 0, and whether the names are understood.' },
+        { p: 'After each series, load the folder into «Check a single image», in step 1 Options of the tool. Within seconds it shows for each channel the percentage of full scale, the saturated pixels and the dark pixels at 0, and whether the names are understood.' },
         { ul: [
           'If there are saturated pixels in the centre of the aperture or in the flame, shorten t_exp and repeat that shot.',
           'If many dark pixels are 0, raise BlackLevel and repeat the dark frames.',

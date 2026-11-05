@@ -6,9 +6,9 @@
 import { readFileSync } from 'node:fs';
 import { readTiff, detectEncoding } from '../src/lib/workshop-rgb/tiff.ts';
 import { saturationMask } from '../src/lib/workshop-rgb/frames.ts';
-import { makeBand, buildPsi, bandX, CH } from '../src/lib/workshop-rgb/radiometry.ts';
+import { bandG, makeBand, buildPsi, bandX, CH } from '../src/lib/workshop-rgb/radiometry.ts';
 import { DEFAULT_PRESET } from '../src/lib/workshop-rgb/presets.ts';
-import { findAperture, proposePlateau, frameSignal, fitOven, choosePlateauFrame, fitDarkLine, throughOrigin, type OvenFrame, type FrameSignal } from '../src/lib/workshop-rgb/oven.ts';
+import { compareHottest, findAperture, proposePlateau, frameSignal, fitOven, choosePlateauFrame, fitDarkLine, throughOrigin, type OvenFrame, type FrameSignal } from '../src/lib/workshop-rgb/oven.ts';
 import { decideCalibration } from '../src/lib/workshop-rgb/calstate.ts';
 
 let fails = 0;
@@ -183,4 +183,20 @@ check('stray light of the strip as a percentage of the plateau (stray_light over
   console.log(`      slope convention on the same points, ratio test ${fs.ratioTestTop.map((x) => `${x.dT >= 0 ? '+' : ''}${x.dT.toFixed(0)} K at ${x.tC} °C`).join(', ')} (difference of the K_j(T) estimator)`);
 }
 
+// calibration with the hottest oven temperature (professor, 2026-11-03)
+{
+  const lam = Float64Array.from({ length: 401 }, (_, i) => 400 + i);
+  const psi = { R: lam.map((l) => Math.exp(-(((l - 600) / 40) ** 2))), G: lam.map((l) => Math.exp(-(((l - 530) / 40) ** 2))), B: lam.map((l) => Math.exp(-(((l - 460) / 40) ** 2))) };
+  const bd = makeBand(lam, psi);
+  const row = (tC: number, K: number) => ({ tC, TK: tC + 273.15, n: 3, a: 0, b: 1, sb: 0, B: 1, K, sK: 0, linMaxPct: 0, tail: 0 });
+  const mk = (rows: [number, number][]) => ({ channels: { R: { perT: rows.map(([t, q]) => row(t, q)) }, G: { perT: rows.map(([t]) => row(t, 1)) } } }) as never;
+  const c = compareHottest(mk([[800, 0.7], [1000, 0.87], [1050, 0.89]]), bd);
+  const r = (T: number) => bandG(bd, 'R', T) / bandG(bd, 'G', T);
+  check('compareHottest uses the hottest and compares with the next', c.tUsed === 1050 && c.tNext === 1000 && c.rows.length === 3);
+  check('compareHottest, the flame reads lower with the smaller K_R/K_G and keeps the measured ratio', c.shiftK! < 0 && Math.abs((0.87 * r(1800 + c.shiftK!)) / (0.89 * r(1800)) - 1) < 1e-8, `(${c.shiftK!.toFixed(1)} K)`);
+  const one = compareHottest(mk([[1050, 0.89]]), bd);
+  check('compareHottest with one temperature gives no comparison', one.shiftK === null && one.tNext === null && one.tUsed === 1050);
+}
+
 if (fails) { console.error(`${fails} check(s) failed`); process.exit(1); }
+

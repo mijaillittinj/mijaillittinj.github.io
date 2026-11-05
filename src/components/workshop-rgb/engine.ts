@@ -21,6 +21,11 @@ import { invertAll, lcurveCorner, logspace, halvesSigma, overRegularised, LAMBDA
 import { chordMatrixHalf } from '../../lib/abel.ts';
 import { satFactor, satApply, splineBasis } from '../../lib/sat.ts';
 import { matvec, rng, type Mat } from '../../lib/linalg.ts';
+import { fineGrid, forNearest, basePointsOnFine, splineBasisAt, splineX, satCoef, satEval, refineFactor, type FineGrid } from '../../lib/workshop-rgb/refine.ts';
+import { Net } from '../../lib/workshop-rgb/annabel/net.ts';
+import { coordFeatures, type CoordNorm } from '../../lib/workshop-rgb/annabel/problem.ts';
+import { predictTfs } from '../../lib/workshop-rgb/annabel/stage2.ts';
+import { PER_MM_TO_PER_M } from '../../lib/workshop-rgb/annabel/units.ts';
 import { median, percentile, interp1 } from '../../lib/workshop-rgb/stats.ts';
 
 const interp1Safe = (x: number, xp: ArrayLike<number>, fp: ArrayLike<number>) => interp1(x, xp, fp, NaN, NaN);
@@ -777,7 +782,11 @@ export function dropIslands(m: Uint8Array, nz: number, nr: number, frac: number)
   return { n: nDrop, px, frac, largest };
 }
 
-export function runTfs(J: Float64Array[][], p: Prepared, band: Band, o: TfsOpts, losP?: Float64Array[][], tableIn?: RatioTable): TfsOut {
+/**
+ * `fixed` gives the zone and the chemiluminescence marks instead of finding them from this J, so the same path runs on a
+ * fine grid with the masks of the base grid. Without it the function is what it always was.
+ */
+export function runTfs(J: Float64Array[][], p: Prepared, band: Band, o: TfsOpts, losP?: Float64Array[][], tableIn?: RatioTable, fixed?: { use: ArrayLike<number>; chem: ArrayLike<number> }): TfsOut {
   const nz = p.nz, nr = p.nr, N = nz * nr;
   const table: RatioTable = tableIn ?? ratioTable(band);
   const invRG = makeInverter(table.T, table.RG);
@@ -786,8 +795,8 @@ export function runTfs(J: Float64Array[][], p: Prepared, band: Band, o: TfsOpts,
   const finite = new Uint8Array(N);
   for (let q = 0; q < N; q++) finite[q] = Number.isFinite(j[3 * q]) && Number.isFinite(j[3 * q + 1]) && Number.isFinite(j[3 * q + 2]) ? 1 : 0;
   const jz = Float64Array.from(j, (v) => (Number.isFinite(v) ? v : 0));
-  const sig = signalMask(jz, o.sigFrac, true);
-  const islands = dropIslands(sig, nz, nr, o.islandFrac ?? 0.05);
+  const sig = fixed ? Uint8Array.from(fixed.use) : signalMask(jz, o.sigFrac, true);
+  const islands = fixed ? { n: 0, px: 0, frac: 0, largest: 0 } : dropIslands(sig, nz, nr, o.islandFrac ?? 0.05);
   const mask = new Uint8Array(N);
   const sat = new Set(p.satRows);
   for (let k = 0; k < nz; k++) for (let i = 0; i < nr; i++) {
@@ -797,10 +806,11 @@ export function runTfs(J: Float64Array[][], p: Prepared, band: Band, o: TfsOpts,
   }
   // T from R/G for the chemiluminescence test
   const Trg = new Float64Array(N).fill(NaN);
-  for (let q = 0; q < N; q++) if (!mask[q]) Trg[q] = invRG(j[3 * q] / j[3 * q + 1]);
+  if (!fixed) for (let q = 0; q < N; q++) if (!mask[q]) Trg[q] = invRG(j[3 * q] / j[3 * q + 1]);
   const chem = new Uint8Array(N);
   const frac = new Float64Array(nz);
-  for (let k = 0; k < nz; k++) {
+  if (fixed) { for (let q = 0; q < N; q++) if (!mask[q] && fixed.chem[q]) chem[q] = 1; }
+  else for (let k = 0; k < nz; k++) {
     let n = 0, m = 0;
     for (let i = 0; i < nr; i++) {
       const q = k * nr + i;
@@ -914,7 +924,8 @@ export function runBand(p: Prepared, band: Band, o: BandOpts) {
       }
       q.right.push(rr); q.left.push(ll);
     }
-    const run: AbelRun = { ...o.run, method: o.run.method === 'annabel' || o.run.method === 'sat' && o.run.sym === 'both' ? 'tikhonov' : o.run.method, sym: 'average' };
+    // the band is always on the mean of the halves. SAT with both halves in the fit gives that same T, so SAT keeps its own band. The network for the emission cannot be trained 30 times.
+    const run: AbelRun = { ...o.run, method: o.run.method === 'annabel' ? 'tikhonov' : o.run.method, sym: 'average' };
     const ab = runAbel(q, run);
     const t = runTfs(ab.J, q, band, { ...o.tfs, refine: false }, undefined, table);
     Ts.push(t.T); Fs.push(fsScale === 1 ? t.fs : t.fs.map((v) => v * fsScale));
@@ -930,6 +941,149 @@ export function runBand(p: Prepared, band: Band, o: BandOpts) {
     return out;
   };
   return { Tlo: pct(Ts, 16), Thi: pct(Ts, 84), fslo: pct(Fs, 16), fshi: pct(Fs, 84) };
+}
+
+// ------------------------------------------------------------------------------------- more points with SAT or the networks
+/** What stage 1 needs to be evaluated again, kept from training. */
+export interface EmissionNet { params: Float32Array; norm: CoordNorm; outScale: number; bScale: number }
+/** What stage 2 needs to be evaluated again, kept from training. */
+export interface TfsNet { params: Float32Array; norm: CoordNorm; sizes: number[]; Tlo: number; Thi: number; fsRef: number }
+export type RefineKind = 'sat' | 'annabel' | 'net';
+export interface RefineIn {
+  kind: RefineKind; factor: number; run: AbelRun; tfs: TfsOpts;
+  /** Results of the base grid, read and never written. */
+  base: { T: Float64Array; fs: Float64Array; mask: Uint8Array; chem: Uint8Array; J: Float64Array[][] };
+  emission?: EmissionNet | null; net?: TfsNet | null;
+}
+export interface RefineCheck { nBase: number; dTK: number; dFsRel: number; dJRel: number; mismatch: number }
+export interface RefineOut {
+  kind: RefineKind; factor: number; fr: number; fz: number; nr: number; nz: number; rMm: Float64Array; zMm: Float64Array; axisNode: boolean; inner: number;
+  /** nz × nr, NaN outside the zone of the base grid. fs is the volume fraction as in the base results. */
+  T: Float64Array; fs: Float64Array;
+  /** Interleaved (nz × nr × 3) when this view has the emission on its own grid, else null. */
+  J: Float64Array | null;
+  /** Bits of TfsOut.mask per fine point. */
+  mask: Uint8Array;
+  /** 1 on the points of the base grid. */
+  onBase: Uint8Array;
+  check: RefineCheck; ms: number;
+}
+
+/** J (r, z) of the stage 1 network on the fine grid, each channel as nz rows of nr, the arithmetic of finishStage1. */
+function emissionOnFine(e: EmissionNet, g: FineGrid, progress?: (d: number, t: number) => void): Float64Array[][] {
+  const X = coordFeatures(e.norm, g.rMm, g.zMm, [0]);
+  const rowsPerBlock = 16, net = new Net(rowsPerBlock * g.nr);
+  const J: Float64Array[][] = [[], [], []];
+  const f = Math.fround;
+  for (let c = 0; c < 3; c++) for (let l = 0; l < g.nz; l++) J[c].push(new Float64Array(g.nr));
+  for (let r0 = 0; r0 < g.nz; r0 += rowsPerBlock) {
+    const r1 = Math.min(g.nz, r0 + rowsPerBlock);
+    net.forward(e.params, X, r0 * g.nr, (r1 - r0) * g.nr, e.outScale);
+    for (let l = r0; l < r1; l++) for (let s = 0; s < g.nr; s++) for (let c = 0; c < 3; c++) {
+      J[c][l][s] = f(f(net.Jn[((l - r0) * g.nr + s) * 3 + c] * e.bScale) * PER_MM_TO_PER_M);
+    }
+    progress?.(r1, g.nz);
+  }
+  return J;
+}
+
+/** J of SAT on the fine radii, with the coefficients of the same fit as runAbel, one per height. */
+function satOnFine(p: Prepared, run: AbelRun, g: FineGrid, progress?: (d: number, t: number) => void): Float64Array[][] {
+  const n = p.nr, drM = p.drMm * 1e-3;
+  const L = chordMatrixHalf(n, drM);
+  const B = splineBasis(n, run.segments);
+  const both = run.sym === 'both';
+  let A: Mat = L;
+  if (both) { A = { n: 2 * n, m: n, a: new Float64Array(2 * n * n) }; A.a.set(L.a, 0); A.a.set(L.a, n * n); }
+  const F = satFactor(A, B, run.satLambda);
+  const Bf = splineBasisAt(splineX(g, n), run.segments);
+  const ex = new Set(p.satRows);
+  const P = both ? null : profilesFor(p, run.sym);
+  const J: Float64Array[][] = [[], [], []];
+  for (let c = 0; c < 3; c++) for (let k = 0; k < p.nz; k++) {
+    if (ex.has(k)) { J[c].push(new Float64Array(g.nr).fill(NaN)); continue; }
+    let rhs: ArrayLike<number>;
+    if (both) { const v = new Float64Array(2 * n); v.set(p.right[c][k], 0); v.set(p.left[c][k], n); rhs = v; } else rhs = P![c][k];
+    J[c].push(satEval(Bf, satCoef(F, rhs)));
+    if (k % 32 === 0) progress?.(c * p.nz + k, 3 * p.nz);
+  }
+  return J;
+}
+
+/**
+ * The same function on more points, in the Worker. SAT is one fit per height, so it refines the radius. The networks are
+ * functions of (r, z), so they refine both. T and f_s come from the network of T and f_s, or else from the same direct path
+ * as the base results on the fine emission, with the masks of the base grid. Base results are not touched and no fit runs again.
+ */
+export function runRefine(p: Prepared, band: Band, x: RefineIn, progress?: (d: number, t: number) => void): RefineOut {
+  const t0 = typeof performance !== 'undefined' ? performance.now() : 0;
+  const factor = refineFactor(x.factor);
+  const fz = x.kind === 'sat' ? 1 : factor;
+  const g = fineGrid(p.rMm, p.zMm, factor, fz);
+  const N = g.nz * g.nr, baseN = p.nz * p.nr;
+  const { base } = x;
+  const norm = x.kind === 'net' ? x.net?.norm : x.kind === 'annabel' ? x.emission?.norm : null;
+  if (x.kind === 'net' && !x.net) throw new Error('no_emission');
+  if (x.kind === 'annabel' && !x.emission) throw new Error('no_emission');
+  // the shown zone and the chemiluminescence marks come from the base cells nearest to each fine point
+  const use = new Uint8Array(N), chem = new Uint8Array(N), near = new Uint8Array(N);
+  forNearest(g, p.nr, (q, cells) => {
+    let ok = 1, ch = 0, bits = 0;
+    for (const c of cells) { if (!Number.isFinite(base.T[c])) ok = 0; if (base.chem[c]) ch = 1; bits |= base.mask[c]; }
+    // saturated rows at an end leave the training range of the network, and it is not evaluated past that range
+    if (norm) { const l = Math.floor(q / g.nr), z = g.zMm[l]; if (g.onZ[l] < 0 && (z < norm.z_min || z > norm.z_max)) ok = 0; }
+    use[q] = ok; chem[q] = ch; near[q] = bits;
+  });
+  let T: Float64Array, fs: Float64Array, Jr: Float64Array[][] | null = null;
+  if (x.kind === 'net') {
+    const X = coordFeatures(x.net!.norm, g.rMm, g.zMm, [0]);
+    T = new Float64Array(N).fill(NaN); fs = new Float64Array(N).fill(NaN);
+    const rows = 64;
+    for (let r0 = 0; r0 < g.nz; r0 += rows) {
+      const r1 = Math.min(g.nz, r0 + rows);
+      const r = predictTfs(x.net!.params, x.net!, X.subarray(r0 * g.nr * 3, r1 * g.nr * 3));
+      for (let q = 0; q < r.T.length; q++) { const o = r0 * g.nr + q; if (use[o]) { T[o] = r.T[q]; fs[o] = r.fs[q]; } }
+      progress?.(r1, g.nz);
+    }
+    if (x.emission) Jr = emissionOnFine(x.emission, g);
+  } else {
+    Jr = x.kind === 'sat' ? satOnFine(p, x.run, g, progress) : emissionOnFine(x.emission!, g, progress);
+    const gridP = { ...p, nz: g.nz, nr: g.nr, zMm: g.zMm, rMm: g.rMm, satRows: [] as number[] };
+    const r = runTfs(Jr, gridP, band, x.tfs, undefined, undefined, { use, chem });
+    T = r.T; fs = r.fs;
+    for (let q = 0; q < N; q++) if (!use[q]) { T[q] = NaN; fs[q] = NaN; }
+  }
+  let J: Float64Array | null = null;
+  if (Jr) {
+    J = new Float64Array(N * 3);
+    for (let l = 0; l < g.nz; l++) for (let s = 0; s < g.nr; s++) for (let c = 0; c < 3; c++) J[(l * g.nr + s) * 3 + c] = Jr[c][l][s];
+  }
+  const mask = new Uint8Array(N);
+  for (let q = 0; q < N; q++) {
+    if (Number.isFinite(T[q])) mask[q] = M_USED | (chem[q] ? M_CHEM : 0);
+    else if (use[q]) mask[q] = M_OUT;
+    else mask[q] = near[q] & ~M_USED || M_LOW;
+  }
+  // the points shared with the base grid must give the base values
+  const onBase = new Uint8Array(N);
+  const idx = basePointsOnFine(g, p.nz, p.nr);
+  const check: RefineCheck = { nBase: baseN, dTK: 0, dFsRel: 0, dJRel: 0, mismatch: 0 };
+  const cmp = (a: number, b: number) => (Number.isFinite(a) !== Number.isFinite(b) ? -1 : Number.isFinite(a) ? Math.abs(a - b) : 0);
+  for (let q = 0; q < baseN; q++) {
+    const o = idx[q];
+    onBase[o] = 1;
+    mask[o] = base.mask[q];
+    const dT = cmp(T[o], base.T[q]), dF = cmp(fs[o], base.fs[q]);
+    if (dT < 0 || dF < 0) { check.mismatch++; continue; }
+    check.dTK = Math.max(check.dTK, dT);
+    if (dF > 0) check.dFsRel = Math.max(check.dFsRel, dF / Math.abs(base.fs[q]));
+    if (J) for (let c = 0; c < 3; c++) {
+      const k = Math.floor(q / p.nr), i = q - k * p.nr;
+      const dJ = cmp(J[o * 3 + c], base.J[c][k][i]);
+      if (dJ > 0) check.dJRel = Math.max(check.dJRel, dJ / Math.abs(base.J[c][k][i]));
+    }
+  }
+  return { kind: x.kind, factor, fr: g.fr, fz: g.fz, nr: g.nr, nz: g.nz, rMm: g.rMm, zMm: g.zMm, axisNode: g.axisNode, inner: g.inner, T, fs, J, mask, onBase, check, ms: (typeof performance !== 'undefined' ? performance.now() : 0) - t0 };
 }
 
 // ------------------------------------------------------------------------------------- calibration files

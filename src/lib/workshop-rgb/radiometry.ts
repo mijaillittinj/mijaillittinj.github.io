@@ -45,8 +45,8 @@ export function planckNmRC(lamNm: number, T: number): number {
 
 // ------------------------------------------------------------------------------------- E(m)
 /**
- * Law of E(m_λ), editable in the tool. Default the group's, E = 0,284 + 0,272 ln²λ + 0,057 lnλ/λ with
- * λ in µm (annabel_app/core/calibration.py:458, attributed to Yon et al. 2011).
+ * Law of E(m_λ), editable in the tool. Default Yon et al. 2011, E = 0,284 + 0,272 ln²λ + 0,057 lnλ/λ with
+ * λ in µm (as in annabel_app/core/calibration.py:458).
  */
 export type EmLaw = { kind: 'group' } | { kind: 'coeffs'; a: number; b: number; c: number } | { kind: 'constant'; E: number };
 export const EM_GROUP: EmLaw = { kind: 'group' };

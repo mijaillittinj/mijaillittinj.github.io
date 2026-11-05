@@ -60,3 +60,32 @@ export function colorize(values: ArrayLike<number>, name: MapName, vmin: number,
   }
   return out;
 }
+
+/**
+ * Filled contours of a field (row-major, ny × nx), as matplotlib's contourf: each value sits at the centre of
+ * its cell, the field is linear between neighbours and takes the colour of its band. A square with a NaN or
+ * masked corner stays in the page colour, so nothing is drawn beyond the valid points. The image is
+ * nx·s × ny·s with s pixels per cell. Values outside [vmin, vmax] take the first or last band.
+ */
+export function contourf(values: ArrayLike<number>, nx: number, ny: number, s: number, name: MapName, vmin: number, vmax: number, levels: number, theme: Theme, background: string, mask?: ArrayLike<number> | null): Uint8ClampedArray {
+  const tab = table(name, theme).map(rgb), bg = rgb(background);
+  const band = Array.from({ length: levels }, (_, b) => tab[Math.round(((b + 0.5) / levels) * (N - 1))]);
+  const W = nx * s, H = ny * s, out = new Uint8ClampedArray(W * H * 4), span = vmax - vmin;
+  const ok = (q: number) => Number.isFinite(values[q]) && (!mask || !!mask[q]);
+  for (let py = 0; py < H; py++) {
+    const v = (py + 0.5) / s - 0.5, j = Math.floor(v), fy = v - j;
+    for (let px = 0; px < W; px++) {
+      const u = (px + 0.5) / s - 0.5, i = Math.floor(u), fx = u - i, o = 4 * (py * W + px);
+      let c = bg;
+      if (i >= 0 && j >= 0 && i + 1 < nx && j + 1 < ny) {
+        const a = j * nx + i, b = a + 1, d = a + nx, e = d + 1;
+        if (ok(a) && ok(b) && ok(d) && ok(e)) {
+          const x = (values[a] * (1 - fx) + values[b] * fx) * (1 - fy) + (values[d] * (1 - fx) + values[e] * fx) * fy;
+          c = band[span > 0 ? Math.max(0, Math.min(levels - 1, Math.floor(((x - vmin) / span) * levels))) : 0];
+        }
+      }
+      out[o] = c[0]; out[o + 1] = c[1]; out[o + 2] = c[2]; out[o + 3] = 255;
+    }
+  }
+  return out;
+}
