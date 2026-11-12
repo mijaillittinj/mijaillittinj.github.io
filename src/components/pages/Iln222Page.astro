@@ -33,6 +33,7 @@ const T = es
       l7Text: 'Tres sesiones. Tipos de intercambiadores con modelos 3D, el coeficiente total U como red de resistencias y la incrustación, el balance de energía con la puesta en marcha simulada hasta el estacionario, la deducción de la diferencia de temperatura media logarítmica con el factor de corrección F, y el método de efectividad y NUT con su relación con el colector solar.',
       parts7: ['Dos fluidos y una pared', 'Diferencia de temperatura media logarítmica', 'Efectividad y NUT'],
       board7: 'balance de energía paso a paso',
+      short7: 'versión corta, 30 diapositivas', short7Light: 'corta, fondo claro',
       howH: 'Cómo verla',
       how: 'Es una presentación animada en español. Las flechas o la barra espaciadora avanzan, la tecla F activa la pantalla completa, la tecla S abre la vista de orador con las notas y la tecla O muestra todos los estados. Funciona mejor en un computador.',
       refH: 'Bibliografía', ref: 'Y. A. Çengel y A. J. Ghajar, Transferencia de calor y masa, capítulos 11, 12 y 13.',
@@ -54,6 +55,7 @@ const T = es
       l7Text: 'Three sessions. Types of heat exchangers with 3D models, the overall coefficient U as a resistance network and fouling, the energy balance with a simulated start-up to steady state, the derivation of the log mean temperature difference with the correction factor F, and the effectiveness–NTU method and its link to the solar collector.',
       parts7: ['Two fluids and a wall', 'Log mean temperature difference', 'Effectiveness and NTU'],
       board7: 'energy balance step by step',
+      short7: 'short version, 30 slides', short7Light: 'short, light background',
       howH: 'How to view it',
       how: 'This is an animated presentation in Spanish. The arrow keys or the space bar move forward, F turns on full screen, S opens the speaker view with the notes and O shows every state. It works best on a computer.',
       refH: 'Reference', ref: 'Y. A. Çengel and A. J. Ghajar, Heat and Mass Transfer, chapters 11, 12 and 13.',
@@ -104,7 +106,7 @@ const T = es
           {T.parts7.map((name, i) => (
             <li>
               <a href={url(`${base7}${i + 1}/`)}>{name}</a>
-              <span class="meta"> · <a href={url(`${base7}${i + 1}/sala/`)}>{T.salaShort}</a> · <a href={url(`${base7}${i + 1}/clase07_${i + 1}.pdf`)}>PDF</a> · <a href={url(`${base7}${i + 1}/sala/clase07_${i + 1}_sala.pdf`)}>{T.pdfLight}</a>{i === 1 && <> · <a href={url(base7 + '2/pizarra_balance.pdf')}>{T.board7}</a></>}</span>
+              <span class="meta"> · <a href={url(`${base7}${i + 1}/sala/`)}>{T.salaShort}</a> · <a href={url(`${base7}${i + 1}/clase07_${i + 1}.pdf`)}>PDF</a> · <a href={url(`${base7}${i + 1}/sala/clase07_${i + 1}_sala.pdf`)}>{T.pdfLight}</a>{i === 1 && <> · <a href={url(base7 + '2/pizarra_balance.pdf')}>{T.board7}</a></>}{i === 2 && <> · <a href={url(base7 + '3/corta/')}>{T.short7}</a> · <a href={url(base7 + '3/corta/sala/')}>{T.short7Light}</a></>}</span>
             </li>
           ))}
         </ol>
