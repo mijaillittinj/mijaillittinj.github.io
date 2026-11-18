@@ -104,6 +104,31 @@ const themes: Theme[] = [
   },
 ];
 
+// Where the work is going. Prospective: nothing here is presented as done.
+const directions = es
+  ? {
+      title: 'Líneas futuras: aprendizaje automático científico confiable para sistemas de energía térmica',
+      intro: 'La transición energética exige más a los equipos térmicos, como turbinas, hornos y calentadores industriales. Deben operar con combustibles nuevos, seguir cargas variables y cumplir límites de emisión más estrictos. Las decisiones sobre estos equipos dependen de magnitudes que no se pueden medir durante la operación, como la temperatura de las paredes o el calor que reciben. La próxima etapa de mi trabajo conecta mediciones, física y aprendizaje automático para que esas decisiones se apoyen en modelos con incertidumbre conocida. Se organiza en tres preguntas.',
+      items: [
+        { q: '¿Qué se puede inferir de forma confiable a partir de sensores?', a: 'Las redes informadas por la física equilibran el ajuste a los datos con el cumplimiento de la física, y ese equilibrio suele fijarse a mano. Fijarlo con criterios estadísticos establecidos, comprobar en casos con respuesta conocida si las barras de error contienen la verdad, y detectar cuándo al modelo le falta física.' },
+        { q: '¿Pueden los modelos físicos guiar el diseño?', a: 'Un modelo físico diferenciable indica cómo cambia el resultado con cada parámetro de diseño, y así hace visibles los compromisos en lugar de elegir por el ingeniero. El camino va de paredes calefaccionadas a flujos reactivos, con un solver de llamas en GPU que incluye química, hollín y radiación. La primera meta es un único modelo de hollín que describa a la vez una llama normal y una inversa.' },
+        { q: '¿Se puede monitorear lo que no se ve?', a: 'Estimadores que, desde pocos sensores, combinan física simplificada, aprendizaje y datos en tiempo real, y que eligen dónde ubicar los sensores sin prometer más precisión de la que entregan. Las llamas de laboratorio, cuyo interior se mide con luz, sirven como caso de prueba antes de pasar a equipos térmicos industriales.' },
+      ],
+      approach: 'Cada paso hacia un problema más difícil se da solo después de que el anterior pasa sus pruebas: primero casos computacionales con respuesta conocida, luego llamas de laboratorio y un recinto calefaccionado instrumentado con termopares, cámara infrarroja y sensores de flujo de calor, y finalmente un sistema de calentamiento industrial junto a un socio. Las herramientas se publicarán como software abierto.',
+      note: 'Esta sección describe trabajo en desarrollo y propuesto, no resultados publicados.',
+    }
+  : {
+      title: 'Research directions: trustworthy scientific machine learning for thermal energy systems',
+      intro: 'The energy transition asks more of thermal energy equipment such as turbines, furnaces and industrial heaters. It must run on new fuels, follow changing loads and meet tighter emission limits. Decisions about this equipment depend on quantities that cannot be measured in operation, such as wall temperatures and the heat that reaches them. The next stage of my work connects measurements, physics and machine learning so that these decisions can rest on models with known uncertainty. It is organised around three questions.',
+      items: [
+        { q: 'What can we reliably infer from sensors?', a: 'Physics-informed networks balance fitting the data against obeying the physics, and that balance is usually set by hand. The aim is to set it with established statistical criteria, to check on cases with a known answer whether the error bars really contain the truth, and to detect when a model is missing physics.' },
+        { q: 'Can physics models guide design?', a: 'A differentiable physics model tells how the result changes with every design parameter, which makes trade-offs visible instead of choosing for the engineer. The path runs from heated walls to reacting flows, with a GPU flame solver that includes chemistry, soot and radiation. The first goal is a single soot model that describes both a normal and an inverse flame.' },
+        { q: 'Can we monitor what we cannot see?', a: 'Estimators that combine simplified physics, learning and live data from a few sensors, and that choose where sensors go without promising more accuracy than they deliver. Laboratory flames, whose interior can be measured with light, serve as test cases before moving to industrial thermal equipment.' },
+      ],
+      approach: 'Each step towards a harder problem is taken only after the previous one passes its tests: computed cases where the answer is known, then laboratory flames and a heated enclosure instrumented with thermocouples, an infrared camera and heat-flux gauges, then an industrial heating system with a partner. The tools will be released as open-source software.',
+      note: 'This section describes work in progress and proposed work, not published results.',
+    };
+
 const domains = Object.keys(domainLabels) as DomainId[];
 const domainCount = (d: DomainId) => visiblePublications.filter((p) => p.domains.includes(d)).length;
 
@@ -111,7 +136,7 @@ const T = es
   ? {
       title: 'Investigación', eyebrow: 'Investigación',
       h1: 'Inferir lo que no se puede medir directamente',
-      lede: 'Desarrollo métodos para estimar, a partir de observaciones indirectas y ruidosas, magnitudes físicas que no se pueden medir directamente. Los métodos se han desarrollado y validado en llamas, incendios, partículas y radiación térmica. Cada sección resume trabajo publicado o aceptado.',
+      lede: 'Desarrollo métodos para estimar, a partir de observaciones indirectas y ruidosas, magnitudes físicas que no se pueden medir directamente. Los métodos se han desarrollado y validado en llamas, incendios, partículas y radiación térmica, y ahora los extiendo al diseño y monitoreo de sistemas de energía térmica. Las secciones 2 a 4 resumen trabajo publicado o aceptado; la sección 5 describe hacia dónde va.',
       general: 'La forma general del problema',
       generalText: 'Se mide <em>y</em>, una versión indirecta y ruidosa del estado físico <em>x</em> que interesa. El modelo directo 𝒜 describe cómo <em>x</em> produce las mediciones (ecuación 1). Invertir ese modelo rara vez tiene una solución única y estable, así que hace falta información adicional. Puede ser un término ℛ que descarte soluciones sin sentido físico (ecuación 2), o una representación aprendida que cumpla las ecuaciones que gobiernan el sistema.',
       q: 'El problema', w: 'Por qué es difícil', d: 'Trabajo realizado', p: 'Artículos', r: 'Código, datos y material',
@@ -121,7 +146,7 @@ const T = es
   : {
       title: 'Research', eyebrow: 'Research',
       h1: 'Inferring what cannot be measured directly',
-      lede: 'I develop methods that estimate, from indirect and noisy observations, physical quantities that cannot be measured directly. The methods have been developed and validated on flames, fires, particles and thermal radiation. Each section summarises published or accepted work.',
+      lede: 'I develop methods that estimate, from indirect and noisy observations, physical quantities that cannot be measured directly. The methods have been developed and validated on flames, fires, particles and thermal radiation, and I am now extending them to the design and monitoring of thermal energy systems. Sections 2 to 4 summarise published or accepted work; section 5 describes where it is going.',
       general: 'The general form of the problem',
       generalText: 'We measure <em>y</em>, an indirect and noisy version of the physical state <em>x</em> that we care about. The forward model 𝒜 describes how <em>x</em> produces the measurements (equation 1). Inverting that model rarely has a unique, stable solution, so extra information is needed. It can be a term ℛ that rules out physically meaningless solutions (equation 2), or a learned representation that satisfies the governing equations.',
       q: 'The problem', w: 'Why it is hard', d: 'Work done', p: 'Papers', r: 'Code, data and material',
@@ -141,7 +166,8 @@ const T = es
     <ol>
       <li><a href="#general"><span>1</span>{T.general}</a></li>
       {themes.map((t, i) => <li><a href={`#${t.id}`}><span>{i + 2}</span>{t.title}</a></li>)}
-      <li><a href="#dom"><span>{themes.length + 2}</span>{T.dom}</a></li>
+      <li><a href="#directions"><span>{themes.length + 2}</span>{directions.title}</a></li>
+      <li><a href="#dom"><span>{themes.length + 3}</span>{T.dom}</a></li>
     </ol>
   </nav>
 
@@ -179,6 +205,20 @@ const T = es
     </section>
   ))}
 
+  <section class="section frame theme" id="directions" aria-labelledby="directions-h">
+    <div class="row">
+      <h2 class="row__label" id="directions-h">{directions.title}</h2>
+      <div class="prose">
+        <p>{directions.intro}</p>
+        <ol class="directions">
+          {directions.items.map((d) => <li><strong>{d.q}</strong> {d.a}</li>)}
+        </ol>
+        <p>{directions.approach}</p>
+        <p class="meta">{directions.note}</p>
+      </div>
+    </div>
+  </section>
+
   <section class="section frame" id="dom" aria-labelledby="dom-h">
     <div class="row">
       <h2 class="row__label" id="dom-h">{T.dom}</h2>
@@ -203,5 +243,6 @@ const T = es
   .runin { margin-bottom: -0.4em; }
   .theme__papers { margin-top: var(--s-4); }
   .theme__res { margin-top: var(--s-4); }
+  .directions li + li { margin-top: var(--s-2); }
   .domains { padding-left: 1.5em; margin-top: var(--s-3); columns: 2 14rem; }
 </style>

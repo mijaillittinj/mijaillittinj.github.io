@@ -39,7 +39,27 @@
     "mmPerPx": 0.05,
     "zBurnerMm": 5.05
    }
+  },
+  {
+   "file": "llama_etileno.zip",
+   "bytes": 13890104,
+   "sha256": "69a7b659b6ddce2e2b08ccae947fcb6737ae1c8f226aaf57beb120a33e992860",
+   "images": 20,
+   "camera": "acA2040-55uc",
+   "preset": {
+    "texpUs": 290.0,
+    "mmPerPx": 0.0711,
+    "zBurnerMm": 0.0,
+    "fineDeg": 0.9,
+    "sphere": {
+     "tSphUs": 700.0,
+     "od": 0.4,
+     "valUnit": "radiance_um",
+     "lamUnit": "nm",
+     "fill": "median"
+    }
+   }
   }
  ],
- "total_bytes": 22530949
+ "total_bytes": 36421053
 }

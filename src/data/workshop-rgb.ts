@@ -42,7 +42,9 @@ export function isSketch(key: string): boolean {
 }
 
 /** Values the example button fills in stage 3 (from the LEEME of the set), with the rotation, rows and smoothing when the set needs them. */
-export interface SamplePreset { texpUs: number; mmPerPx: number; zBurnerMm: number; quarter?: number; fineDeg?: number; burnerRow?: number; rowBottom?: number; lambdaRel?: number }
+/** `sphere` is the integrating sphere setup of a set calibrated with one (exposure, optical density of the neutral filter, spectrum units, fill). */
+export interface SamplePreset { texpUs: number; mmPerPx: number; zBurnerMm: number; quarter?: number; fineDeg?: number; burnerRow?: number; rowBottom?: number; lambdaRel?: number; sphere?: SpherePreset }
+export interface SpherePreset { tSphUs: number; od: number; valUnit: string; lamUnit: string; fill: string }
 /** `with` names the sets loaded together with this one (the furnace that calibrates the laboratory flame). */
 export interface SampleSet { file: string; bytes: number; sha256: string; images: number; camera: string; preset?: SamplePreset; with?: string[] }
 export const sampleSets = (samples as { sets: SampleSet[] }).sets;

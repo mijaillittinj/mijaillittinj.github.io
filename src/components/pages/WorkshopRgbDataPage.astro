@@ -16,20 +16,22 @@ const k = (key: string) => ck(key, lang);
 const oven = sample('horno_ejemplo.zip');
 const lab = sample('llama_laboratorio.zip');
 const syn = sample('llama_sintetica_coflame.zip');
+const eth = sample('llama_etileno.zip');
+const IMG = `${WS}img/`;
 const tool = has.tool ? localized(`${WS}tool/`, lang) : undefined;
 
 const T = es
   ? {
       title: 'Datos de ejemplo',
-      lede: `Tres juegos de imágenes para usar la herramienta sin haber ido al laboratorio. Un horno real, una llama del laboratorio tomada con la misma cámara y los mismos ajustes, y una llama sintética con sus valores verdaderos de T y f_s. Cada juego es un archivo .zip con un LEEME.txt que explica qué trae. En total pesan ${mb(sampleTotal, lang)}.`,
+      lede: `Cuatro juegos de imágenes para usar la herramienta sin haber ido al laboratorio. Un horno real, una llama del laboratorio tomada con la misma cámara y los mismos ajustes, una llama sintética con sus valores verdaderos de T y f_s, y una llama de etileno calibrada con una esfera integradora. Cada juego es un archivo .zip con un LEEME.txt que explica qué trae. En total pesan ${mb(sampleTotal, lang)}.`,
       table: 'Archivos',
       head: ['Juego', 'Cámara', 'Imágenes', 'Tamaño'],
-      names: { oven: 'Horno real', lab: 'Llama del laboratorio', syn: 'Llama sintética de coflujo' },
+      names: { oven: 'Horno real', lab: 'Llama del laboratorio', syn: 'Llama sintética de coflujo', eth: 'Llama de etileno' },
       synCam: 'simulada',
       sha: 'Para comprobar que la descarga llegó completa, comparen el SHA-256 que aparece bajo cada juego con el que da shasum -a 256 en macOS o certutil -hashfile … SHA256 en Windows.',
       useH: 'Con qué se calibra cada juego',
       useHead: ['Juego', 'Se calibra con', 'Llega hasta'],
-      use: [['Horno real', 'su propio horno', 'la calibración del paso 1, con K_j de la temperatura más caliente'], ['Llama del laboratorio', 'el horno real', 'los mapas de T y f_s, con f_s en ppm'], ['Llama sintética de coflujo', 'el horno sintético del mismo juego', 'los mapas de T y f_s, que se comparan con los valores verdaderos']],
+      use: [['Horno real', 'su propio horno', 'la calibración del paso 1, con K_j de la temperatura más caliente'], ['Llama del laboratorio', 'el horno real', 'los mapas de T y f_s, con f_s en ppm'], ['Llama sintética de coflujo', 'el horno sintético del mismo juego', 'los mapas de T y f_s, que se comparan con los valores verdaderos'], ['Llama de etileno', 'la esfera integradora de septiembre de 2026, con la misma cámara', 'los mapas de T y f_s, con f_s en ppm']],
       template: 'Plantilla vacía del registro de adquisición',
       ovenH: 'Horno real',
       ovenP: [
@@ -54,20 +56,37 @@ const T = es
         'El horno sintético usa tiempos de exposición más largos que los 208 µs de la llama, y la herramienta avisa que el t_exp de la llama queda fuera del horno. La cámara sintética es lineal por construcción, así que en este juego el aviso no cambia el resultado. Con una cámara real la guía pide que el horno cubra el t_exp de la llama.',
       ],
       synWalk: 'Recorrido. El botón «Cargar la llama sintética», en las Opciones del paso 1 de la herramienta, deja el paso 2 listo con los valores del LEEME, t_exp de 208 µs y escala de 0,05 mm por píxel confirmados y 5,05 mm en «Altura de esa fila», que es la altura sobre el quemador de la última fila de trabajo con el superpíxel de 2 × 2. Si cargan el .zip desde el disco, escriban esos valores a mano. La herramienta toma sola el promedio de la llama y el promedio del fondo. El aviso de que el t_exp de la llama queda fuera del horno es esperado en este juego, porque la cámara sintética es lineal. Preparen las imágenes, revisen la vista previa, marquen «El quemador queda abajo» y usen «Calcular los pasos 3, 4 y 5 de una vez», en Opciones del paso 2, que calcula el ajuste del horno y sigue hasta los resultados. Si el paso 3 dice que en algunas alturas el residuo pasa tres veces el ruido, en este juego se puede seguir.',
+      ethH: 'Llama de etileno',
+      ethP: [
+        'Una llama de etileno estable, medida en noviembre de 2026 con la cámara Basler acA2040-55uc, distinta de la del laboratorio. Se tomaron 100 cuadros seguidos con un tiempo de exposición de 290 µs. La señal cambia 0,13 % entre cuadros, así que los cuadros son repeticiones y la herramienta los promedia. El juego trae 16 de esos cuadros, repartidos en la serie, en llama/. Trae además el fondo con la llama apagada en llama/fondo/dark.tiff, la foto de una regla en regla.tiff y la calibración en esfera/700exp/. Con 16 cuadros en vez de 100 las medianas de T y f_s casi no cambian, y cada punto tiene un ruido de unos 7 K en T y 7 % en f_s.',
+        'Calibración. Sin horno, la sensibilidad de cada canal sale de una esfera integradora, una fuente de luz pareja cuyo espectro se conoce. Se usa la esfera de septiembre de 2026, tomada con la misma cámara. El número f, la ganancia y el foco fueron los mismos con la llama y con la esfera, así que esa calibración vale para esta llama y f_s sale en ppm. Lo que se supone es que la sensibilidad de la cámara no cambió entre septiembre y noviembre. La esfera se tomó con 700 µs, su espectro viene en W m⁻² sr⁻¹ µm⁻¹ y había un filtro neutro de densidad óptica 0,4 delante de ella. La curva de la cámara lleva un corte infrarrojo de 630 nm.',
+        'Escala y alturas. La regla tiene marcas de milímetro cada 14,06 píxeles, así que la escala es 0,0711 mm por píxel del sensor. La llama está vertical, con el quemador abajo y fuera del cuadro. El borde de abajo del cuadro es la boca del quemador, así que la altura sobre el quemador (HAB) es 0 en la fila de abajo y crece hacia arriba. El eje de la llama se inclina unos 0,9°. Con esa rotación fina las dos mitades de la llama pasan de diferir 17 % a 2 %.',
+        'Qué esperar. Con la herramienta 2026.5 y los valores del ejemplo, la llama da T mediana de 1611 K, con percentiles 5 y 95 de 1549 y 1805 K, y f_s mediana de 6,6 ppm con percentil 95 de 18 ppm. Con la máscara de f_s sobre 5 % de su máximo, la T mediana es 1602 K y la f_s mediana 7,5 ppm. Entre unos 21 y 25 mm de altura el rojo llega casi al techo del sensor en algunos cuadros. La herramienta avisa que esas alturas están saturadas y las deja fuera, por eso los mapas tienen una franja vacía. En este juego ese aviso es esperado. En la base de la llama hay luz azul de más, probablemente quimioluminiscencia, y esa zona no entra en el azul. La curva L no tiene esquina, así que el suavizado queda fijo en 0,1.',
+      ],
+      ethMaps: 'Mapas de T y f_s de esta llama, calculados por la herramienta con los valores del ejemplo y sin máscara. El eje vertical, z, es la altura sobre el quemador en mm, y el horizontal, r, la distancia al eje en mm.',
+      ethAltT: 'Mapa de temperatura de la llama de etileno, de 0 a 66 mm de altura sobre el quemador y hasta unos 5 mm del eje. La mitad de los puntos está entre unos 1580 y 1670 K. Bajo los 21 mm la llama es más caliente, con puntos sobre 1900 K cerca del eje. Entre 21 y 25 mm hay una franja vacía, donde el rojo satura. T mediana 1611 K.',
+      ethAltF: 'Mapa de fracción de volumen de hollín de la llama de etileno, en la misma zona. Abajo el hollín forma un anillo en el borde de la llama y casi no hay en el eje. Al subir el anillo se cierra hacia el eje, con los valores más altos entre 25 y 40 mm. Franja vacía entre 21 y 25 mm. f_s mediana 6,6 ppm.',
+      ethMed: 'T mediana 1611 K · f_s mediana 6,6 ppm.',
+      ethWalk: 'Recorrido. «Cargar la llama de etileno», en las Opciones del paso 1 de la herramienta, carga este juego y calcula la calibración con la esfera. Deja el paso 2 listo, con t_exp de 290 µs y escala de 0,0711 mm por píxel confirmados, altura de la fila de abajo 0 mm y rotación fina de 0,9°.',
+      ethSteps: [
+        'Paso 2. Pulsar «Preparar las imágenes», mirar la vista previa y marcar «El quemador queda abajo».',
+        'Opciones del paso 2. Pulsar «Calcular los pasos 3, 4 y 5 de una vez».',
+        'Con el .zip desde el disco, en el paso 1, Opciones, «Otra forma de calibrar», «Esfera integradora». Escribir 700 µs, unidad W m⁻² sr⁻¹ µm⁻¹, filtro neutro de densidad óptica 0,4, y pulsar «Calcular con la esfera». En el paso 2 escribir 290 µs, 0,0711 mm por píxel y altura 0 mm, y en Opciones, Geometría, rotación fina 0,9°.',
+      ],
       walk: 'Abrir la herramienta',
       download: 'Descargar',
     }
   : {
       title: 'Example data',
-      lede: `Three image sets for using the tool without having been to the lab. A real oven, a laboratory flame taken with the same camera and the same settings, and a synthetic flame with its ground truth T and f_s. Each set is a .zip file with a LEEME.txt (the README, in Spanish and English) that explains what it holds. Together they weigh ${mb(sampleTotal, lang)}.`,
+      lede: `Four image sets for using the tool without having been to the lab. A real oven, a laboratory flame taken with the same camera and the same settings, a synthetic flame with its ground truth T and f_s, and an ethylene flame calibrated with an integrating sphere. Each set is a .zip file with a LEEME.txt (the README, in Spanish and English) that explains what it holds. Together they weigh ${mb(sampleTotal, lang)}.`,
       table: 'Files',
       head: ['Set', 'Camera', 'Images', 'Size'],
-      names: { oven: 'Real oven', lab: 'Laboratory flame', syn: 'Synthetic coflow flame' },
+      names: { oven: 'Real oven', lab: 'Laboratory flame', syn: 'Synthetic coflow flame', eth: 'Ethylene flame' },
       synCam: 'simulated',
       sha: 'To check that a download arrived complete, compare the SHA-256 shown under each set with the one given by shasum -a 256 on macOS or certutil -hashfile … SHA256 on Windows.',
       useH: 'What each set is calibrated with',
       useHead: ['Set', 'Calibrated with', 'Goes as far as'],
-      use: [['Real oven', 'its own oven', 'the calibration of step 1, with K_j from the hottest temperature'], ['Laboratory flame', 'the real oven', 'the maps of T and f_s, with f_s in ppm'], ['Synthetic coflow flame', 'the synthetic oven of the same set', 'the maps of T and f_s, compared with the ground truth']],
+      use: [['Real oven', 'its own oven', 'the calibration of step 1, with K_j from the hottest temperature'], ['Laboratory flame', 'the real oven', 'the maps of T and f_s, with f_s in ppm'], ['Synthetic coflow flame', 'the synthetic oven of the same set', 'the maps of T and f_s, compared with the ground truth'], ['Ethylene flame', 'the September 2026 integrating sphere, with the same camera', 'the maps of T and f_s, with f_s in ppm']],
       template: 'Empty acquisition log template',
       ovenH: 'Real oven',
       ovenP: [
@@ -92,6 +111,23 @@ const T = es
         'The synthetic oven uses longer exposure times than the 208 µs of the flame, and the tool warns that the flame t_exp falls outside the oven. The synthetic camera is linear by construction, so in this set the warning does not change the result. With a real camera the lab guide asks for the oven to cover the flame t_exp.',
       ],
       synWalk: 'Walk-through. The button “Load the synthetic flame”, in the Options of step 1 of the tool, fills step 2 with the values of the LEEME, t_exp of 208 µs and a scale of 0.05 mm per pixel, both confirmed, and 5.05 mm in “Height of that row”, the height above the burner of the last working row with the 2 × 2 superpixel. If you load the .zip from disk, type those values by hand. The tool picks the averaged flame and the averaged background on its own. The warning that the flame t_exp falls outside the oven is expected in this set, because the synthetic camera is linear. Prepare the images, check the preview, tick “The burner is at the bottom” and use “Compute steps 3, 4 and 5 at once”, in step 2 Options, which computes the oven fit and goes on to the results. If step 3 says that the residual exceeds three times the noise at some heights, in this set you can go on.',
+      ethH: 'Ethylene flame',
+      ethP: [
+        'A steady ethylene flame, measured in November 2026 with the Basler acA2040-55uc camera, not the lab camera. 100 frames were taken in a row with an exposure time of 290 µs. The signal changes by 0.13 % between frames, so the frames are repeats and the tool averages them. The set holds 16 of those frames, spread over the series, in llama/. It also holds the background with the flame off in llama/fondo/dark.tiff, the photo of a ruler in regla.tiff and the calibration in esfera/700exp/. With 16 frames instead of 100 the medians of T and f_s hardly change, and each point has a noise of about 7 K in T and 7 % in f_s.',
+        'Calibration. Without an oven, the sensitivity of each channel comes from an integrating sphere, an even light source whose spectrum is known. The September 2026 sphere is used, taken with the same camera. The f-number, gain and focus were the same for the flame and for the sphere, so that calibration holds for this flame and f_s comes out in ppm. What is assumed is that the camera sensitivity did not change between September and November. The sphere was taken at 700 µs, its spectrum comes in W m⁻² sr⁻¹ µm⁻¹ and there was a neutral density filter of optical density 0.4 in front of it. The camera curve carries an infrared cut at 630 nm.',
+        'Scale and heights. The ruler has millimetre marks every 14.06 pixels, so the scale is 0.0711 mm per sensor pixel. The flame stands upright, with the burner at the bottom and outside the frame. The bottom edge of the frame is the burner mouth, so the height above the burner (HAB) is 0 at the bottom row and grows upwards. The flame axis leans by about 0.9°. With that fine rotation the two halves of the flame go from differing by 17 % to 2 %.',
+        'What to expect. With the tool 2026.5 and the values of the example, the flame gives a median T of 1611 K, with 5th and 95th percentiles of 1549 and 1805 K, and a median f_s of 6.6 ppm with a 95th percentile of 18 ppm. With the mask of f_s above 5 % of its maximum, the median T is 1602 K and the median f_s 7.5 ppm. Between about 21 and 25 mm in height red gets close to the sensor ceiling in some frames. The tool warns that those heights are saturated and leaves them out, which is why the maps have an empty band. In this set that warning is expected. At the base of the flame there is extra blue light, probably chemiluminescence, and that zone is left out of blue. The L-curve has no corner, so the smoothing stays fixed at 0.1.',
+      ],
+      ethMaps: 'Maps of T and f_s of this flame, computed by the tool with the values of the example and no mask. The vertical axis, z, is the height above the burner in mm, and the horizontal one, r, the distance to the axis in mm.',
+      ethAltT: 'Temperature map of the ethylene flame, from 0 to 66 mm above the burner and out to about 5 mm from the axis. Half of the points are between about 1580 and 1670 K. Below 21 mm the flame is hotter, with points above 1900 K near the axis. Between 21 and 25 mm there is an empty band, where red saturates. Median T 1611 K.',
+      ethAltF: 'Soot volume fraction map of the ethylene flame, over the same zone. Low down the soot forms a ring at the edge of the flame with almost none on the axis. Higher up the ring closes towards the axis, with the highest values between 25 and 40 mm. Empty band between 21 and 25 mm. Median f_s 6.6 ppm.',
+      ethMed: 'Median T 1611 K · median f_s 6.6 ppm.',
+      ethWalk: 'Walk-through. “Load the ethylene flame”, in the Options of step 1 of the tool, loads this set and computes the calibration with the sphere. It leaves step 2 ready, with t_exp of 290 µs and a scale of 0.0711 mm per pixel, both confirmed, height of the bottom row 0 mm and a fine rotation of 0.9°.',
+      ethSteps: [
+        'Step 2. Press “Prepare the images”, look at the preview and tick “The burner is at the bottom”.',
+        'Step 2 Options. Press “Compute steps 3, 4 and 5 at once”.',
+        'With the .zip from disk, in step 1, Options, “Another way to calibrate”, “Integrating sphere”. Type 700 µs, unit W m⁻² sr⁻¹ µm⁻¹, neutral density filter of optical density 0.4, and press “Compute with the sphere”. In step 2 type 290 µs, 0.0711 mm per pixel and height 0 mm, and in Options, Geometry, fine rotation 0.9°.',
+      ],
       walk: 'Open the tool',
       download: 'Download',
     };
@@ -100,12 +136,15 @@ const rows = [
   [T.names.oven, oven],
   [T.names.lab, lab],
   [T.names.syn, syn],
+  [T.names.eth, eth],
 ] as const;
 const tail = tailTable(lang);
 const sets = [
   { id: 'horno', h: T.ovenH, ps: T.ovenP, walk: T.ovenWalk, s: oven, table: tail },
   { id: 'laboratorio', h: T.labH, ps: T.labP, walk: T.labWalk, s: lab },
   { id: 'sintetica', h: T.synH, ps: T.synP, walk: T.synWalk, s: syn },
+  { id: 'etileno', h: T.ethH, ps: T.ethP, walk: T.ethWalk, s: eth, steps: T.ethSteps,
+    maps: { text: T.ethMaps, med: T.ethMed, figs: [{ k: 'T', alt: T.ethAltT }, { k: 'fs', alt: T.ethAltF }] } },
 ];
 const nf = (n: number) => String(n);
 ---
@@ -135,8 +174,8 @@ const nf = (n: number) => String(n);
           </tbody>
         </table>
       </div>
-      <p class="meta"><a href={url(`${FILES}${LOG_TEMPLATE}`)} download>{LOG_TEMPLATE}</a> · {T.template}</p>
-      <h3>{T.useH}</h3>
+      <p class="meta tpl"><a href={url(`${FILES}${LOG_TEMPLATE}`)} download>{LOG_TEMPLATE}</a> · {T.template}</p>
+      <h3 class="use-h">{T.useH}</h3>
       <div class="tw">
         <table>
           <thead><tr>{T.useHead.map((h) => <th scope="col">{h}</th>)}</tr></thead>
@@ -158,7 +197,22 @@ const nf = (n: number) => String(n);
               <tbody>{x.table.rows.map((r) => <tr>{r.map((c, i) => i === 0 ? <th scope="row">{c}</th> : <td class="num">{c}</td>)}</tr>)}</tbody>
             </table></div>
           )}
+          {'maps' in x && x.maps && (
+            <>
+              <p set:html={tx(x.maps.text)} />
+              <div class="eth-maps">
+                {x.maps.figs.map((f) => (
+                  <figure>
+                    <img class="th-light" src={url(`${IMG}etileno_${f.k}_claro.png`)} alt={f.alt.replace(/f_s/g, 'fs')} width="456" height="600" loading="lazy" decoding="async" />
+                    <img class="th-dark" src={url(`${IMG}etileno_${f.k}_oscuro.png`)} alt={f.alt.replace(/f_s/g, 'fs')} width="456" height="600" loading="lazy" decoding="async" />
+                  </figure>
+                ))}
+              </div>
+              <p class="meta" set:html={tx(x.maps.med)} />
+            </>
+          )}
           <p><em set:html={tx(x.walk)} /></p>
+          {'steps' in x && x.steps && <ol class="steps">{x.steps.map((st) => <li set:html={tx(st)} />)}</ol>}
           <p class="links-line">
             <a class="btn" href={url(`${FILES}${x.s.file}`)} download>{T.download} {x.s.file} ({mb(x.s.bytes, lang)})</a>
             {tool && <> <a class="more" href={tool}>{T.walk}</a></>}
@@ -184,5 +238,16 @@ const nf = (n: number) => String(n);
   .tw table tbody tr + tr td { border-top: 1px solid var(--rule); }
   .tw .num { white-space: nowrap; }
   .sha code { font-family: var(--font-mono); font-size: 0.85em; overflow-wrap: anywhere; }
+  .tpl { margin-top: var(--s-2); }
+  .use-h { margin-top: var(--s-5); margin-bottom: var(--s-2); }
   .links-line { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-4); align-items: baseline; }
+  .eth-maps { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: var(--s-4); }
+  .eth-maps img { display: block; width: 100%; height: auto; max-width: 456px; }
+  .eth-maps .th-dark { display: none; }
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme='light'])) .eth-maps .th-light { display: none; }
+    :global(:root:not([data-theme='light'])) .eth-maps .th-dark { display: block; }
+  }
+  :global(:root[data-theme='dark']) .eth-maps .th-light { display: none; }
+  :global(:root[data-theme='dark']) .eth-maps .th-dark { display: block; }
 </style>

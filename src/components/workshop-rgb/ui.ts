@@ -42,7 +42,7 @@ const NET_ITERATIONS = 30000;
 const netLambda = (iterations: number) => (iterations >= 20000 ? 1e-2 : iterations >= 10000 ? 0.1 : 1);
 const NET_FEW_ITERATIONS = 10000;
 
-export interface ExampleSet { file: string; bytes: number; sha256: string; camera: string; available: boolean; preset?: { texpUs: number; mmPerPx: number; zBurnerMm: number; quarter?: number; fineDeg?: number; burnerRow?: number; rowBottom?: number; lambdaRel?: number }; with?: string[] }
+export interface ExampleSet { file: string; bytes: number; sha256: string; camera: string; available: boolean; preset?: { texpUs: number; mmPerPx: number; zBurnerMm: number; quarter?: number; fineDeg?: number; burnerRow?: number; rowBottom?: number; lambdaRel?: number; sphere?: { tSphUs: number; od: number; valUnit: string; lamUnit: string; fill: string } }; with?: string[] }
 export interface MountOptions { lang: Lang; version: string; commit: string; source?: string; built?: string; base: string; examples: ExampleSet[]; pageUrl: string; biases: { key: string; es: string; en: string }[] }
 
 // ============================================================================ worker plumbing
@@ -420,6 +420,13 @@ async function loadExample(ex: ExampleSet) {
       S.flame.msgs = [{ code: 'example_preset', vars: { a: num(pr.texpUs), b: num(pr.mmPerPx, 2), c: num(pr.zBurnerMm, 2) }, level: 'info' }, ...S.flame.msgs];
       invalidate(3, 'flame');
       renderAll();
+    }
+    // a set calibrated with the integrating sphere comes with its setup, and the calibration is computed at once
+    if (pr?.sphere) {
+      const sp = pr.sphere;
+      Object.assign(S.sphere, { tSphUs: sp.tSphUs, nd: 'od', od: sp.od, valUnit: sp.valUnit as typeof S.sphere.valUnit, lamUnit: sp.lamUnit as typeof S.sphere.lamUnit, fill: sp.fill === 'radial' ? 'radial' : 'median' });
+      S.calPath = 'sphere';
+      await fitSphere();
     }
   } catch {
     S.busy = '';
@@ -1997,7 +2004,7 @@ function renderStage1() {
   const respMsgs: Msg[] = [];
   if (mismatch) respMsgs.push({ code: 'preset_mismatch', vars: { a: p.id, b: cam!.cam } });
   if (p.allowRemoveIr && !S.custom && !S.irOn) respMsgs.push({ code: 'no_ir_cut' });
-  const exOven = S.o.examples.findIndex((x) => /^horno/.test(x.file)), exSyn = S.o.examples.findIndex((x) => /sintetica/.test(x.file));
+  const exOven = S.o.examples.findIndex((x) => /^horno/.test(x.file)), exSyn = S.o.examples.findIndex((x) => /sintetica/.test(x.file)), exEth = S.o.examples.findIndex((x) => /etileno/.test(x.file));
   el.innerHTML = `${stepHead(1, L('Calibración con el horno', 'Calibration with the furnace'), 'wr-st1', st1(), L('Mide cuánta señal da cada canal de la cámara con el horno a temperatura conocida.', 'Measures how much signal each camera channel gives with the furnace at a known temperature.'))}
   <div class="wr-drop" id="wr-drop">
     <h3 class="wr-droplab">${L('Fotos del horno y sus oscuros', 'Furnace photos and their darks')}</h3>
@@ -2034,8 +2041,9 @@ function renderStage1() {
       <p>${btn('wr-cal-save', L('Guardar la calibración (.json)', 'Save the calibration (.json)'), !S.cal)}</p>`),
     osec(L('Revisar una imagen suelta', 'Check a single image'), `<p>${L('Muestra saturados y ceros de una foto antes de seguir tomando.', 'Shows saturated pixels and zeros of a photo before taking more.')}</p>
       <p class="cluster">${fileBtn('wr-q-file', L('Elegir un TIFF', 'Choose a TIFF'), '.tif,.tiff,image/tiff')} ${fileBtn('wr-q-dir', L('Elegir una carpeta', 'Choose a folder'), '', true)}</p><div id="wr-quick"></div>`),
-    exOven >= 0 || exSyn >= 0 ? osec(L('Ejemplo', 'Example'), `${exOven >= 0 ? `<p>${btn(`wr-ex-${exOven}`, L('Cargar solo el horno del laboratorio', 'Load only the lab furnace'))} <span class="meta">${kB(S.o.examples[exOven].bytes)}</span></p>` : ''}
-      ${exSyn >= 0 ? `<p>${btn(`wr-ex-${exSyn}`, L('Cargar la llama sintética, con su respuesta conocida', 'Load the synthetic flame, with its known answer'))} <span class="meta">${kB(S.o.examples[exSyn].bytes)}</span></p>` : ''}`) : '',
+    exOven >= 0 || exSyn >= 0 || exEth >= 0 ? osec(L('Ejemplo', 'Example'), `${exOven >= 0 ? `<p>${btn(`wr-ex-${exOven}`, L('Cargar solo el horno del laboratorio', 'Load only the lab furnace'))} <span class="meta">${kB(S.o.examples[exOven].bytes)}</span></p>` : ''}
+      ${exSyn >= 0 ? `<p>${btn(`wr-ex-${exSyn}`, L('Cargar la llama sintética, con su respuesta conocida', 'Load the synthetic flame, with its known answer'))} <span class="meta">${kB(S.o.examples[exSyn].bytes)}</span></p>` : ''}
+      ${exEth >= 0 ? `<p>${btn(`wr-ex-${exEth}`, L('Cargar la llama de etileno', 'Load the ethylene flame'))} <span class="meta">${kB(S.o.examples[exEth].bytes)}</span></p>` : ''}`) : '',
   ])}
   ${nextBtn(1)}`;
   const ps = psiNow();
